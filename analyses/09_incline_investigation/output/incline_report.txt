@@ -1,0 +1,124 @@
+============================================================
+Monongahela Incline Investigation Report
+============================================================
+
+## 1. Routes table (route_id = 'MI' or mode = 'INCLINE')
+  route_id=MI, name=MONONGAHELA INCLINE, mode=INCLINE
+  route_id=DQI, name=Duquesne Incline, mode=INCLINE
+
+## 2. OTP monthly (route_id = 'MI')
+  No OTP data found for MI.
+
+## 3. Route stops (route_id = 'MI')
+  2 stop-route pairs found:
+    stop_id=W15307, name=MONONGAHELA INCLINE AT UPPER STATION, dir=IB,OB, trips_wd=78, trips_7d=549
+    stop_id=W15308, name=MONONGAHELA INCLINE AT LOWER STATION, dir=IB,OB, trips_wd=78, trips_7d=549
+
+## 4. Stops table (name containing 'incline' or 'monongahela')
+  47 stops found:
+    stop_id=W06300, name=DUQUESNE INCLINE AT UPPER STATION, hood=Duquesne Heights, muni=Pittsburgh city (Allegheny, PA)
+    stop_id=E39530, name=MONONGAHELA AVE AT CHURCH ST, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=E39590, name=MONONGAHELA AVE AT #2130, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S70362, name=MONONGAHELA AVE OPP LINCOLN ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=W15307, name=MONONGAHELA INCLINE AT UPPER STATION, hood=Mount Washington, muni=Pittsburgh city (Allegheny, PA)
+    stop_id=S70368, name=MONONGAHELA AVE OPP 4TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70296, name=MONONGAHELA AVE AT 5TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=E39575, name=MONONGAHELA AVE AT MCCLURE AVE, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S70341, name=MONONGAHELA AVE AT LINCOLN ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70334, name=MONONGAHELA AVE AT 6TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70339, name=MONONGAHELA AVE AT HARRISON ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=E39610, name=MONONGAHELA AVE AT SCHOYER AVE, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S70336, name=MONONGAHELA AVE AT 3RD ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70364, name=MONONGAHELA AVE AT HARRISON ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=E39600, name=MONONGAHELA AVE AT SCHLEY AVE, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=W15308, name=MONONGAHELA INCLINE AT LOWER STATION, hood=South Shore, muni=Pittsburgh city (Allegheny, PA)
+    stop_id=S35050, name=MONONGAHELA BLVD OPP #1224, hood=None, muni=Whitaker borough (Allegheny, PA)
+    stop_id=S70370, name=MONONGAHELA AVE AT 7TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70365, name=MONONGAHELA AVE OPP 1ST ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70338, name=MONONGAHELA AVE AT 1ST ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=E51130, name=SCHOYER AVE AT MONONGAHELA AVE, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S34990, name=MONONGAHELA BLVD AT #1224, hood=None, muni=Whitaker borough (Allegheny, PA)
+    stop_id=X07000, name=GRANDVIEW AVE AT #1209 (DUQUESNE INCLINE), hood=Duquesne Heights, muni=Pittsburgh city (Allegheny, PA)
+    stop_id=E39560, name=MONONGAHELA AVE AT IRVINE ST, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=E39640, name=MONONGAHELA AVE OPP WASHINGTON ST, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=E39650, name=MONONGAHELA AVE OPP WHIPPLE ST (#1641), hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S70366, name=MONONGAHELA AVE AT 2ND ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=E39700, name=MONONGAHELA AVE OPP DUQUESNE AVE, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S70337, name=MONONGAHELA AVE AT 2ND ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70295, name=MONONGAHELA AVE AT 5TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=W26000, name=W CARSON ST OPP DUQUESNE INCLINE, hood=South Shore, muni=Pittsburgh city (Allegheny, PA)
+    stop_id=E39630, name=MONONGAHELA AVE AT WASHINGTON ST, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S70335, name=MONONGAHELA AVE AT 4TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=E39540, name=MONONGAHELA AVE AT CHURCH ST, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=E14330, name=CHURCH ST AT MONONGAHELA AVE, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=E39580, name=MONONGAHELA AVE AT #2129, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S70417, name=MONONGAHELA AVE AT ARCH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70418, name=MONONGAHELA AVE OPP ARCH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=W06290, name=DUQUESNE INCLINE AT LOWER STATION, hood=South Shore, muni=Pittsburgh city (Allegheny, PA)
+    stop_id=S70332, name=MONONGAHELA AVE AT 8TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70371, name=MONONGAHELA AVE AT 8TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70369, name=MONONGAHELA AVE AT 6TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=S70367, name=MONONGAHELA AVE AT 3RD ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=E39670, name=MONONGAHELA AVE AT WHIPPLE ST FS, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=S70333, name=MONONGAHELA AVE AT 7TH ST, hood=None, muni=Glassport borough (Allegheny, PA)
+    stop_id=E39550, name=MONONGAHELA AVE AT DUQUESNE AVE, hood=None, muni=Swissvale borough (Allegheny, PA)
+    stop_id=W25800, name=W CARSON ST AT DUQUESNE INCLINE, hood=South Shore, muni=Pittsburgh city (Allegheny, PA)
+
+## 5. Stop reference (mode = 'INCLINE' or name containing 'incline')
+  50 historical stops found:
+    stop_id=E70840, name=HAZELWOOD AVE AT MONONGAHELA ST, mode=BUS, first=1503, last=2111
+    stop_id=E70855, name=HAZELWOOD AVE AT MONONGAHELA ST, mode=BUS, first=1503, last=2111
+    stop_id=W06290, name=DUQUESNE INCLINE AT LOWER STATION, mode=INCLINE, first=1503, last=2510
+    stop_id=W06300, name=DUQUESNE INCLINE AT UPPER STATION, mode=INCLINE, first=1503, last=2510
+    stop_id=W15307, name=MONONGAHELA INCLINE AT UPPER STATION, mode=INCLINE, first=1503, last=2510
+    stop_id=W15308, name=MONONGAHELA INCLINE AT LOWER STATION, mode=INCLINE, first=1503, last=2510
+    stop_id=E14330, name=CHURCH ST AT MONONGAHELA AVE, mode=BUS, first=1503, last=2510
+    stop_id=E39530, name=MONONGAHELA AVE AT CHURCH ST, mode=BUS, first=1503, last=2510
+    stop_id=E39540, name=MONONGAHELA AVE AT CHURCH ST, mode=BUS, first=1503, last=2510
+    stop_id=E39550, name=MONONGAHELA AVE AT DUQUESNE AVE, mode=BUS, first=1503, last=2510
+    stop_id=E39560, name=MONONGAHELA AVE AT IRVINE ST, mode=BUS, first=1503, last=2510
+    stop_id=E39575, name=MONONGAHELA AVE AT MCCLURE AVE, mode=BUS, first=1503, last=2510
+    stop_id=E39580, name=MONONGAHELA AVE AT #2129, mode=BUS, first=1503, last=2510
+    stop_id=E39590, name=MONONGAHELA AVE AT #2130, mode=BUS, first=1503, last=2510
+    stop_id=E39600, name=MONONGAHELA AVE AT SCHLEY AVE, mode=BUS, first=1503, last=2510
+    stop_id=E39610, name=MONONGAHELA AVE AT SCHOYER AVE, mode=BUS, first=1503, last=2510
+    stop_id=E39630, name=MONONGAHELA AVE AT WASHINGTON ST, mode=BUS, first=1503, last=2510
+    stop_id=E39640, name=MONONGAHELA AVE OPP WASHINGTON ST, mode=BUS, first=1503, last=2510
+    stop_id=E39650, name=MONONGAHELA AVE OPP WHIPPLE ST (#1641), mode=BUS, first=1503, last=2510
+    stop_id=E39670, name=MONONGAHELA AVE AT WHIPPLE ST FS, mode=BUS, first=1503, last=2510
+    stop_id=E39700, name=MONONGAHELA AVE OPP DUQUESNE AVE, mode=BUS, first=1503, last=2510
+    stop_id=E51130, name=SCHOYER AVE AT MONONGAHELA AVE, mode=BUS, first=1503, last=2510
+    stop_id=E70772, name=WASHINGTON ST AT MONONGAHELA AVE, mode=BUS, first=1503, last=2209
+    stop_id=S34990, name=MONONGAHELA BLVD AT #1224, mode=BUS, first=1503, last=2510
+    stop_id=S35050, name=MONONGAHELA BLVD OPP #1224, mode=BUS, first=1503, last=2510
+    stop_id=S70295, name=MONONGAHELA AVE AT 5TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70296, name=MONONGAHELA AVE AT 5TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70332, name=MONONGAHELA AVE AT 8TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70333, name=MONONGAHELA AVE AT 7TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70334, name=MONONGAHELA AVE AT 6TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70335, name=MONONGAHELA AVE AT 4TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70336, name=MONONGAHELA AVE AT 3RD ST, mode=BUS, first=1503, last=2510
+    stop_id=S70337, name=MONONGAHELA AVE AT 2ND ST, mode=BUS, first=1503, last=2510
+    stop_id=S70338, name=MONONGAHELA AVE AT 1ST ST, mode=BUS, first=1503, last=2510
+    stop_id=S70339, name=MONONGAHELA AVE AT HARRISON ST, mode=BUS, first=1503, last=2510
+    stop_id=S70341, name=MONONGAHELA AVE AT LINCOLN ST, mode=BUS, first=1503, last=2510
+    stop_id=S70362, name=MONONGAHELA AVE OPP LINCOLN ST, mode=BUS, first=1503, last=2510
+    stop_id=S70364, name=MONONGAHELA AVE AT HARRISON ST, mode=BUS, first=1503, last=2510
+    stop_id=S70365, name=MONONGAHELA AVE OPP 1ST ST, mode=BUS, first=1503, last=2510
+    stop_id=S70366, name=MONONGAHELA AVE AT 2ND ST, mode=BUS, first=1503, last=2510
+    stop_id=S70367, name=MONONGAHELA AVE AT 3RD ST, mode=BUS, first=1503, last=2510
+    stop_id=S70368, name=MONONGAHELA AVE OPP 4TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70369, name=MONONGAHELA AVE AT 6TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70370, name=MONONGAHELA AVE AT 7TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70371, name=MONONGAHELA AVE AT 8TH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70417, name=MONONGAHELA AVE AT ARCH ST, mode=BUS, first=1503, last=2510
+    stop_id=S70418, name=MONONGAHELA AVE OPP ARCH ST, mode=BUS, first=1503, last=2510
+    stop_id=W25800, name=W CARSON ST AT DUQUESNE INCLINE, mode=BUS, first=1503, last=2510
+    stop_id=W26000, name=W CARSON ST OPP DUQUESNE INCLINE, mode=BUS, first=1503, last=2510
+    stop_id=X07000, name=GRANDVIEW AVE AT #1209 (DUQUESNE INCLINE), mode=BUS, first=1503, last=2510
+
+## 6. Conclusion
+  The Monongahela Incline (MI) exists in the routes table but has
+  NO entries in otp_monthly. OTP was never recorded for this route
+  in the dataset. This is a data pipeline artifact -- the Incline
+  was included in the route catalog but excluded from OTP measurement.

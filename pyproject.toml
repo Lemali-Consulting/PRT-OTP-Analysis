@@ -5,6 +5,7 @@ description = "PRT OTP (On-Time Performance) Analysis"
 requires-python = ">=3.14"
 dependencies = [
     "polars>=1.38.1",
+    "matplotlib>=3.10",
 ]
 
 [build-system]
