@@ -13,7 +13,9 @@ Where do poor-performing routes cluster geographically? Are there corridor-level
 - `otp_monthly` -- monthly OTP per route (averaged across all months)
 - `route_stops` -- which stops are served by which routes, with trip counts
 - `stops` -- lat/lon coordinates
+- GTFS `shapes.txt` and `trips.txt` -- route polyline geometries
 
 ## Output
 - `output/hotspot_map.csv` -- per-stop OTP with coordinates
 - `output/hotspot_map.png` -- geographic scatter plot
+- `output/hotspot_map.html` -- interactive folium map over OpenStreetMap tiles with per-stop popups
