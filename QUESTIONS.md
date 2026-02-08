@@ -1,0 +1,3 @@
+- What is the the threshold for something being "On Time"?
+- What explains the very sharp drops for ones like Charles, Squirrel Hill, and Spring Garden?
+- Can we fill in some of the empty data?

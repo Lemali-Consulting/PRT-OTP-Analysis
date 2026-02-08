@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(python3:*)",
+      "Bash(uv add:*)",
+      "Bash(uv run python:*)",
+      "Bash(find:*)",
+      "Read(//c/Users/maxac/Code Projects/PPT Research/PRT-OTP-Analysis/**)",
+      "Bash(git add:*)"
+    ]
+  }
+}

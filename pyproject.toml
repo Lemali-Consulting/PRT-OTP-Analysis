@@ -1,0 +1,15 @@
+[project]
+name = "prt-otp-analysis"
+version = "0.1.0"
+description = "PRT OTP (On-Time Performance) Analysis"
+requires-python = ">=3.14"
+dependencies = [
+    "polars>=1.38.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/prt_otp_analysis"]
