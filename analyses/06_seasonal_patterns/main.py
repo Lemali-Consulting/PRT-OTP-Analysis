@@ -120,7 +120,7 @@ def make_chart(
     route_labels = [f"{r} - {n}" for r, n in zip(
         heatmap_data["route_id"].to_list(), heatmap_data["route_name"].to_list()
     )]
-    month_cols = sorted([c for c in heatmap_data.columns if c not in ("route_id", "route_name")])
+    month_cols = sorted([c for c in heatmap_data.columns if c not in ("route_id", "route_name")], key=int)
     matrix = []
     for col in month_cols:
         matrix.append(heatmap_data[col].to_list())
