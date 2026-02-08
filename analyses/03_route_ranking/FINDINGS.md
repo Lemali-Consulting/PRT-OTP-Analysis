@@ -2,36 +2,48 @@
 
 ## Summary
 
-94 routes had sufficient data to rank. The best performers are busway and rail routes; the worst are long local bus routes with high stop counts. 3 routes were flagged as high-volatility.
+94 routes had sufficient data (12+ months) to rank. Rankings use **trailing 12-month average OTP** to reflect current performance, and **post-2022 slope** to capture recent trajectory without COVID distortion. 3 routes were flagged as high-volatility.
 
-## Top 5 Routes (by average OTP)
+## Top 5 Routes (by trailing 12-month OTP)
 
-| Route | Mode | Avg OTP | Stops |
-|-------|------|---------|-------|
-| 18 - Manchester | BUS | 88.4% | 43 |
-| BLUE - SouthHills Village | RAIL | 85.1% | 45 |
-| P3 - East Busway-Oakland | BUS | 84.7% | 40 |
-| SLVR - Library via Overbrook | RAIL | 84.7% | 58 |
-| P1 - East Busway-All Stops | BUS | 84.5% | 24 |
+| Route | Mode | Recent OTP | All-Time OTP | Stops |
+|-------|------|-----------|-------------|-------|
+| G2 - West Busway | BUS | 88.4% | 81.7% | 24 |
+| 18 - Manchester | BUS | 87.5% | 88.4% | 43 |
+| P1 - East Busway-All Stops | BUS | 83.9% | 84.5% | 24 |
+| 39 - Brookline | BUS | 82.6% | 78.9% | 69 |
+| 43 - Bailey | BUS | 81.8% | 79.5% | 65 |
 
-## Bottom 5 Routes (by average OTP)
+## Bottom 5 Routes (by trailing 12-month OTP)
 
-| Route | Mode | Avg OTP | Stops |
-|-------|------|---------|-------|
-| 77 - Penn Hills | BUS | 55.8% | 258 |
-| 61C - McKeesport-Homestead | BUS | 56.8% | 158 |
-| 71B - Highland Park | BUS | 58.8% | 102 |
-| 1 - Freeport Road | BUS | 61.6% | 221 |
-| 65 - Squirrel Hill | BUS | 61.5% | 135 |
+| Route | Mode | Recent OTP | All-Time OTP | Stops |
+|-------|------|-----------|-------------|-------|
+| 71B - Highland Park | BUS | 41.9% | 58.8% | 107 |
+| 61C - McKeesport-Homestead | BUS | 44.8% | 56.8% | 158 |
+| 65 - Squirrel Hill | BUS | 46.5% | 61.5% | 70 |
+| 58 - Greenfield | BUS | 49.8% | 60.8% | 102 |
+| 61B - Braddock-Swissvale | BUS | 50.1% | 58.4% | 137 |
+
+## Post-COVID Trends (2022 onward)
+
+**Most improving** (steepest positive slope):
+- P78 - Oakmont Flyer: +6.6 pp/year
+- 71D - Hamilton: +4.1 pp/year
+- O1 - Ross Flyer: +3.4 pp/year
+
+**Most declining** (steepest negative slope):
+- SWL - Outbound to SHJ: -10.5 pp/year
+- 65 - Squirrel Hill: -8.3 pp/year
+- 71B - Highland Park: -7.2 pp/year
 
 ## Observations
 
-- The most **improving** route is P2 (East Busway Short), though it has been discontinued since September 2023.
-- The most **declining** route is SWL (Outbound to SHJ), though it has only 13 months of data.
-- High-volatility routes (std > 2x median) include SWL, which has extreme month-to-month swings.
-- 4 routes were excluded from ranking for having fewer than 12 months of data (37, 42, 53, and one other).
+- Using trailing 12-month OTP shifts the rankings compared to all-time averages: G2 (West Busway) has improved markedly and now leads, while 71B (Highland Park) and 65 (Squirrel Hill) have deteriorated significantly.
+- The post-COVID slope isolates recent trajectory without the structural break caused by the 2020 COVID ridership drop, which dominated full-period slopes.
+- High-volatility routes (std > 2x median) include SWL, 15 (Charles), and 65 (Squirrel Hill), which have extreme month-to-month swings.
+- 4 routes were excluded from ranking for having fewer than 12 months of data.
 
 ## Caveats
 
-- Linear slope treats all months equally and doesn't account for structural breaks (e.g., COVID, route restructuring).
 - Stop counts come from current data; historical stop counts may have differed.
+- Post-COVID slope assumes a roughly linear trajectory from 2022 onward, which may not hold for all routes.

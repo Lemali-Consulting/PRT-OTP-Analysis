@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import polars as pl
+from scipy import stats
 
 from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
 
@@ -11,14 +12,21 @@ OUT = output_dir(HERE)
 
 
 def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
-    """Load directional trip counts and average OTP per route."""
+    """Load directional peak trip frequency and average OTP per route."""
+    # Use MAX(trips_wd) per route-direction to get peak frequency, not stop-visits.
+    # Include IB,OB stops in both directions to avoid exclusion bias.
     directional = query_to_polars("""
-        SELECT route_id, direction,
-               SUM(trips_wd) AS trips_wd,
-               SUM(trips_7d) AS trips_7d
+        SELECT route_id, 'IB' AS direction,
+               MAX(trips_wd) AS trips_wd, MAX(trips_7d) AS trips_7d
         FROM route_stops
-        WHERE direction IN ('IB', 'OB')
-        GROUP BY route_id, direction
+        WHERE direction IN ('IB', 'IB,OB')
+        GROUP BY route_id
+        UNION ALL
+        SELECT route_id, 'OB' AS direction,
+               MAX(trips_wd) AS trips_wd, MAX(trips_7d) AS trips_7d
+        FROM route_stops
+        WHERE direction IN ('OB', 'IB,OB')
+        GROUP BY route_id
     """)
     avg_otp = query_to_polars("""
         SELECT o.route_id, r.route_name, r.mode,
@@ -30,22 +38,20 @@ def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
     return directional, avg_otp
 
 
-def analyze(directional: pl.DataFrame, avg_otp: pl.DataFrame) -> tuple[pl.DataFrame, float]:
+def analyze(directional: pl.DataFrame, avg_otp: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
     """Compute asymmetry index per route and correlate with OTP."""
     # Pivot to get IB and OB columns
     pivoted = directional.pivot(on="direction", index="route_id", values="trips_wd")
 
-    # Rename columns safely
-    if "IB" in pivoted.columns and "OB" in pivoted.columns:
-        pivoted = pivoted.rename({"IB": "ib_trips_wd", "OB": "ob_trips_wd"})
-    else:
+    if "IB" not in pivoted.columns or "OB" not in pivoted.columns:
         print("  Warning: Missing IB or OB direction data")
-        return pl.DataFrame(), 0.0
+        return pl.DataFrame(), {}
 
-    # Fill nulls (routes that only have one direction)
-    pivoted = pivoted.with_columns(
-        pl.col("ib_trips_wd").fill_null(0),
-        pl.col("ob_trips_wd").fill_null(0),
+    pivoted = pivoted.rename({"IB": "ib_trips_wd", "OB": "ob_trips_wd"})
+
+    # Drop routes missing a direction entirely (likely loop routes, not genuinely asymmetric)
+    pivoted = pivoted.filter(
+        pl.col("ib_trips_wd").is_not_null() & pl.col("ob_trips_wd").is_not_null()
     )
 
     # Compute asymmetry index
@@ -63,13 +69,36 @@ def analyze(directional: pl.DataFrame, avg_otp: pl.DataFrame) -> tuple[pl.DataFr
     # Join with OTP
     result = pivoted.join(avg_otp, on="route_id", how="inner")
 
-    # Correlation
-    r = result.select(pl.corr("asymmetry_index", "avg_otp")).item()
+    # Compute correlations
+    results = {}
 
-    return result.sort("asymmetry_index", descending=True), r
+    # All routes
+    r_all, p_all = stats.pearsonr(
+        result["asymmetry_index"].to_list(), result["avg_otp"].to_list()
+    )
+    results["all_pearson_r"] = r_all
+    results["all_pearson_p"] = p_all
+    results["all_n"] = len(result)
+
+    # Bus only
+    bus = result.filter(pl.col("mode") == "BUS")
+    if len(bus) > 2:
+        r_bus, p_bus = stats.pearsonr(
+            bus["asymmetry_index"].to_list(), bus["avg_otp"].to_list()
+        )
+        rho_bus, p_rho = stats.spearmanr(
+            bus["asymmetry_index"].to_list(), bus["avg_otp"].to_list()
+        )
+        results["bus_pearson_r"] = r_bus
+        results["bus_pearson_p"] = p_bus
+        results["bus_spearman_r"] = rho_bus
+        results["bus_spearman_p"] = p_rho
+        results["bus_n"] = len(bus)
+
+    return result.sort("asymmetry_index", descending=True), results
 
 
-def make_chart(df: pl.DataFrame, r: float) -> None:
+def make_chart(df: pl.DataFrame, results: dict) -> None:
     """Generate scatter plot of directional asymmetry vs OTP."""
     plt = setup_plotting()
     fig, ax = plt.subplots(figsize=(10, 7))
@@ -86,9 +115,10 @@ def make_chart(df: pl.DataFrame, r: float) -> None:
             color=color, label=mode, s=40, alpha=0.7, edgecolors="white", linewidths=0.5,
         )
 
-    # Regression line
-    x_vals = df["asymmetry_index"].to_list()
-    y_vals = df["avg_otp"].to_list()
+    # Bus-only regression line
+    bus = df.filter(pl.col("mode") == "BUS")
+    x_vals = bus["asymmetry_index"].to_list()
+    y_vals = bus["avg_otp"].to_list()
     n = len(x_vals)
     if n > 1:
         x_mean = sum(x_vals) / n
@@ -100,8 +130,10 @@ def make_chart(df: pl.DataFrame, r: float) -> None:
             intercept = y_mean - slope * x_mean
             x_line = [min(x_vals), max(x_vals)]
             y_line = [slope * xi + intercept for xi in x_line]
+            r_bus = results.get("bus_pearson_r", 0)
+            p_bus = results.get("bus_pearson_p", 1)
             ax.plot(x_line, y_line, color="#1e40af", linewidth=1.5, linestyle="--",
-                    label=f"trend (r={r:.3f})")
+                    label=f"BUS trend (r={r_bus:.3f}, p={p_bus:.3f})")
 
     ax.set_xlabel("Directional Asymmetry Index |IB - OB| / (IB + OB)")
     ax.set_ylabel("Average OTP")
@@ -127,13 +159,17 @@ def main() -> None:
     print(f"  {len(directional)} directional records, {len(avg_otp)} routes with OTP")
 
     print("\nAnalyzing...")
-    result, r = analyze(directional, avg_otp)
+    result, results = analyze(directional, avg_otp)
     if len(result) == 0:
         print("  No data to analyze.")
         return
 
-    print(f"  {len(result)} routes analyzed")
-    print(f"  Pearson r (asymmetry vs OTP) = {r:.4f}")
+    print(f"  {results['all_n']} routes analyzed (routes with both IB and OB data)")
+    print(f"  All routes:  Pearson r = {results['all_pearson_r']:.4f} (p = {results['all_pearson_p']:.4f})")
+    if "bus_pearson_r" in results:
+        print(f"  Bus only:    Pearson r = {results['bus_pearson_r']:.4f} (p = {results['bus_pearson_p']:.4f})")
+        print(f"               Spearman r = {results['bus_spearman_r']:.4f} (p = {results['bus_spearman_p']:.4f})")
+        print(f"               n = {results['bus_n']} bus routes")
 
     top5 = result.head(5)
     print("\n  Most asymmetric routes:")
@@ -147,7 +183,7 @@ def main() -> None:
     print(f"  Saved to {OUT / 'directional_asymmetry.csv'}")
 
     print("\nGenerating chart...")
-    make_chart(result, r)
+    make_chart(result, results)
 
     print("\nDone.")
 

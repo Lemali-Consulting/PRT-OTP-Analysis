@@ -10,6 +10,7 @@ HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
 
 MIN_MONTHS = 12  # minimum months of data to include in rankings
+POST_COVID_START = "2022-01"  # start of post-COVID period for slope calculation
 
 
 def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
@@ -28,13 +29,8 @@ def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
 
 
 def analyze(otp: pl.DataFrame, stop_counts: pl.DataFrame) -> pl.DataFrame:
-    """Compute per-route summary stats, linear slope, and rankings."""
-    # Assign numeric time index for slope calculation
-    months_sorted = otp.select("month").unique().sort("month")
-    months_sorted = months_sorted.with_row_index("time_idx")
-    otp = otp.join(months_sorted, on="month")
-
-    # Per-route summary stats
+    """Compute per-route summary stats, post-COVID slope, and rankings."""
+    # Per-route all-time summary stats
     summary = (
         otp.group_by(["route_id", "route_name", "mode"])
         .agg(
@@ -43,15 +39,43 @@ def analyze(otp: pl.DataFrame, stop_counts: pl.DataFrame) -> pl.DataFrame:
             std_otp=pl.col("otp").std(),
             min_otp=pl.col("otp").min(),
             max_otp=pl.col("otp").max(),
-            # Slope via formula: cov(time, otp) / var(time)
+        )
+        .sort("route_id")
+    )
+
+    # Trailing 12-month average OTP
+    all_months = otp.select("month").unique().sort("month")["month"].to_list()
+    trailing_start = all_months[-12] if len(all_months) >= 12 else all_months[0]
+    recent_avg = (
+        otp.filter(pl.col("month") >= trailing_start)
+        .group_by("route_id")
+        .agg(recent_mean_otp=pl.col("otp").mean())
+    )
+    summary = summary.join(recent_avg, on="route_id", how="left")
+
+    # Post-COVID slope (per year), using ddof=0 for population variance
+    post_covid = otp.filter(pl.col("month") >= POST_COVID_START)
+    pc_months = post_covid.select("month").unique().sort("month")
+    pc_months = pc_months.with_row_index("time_idx")
+    post_covid = post_covid.join(pc_months, on="month")
+
+    slope_df = (
+        post_covid.group_by("route_id")
+        .agg(
             slope=(
                 (pl.col("time_idx") * pl.col("otp")).mean()
                 - pl.col("time_idx").mean() * pl.col("otp").mean()
             )
-            / pl.col("time_idx").var(),
+            / pl.col("time_idx").var(ddof=0),
+            slope_months=pl.col("otp").count(),
         )
-        .sort("route_id")
     )
+    # Only keep slopes for routes with enough post-COVID data
+    slope_df = slope_df.filter(pl.col("slope_months") >= MIN_MONTHS)
+    # Convert from per-month-index to per-year
+    slope_df = slope_df.with_columns(pl.col("slope") * 12)
+
+    summary = summary.join(slope_df.select("route_id", "slope"), on="route_id", how="left")
 
     # Join stop counts
     summary = summary.join(stop_counts, on="route_id", how="left")
@@ -69,8 +93,10 @@ def analyze(otp: pl.DataFrame, stop_counts: pl.DataFrame) -> pl.DataFrame:
 
     # Rankings (only for routes with sufficient data)
     rankable = summary.filter(~pl.col("limited_data"))
-    avg_ranks = rankable.select("route_id", pl.col("mean_otp").rank(descending=True).alias("rank_avg"))
-    slope_ranks = rankable.select("route_id", pl.col("slope").rank(descending=True).alias("rank_slope"))
+    avg_ranks = rankable.select("route_id", pl.col("recent_mean_otp").rank(descending=True).alias("rank_avg"))
+    slope_ranks = rankable.filter(pl.col("slope").is_not_null()).select(
+        "route_id", pl.col("slope").rank(descending=True).alias("rank_slope")
+    )
     vol_ranks = rankable.select("route_id", pl.col("std_otp").rank(descending=False).alias("rank_volatility"))
 
     summary = (
@@ -93,29 +119,31 @@ def make_chart(df: pl.DataFrame) -> None:
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 8))
 
-    # Left: Top 10 and Bottom 10 by average OTP
+    # Left: Top 10 and Bottom 10 by recent average OTP
     ax = axes[0]
-    top10 = rankable.sort("mean_otp", descending=True).head(10)
-    bottom10 = rankable.sort("mean_otp").head(10).sort("mean_otp", descending=True)
+    has_recent = rankable.filter(pl.col("recent_mean_otp").is_not_null())
+    top10 = has_recent.sort("recent_mean_otp", descending=True).head(10)
+    bottom10 = has_recent.sort("recent_mean_otp").head(10).sort("recent_mean_otp", descending=True)
     combined = pl.concat([top10, bottom10])
 
     labels = [f"{r} - {n}" for r, n in zip(combined["route_id"].to_list(), combined["route_name"].to_list())]
-    values = combined["mean_otp"].to_list()
+    values = combined["recent_mean_otp"].to_list()
     colors = [mode_colors.get(m, "#9ca3af") for m in combined["mode"].to_list()]
 
     y_pos = range(len(labels))
     ax.barh(y_pos, values, color=colors)
     ax.set_yticks(y_pos)
     ax.set_yticklabels(labels, fontsize=8)
-    ax.set_xlabel("Average OTP")
-    ax.set_title("Top 10 & Bottom 10 Routes by Average OTP")
+    ax.set_xlabel("Average OTP (trailing 12 months)")
+    ax.set_title("Top 10 & Bottom 10 Routes by Recent OTP")
     ax.invert_yaxis()
     ax.set_xlim(0, 1)
 
-    # Right: Top 10 improving and Top 10 declining by slope
+    # Right: Top 10 improving and Top 10 declining by post-COVID slope
     ax = axes[1]
-    improving = rankable.sort("slope", descending=True).head(10)
-    declining = rankable.sort("slope").head(10).sort("slope", descending=True)
+    has_slope = rankable.filter(pl.col("slope").is_not_null())
+    improving = has_slope.sort("slope", descending=True).head(10)
+    declining = has_slope.sort("slope").head(10).sort("slope", descending=True)
     combined2 = pl.concat([improving, declining])
 
     labels2 = [f"{r} - {n}" for r, n in zip(combined2["route_id"].to_list(), combined2["route_name"].to_list())]
@@ -126,8 +154,8 @@ def make_chart(df: pl.DataFrame) -> None:
     ax.barh(y_pos2, values2, color=colors2)
     ax.set_yticks(y_pos2)
     ax.set_yticklabels(labels2, fontsize=8)
-    ax.set_xlabel("Slope (OTP change per month-index)")
-    ax.set_title("Top 10 Improving & Declining Routes")
+    ax.set_xlabel("Slope (OTP change per year, post-2022)")
+    ax.set_title("Top 10 Improving & Declining Routes (post-COVID)")
     ax.invert_yaxis()
     ax.axvline(0, color="black", linewidth=0.5)
 
@@ -158,6 +186,7 @@ def main() -> None:
     print(f"  {len(limited)} routes excluded (fewer than {MIN_MONTHS} months)")
     hv = result.filter(pl.col("high_volatility"))
     print(f"  {len(hv)} high-volatility routes flagged")
+    print(f"  Slope period: {POST_COVID_START} onward (per-year units)")
 
     print("\nSaving CSV...")
     result.write_csv(OUT / "route_ranking.csv")

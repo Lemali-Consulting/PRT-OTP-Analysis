@@ -11,6 +11,7 @@ OUT = output_dir(HERE)
 
 MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+MIN_YEARS = 3  # minimum years of data for route-level seasonal amplitude
 
 
 def load_data() -> pl.DataFrame:
@@ -29,44 +30,80 @@ def load_data() -> pl.DataFrame:
 
 
 def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
-    """Compute seasonal profiles, amplitudes, and decomposition."""
+    """Compute detrended seasonal profiles and amplitudes."""
     # Extract month-of-year
     df = df.with_columns(
         month_num=pl.col("month").str.slice(5, 2).cast(pl.Int32),
     )
 
-    # System-wide seasonal profile (trip-weighted)
-    system_seasonal = (
-        df.group_by("month_num")
+    # --- System-wide seasonal profile (trip-weighted, detrended) ---
+    # Step 1: trip-weighted system OTP per month
+    system_monthly = (
+        df.group_by("month")
         .agg(
             weighted_otp=pl.when(pl.col("trips_7d").sum() > 0)
             .then((pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum())
             .otherwise(pl.col("otp").mean()),
         )
-        .sort("month_num")
-    )
-    system_mean = df.select(
-        pl.when(pl.col("trips_7d").sum() > 0)
-        .then((pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum())
-        .otherwise(pl.col("otp").mean())
-    ).item()
-    system_seasonal = system_seasonal.with_columns(
-        deviation=pl.col("weighted_otp") - system_mean,
+        .sort("month")
     )
 
-    # Per-route seasonal profile and amplitude
+    # Step 2: 12-month centered rolling mean as trend (approximate center via shift)
+    system_monthly = system_monthly.with_columns(
+        trend=pl.col("weighted_otp").rolling_mean(window_size=12, min_samples=6).shift(-6),
+        month_num=pl.col("month").str.slice(5, 2).cast(pl.Int32),
+    )
+
+    # Step 3: detrend and average by month-of-year
+    system_monthly = system_monthly.with_columns(
+        detrended=pl.col("weighted_otp") - pl.col("trend"),
+    )
+    system_seasonal = (
+        system_monthly.filter(pl.col("detrended").is_not_null())
+        .group_by("month_num")
+        .agg(
+            deviation=pl.col("detrended").mean(),
+            weighted_otp=pl.col("weighted_otp").mean(),
+        )
+        .sort("month_num")
+    )
+
+    # --- Per-route: detrend, then compute seasonal amplitude ---
+    min_months = MIN_YEARS * 12
+    route_counts = df.group_by("route_id").agg(n_months=pl.col("month").n_unique())
+    eligible = route_counts.filter(pl.col("n_months") >= min_months)["route_id"].to_list()
+    df_elig = df.filter(pl.col("route_id").is_in(eligible)).sort(["route_id", "month"])
+
+    # Per-route trend and detrending
+    df_elig = df_elig.with_columns(
+        trend=pl.col("otp")
+        .rolling_mean(window_size=12, min_samples=6)
+        .shift(-6)
+        .over("route_id"),
+    )
+    df_elig = df_elig.with_columns(
+        detrended=pl.col("otp") - pl.col("trend"),
+    )
+
+    # Raw month-of-year averages (for heatmap display)
     route_seasonal = (
-        df.group_by(["route_id", "route_name", "month_num"])
+        df_elig.group_by(["route_id", "route_name", "month_num"])
         .agg(avg_otp=pl.col("otp").mean())
         .sort(["route_id", "month_num"])
     )
 
+    # Amplitude from detrended values
+    detrended_by_month = (
+        df_elig.filter(pl.col("detrended").is_not_null())
+        .group_by(["route_id", "route_name", "month_num"])
+        .agg(avg_detrended=pl.col("detrended").mean())
+    )
     route_amplitude = (
-        route_seasonal.group_by(["route_id", "route_name"])
+        detrended_by_month.group_by(["route_id", "route_name"])
         .agg(
-            seasonal_amplitude=pl.col("avg_otp").max() - pl.col("avg_otp").min(),
-            best_month=pl.col("month_num").sort_by("avg_otp", descending=True).first(),
-            worst_month=pl.col("month_num").sort_by("avg_otp").first(),
+            seasonal_amplitude=pl.col("avg_detrended").max() - pl.col("avg_detrended").min(),
+            best_month=pl.col("month_num").sort_by("avg_detrended", descending=True).first(),
+            worst_month=pl.col("month_num").sort_by("avg_detrended").first(),
         )
         .sort("seasonal_amplitude", descending=True)
     )
@@ -91,8 +128,8 @@ def make_chart(
     ax.bar(months, devs, color=colors, alpha=0.8)
     ax.set_xticks(range(1, 13))
     ax.set_xticklabels(MONTH_LABELS)
-    ax.set_ylabel("OTP Deviation from Annual Mean")
-    ax.set_title("System-Wide Seasonal Profile")
+    ax.set_ylabel("OTP Deviation from Trend")
+    ax.set_title("System-Wide Seasonal Profile (detrended)")
     ax.axhline(0, color="black", linewidth=0.5)
 
     # Top-right: Top 10 routes by seasonal amplitude
@@ -104,8 +141,8 @@ def make_chart(
     ax.barh(y_pos, values, color="#7c3aed", alpha=0.8)
     ax.set_yticks(y_pos)
     ax.set_yticklabels(labels, fontsize=8)
-    ax.set_xlabel("Seasonal Amplitude (max - min month avg)")
-    ax.set_title("Routes Most Affected by Season")
+    ax.set_xlabel("Seasonal Amplitude (detrended, max - min)")
+    ax.set_title(f"Routes Most Affected by Season ({MIN_YEARS}+ years data)")
     ax.invert_yaxis()
 
     # Bottom-left: Heatmap of seasonal OTP for top-amplitude routes
@@ -171,8 +208,11 @@ def main() -> None:
     print(f"  Best system month:  {MONTH_LABELS[best_sys['month_num'][0] - 1]} ({best_sys['weighted_otp'][0]:.1%})")
     print(f"  Worst system month: {MONTH_LABELS[worst_sys['month_num'][0] - 1]} ({worst_sys['weighted_otp'][0]:.1%})")
 
+    n_eligible = route_amplitude.height
+    print(f"  {n_eligible} routes with {MIN_YEARS}+ years of data for seasonal ranking")
+
     top3 = route_amplitude.head(3)
-    print("\n  Most seasonally affected routes:")
+    print("\n  Most seasonally affected routes (detrended):")
     for row in top3.iter_rows(named=True):
         print(f"    {row['route_id']} - {row['route_name']}: amplitude = {row['seasonal_amplitude']:.3f}")
 

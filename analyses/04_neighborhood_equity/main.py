@@ -26,8 +26,8 @@ def load_data() -> pl.DataFrame:
 
 
 def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """Compute per-neighborhood OTP and per-quintile time series."""
-    # Per-neighborhood overall weighted OTP
+    """Compute per-neighborhood OTP and rolling-quintile time series."""
+    # Per-neighborhood overall weighted OTP (for bar chart)
     hood_summary = (
         df.group_by(["hood", "muni", "county"])
         .agg(
@@ -39,12 +39,7 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
         .sort("mean_otp")
     )
 
-    # Quintile assignment based on overall OTP
-    hood_ranks = hood_summary.with_columns(
-        quintile=((pl.col("mean_otp").rank() - 1) / pl.len() * 5).cast(pl.Int32).clip(0, 4) + 1,
-    ).select("hood", "quintile")
-
-    # Per-neighborhood-month weighted OTP, then aggregate by quintile
+    # Per-neighborhood-month weighted OTP
     hood_month = (
         df.group_by(["hood", "month"])
         .agg(
@@ -52,9 +47,26 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
         )
     )
 
-    hood_month_q = hood_month.join(hood_ranks, on="hood")
+    # Rolling 12-month OTP per neighborhood for quintile assignment
+    hood_month = hood_month.sort(["hood", "month"])
+    hood_month = hood_month.with_columns(
+        rolling_otp=pl.col("weighted_otp")
+        .rolling_mean(window_size=12, min_samples=6)
+        .over("hood"),
+    )
+
+    # Assign quintiles per month based on trailing performance (avoids look-ahead bias)
+    hood_month_ranked = hood_month.filter(pl.col("rolling_otp").is_not_null())
+    hood_month_ranked = hood_month_ranked.with_columns(
+        quintile=(
+            ((pl.col("rolling_otp").rank().over("month") - 1)
+             / pl.col("rolling_otp").count().over("month") * 5)
+            .cast(pl.Int32).clip(0, 4) + 1
+        ),
+    )
+
     quintile_ts = (
-        hood_month_q.group_by(["quintile", "month"])
+        hood_month_ranked.group_by(["quintile", "month"])
         .agg(avg_otp=pl.col("weighted_otp").mean())
         .sort(["quintile", "month"])
     )

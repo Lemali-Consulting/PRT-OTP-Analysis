@@ -2,28 +2,32 @@
 
 ## Summary
 
-406 anomalous months were flagged across 94 routes using a rolling z-score method. Anomalies cluster in time (COVID, late 2022) rather than being randomly distributed, suggesting system-wide shocks.
+842 anomalous months were flagged across 94 routes using a rolling z-score method with a **lagged window** (current month excluded from the baseline). Anomalies cluster in time (COVID, late 2022) rather than being randomly distributed, suggesting system-wide shocks.
+
+## Methodology Note
+
+The anomaly detector uses a 12-month rolling window shifted by one month, so the current observation is never included in its own baseline. This prevents self-dampening of z-scores and produces more sensitive detection (842 anomalies vs. 406 with the unshifted approach).
 
 ## Routes with Most Anomalies
 
 | Route | Anomalies |
 |-------|-----------|
-| RED - Castle Shannon via Beechview | 10 |
-| BLUE - SouthHills Village | 9 |
-| 40 - Mount Washington | 8 |
-| 61D - Murray | 8 |
-| 61B - Braddock-Swissvale | 8 |
+| 79 - East Hills | 18 |
+| 19L - Emsworth Limited | 16 |
+| RED - Castle Shannon via Beechview | 15 |
+| 54 - North Side-Oakland-South Side | 15 |
+| 28X - Airport Flyer | 14 |
 
 ## Key Anomaly Clusters
 
 - **March--June 2020 (COVID):** Many routes showed *positive* anomalies -- OTP improved because reduced ridership meant less dwell time and fewer delays. This was a temporary artifact, not genuine improvement.
 - **Late 2022:** A cluster of negative anomalies across many routes, coinciding with the system-wide OTP trough (58% in September 2022). May indicate staffing shortages, construction, or service restructuring.
-- **Route 15 (Charles):** Drops to ~35% OTP in July--September 2022, then rebounds to ~80%. Likely a route restructuring or detour, not a gradual decline.
-- **Route 65 (Squirrel Hill):** Drops to 28--37% in mid-2023, well below its historical ~65% baseline.
+- **Route 79 (East Hills):** The most anomaly-prone route, with 18 flagged months, indicating persistent instability in schedule adherence.
 
 ## Observations
 
-- Rail routes (RED, BLUE) have the most anomalies despite having high average OTP. This is because their OTP is normally very consistent, so even moderate dips trigger the 2-sigma threshold.
+- The lagged window methodology results in more anomalies being flagged, particularly for routes with gradual trends, since the baseline is always slightly behind.
+- Rail routes (RED, BLUE) have many anomalies despite high average OTP because their performance is normally very consistent, so even moderate dips trigger the 2-sigma threshold.
 - The z-score method requires at least 6 months of rolling history, so the first few months of each route's data are not evaluated.
 
 ## Caveats

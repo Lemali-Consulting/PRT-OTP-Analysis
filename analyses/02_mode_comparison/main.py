@@ -95,7 +95,9 @@ def make_chart(
             continue
         months = data["month"].to_list()
         vals = data["avg_otp"].to_list()
-        ax.plot(range(len(months)), vals, color=mode_colors[mode], linewidth=1.2, label=mode)
+        n_routes = int(data["route_count"].median())
+        ax.plot(range(len(months)), vals, color=mode_colors[mode], linewidth=1.2,
+                label=f"{mode} (n={n_routes} routes)")
         tick_pos = [i for i, m in enumerate(months) if m.endswith("-01")]
         tick_lbl = [months[i][:4] for i in tick_pos]
         ax.set_xticks(tick_pos)

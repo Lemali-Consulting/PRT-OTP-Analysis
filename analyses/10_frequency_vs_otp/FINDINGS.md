@@ -2,26 +2,29 @@
 
 ## Summary
 
-There is a **moderate negative correlation (r = -0.39)** between total weekday stop-visits and OTP. Higher-frequency routes tend to perform worse, but the effect is weaker than the stop count correlation and likely confounded.
+There is **no meaningful correlation** between peak weekday trip frequency and OTP. The previous finding (r = -0.39) was an artifact of using `SUM(trips_wd)` across stops, which conflated frequency with route length. After correcting to `MAX(trips_wd)` (peak frequency at any single stop), the correlation vanishes.
 
 ## Key Numbers
 
-- **Pearson r = -0.39** (93 routes)
-- High-frequency routes (10,000+ weekday stop-visits) average ~63% OTP
-- Low-frequency routes (< 2,000 weekday stop-visits) average ~75% OTP
+- **All routes: Pearson r = 0.02** (p = 0.85, n = 93) -- essentially zero
+- **Bus only: Pearson r = -0.07** (p = 0.51, n = 90)
+- **Bus only: Spearman r = -0.12** (p = 0.24)
+
+## Methodology Note
+
+The original analysis summed `trips_wd` across all stops on a route. Because `trips_wd` is recorded per stop, a route with 50 trips per day and 100 stops produces a sum of ~5,000, while a route with 50 trips per day and 20 stops produces ~1,000. This made the metric a proxy for `frequency x stop_count` rather than pure frequency. Using `MAX(trips_wd)` isolates the peak trip frequency at the busiest stop, which is a better measure of how often the route actually runs.
 
 ## Observations
 
-- The correlation is weaker than stop count vs OTP (r = -0.53), suggesting that route complexity (number of stops) matters more than service frequency alone.
-- High-frequency routes also tend to have more stops and serve congested corridors, making it difficult to isolate the pure frequency effect.
-- Some high-frequency routes perform well: P1 (East Busway) has high trip volume but also high OTP, because it runs on dedicated right-of-way with few stops.
-- The metric used (total weekday stop-visits = sum of `trips_wd` across all stops) conflates frequency with route length. A route with 50 trips and 100 stops produces the same value as one with 100 trips and 50 stops.
+- Running more trips per se does not degrade OTP. The previous apparent correlation was entirely driven by the confounding of frequency with route length (stop count).
+- This result is consistent with Analysis 07's finding that stop count is the real structural predictor -- once route complexity is removed from the frequency metric, the effect disappears.
+- Some of the highest-frequency routes (P1 East Busway, RAIL lines) actually have excellent OTP, because they combine high frequency with few stops and dedicated right-of-way.
 
 ## Implication
 
-Running more trips per se probably doesn't degrade OTP much. The real issue is that PRT's highest-frequency routes are also its longest and most complex. A better metric for isolating the frequency effect would be trips per direction at a single timepoint stop.
+PRT should not expect OTP penalties from increasing service frequency on existing routes. The capacity to run more trips does not inherently strain schedule adherence. The real lever for improving OTP is route design (stop count, right-of-way), not service volume.
 
 ## Caveats
 
 - `trips_wd` in `route_stops` represents current weekday frequency, not historical. Frequency may have changed over the analysis period.
-- The stop-visit metric double-counts in a way that makes it hard to separate frequency from route length.
+- `MAX(trips_wd)` captures the peak stop, which for short-turn routes may overstate the frequency experienced by riders at outer stops.

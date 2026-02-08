@@ -25,29 +25,28 @@ The RAIL--BUS gap has been roughly stable over time, suggesting that the system-
 
 ## 3. Route Ranking (Analysis 03)
 
-94 routes had enough data (12+ months) to rank. 4 routes were excluded for insufficient data.
+94 routes had enough data (12+ months) to rank. Rankings use **trailing 12-month average OTP** to reflect current performance, and **post-2022 slope** to capture recent trajectory without COVID distortion. 4 routes were excluded for insufficient data.
 
-**Best performers (by average OTP):**
+**Best performers (by trailing 12-month OTP):**
 
-| Route | Mode | Avg OTP |
-|-------|------|---------|
-| 18 - Manchester | BUS | 88.4% |
-| BLUE - SouthHills Village | RAIL | 85.1% |
-| P3 - East Busway-Oakland | BUS | 84.7% |
-| SLVR - Library via Overbrook | RAIL | 84.7% |
-| P1 - East Busway-All Stops | BUS | 84.5% |
+| Route | Mode | Recent OTP | All-Time OTP |
+|-------|------|-----------|-------------|
+| G2 - West Busway | BUS | 88.4% | 81.7% |
+| 18 - Manchester | BUS | 87.5% | 88.4% |
+| P1 - East Busway-All Stops | BUS | 83.9% | 84.5% |
+| 39 - Brookline | BUS | 82.6% | 78.9% |
 
 **Worst performers:**
 
-| Route | Mode | Avg OTP |
-|-------|------|---------|
-| 77 - Penn Hills | BUS | 55.8% |
-| 61C - McKeesport-Homestead | BUS | 56.8% |
-| 71B - Highland Park | BUS | 58.8% |
-| 1 - Freeport Road | BUS | 61.6% |
+| Route | Mode | Recent OTP | All-Time OTP |
+|-------|------|-----------|-------------|
+| 71B - Highland Park | BUS | 41.9% | 58.8% |
+| 61C - McKeesport-Homestead | BUS | 44.8% | 56.8% |
+| 65 - Squirrel Hill | BUS | 46.5% | 61.5% |
+| 58 - Greenfield | BUS | 49.8% | 60.8% |
 
-**Most improving** (steepest positive slope): P2 - East Busway Short, G2 - West Busway.
-**Most declining** (steepest negative slope): SWL - Outbound to SHJ, several rail lines.
+**Most improving** (post-2022): P78 - Oakmont Flyer (+6.6 pp/yr), 71D - Hamilton (+4.1 pp/yr).
+**Most declining** (post-2022): SWL - Outbound to SHJ (-10.5 pp/yr), 65 - Squirrel Hill (-8.3 pp/yr).
 
 3 routes were flagged as **high-volatility** (standard deviation more than 2x the median), indicating wild month-to-month swings rather than stable performance.
 
@@ -71,33 +70,37 @@ The best-performing neighborhoods tend to be served by rail or busway routes (Ov
 
 ## 5. Anomaly Investigation (Analysis 05)
 
-406 anomalous months were flagged across 94 routes (months where OTP deviated more than 2 standard deviations from the 12-month rolling mean). The routes with the most anomalies:
+842 anomalous months were flagged across 94 routes using a rolling z-score method with a **lagged window** (current month excluded from baseline, preventing self-dampening of z-scores). The routes with the most anomalies:
 
 | Route | Anomalies | Notes |
 |-------|-----------|-------|
-| RED - Castle Shannon via Beechview | 10 | Rail line with high variability |
-| BLUE - SouthHills Village | 9 | Rail line |
-| 40 - Mount Washington | 8 | Steep terrain |
-| 61D - Murray | 8 | Long route |
-| 61B - Braddock-Swissvale | 8 | Long route |
+| 79 - East Hills | 18 | Persistent instability |
+| 19L - Emsworth Limited | 16 | Limited-stop route |
+| RED - Castle Shannon via Beechview | 15 | Rail line with high variability |
+| 54 - North Side-Oakland-South Side | 15 | Long cross-city route |
+| 28X - Airport Flyer | 14 | Express route |
 
 The COVID period (March--June 2020) generated positive anomalies across many routes as reduced ridership temporarily improved schedule adherence. The late 2022 cluster of negative anomalies across many routes may indicate a system-wide disruption (staffing, construction, or service restructuring).
 
 ## 6. Seasonal Patterns (Analysis 06)
 
-PRT shows a consistent seasonal cycle:
+PRT shows a consistent seasonal cycle after detrending (removing 12-month rolling mean):
 - **Best months:** January (70.3% weighted OTP) and March
-- **Worst months:** September (63.7%) and October
+- **Worst months:** September (64.0%) and October
 
 This is somewhat counterintuitive -- winter months outperform summer/fall despite weather. Possible explanations: lower ridership in winter reduces dwell time and crowding delays; summer construction seasons create detours; school-year schedules in fall increase congestion.
 
-Most routes have a seasonal amplitude (best month minus worst month) under 15%. The outlier is SWL (Outbound to SHJ) with a 69% amplitude, but this route has only 13 months of data and likely reflects data sparsity rather than true seasonal effects.
+93 routes had sufficient data (3+ years) for route-level seasonal analysis. Most have a seasonal amplitude under 15%. The most seasonally affected routes are O5 (Thompson Run Flyer, 15.4%), P2 (East Busway Short, 14.8%), and 58 (Greenfield, 13.9%).
 
 ## 7. Stop Count vs OTP (Analysis 07)
 
-There is a **moderately strong negative correlation (r = -0.53)** between the number of stops on a route and its average OTP. Routes with fewer than 50 stops consistently achieve 80%+ OTP, while routes with 150+ stops struggle to reach 60%.
+There is a **moderately strong negative correlation** between the number of stops on a route and its average OTP:
 
-This is the clearest structural predictor of OTP in the dataset. Every stop adds dwell time, traffic signal delay, and schedule recovery risk. It explains why busway and limited routes outperform local routes, and suggests that stop consolidation could be an effective OTP improvement strategy.
+- **All routes: r = -0.53** (p < 0.001, n = 93)
+- **Bus only: r = -0.50** (p < 0.001, n = 90)
+- **Bus only Spearman: r = -0.48** (p < 0.001)
+
+The bus-only result rules out Simpson's paradox -- the effect is not an artifact of mixing BUS and RAIL modes. Routes with fewer than 50 stops consistently achieve 80%+ OTP, while routes with 150+ stops struggle to reach 60%. This is the clearest structural predictor of OTP in the dataset.
 
 ## 8. Hot-Spot Map (Analysis 08)
 
@@ -114,19 +117,24 @@ The Monongahela Incline (route MI) is a **data pipeline artifact**. It exists in
 
 ## 10. Trip Frequency vs OTP (Analysis 10)
 
-There is a **moderate negative correlation (r = -0.39)** between total weekday stop-visits and OTP. Higher-frequency routes tend to perform worse, but the relationship is weaker than the stop count correlation (r = -0.53).
+There is **no meaningful correlation** between peak weekday trip frequency and OTP:
 
-This is partially confounded: high-frequency routes also tend to have more stops and serve congested corridors. The stop count effect likely drives much of this correlation. After mentally controlling for stop count, the residual frequency effect appears modest -- suggesting that running more trips per se doesn't degrade OTP much, but having a long, complex route does.
+- **All routes: r = 0.02** (p = 0.85, n = 93)
+- **Bus only: r = -0.07** (p = 0.51, n = 90)
+- **Bus only Spearman: r = -0.12** (p = 0.24)
+
+The previous finding (r = -0.39) was an artifact of using `SUM(trips_wd)` across all stops, which conflated trip frequency with route length (stop count). After correcting to `MAX(trips_wd)` (peak frequency at any single stop), the correlation vanishes entirely. Running more trips per se does not degrade OTP -- the real driver is route complexity (stop count), not service volume.
 
 ## 11. Directional Asymmetry (Analysis 11)
 
-The correlation between directional trip imbalance and OTP is **weak (r = 0.17)** -- essentially no meaningful relationship. Routes 11 (Fineview) and 60 (McKeesport-Walnut) show 100% asymmetry (trips recorded in only one direction), but this is likely a data recording artifact rather than truly one-directional service. Most routes cluster near 0% asymmetry (well-balanced). This hypothesis did not yield actionable findings.
+The correlation between directional trip imbalance and OTP is **weak and not statistically significant** (r = -0.12, p = 0.26, n = 90). After correcting the methodology to include bidirectional (IB,OB) stops in both directions and exclude one-direction-only routes, PRT routes show very little asymmetry -- the most asymmetric route (19L) has only a 7.7% imbalance (7 vs 6 trips). The previous finding of routes with 100% asymmetry (Routes 11 and 60) was a data artifact. This hypothesis did not yield actionable findings.
 
 ## Key Takeaways
 
 1. **PRT OTP has declined** from ~69% to ~62% since 2019 and has not recovered post-COVID.
 2. **Dedicated right-of-way matters most**: rail (84%) and busway (74%) routes dramatically outperform local bus (66%) routes.
-3. **Stop count is the strongest predictor** of poor OTP (r = -0.53). Routes with 150+ stops consistently underperform.
-4. **Geographic inequity is structural**: neighborhoods served by rail/busway enjoy 80%+ OTP, while those dependent on long local bus routes get 59--62%. The gap is stable, not worsening.
-5. **Seasonality is real but modest**: September is the worst month, January the best, with a ~7pp system-wide swing.
-6. **Anomalies cluster in time**: COVID (2020) and late 2022 produced system-wide anomaly bursts, suggesting external shocks rather than route-specific problems.
+3. **Stop count is the strongest predictor** of poor OTP (r = -0.53 all routes, r = -0.50 bus-only). Routes with 150+ stops consistently underperform. This finding survives bus-only stratification, ruling out Simpson's paradox.
+4. **Trip frequency does not predict OTP** once properly measured. The previous apparent correlation was an artifact of confounding frequency with route length.
+5. **Geographic inequity is structural**: neighborhoods served by rail/busway enjoy 80%+ OTP, while those dependent on long local bus routes get 59--62%. The gap is stable, not worsening.
+6. **Seasonality is real but modest**: September is the worst month, January the best, with a ~6pp system-wide swing after detrending.
+7. **Anomalies cluster in time**: COVID (2020) and late 2022 produced system-wide anomaly bursts, suggesting external shocks rather than route-specific problems.

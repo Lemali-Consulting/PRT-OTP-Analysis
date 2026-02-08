@@ -35,12 +35,14 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Flag anomaly months and return both the full data and flagged anomalies."""
     df = df.sort(["route_id", "month"])
 
-    # Rolling stats per route
+    # Rolling stats per route (shifted by 1 so current month is excluded from baseline)
     df = df.with_columns(
         rolling_mean=pl.col("otp")
+        .shift(1)
         .rolling_mean(window_size=ROLLING_WINDOW, min_samples=MIN_PERIODS)
         .over("route_id"),
         rolling_std=pl.col("otp")
+        .shift(1)
         .rolling_std(window_size=ROLLING_WINDOW, min_samples=MIN_PERIODS)
         .over("route_id"),
     )
