@@ -18,6 +18,7 @@ analyses/
 ├── 01_system_trend/
 │   ├── README.md          # 2-3 sentence summary
 │   ├── METHODS.md         # What question, what approach, what data, what output
+│   ├── FINDINGS.md        # What the analysis found (written after running)
 │   ├── main.py            # Entry point (docstring at top)
 │   └── output/            # Generated artifacts (charts, CSVs, tables)
 │       └── README.md
@@ -34,6 +35,7 @@ analyses/
    analyses/NN_short_name/
    ├── README.md
    ├── METHODS.md
+   ├── FINDINGS.md
    ├── main.py
    └── output/
        └── README.md
@@ -51,7 +53,8 @@ analyses/
    ```bash
    uv run python analyses/NN_short_name/main.py
    ```
-5. **Generated output goes in `output/`.** Charts (`.png`), summary data (`.csv`), printed tables -- all in the `output/` subdirectory. Never commit large binary files; `.gitignore` them if needed.
+5. **Write FINDINGS.md after running the analysis.** Summarize the key results: what the data showed, notable numbers, and any caveats or limitations.
+6. **Generated output goes in `output/`.** Charts (`.png`), summary data (`.csv`), printed tables -- all in the `output/` subdirectory. Never commit large binary files; `.gitignore` them if needed.
 
 ## Numbering
 
