@@ -1,5 +1,183 @@
 {
     "projectManager.git.baseFolders": [
         "C:\\Users\\maxac\\Code Projects"
-    ]
+    ],
+
+    "workbench.colorCustomizations": {
+        // Base: asphalt dark with subtle warmth
+        "editor.background": "#1a1c20",
+        "editor.foreground": "#d8dce3",
+        "editorLineNumber.foreground": "#4a4e57",
+        "editorLineNumber.activeForeground": "#8b919e",
+        "editor.lineHighlightBackground": "#22252b",
+        "editor.selectionBackground": "#2d5a8a55",
+        "editor.wordHighlightBackground": "#3a3f4a44",
+
+        // Sidebar: platform gray
+        "sideBar.background": "#16181c",
+        "sideBar.foreground": "#b0b6c3",
+        "sideBarTitle.foreground": "#d8dce3",
+        "sideBarSectionHeader.background": "#1e2026",
+        "sideBarSectionHeader.foreground": "#8b919e",
+
+        // Activity bar: deep rail
+        "activityBar.background": "#111318",
+        "activityBar.foreground": "#e0e4eb",
+        "activityBar.inactiveForeground": "#5a6070",
+        "activityBarBadge.background": "#e63946",
+        "activityBarBadge.foreground": "#ffffff",
+
+        // Title bar
+        "titleBar.activeBackground": "#111318",
+        "titleBar.activeForeground": "#b0b6c3",
+        "titleBar.inactiveBackground": "#111318",
+
+        // Tabs: route selector
+        "editorGroupHeader.tabsBackground": "#16181c",
+        "tab.activeBackground": "#1a1c20",
+        "tab.activeForeground": "#e0e4eb",
+        "tab.inactiveBackground": "#16181c",
+        "tab.inactiveForeground": "#6a7080",
+        "tab.activeBorderTop": "#2196f3",
+        "tab.hoverBackground": "#22252b",
+
+        // Status bar: signal strip
+        "statusBar.background": "#0d47a1",
+        "statusBar.foreground": "#e0e4eb",
+        "statusBar.debuggingBackground": "#e63946",
+        "statusBar.noFolderBackground": "#37474f",
+
+        // Terminal: tunnel view
+        "terminal.background": "#14161a",
+        "terminal.foreground": "#d0d4db",
+        "terminal.ansiBlue": "#2196f3",
+        "terminal.ansiRed": "#e63946",
+        "terminal.ansiGreen": "#2ec4b6",
+        "terminal.ansiYellow": "#ffb703",
+        "terminal.ansiCyan": "#48cae4",
+        "terminal.ansiMagenta": "#c77dba",
+        "terminal.ansiWhite": "#d8dce3",
+        "terminal.ansiBrightBlue": "#64b5f6",
+        "terminal.ansiBrightRed": "#ff6b6b",
+        "terminal.ansiBrightGreen": "#57ead8",
+        "terminal.ansiBrightYellow": "#ffd166",
+
+        // Panels & borders: platform edge
+        "panel.background": "#16181c",
+        "panel.border": "#2a2e36",
+        "panelTitle.activeForeground": "#d8dce3",
+        "panelTitle.activeBorder": "#2196f3",
+        "focusBorder": "#2196f380",
+        "editorWidget.background": "#1e2026",
+
+        // Lists & trees
+        "list.activeSelectionBackground": "#2d5a8a55",
+        "list.activeSelectionForeground": "#e0e4eb",
+        "list.hoverBackground": "#22252b",
+        "list.inactiveSelectionBackground": "#22252b",
+
+        // Input fields: ticket machine
+        "input.background": "#22252b",
+        "input.foreground": "#d8dce3",
+        "input.border": "#3a3f4a",
+        "input.placeholderForeground": "#5a6070",
+        "inputOption.activeBorder": "#2196f3",
+
+        // Buttons
+        "button.background": "#1565c0",
+        "button.foreground": "#ffffff",
+        "button.hoverBackground": "#1976d2",
+
+        // Peek view
+        "peekView.border": "#2196f3",
+        "peekViewEditor.background": "#1e2026",
+        "peekViewResult.background": "#16181c",
+        "peekViewTitle.background": "#111318",
+
+        // Git decorations: line status
+        "gitDecoration.modifiedResourceForeground": "#ffb703",
+        "gitDecoration.untrackedResourceForeground": "#2ec4b6",
+        "gitDecoration.deletedResourceForeground": "#e63946",
+        "gitDecoration.conflictingResourceForeground": "#c77dba",
+        "gitDecoration.ignoredResourceForeground": "#4a4e57",
+
+        // Minimap
+        "minimap.background": "#14161a",
+        "minimapSlider.background": "#2a2e3640",
+        "minimapSlider.hoverBackground": "#2a2e3660",
+
+        // Scrollbar
+        "scrollbarSlider.background": "#2a2e3650",
+        "scrollbarSlider.hoverBackground": "#3a3f4a70",
+        "scrollbarSlider.activeBackground": "#4a4e5790",
+
+        // Bracket colors: route lines
+        "editorBracketHighlight.foreground1": "#2196f3",
+        "editorBracketHighlight.foreground2": "#ffb703",
+        "editorBracketHighlight.foreground3": "#2ec4b6",
+        "editorBracketHighlight.foreground4": "#c77dba",
+        "editorBracketHighlight.foreground5": "#e63946",
+        "editorBracketHighlight.foreground6": "#48cae4"
+    },
+
+    "editor.tokenColorCustomizations": {
+        "comments": "#5a7a5a",
+        "textMateRules": [
+            {
+                "name": "Blue Line — keywords & control flow",
+                "scope": ["keyword", "keyword.control", "storage.type", "storage.modifier"],
+                "settings": { "foreground": "#64b5f6" }
+            },
+            {
+                "name": "Red Line — strings",
+                "scope": ["string", "string.quoted"],
+                "settings": { "foreground": "#e6737a" }
+            },
+            {
+                "name": "Teal Line — functions & methods",
+                "scope": ["entity.name.function", "meta.function-call", "support.function"],
+                "settings": { "foreground": "#2ec4b6" }
+            },
+            {
+                "name": "Yellow Line — classes & types",
+                "scope": ["entity.name.type", "entity.name.class", "support.type", "support.class"],
+                "settings": { "foreground": "#ffb703" }
+            },
+            {
+                "name": "Cyan Line — constants & numbers",
+                "scope": ["constant", "constant.numeric", "constant.language", "variable.other.constant"],
+                "settings": { "foreground": "#48cae4" }
+            },
+            {
+                "name": "Wayfinding — variables & parameters",
+                "scope": ["variable", "variable.parameter", "variable.other"],
+                "settings": { "foreground": "#d8dce3" }
+            },
+            {
+                "name": "Signage — decorators & annotations",
+                "scope": ["meta.decorator", "entity.name.function.decorator", "punctuation.definition.decorator"],
+                "settings": { "foreground": "#c77dba" }
+            },
+            {
+                "name": "Platform — operators & punctuation",
+                "scope": ["keyword.operator", "punctuation"],
+                "settings": { "foreground": "#8b919e" }
+            },
+            {
+                "name": "Route map — imports & modules",
+                "scope": ["keyword.control.import", "keyword.control.from"],
+                "settings": { "foreground": "#7eaaf2", "fontStyle": "italic" }
+            },
+            {
+                "name": "Station — self/this",
+                "scope": ["variable.language.self", "variable.language.this", "variable.language.special.self"],
+                "settings": { "foreground": "#ff9f43", "fontStyle": "italic" }
+            },
+            {
+                "name": "Depot — docstrings & block comments",
+                "scope": ["string.quoted.docstring", "comment.block.documentation"],
+                "settings": { "foreground": "#6a9a6a", "fontStyle": "italic" }
+            }
+        ]
+    }
 }

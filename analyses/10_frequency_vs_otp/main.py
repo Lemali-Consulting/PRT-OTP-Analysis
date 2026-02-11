@@ -14,9 +14,7 @@ OUT = output_dir(HERE)
 def load_data() -> pl.DataFrame:
     """Load per-route peak trip frequency, average OTP, and mode."""
     frequency = query_to_polars("""
-        SELECT route_id,
-               MAX(trips_wd) AS max_trips_wd,
-               MAX(trips_7d) AS max_trips_7d
+        SELECT route_id, MAX(trips_wd) AS max_trips_wd
         FROM route_stops
         GROUP BY route_id
     """)

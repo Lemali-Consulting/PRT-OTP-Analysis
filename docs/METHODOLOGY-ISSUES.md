@@ -1,6 +1,8 @@
 # Methodology Issues
 
-A review of all 11 analyses for methodological flaws. Data quality issues are out of scope — this focuses on how each analysis is designed, calculated, or interpreted.
+A review of all 18 analyses for methodological flaws. Data quality issues are out of scope — this focuses on how each analysis is designed, calculated, or interpreted.
+
+> Analyses 01–11 were reviewed in an initial pass. Analyses 12–18 were reviewed in a second red-team pass (2026-02-10). All significant and moderate issues in 12–18 have been resolved in code; see [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) for the full report.
 
 ---
 
@@ -180,6 +182,142 @@ Of the 11 analyses, four (03, 07, 10, 11) have methodology issues that could gen
 
 ---
 
-## Cross-Cutting Theme
+## Cross-Cutting Theme (Analyses 01–11)
 
 The single biggest structural issue is that **OTP data exists at the route-month level, but many analyses project it onto finer-grained entities (stops, neighborhoods, directions) by joining with `route_stops`**. Since the OTP value is the same for all stops on a route in a given month, these joins create an illusion of granularity that does not exist in the underlying measurement. This affects analyses 01, 04, 06, 08, 10, and 11.
+
+---
+
+# Analyses 12–18: Methodology Review
+
+Reviewed 2026-02-10. All significant and moderate issues below have been **resolved** in code unless marked *(inherent — documented only)*.
+
+---
+
+## Significant Issues
+
+### 24. Simpson's paradox from pooling modes in headline correlation (Analysis 12)
+
+The original headline correlation (r = -0.32) pooled BUS, RAIL, and INCLINE. Rail has few stops and long geographic spans with dedicated right-of-way, pulling the pooled correlation toward zero. **Fix:** Bus-only Pearson and Spearman are now the primary metrics (r = -0.38, rho = -0.37); all-mode is reported as secondary.
+
+### 25. System-wide trend not removed before computing cross-route correlations (Analysis 13)
+
+Without detrending, all routes correlate positively (they all dropped during COVID and partially recovered). Clustering was dominated by the COVID response signal, not by genuine differential behavior. **Fix:** System-wide monthly mean OTP is subtracted from each route before computing pairwise correlations. Clusters now reflect route-specific deviations.
+
+### 26. Imputing 0.0 for insufficient-overlap route pairs creates spurious cluster structure (Analysis 13)
+
+Route pairs with too few overlapping months were assigned correlation = 0.0, which is an implicit claim of independence. In a distance matrix, this places them at the median distance, artificially tightening clusters. **Fix:** Insufficient-overlap pairs are now imputed with the median observed correlation rather than 0.0. The number of imputed pairs is reported.
+
+### 27. Regression to the mean untested in COVID recovery analysis (Analysis 14)
+
+Routes with extreme baseline OTP (very high or very low) are statistically likely to move toward the mean in any subsequent period. Without testing for this, the "improved vs. declined" narrative could be a statistical artifact. **Fix:** Added Pearson correlation between baseline OTP and recovery delta. Result: r = -0.25, p = 0.02 — significant RTM effect. FINDINGS.md updated to caveat that extreme movers are partially explained by regression.
+
+### 28. No statistical test for subtype recovery differences (Analysis 14)
+
+The original analysis listed premium vs. local routes qualitatively without testing whether the difference was significant. **Fix:** Added Kruskal-Wallis test across subtypes. Result: H = 5.5, p = 0.24 — not significant. The "premium routes recovered better" claim does not survive statistical testing.
+
+### 29. Inflated sample size in transfer hub correlation (Analysis 16)
+
+The stop-level correlation (n = 6,209) treats each stop as independent, but stops on the same route share the same OTP value. The effective sample size is ~90 (number of routes), not 6,209. This inflates statistical significance by ~70x. **Fix:** Added route-level aggregation (mean stop connectivity per route vs. route OTP) as the primary metric. Result: r = -0.15, p = 0.16 — not significant. The "hub penalty" finding was retracted.
+
+### 30. Ecological fallacy in stop-level OTP for hub and municipal analyses (Analyses 15, 16)
+
+Route-level OTP projected onto stops creates spurious granularity. A route's OTP is not uniform across its stops — performance may vary by segment, time of day, or direction. Municipalities and hubs inherit the route's aggregate number. *(Inherent — documented only.)*
+
+### 31. Static trip weights in municipal equity analysis (Analysis 15)
+
+Same issue as #2 above: the `route_stops` table is a single snapshot, but it's used to weight OTP across a multi-year period. *(Inherent — documented only.)*
+
+### 32. Multicollinearity in multivariate model with no VIF check (Analysis 18)
+
+Stop count, geographic span, and number of municipalities served are correlated with each other. Without checking Variance Inflation Factors, coefficient estimates may be unstable and standard errors inflated. **Fix:** Added VIF computation for all predictors. Results: all VIF < 3 (moderate collinearity). Additionally, a reduced model (without n_munis) is now reported to show coefficient stability.
+
+### 33. n_munis acts as a suppressor variable with misleading coefficient (Analysis 18)
+
+Number of municipalities has a positive coefficient (+0.41 beta), which seems to say "routes crossing more jurisdictions have better OTP." This is a suppressor: n_munis is correlated with stop count and span (negative OTP predictors), and its positive sign reflects its role in controlling for those variables, not a genuine positive effect. **Fix:** Reduced model (without n_munis) reported alongside full model. FINDINGS.md labels n_munis as a suppressor. Full model R² = 0.47, reduced R² = 0.40.
+
+---
+
+## Moderate Issues
+
+### 34. Ward's method assumes Euclidean distance; correlation distance is not Euclidean (Analysis 13)
+
+Ward's linkage minimizes within-cluster variance, which requires Euclidean distance. The distance matrix (1 - r) is a correlation distance, which does not satisfy the Euclidean assumption. **Fix:** Switched to average linkage, which is valid for arbitrary distance matrices.
+
+### 35. Hardcoded k=6 clusters without empirical justification (Analysis 13)
+
+The original code hardcoded 6 clusters. **Fix:** Added silhouette score optimization over k = 3–10. The optimal k happened to be 6 (silhouette = 0.178), but this is now empirically justified rather than arbitrary.
+
+### 36. No minimum-month filter on average OTP (Analysis 12)
+
+Routes with very few months of data could have unreliable average OTP. **Fix:** Added `HAVING COUNT(*) >= 12` to the OTP query, consistent with Analysis 03's minimum data requirement.
+
+### 37. METHODS.md promises Spearman but code only computes Pearson (Analysis 12)
+
+The methods document described both Pearson and Spearman correlations, but the code only computed Pearson. **Fix:** Added Spearman rank correlation (rho = -0.37, p < 0.001 bus-only).
+
+### 38. Default equal-variance t-test for unequal group sizes (Analysis 15)
+
+`scipy.stats.ttest_ind` defaults to `equal_var=True` (Student's t-test). The cross-jurisdictional vs. single-municipality groups have different sizes and potentially different variances. **Fix:** Changed to `equal_var=False` (Welch's t-test). Result: p = 0.86 (unchanged direction).
+
+### 39. Pooled-mode correlation in weekend/weekday analysis (Analysis 17)
+
+The weekend-ratio vs. OTP correlation pooled all modes. **Fix:** Added bus-only correlation. Result: r = -0.06, p = 0.56 — still null, confirming the finding is robust.
+
+### 40. Floating current-period window in COVID recovery (Analysis 14)
+
+The "current" period was defined as the trailing 12 months of available data, but the specific months were not printed, making the analysis harder to reproduce. **Fix:** Current period start and end months are now printed in the analysis output.
+
+### 41. is_rail estimated from ~3 observations (Analysis 18)
+
+The rail mode dummy variable is based on only ~3 rail routes. The coefficient (+0.34 beta, p < 0.001) is significant but estimated from very few data points. *(Documented — no fix possible with existing data.)*
+
+### 42. Monthly OTP conflates weekday and weekend performance (Analysis 17)
+
+The OTP data is monthly aggregates that include both weekday and weekend trips. Correlating a weekend service *schedule* ratio with *monthly* OTP that already includes weekend performance creates a circular element. *(Inherent limitation of the data — documented in FINDINGS.md caveats.)*
+
+---
+
+## Minor Issues
+
+### 43. Max pairwise distance is a noisy proxy for route length (Analysis 12)
+
+Geographic span (Haversine distance between the two farthest stops) is an approximation. A route with a U-shaped path has smaller span than route length. GTFS route shapefiles would give exact length. *(No fix without additional data.)*
+
+### 44. Modes pooled in clustering without stratification (Analysis 13)
+
+All modes (BUS, RAIL) are clustered together. With only ~3 rail routes, mode-specific clustering is not feasible, but rail routes may cluster together simply because of mode rather than genuine co-movement. *(Documented — too few rail routes to stratify.)*
+
+### 45. Numerical instability from matrix inversion in OLS (Analysis 18)
+
+The original code used `np.linalg.inv(X'X)` which can be numerically unstable for near-singular matrices. **Fix:** Switched to `np.linalg.lstsq` for coefficient estimation and `np.linalg.pinv` for the variance-covariance matrix.
+
+---
+
+## Impact Assessment (Analyses 12–18)
+
+### Findings that changed materially after fixes
+
+**Analysis 13 (Correlation Clustering)** — Detrending and linkage fixes changed the cluster composition entirely. The old clusters were artifacts of differential COVID response; the new clusters reflect genuine route-specific co-movement (though silhouette scores remain low at 0.178).
+
+**Analysis 14 (COVID Recovery)** — The headline narrative changed from "premium routes recovered, local routes declined" to "regression to the mean explains a significant portion of the divergence (r = -0.25, p = 0.02), and there is no statistically significant difference between subtypes (p = 0.24)." The policy-relevant finding narrowed to specific eastern-corridor local bus routes.
+
+**Analysis 16 (Transfer Hub Performance)** — The finding was effectively retracted. The stop-level "hub penalty" (r = -0.17, p < 0.001) does not survive correction for non-independent observations. At the route level, the correlation is not significant (r = -0.15, p = 0.16).
+
+### Findings that changed in magnitude but not direction
+
+**Analysis 12 (Geographic Span)** — Bus-only correlation (r = -0.38) is stronger than the original pooled result (r = -0.32). The direction and interpretation are the same, but the Simpson's paradox fix actually strengthened the finding. Partial correlations confirmed stop count has roughly twice the effect of span.
+
+**Analysis 18 (Multivariate Model)** — VIF check confirmed manageable collinearity (all < 3). The reduced model (R² = 0.40) shows the full model's R² = 0.47 is partially inflated by the n_munis suppressor. The bus-only model (R² = 0.38) confirms the findings generalize within the dominant mode. No coefficient changed sign.
+
+### Findings that did not change
+
+**Analysis 15 (Municipal Equity)** — Welch's t-test produced p = 0.86 vs. the original Student's p ≈ 0.85. No material change.
+
+**Analysis 17 (Weekend/Weekday Profile)** — Bus-only correlation (r = -0.06, p = 0.56) confirms the all-mode null result (r = -0.03, p = 0.79). The finding remains: weekend service ratio does not predict OTP.
+
+---
+
+## Cross-Cutting Theme (Analyses 12–18)
+
+The most pervasive issue across analyses 12–18 is **failure to account for non-independence and pooled-mode confounding**. Five of the seven analyses (12, 13, 16, 17, 18) required mode stratification or unit-of-analysis corrections. The lesson: whenever the headline metric is a correlation, always report the bus-only version as primary (given that ~97% of routes are bus) and flag the effective sample size.

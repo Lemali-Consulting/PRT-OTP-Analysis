@@ -12,11 +12,15 @@ OUT = output_dir(HERE)
 MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 MIN_YEARS = 3  # minimum years of data for route-level seasonal amplitude
+# Restrict to complete calendar years so every month-of-year has the same
+# number of years of data (avoids bias from partial years at the boundaries).
+COMPLETE_YEAR_START = "2019-01"
+COMPLETE_YEAR_END = "2024-12"
 
 
 def load_data() -> pl.DataFrame:
-    """Load OTP data with trip weights for seasonal analysis."""
-    return query_to_polars("""
+    """Load OTP data with trip weights, restricted to complete calendar years."""
+    return query_to_polars(f"""
         SELECT o.route_id, o.month, o.otp, r.route_name, r.mode,
                COALESCE(rs_agg.trips_7d, 0) AS trips_7d
         FROM otp_monthly o
@@ -26,6 +30,7 @@ def load_data() -> pl.DataFrame:
             FROM route_stops
             GROUP BY route_id
         ) rs_agg ON o.route_id = rs_agg.route_id
+        WHERE o.month >= '{COMPLETE_YEAR_START}' AND o.month <= '{COMPLETE_YEAR_END}'
     """)
 
 
@@ -36,10 +41,28 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]
         month_num=pl.col("month").str.slice(5, 2).cast(pl.Int32),
     )
 
+    # --- Balanced panel: only routes present in all 12 months-of-year ---
+    # This prevents compositional bias (e.g., winter-only routes inflating
+    # winter averages).
+    months_per_route = (
+        df.group_by("route_id")
+        .agg(n_months_of_year=pl.col("month_num").n_unique())
+    )
+    balanced_routes = months_per_route.filter(
+        pl.col("n_months_of_year") == 12
+    )["route_id"].to_list()
+    n_total = df["route_id"].n_unique()
+    n_balanced = len(balanced_routes)
+    print(f"  Balanced panel: {n_balanced} of {n_total} routes present in all 12 months-of-year")
+
+    df_balanced = df.filter(pl.col("route_id").is_in(balanced_routes))
+
     # --- System-wide seasonal profile (trip-weighted, detrended) ---
+    # Uses only balanced-panel routes so route composition is constant across months.
+    # Note: trips_7d is a static snapshot and may not reflect historical service levels.
     # Step 1: trip-weighted system OTP per month
     system_monthly = (
-        df.group_by("month")
+        df_balanced.group_by("month")
         .agg(
             weighted_otp=pl.when(pl.col("trips_7d").sum() > 0)
             .then((pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum())

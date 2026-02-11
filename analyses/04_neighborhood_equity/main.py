@@ -31,13 +31,27 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
     hood_summary = (
         df.group_by(["hood", "muni", "county"])
         .agg(
-            mean_otp=(pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
+            weighted_otp=(pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
             route_count=pl.col("route_id").n_unique(),
             stop_count=pl.col("stop_id").n_unique(),
             total_trips_7d=pl.col("trips_7d").sum(),
         )
-        .sort("mean_otp")
+        .sort("weighted_otp")
     )
+
+    # Unweighted OTP: deduplicate by (hood, route_id, month) since a route's
+    # OTP is the same across all stops, then simple-average across routes.
+    hood_unweighted = (
+        df.group_by(["hood", "route_id", "month"])
+        .agg(otp=pl.col("otp").first())
+        .group_by("hood")
+        .agg(unweighted_otp=pl.col("otp").mean())
+    )
+
+    hood_summary = hood_summary.join(hood_unweighted, on="hood", how="left")
+    hood_summary = hood_summary.with_columns(
+        otp_gap=(pl.col("weighted_otp") - pl.col("unweighted_otp")),
+    ).sort("weighted_otp")
 
     # Per-neighborhood-month weighted OTP
     hood_month = (
@@ -81,13 +95,13 @@ def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -> None:
 
     # Top: Best and worst 15 neighborhoods
     n_show = 15
-    bottom = hood_summary.sort("mean_otp").head(n_show)
-    top = hood_summary.sort("mean_otp", descending=True).head(n_show).sort("mean_otp")
+    bottom = hood_summary.sort("weighted_otp").head(n_show)
+    top = hood_summary.sort("weighted_otp", descending=True).head(n_show).sort("weighted_otp")
     combined = pl.concat([bottom, top])
 
     labels = combined["hood"].to_list()
-    values = combined["mean_otp"].to_list()
-    colors = ["#ef4444" if v < combined["mean_otp"].median() else "#22c55e" for v in values]
+    values = combined["weighted_otp"].to_list()
+    colors = ["#ef4444" if v < combined["weighted_otp"].median() else "#22c55e" for v in values]
 
     y_pos = range(len(labels))
     ax1.barh(y_pos, values, color=colors)
@@ -139,6 +153,62 @@ def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -> None:
     print(f"  Chart saved to {OUT / 'neighborhood_equity.png'}")
 
 
+def make_comparison_chart(hood_summary: pl.DataFrame) -> None:
+    """Generate weighted vs unweighted OTP comparison chart."""
+    plt = setup_plotting()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    weighted = hood_summary["weighted_otp"].to_list()
+    unweighted = hood_summary["unweighted_otp"].to_list()
+    trips = hood_summary["total_trips_7d"].to_list()
+
+    # Left: scatter of weighted vs unweighted, sized by total trips
+    max_trips = max(trips)
+    sizes = [20 + 80 * (t / max_trips) for t in trips]
+    ax1.scatter(unweighted, weighted, s=sizes, alpha=0.5, c="#6366f1", edgecolors="white", linewidths=0.3)
+
+    # Diagonal reference line
+    ax1.plot([0, 1], [0, 1], color="#9ca3af", linestyle="--", linewidth=1, zorder=0)
+    ax1.set_xlabel("Unweighted OTP (equal weight per route)")
+    ax1.set_ylabel("Weighted OTP (weighted by trip frequency)")
+    ax1.set_title("Weighted vs Unweighted OTP by Neighborhood")
+    ax1.set_xlim(0, 1)
+    ax1.set_ylim(0, 1)
+    ax1.set_aspect("equal")
+
+    # Annotate the 5 neighborhoods with largest absolute gap
+    sorted_by_gap = hood_summary.with_columns(abs_gap=pl.col("otp_gap").abs()).sort("abs_gap", descending=True)
+    for row in sorted_by_gap.head(5).iter_rows(named=True):
+        ax1.annotate(
+            row["hood"], (row["unweighted_otp"], row["weighted_otp"]),
+            fontsize=6, alpha=0.8,
+            xytext=(4, 4), textcoords="offset points",
+        )
+
+    # Right: top/bottom 15 neighborhoods by gap (weighted - unweighted)
+    n_show = 15
+    biggest_positive = hood_summary.sort("otp_gap", descending=True).head(n_show)
+    biggest_negative = hood_summary.sort("otp_gap").head(n_show)
+    combined = pl.concat([biggest_negative, biggest_positive.sort("otp_gap")])
+
+    gap_labels = combined["hood"].to_list()
+    gap_vals = combined["otp_gap"].to_list()
+    gap_colors = ["#ef4444" if g < 0 else "#22c55e" for g in gap_vals]
+
+    y_pos = range(len(gap_labels))
+    ax2.barh(y_pos, gap_vals, color=gap_colors)
+    ax2.set_yticks(y_pos)
+    ax2.set_yticklabels(gap_labels, fontsize=6)
+    ax2.set_xlabel("OTP Gap (weighted - unweighted)")
+    ax2.set_title("Frequency Weighting Effect by Neighborhood")
+    ax2.axvline(0, color="#9ca3af", linewidth=0.8)
+
+    fig.tight_layout()
+    fig.savefig(OUT / "weighted_vs_unweighted_otp.png", bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Chart saved to {OUT / 'weighted_vs_unweighted_otp.png'}")
+
+
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
     print("=" * 60)
@@ -161,21 +231,34 @@ def main() -> None:
     hood_summary, quintile_ts = analyze(df)
     print(f"  {len(hood_summary)} neighborhoods ranked")
 
-    best = hood_summary.sort("mean_otp", descending=True).head(3)
-    worst = hood_summary.sort("mean_otp").head(3)
-    print("\n  Top 3 neighborhoods:")
+    best = hood_summary.sort("weighted_otp", descending=True).head(3)
+    worst = hood_summary.sort("weighted_otp").head(3)
+    print("\n  Top 3 neighborhoods (weighted):")
     for row in best.iter_rows(named=True):
-        print(f"    {row['hood']} ({row['muni']}): {row['mean_otp']:.1%}")
-    print("  Bottom 3 neighborhoods:")
+        print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
+    print("  Bottom 3 neighborhoods (weighted):")
     for row in worst.iter_rows(named=True):
-        print(f"    {row['hood']} ({row['muni']}): {row['mean_otp']:.1%}")
+        print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
+
+    # Frequency-weighting effect summary
+    gaps = hood_summary["otp_gap"]
+    print(f"\n  Frequency-weighting effect (weighted - unweighted):")
+    print(f"    Mean gap:   {gaps.mean():+.2%}")
+    print(f"    Median gap: {gaps.median():+.2%}")
+    print(f"    Range:      {gaps.min():+.2%} to {gaps.max():+.2%}")
+    biggest = hood_summary.with_columns(abs_gap=pl.col("otp_gap").abs()).sort("abs_gap", descending=True).head(3)
+    print("  Largest divergences:")
+    for row in biggest.iter_rows(named=True):
+        print(f"    {row['hood']}: weighted={row['weighted_otp']:.1%}, "
+              f"unweighted={row['unweighted_otp']:.1%}, gap={row['otp_gap']:+.2%}")
 
     print("\nSaving CSV...")
     hood_summary.write_csv(OUT / "neighborhood_otp.csv")
     print(f"  Saved to {OUT / 'neighborhood_otp.csv'}")
 
-    print("\nGenerating chart...")
+    print("\nGenerating charts...")
     make_chart(hood_summary, quintile_ts)
+    make_comparison_chart(hood_summary)
 
     print("\nDone.")
 

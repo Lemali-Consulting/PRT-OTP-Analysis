@@ -10,3 +10,6 @@
 - Generated artifacts (charts, CSVs) go in the analysis's `output/` directory, never in `data/`.
 - Analyses must be independent -- never import from or depend on another analysis.
 - See `CONTRIBUTING.md` for the full conventions.
+- When updating an analysis, be sure to update the corresponding local FINDINGS.md and METHODS.md, if applicable.
+    - If the local FINDINGS.md is modified, be sure to modify the root-level FINDINGS.md as well
+    

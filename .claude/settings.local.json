@@ -10,7 +10,17 @@
       "Bash(uv run python:*)",
       "Bash(find:*)",
       "Read(//c/Users/maxac/Code Projects/PPT Research/PRT-OTP-Analysis/**)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit: project scaffolding, data, and five analysis stubs\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(cd:*)",
+      "Bash(uv sync:*)",
+      "Bash(git commit:*)",
+      "Bash(sqlite3:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix methodology issues across 8 analyses and update findings\n\n- Analysis 03: Use trailing-12-month OTP and post-COVID slope \\(2022+\\)\n  instead of all-time averages and full-period slope through COVID\n- Analysis 05: Exclude current month from rolling baseline \\(lagged\n  window\\) to prevent self-dampening of z-scores; 842 anomalies flagged\n- Analysis 06: Add 12-month centered rolling mean detrending and 3-year\n  minimum data filter for route-level seasonal analysis\n- Analysis 07: Add bus-only stratification with scipy p-values,\n  confirming r=-0.50 \\(p<0.001\\) survives Simpson''s paradox check\n- Analysis 10: Fix SUM\\(trips_wd\\) to MAX\\(trips_wd\\) for peak frequency;\n  correlation collapses from r=-0.39 to r=0.02 \\(was confounded artifact\\)\n- Analysis 11: Include IB,OB stops in both directions, use MAX per\n  direction, exclude one-direction routes; max asymmetry drops to 0.077\n- Analysis 04: Replace look-ahead quintile assignment with rolling\n  12-month per-neighborhood OTP and per-month quintile ranks\n- Analysis 02: Add route counts to mode comparison legends\n- Add scipy>=1.14 dependency for correlation p-values\n- Add docs/METHODOLOGY-ISSUES.md documenting all issues and fixes\n- Update all affected FINDINGS.md files with corrected results\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git diff:*)",
+      "Bash(echo:*)",
+      "Bash(dir:*)",
+      "Bash(du:*)"
     ]
   }
 }
