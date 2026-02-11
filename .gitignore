@@ -10,7 +10,6 @@ analyses/*/output/*.csv
 analyses/*/output/*.png
 analyses/*/output/*.html
 report/output/*.html
-data/GTFS/
 data/prt.db-shm
 data/prt.db-wal
 nul
