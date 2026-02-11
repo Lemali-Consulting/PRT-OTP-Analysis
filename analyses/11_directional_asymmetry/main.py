@@ -20,12 +20,14 @@ def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
                MAX(trips_wd) AS trips_wd, MAX(trips_7d) AS trips_7d
         FROM route_stops
         WHERE direction IN ('IB', 'IB,OB')
+          AND trips_wd IS NOT NULL
         GROUP BY route_id
         UNION ALL
         SELECT route_id, 'OB' AS direction,
                MAX(trips_wd) AS trips_wd, MAX(trips_7d) AS trips_7d
         FROM route_stops
         WHERE direction IN ('OB', 'IB,OB')
+          AND trips_wd IS NOT NULL
         GROUP BY route_id
     """)
     avg_otp = query_to_polars("""
@@ -34,6 +36,7 @@ def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
         FROM otp_monthly o
         JOIN routes r ON o.route_id = r.route_id
         GROUP BY o.route_id
+        HAVING COUNT(*) >= 12
     """)
     return directional, avg_otp
 
@@ -119,21 +122,14 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
     bus = df.filter(pl.col("mode") == "BUS")
     x_vals = bus["asymmetry_index"].to_list()
     y_vals = bus["avg_otp"].to_list()
-    n = len(x_vals)
-    if n > 1:
-        x_mean = sum(x_vals) / n
-        y_mean = sum(y_vals) / n
-        var_x = sum((xi - x_mean) ** 2 for xi in x_vals) / n
-        if var_x > 0:
-            cov_xy = sum((xi - x_mean) * (yi - y_mean) for xi, yi in zip(x_vals, y_vals)) / n
-            slope = cov_xy / var_x
-            intercept = y_mean - slope * x_mean
-            x_line = [min(x_vals), max(x_vals)]
-            y_line = [slope * xi + intercept for xi in x_line]
-            r_bus = results.get("bus_pearson_r", 0)
-            p_bus = results.get("bus_pearson_p", 1)
-            ax.plot(x_line, y_line, color="#1e40af", linewidth=1.5, linestyle="--",
-                    label=f"BUS trend (r={r_bus:.3f}, p={p_bus:.3f})")
+    if len(x_vals) > 1:
+        reg = stats.linregress(x_vals, y_vals)
+        x_line = [min(x_vals), max(x_vals)]
+        y_line = [reg.slope * xi + reg.intercept for xi in x_line]
+        r_bus = results.get("bus_pearson_r", 0)
+        p_bus = results.get("bus_pearson_p", 1)
+        ax.plot(x_line, y_line, color="#1e40af", linewidth=1.5, linestyle="--",
+                label=f"BUS trend (r={r_bus:.3f}, p={p_bus:.3f})")
 
     ax.set_xlabel("Directional Asymmetry Index |IB - OB| / (IB + OB)")
     ax.set_ylabel("Average OTP")

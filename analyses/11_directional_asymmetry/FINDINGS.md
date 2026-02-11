@@ -37,3 +37,9 @@ Directional imbalance does not predict OTP. PRT routes are sufficiently balanced
 
 - The analysis uses peak trip frequency (`MAX(trips_wd)`) at a single stop per direction, which may not capture all scheduling nuances.
 - The `route_stops` data reflects current service, not historical. Historical asymmetry may have differed.
+- Including IB,OB stops in both directions can compress the asymmetry index toward zero when an IB,OB stop has the highest `trips_wd` for a route. In that case, both IB and OB MAX values equal the same number, mechanically forcing asymmetry to zero. This is a known limitation -- the alternative (excluding IB,OB stops) creates the opposite bias by dropping data.
+- Routes with fewer than 12 months of OTP data are excluded.
+- Three correlation tests were run (Pearson all-routes, Pearson bus-only, Spearman bus-only) without multiple-comparison correction. Since all three are non-significant (smallest p = 0.11), correction would not change any conclusion.
+
+## Review History
+- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) -- 7 issues (1 significant). Updated METHODS.md to correctly describe IB,OB handling (include in both, not exclude); corrected "total trips" to "peak frequency (MAX)"; added minimum-month filter (HAVING COUNT >= 12); added NULL filter for trips_wd; replaced manual regression with scipy.stats.linregress; documented IB,OB compression effect; noted multiple-test caveat.

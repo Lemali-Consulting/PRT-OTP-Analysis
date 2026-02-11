@@ -24,3 +24,6 @@ The Monongahela Incline is a **data pipeline artifact**. It appears in the route
 ## Conclusion
 
 This is not a data quality issue to fix. The inclines were included in the route catalog because they're part of PRT's GTFS feed, but were excluded from OTP measurement, likely by design. No further action needed.
+
+## Review History
+- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) — 3 issues (0 significant). Expanded OTP query to explicitly check both MI and DQI (substantiating the claim that neither incline has data), updated METHODS.md question wording.

@@ -37,3 +37,7 @@ Being a transfer hub does not independently predict worse OTP. The apparent hub 
 
 - This analysis uses route-level OTP projected onto stops (ecological fallacy). We don't have stop-level OTP data; a route's on-time performance may vary along its length.
 - The route-level analysis uses "average stop connectivity per route," which is itself an approximation. A more direct test would require stop-level arrival data.
+
+## Review History
+
+- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 3 issues (2 significant). "Hub penalty" finding retracted; route-level analysis now primary.

@@ -16,6 +16,7 @@ def load_data() -> pl.DataFrame:
     frequency = query_to_polars("""
         SELECT route_id, MAX(trips_wd) AS max_trips_wd
         FROM route_stops
+        WHERE trips_wd IS NOT NULL
         GROUP BY route_id
     """)
     avg_otp = query_to_polars("""
@@ -24,6 +25,7 @@ def load_data() -> pl.DataFrame:
         FROM otp_monthly o
         JOIN routes r ON o.route_id = r.route_id
         GROUP BY o.route_id
+        HAVING COUNT(*) >= 12
     """)
     return avg_otp.join(frequency, on="route_id", how="inner")
 
@@ -71,16 +73,10 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
     bus = df.filter(pl.col("mode") == "BUS")
     x_vals = bus["max_trips_wd"].to_list()
     y_vals = bus["avg_otp"].to_list()
-    n = len(x_vals)
-    x_mean = sum(x_vals) / n
-    y_mean = sum(y_vals) / n
-    var_x = sum((xi - x_mean) ** 2 for xi in x_vals) / n
-    if var_x > 0:
-        cov_xy = sum((xi - x_mean) * (yi - y_mean) for xi, yi in zip(x_vals, y_vals)) / n
-        slope = cov_xy / var_x
-        intercept = y_mean - slope * x_mean
+    if len(x_vals) > 1:
+        reg = stats.linregress(x_vals, y_vals)
         x_line = [min(x_vals), max(x_vals)]
-        y_line = [slope * xi + intercept for xi in x_line]
+        y_line = [reg.slope * xi + reg.intercept for xi in x_line]
         r_bus = results["bus_pearson_r"]
         p_bus = results["bus_pearson_p"]
         ax.plot(x_line, y_line, color="#1e40af", linewidth=1.5, linestyle="--",

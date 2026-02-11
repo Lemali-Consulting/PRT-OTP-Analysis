@@ -1,4 +1,4 @@
-"""Anomaly detection: flag and investigate sharp OTP drops."""
+"""Anomaly detection: flag and investigate sharp OTP deviations (both drops and spikes)."""
 
 from pathlib import Path
 
@@ -47,9 +47,11 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
         .over("route_id"),
     )
 
-    # Z-score and anomaly flag
+    # Z-score and anomaly flag (guard against division by zero when rolling_std ~ 0)
     df = df.with_columns(
-        z_score=(pl.col("otp") - pl.col("rolling_mean")) / pl.col("rolling_std"),
+        z_score=pl.when(pl.col("rolling_std") > 1e-9)
+        .then((pl.col("otp") - pl.col("rolling_mean")) / pl.col("rolling_std"))
+        .otherwise(0.0),
     )
     df = df.with_columns(
         is_anomaly=pl.col("z_score").abs() > Z_THRESHOLD,
@@ -157,6 +159,52 @@ def main() -> None:
     print("\n  Top 5 routes by anomaly count:")
     for row in top.iter_rows(named=True):
         print(f"    {row['route_id']:>5} - {row['route_name']}: {row['count']} anomalies")
+
+    # Mode-stratified anomaly rates
+    mode_summary = (
+        full_df.filter(pl.col("rolling_mean").is_not_null())
+        .group_by("mode")
+        .agg(
+            total_months=pl.len(),
+            anomaly_count=pl.col("is_anomaly").sum(),
+        )
+        .with_columns(
+            anomaly_rate=(pl.col("anomaly_count") / pl.col("total_months")),
+        )
+        .sort("mode")
+    )
+    print("\n  Anomaly rates by mode:")
+    print(f"    {'Mode':<10} {'Anomalies':>10} {'Total Months':>13} {'Rate':>8}")
+    print(f"    {'-' * 43}")
+    for row in mode_summary.iter_rows(named=True):
+        print(f"    {row['mode']:<10} {row['anomaly_count']:>10} {row['total_months']:>13} {row['anomaly_rate']:>8.1%}")
+
+    # Expected false-positive rate comparison
+    evaluated_obs = full_df.filter(pl.col("rolling_mean").is_not_null()).height
+    expected_fp = int(round(evaluated_obs * 0.0455))  # ~4.55% for 2-sigma two-sided
+    actual_anomalies = len(anomalies)
+    print(f"\n  False-positive context (2-sigma, two-sided):")
+    print(f"    Evaluated observations: {evaluated_obs:,}")
+    print(f"    Expected under normality (~4.6%): ~{expected_fp}")
+    print(f"    Actual anomalies flagged: {actual_anomalies}")
+    print(f"    Ratio (actual / expected): {actual_anomalies / expected_fp:.2f}x")
+
+    # Excluded routes (fewer than 7 months of data)
+    route_month_counts = df.group_by("route_id").agg(pl.len().alias("n_months"))
+    excluded = route_month_counts.filter(pl.col("n_months") < 7)
+    excluded_with_names = excluded.join(
+        df.select("route_id", "route_name").unique(),
+        on="route_id",
+    )
+    print(f"\n  Routes excluded from anomaly detection (< 7 months of data): {len(excluded)}")
+    for row in excluded_with_names.iter_rows(named=True):
+        print(f"    {row['route_id']} - {row['route_name']} ({row['n_months']} months)")
+
+    # UNKNOWN-mode routes
+    unknown_routes = df.filter(pl.col("mode") == "UNKNOWN").select("route_id", "route_name").unique()
+    print(f"\n  UNKNOWN-mode routes included: {len(unknown_routes)}")
+    for row in unknown_routes.iter_rows(named=True):
+        print(f"    {row['route_id']} - {row['route_name']}")
 
     print("\nSaving CSV...")
     anomalies.select(

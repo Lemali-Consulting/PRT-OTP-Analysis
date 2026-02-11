@@ -6,7 +6,7 @@ Monongahela Incline Investigation Report
   route_id=MI, name=MONONGAHELA INCLINE, mode=INCLINE
   route_id=DQI, name=Duquesne Incline, mode=INCLINE
 
-## 2. OTP monthly (route_id = 'MI')
+## 2. OTP monthly (route_id IN ('MI', 'DQI'))
   No OTP data found for MI.
 
 ## 3. Route stops (route_id = 'MI')
@@ -118,7 +118,8 @@ Monongahela Incline Investigation Report
     stop_id=X07000, name=GRANDVIEW AVE AT #1209 (DUQUESNE INCLINE), mode=BUS, first=1503, last=2510
 
 ## 6. Conclusion
-  The Monongahela Incline (MI) exists in the routes table but has
-  NO entries in otp_monthly. OTP was never recorded for this route
-  in the dataset. This is a data pipeline artifact -- the Incline
-  was included in the route catalog but excluded from OTP measurement.
+  Neither the Monongahela Incline (MI) nor the Duquesne Incline (DQI)
+  has ANY entries in otp_monthly. OTP was never recorded for either
+  incline route in the dataset. This is a data pipeline artifact --
+  the inclines were included in the route catalog but excluded from
+  OTP measurement.

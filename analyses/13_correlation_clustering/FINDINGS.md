@@ -36,3 +36,7 @@ After **detrending** (subtracting system-wide monthly mean OTP), hierarchical cl
 
 - Silhouette scores below 0.25 indicate weak cluster structure. The 6-cluster solution is the best available, but route co-movement may be more continuous than discrete.
 - All modes are pooled. With only ~3 rail routes, stratification by mode is not feasible.
+
+## Review History
+
+- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 5 issues (2 significant). Detrended correlations, average linkage, silhouette-based k selection; cluster composition changed entirely.

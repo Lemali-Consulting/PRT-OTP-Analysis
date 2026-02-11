@@ -47,3 +47,7 @@ The recovery picture is more nuanced than "premium routes improved, local routes
 - Regression to the mean is not the only explanation. Operational changes (schedule modifications, staffing shifts) may have genuinely affected some routes more than others.
 - The current period is the trailing 12 months of available data (2024-12 to 2025-11), which may not represent a stable equilibrium.
 - The pre-COVID baseline (2019-01 to 2020-02) includes months of varying performance; a longer baseline would be more stable.
+
+## Review History
+
+- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 3 issues (2 significant). RTM test and Kruskal-Wallis added; "premium routes recovered better" claim narrowed.

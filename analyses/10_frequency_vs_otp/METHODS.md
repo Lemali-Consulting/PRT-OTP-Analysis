@@ -4,10 +4,10 @@
 Is there a correlation between how often a route runs (trip frequency) and its on-time performance? High-frequency routes may suffer from schedule adherence issues like bunching.
 
 ## Approach
-- Compute total weekday trips per route from `route_stops` (sum of `trips_wd` across all stops, used as a proxy for frequency volume).
-- Compute average OTP per route from `otp_monthly`.
+- Compute maximum weekday trips per route from `route_stops` (`MAX(trips_wd)` across all stops, used as a peak frequency proxy). Stops with `trips_wd IS NULL` are excluded.
+- Compute average OTP per route from `otp_monthly`, requiring at least 12 months of data (`HAVING COUNT(*) >= 12`).
 - Scatter plot of trip frequency vs average OTP, colored by mode.
-- Compute Pearson correlation.
+- Compute Pearson correlation (all routes), Pearson correlation (bus-only), and Spearman rank correlation (bus-only).
 
 ## Data
 - `otp_monthly` -- monthly OTP per route

@@ -52,3 +52,7 @@ Seasonal profiles are computed by first removing a 12-month centered rolling mea
 - Seasonal decomposition uses a centered moving-average method to remove trend, not a formal STL decomposition. Results are directionally correct but assume additive seasonality.
 - Only 6 years of complete data (2019--2024) means each month-of-year average is based on ~6 detrended observations, limiting statistical power.
 - The `trips_7d` weighting reflects a single point-in-time snapshot of service frequency, not historical values. Route frequencies likely changed over the study period (especially during COVID).
+
+## Review History
+
+- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analysis-06-seasonal-patterns.md](../../RED-TEAM-REPORTS/2026-02-10-analysis-06-seasonal-patterns.md) — 4 issues (2 moderate). Balanced panel and complete-years restrictions applied; core finding confirmed.

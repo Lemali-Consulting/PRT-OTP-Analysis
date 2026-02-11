@@ -42,3 +42,7 @@ These factors would require operational data not present in this dataset.
 - OLS assumes linear relationships and independent errors. Some non-linearity is visible in the residuals.
 - The n_munis coefficient is a suppressor and should not be interpreted as "more municipalities = better OTP."
 - With only 92 observations and 6 predictors, the model is at the edge of stable estimation.
+
+## Review History
+
+- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 4 issues (3 significant). VIF check added; n_munis labeled as suppressor; numerical stability improved.

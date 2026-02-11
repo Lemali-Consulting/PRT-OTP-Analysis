@@ -5,10 +5,12 @@ Do routes with more stops have worse on-time performance? Each stop is another o
 
 ## Approach
 - Count distinct stops per route from `route_stops`.
-- Compute average OTP per route from `otp_monthly`.
+- Compute average OTP per route from `otp_monthly`, requiring at least 12 months of data (`HAVING COUNT(*) >= 12`) to exclude routes with sparse observations.
 - Create a scatter plot of stop count vs average OTP, colored by mode.
-- Compute Pearson correlation coefficient.
-- Fit a simple linear regression line.
+- Compute Pearson and Spearman correlation coefficients, both for all routes and for bus-only (to check for Simpson's paradox from mixing modes).
+- Fit a simple linear regression line (bus-only, via `scipy.stats.linregress`).
+
+**Note:** Stop counts come from the current `route_stops` snapshot, while OTP is averaged across all historical months. Routes that changed stop configurations over time will have a mismatch between their current stop count and the OTP values from earlier periods.
 
 ## Data
 - `otp_monthly` -- monthly OTP per route

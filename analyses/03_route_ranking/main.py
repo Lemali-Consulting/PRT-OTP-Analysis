@@ -2,7 +2,9 @@
 
 from pathlib import Path
 
+import numpy as np
 import polars as pl
+from scipy import stats
 
 from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
 
@@ -53,29 +55,84 @@ def analyze(otp: pl.DataFrame, stop_counts: pl.DataFrame) -> pl.DataFrame:
     )
     summary = summary.join(recent_avg, on="route_id", how="left")
 
-    # Post-COVID slope (per year), using ddof=0 for population variance
+    # Post-COVID slope (per year) using scipy.stats.linregress for SEs and CIs
     post_covid = otp.filter(pl.col("month") >= POST_COVID_START)
     pc_months = post_covid.select("month").unique().sort("month")
     pc_months = pc_months.with_row_index("time_idx")
     post_covid = post_covid.join(pc_months, on="month")
 
-    slope_df = (
+    # Compute actual time span (in months) for each route's post-COVID observations
+    span_df = (
         post_covid.group_by("route_id")
         .agg(
-            slope=(
-                (pl.col("time_idx") * pl.col("otp")).mean()
-                - pl.col("time_idx").mean() * pl.col("otp").mean()
-            )
-            / pl.col("time_idx").var(ddof=0),
             slope_months=pl.col("otp").count(),
+            first_month=pl.col("month").min(),
+            last_month=pl.col("month").max(),
+            time_idx_min=pl.col("time_idx").min(),
+            time_idx_max=pl.col("time_idx").max(),
+        )
+        .with_columns(
+            obs_span_months=(pl.col("time_idx_max") - pl.col("time_idx_min") + 1).cast(pl.Int64),
         )
     )
-    # Only keep slopes for routes with enough post-COVID data
-    slope_df = slope_df.filter(pl.col("slope_months") >= MIN_MONTHS)
-    # Convert from per-month-index to per-year
-    slope_df = slope_df.with_columns(pl.col("slope") * 12)
 
-    summary = summary.join(slope_df.select("route_id", "slope"), on="route_id", how="left")
+    # Only keep routes with enough post-COVID data
+    span_df = span_df.filter(pl.col("slope_months") >= MIN_MONTHS)
+
+    # Compute slope, stderr, and CI per route using linregress (with zero-variance guard)
+    slope_records = []
+    for route_id in span_df["route_id"].to_list():
+        route_data = post_covid.filter(pl.col("route_id") == route_id).sort("time_idx")
+        x = route_data["time_idx"].to_numpy().astype(float)
+        y = route_data["otp"].to_numpy().astype(float)
+
+        # Zero-variance guard: if all time_idx values are the same, slope is undefined
+        if np.var(x) == 0:
+            slope_records.append({
+                "route_id": route_id,
+                "slope": 0.0,
+                "slope_stderr": float("nan"),
+                "slope_ci_lo": float("nan"),
+                "slope_ci_hi": float("nan"),
+                "slope_significant": False,
+            })
+            continue
+
+        result = stats.linregress(x, y)
+        slope_per_month = result.slope
+        stderr_per_month = result.stderr
+        # Convert to per-year units
+        slope_yr = slope_per_month * 12
+        stderr_yr = stderr_per_month * 12
+        ci_lo = slope_yr - 1.96 * stderr_yr
+        ci_hi = slope_yr + 1.96 * stderr_yr
+        # Significant if 95% CI excludes zero
+        significant = (ci_lo > 0) or (ci_hi < 0)
+
+        slope_records.append({
+            "route_id": route_id,
+            "slope": slope_yr,
+            "slope_stderr": stderr_yr,
+            "slope_ci_lo": ci_lo,
+            "slope_ci_hi": ci_hi,
+            "slope_significant": significant,
+        })
+
+    slope_df = pl.DataFrame(slope_records)
+    slope_df = slope_df.join(
+        span_df.select("route_id", "slope_months", "obs_span_months", "first_month", "last_month"),
+        on="route_id",
+        how="left",
+    )
+
+    summary = summary.join(
+        slope_df.select(
+            "route_id", "slope", "slope_stderr", "slope_ci_lo", "slope_ci_hi",
+            "slope_significant", "slope_months", "obs_span_months",
+        ),
+        on="route_id",
+        how="left",
+    )
 
     # Join stop counts
     summary = summary.join(stop_counts, on="route_id", how="left")
@@ -99,11 +156,20 @@ def analyze(otp: pl.DataFrame, stop_counts: pl.DataFrame) -> pl.DataFrame:
     )
     vol_ranks = rankable.select("route_id", pl.col("std_otp").rank(descending=False).alias("rank_volatility"))
 
+    # Within-mode rank (rank routes within their mode group)
+    mode_avg_ranks = (
+        rankable.with_columns(
+            mode_rank=pl.col("recent_mean_otp").rank(descending=True).over("mode")
+        )
+        .select("route_id", "mode_rank")
+    )
+
     summary = (
         summary
         .join(avg_ranks, on="route_id", how="left")
         .join(slope_ranks, on="route_id", how="left")
         .join(vol_ranks, on="route_id", how="left")
+        .join(mode_avg_ranks, on="route_id", how="left")
     )
 
     return summary.sort("rank_avg", nulls_last=True)
@@ -187,6 +253,22 @@ def main() -> None:
     hv = result.filter(pl.col("high_volatility"))
     print(f"  {len(hv)} high-volatility routes flagged")
     print(f"  Slope period: {POST_COVID_START} onward (per-year units)")
+
+    # Report slope significance
+    has_slope = result.filter(pl.col("slope").is_not_null())
+    sig_slopes = has_slope.filter(pl.col("slope_significant") == True)
+    print(f"  {len(sig_slopes)} of {len(has_slope)} slopes are statistically significant (95% CI excludes zero)")
+
+    # Report routes with null stop counts
+    null_stops = result.filter(pl.col("stop_count").is_null())
+    if len(null_stops) > 0:
+        ids = null_stops["route_id"].to_list()
+        print(f"  {len(null_stops)} routes lack stop count data: {', '.join(str(r) for r in ids)}")
+
+    # Report modes
+    for mode in sorted(rankable["mode"].unique().to_list()):
+        mode_count = len(rankable.filter(pl.col("mode") == mode))
+        print(f"  Mode {mode}: {mode_count} routes ranked")
 
     print("\nSaving CSV...")
     result.write_csv(OUT / "route_ranking.csv")

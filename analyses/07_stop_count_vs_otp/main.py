@@ -24,6 +24,7 @@ def load_data() -> pl.DataFrame:
         FROM otp_monthly o
         JOIN routes r ON o.route_id = r.route_id
         GROUP BY o.route_id
+        HAVING COUNT(*) >= 12
     """)
     return avg_otp.join(stop_counts, on="route_id", how="inner")
 
@@ -33,19 +34,27 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
     results = {}
 
     # All routes
-    r_all, p_all = stats.pearsonr(df["stop_count"].to_list(), df["avg_otp"].to_list())
+    results["all_n"] = len(df)
+    if len(df) >= 3:
+        r_all, p_all = stats.pearsonr(df["stop_count"].to_list(), df["avg_otp"].to_list())
+    else:
+        r_all, p_all = float("nan"), float("nan")
     results["all_pearson_r"] = r_all
     results["all_pearson_p"] = p_all
 
     # Bus only
     bus = df.filter(pl.col("mode") == "BUS")
-    r_bus, p_bus = stats.pearsonr(bus["stop_count"].to_list(), bus["avg_otp"].to_list())
-    rho_bus, p_rho = stats.spearmanr(bus["stop_count"].to_list(), bus["avg_otp"].to_list())
+    results["bus_n"] = len(bus)
+    if len(bus) >= 3:
+        r_bus, p_bus = stats.pearsonr(bus["stop_count"].to_list(), bus["avg_otp"].to_list())
+        rho_bus, p_rho = stats.spearmanr(bus["stop_count"].to_list(), bus["avg_otp"].to_list())
+    else:
+        r_bus, p_bus = float("nan"), float("nan")
+        rho_bus, p_rho = float("nan"), float("nan")
     results["bus_pearson_r"] = r_bus
     results["bus_pearson_p"] = p_bus
     results["bus_spearman_r"] = rho_bus
     results["bus_spearman_p"] = p_rho
-    results["bus_n"] = len(bus)
 
     return df, results
 
@@ -67,20 +76,14 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
             color=color, label=mode, s=40, alpha=0.7, edgecolors="white", linewidths=0.5,
         )
 
-    # Bus-only regression line
+    # Bus-only regression line using linregress for consistency with Pearson r
     bus = df.filter(pl.col("mode") == "BUS")
     x_vals = bus["stop_count"].to_list()
     y_vals = bus["avg_otp"].to_list()
-    n = len(x_vals)
-    x_mean = sum(x_vals) / n
-    y_mean = sum(y_vals) / n
-    var_x = sum((xi - x_mean) ** 2 for xi in x_vals) / n
-    if var_x > 0:
-        cov_xy = sum((xi - x_mean) * (yi - y_mean) for xi, yi in zip(x_vals, y_vals)) / n
-        slope = cov_xy / var_x
-        intercept = y_mean - slope * x_mean
+    if len(x_vals) >= 3:
+        lr = stats.linregress(x_vals, y_vals)
         x_line = [min(x_vals), max(x_vals)]
-        y_line = [slope * xi + intercept for xi in x_line]
+        y_line = [lr.slope * xi + lr.intercept for xi in x_line]
         r_bus = results["bus_pearson_r"]
         p_bus = results["bus_pearson_p"]
         ax.plot(x_line, y_line, color="#1e40af", linewidth=1.5, linestyle="--",
@@ -110,7 +113,7 @@ def main() -> None:
 
     print("\nAnalyzing...")
     df, results = analyze(df)
-    print(f"  All routes:  Pearson r = {results['all_pearson_r']:.4f} (p = {results['all_pearson_p']:.4f})")
+    print(f"  All routes:  Pearson r = {results['all_pearson_r']:.4f} (p = {results['all_pearson_p']:.4f}), n = {results['all_n']}")
     print(f"  Bus only:    Pearson r = {results['bus_pearson_r']:.4f} (p = {results['bus_pearson_p']:.4f})")
     print(f"               Spearman r = {results['bus_spearman_r']:.4f} (p = {results['bus_spearman_p']:.4f})")
     print(f"               n = {results['bus_n']} bus routes")

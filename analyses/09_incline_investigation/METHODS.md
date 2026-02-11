@@ -1,12 +1,12 @@
 # Methods: Monongahela Incline Investigation
 
 ## Question
-The Monongahela Incline has a row in the OTP data but zero/null values. Is this a data pipeline artifact, or was OTP never measured for the Incline?
+The Monongahela Incline may have zero or missing OTP data. Is this a data pipeline artifact, or was OTP never measured for the Incline?
 
 ## Approach
-- Query the `otp_monthly` table for route_id 'MI' and examine all values.
+- Query the `otp_monthly` table for both incline route_ids ('MI' and 'DQI') and examine all values.
 - Check if 'MI' appears in `route_stops` and what stops are associated.
-- Check the `routes` table for mode and name.
+- Check the `routes` table for mode and name (including all INCLINE-mode routes).
 - Cross-reference with the `stop_reference` table for historical Incline stops.
 - Summarize findings as a data quality report.
 

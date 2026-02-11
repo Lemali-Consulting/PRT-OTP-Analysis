@@ -60,13 +60,17 @@ def setup_plotting():
 
 
 def classify_bus_route(route_id: str) -> str:
-    """Classify a bus route_id as local, limited, express, busway, or flyer."""
+    """Classify a bus route_id as local, limited, express, busway, or flyer.
+
+    True busway routes use dedicated right-of-way: P1, P2, P3, G2.
+    Other P/G/O-prefix routes are flyers (express park-and-ride services).
+    """
     if route_id.endswith("L"):
         return "limited"
     if route_id.endswith("X"):
         return "express"
-    if route_id.startswith(("P", "G")):
+    if route_id in ("P1", "P2", "P3", "G2"):
         return "busway"
-    if route_id.startswith("O"):
+    if route_id.startswith(("P", "G", "O")):
         return "flyer"
     return "local"

@@ -6,16 +6,18 @@ There is a **moderately strong negative correlation** between the number of stop
 
 ## Key Numbers
 
-- **All routes: Pearson r = -0.53** (p < 0.001, n = 93)
-- **Bus only: Pearson r = -0.50** (p < 0.001, n = 90)
-- **Bus only: Spearman r = -0.48** (p < 0.001)
+- **All routes: Pearson r = -0.53** (p < 0.001, n = 92)
+- **Bus only: Pearson r = -0.50** (p < 0.001, n = 89)
+- **Bus only: Spearman r = -0.49** (p < 0.001)
 - Routes with < 50 stops: typically 80%+ OTP
 - Routes with 150+ stops: typically below 60% OTP
+
+Routes with fewer than 12 months of OTP data are excluded to avoid noisy averages from sparse observations.
 
 ## Observations
 
 - The bus-only correlation (r = -0.50) is nearly as strong as the all-routes correlation (r = -0.53), confirming that the effect is not driven by the BUS/RAIL mode split (Simpson's paradox). Stop count predicts OTP within the bus mode alone.
-- The Spearman rank correlation (r = -0.48) is consistent with the Pearson, indicating the relationship is approximately monotonic without being driven by outliers or non-linearity.
+- The Spearman rank correlation (r = -0.49) is consistent with the Pearson, indicating the relationship is approximately monotonic without being driven by outliers or non-linearity.
 - Every stop adds dwell time (boarding/alighting), traffic signal delay, and schedule recovery risk. The cumulative effect is substantial.
 - Busway and rail routes tend to have fewer stops and dedicated right-of-way, giving them a double advantage.
 - Route 77 (Penn Hills) is an extreme case: 258 stops and among the worst OTP in the system.
@@ -27,4 +29,7 @@ Stop consolidation -- reducing the number of stops on long routes -- is a common
 ## Caveats
 
 - Correlation is not causation. Routes with many stops also tend to serve congested corridors, cover longer distances, and carry more passengers -- all of which independently affect OTP.
-- Stop counts come from current `route_stops` data and may not match historical stop configurations.
+- **Temporal mismatch:** Stop counts come from the current `route_stops` snapshot while OTP is averaged across all historical months (2019--2025). Routes that changed stop configurations during this period have a mismatch between their current stop count and earlier OTP observations. This is inherent to the available data and cannot be corrected without historical stop-count snapshots.
+
+## Review History
+- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) — 6 issues (0 significant). Added 12-month minimum filter, temporal mismatch note in METHODS.md, `all_n` tracking, replaced manual regression with `linregress`, added min-n guard, updated METHODS.md for Pearson+Spearman.

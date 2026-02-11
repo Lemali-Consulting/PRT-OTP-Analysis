@@ -26,3 +26,12 @@
 ## Implication
 
 The equity gap is driven by **mode and route structure**, not by geography per se. Municipalities on rail or busway corridors get 80%+ OTP; those served only by long local bus routes get 60%. Municipal boundaries and suburban/urban distinctions are not meaningful predictors.
+
+## Caveats
+
+- Route OTP is projected onto stops and then onto municipalities (ecological fallacy). A route's performance may vary along its length, and municipalities at the ends of long routes may experience different OTP than those near the middle.
+- Trip weights (`trips_7d`) are a static snapshot applied across the full study period. Service levels changed over time, especially during COVID.
+
+## Review History
+
+- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 3 issues (2 significant, inherent to data). Ecological fallacy documented; Welch's t-test applied (no material change).

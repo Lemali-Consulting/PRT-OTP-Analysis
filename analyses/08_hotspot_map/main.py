@@ -1,4 +1,4 @@
-"""Geographic scatter plot of stop-level on-time performance."""
+"""Geographic scatter plot of route-weighted OTP at each stop."""
 
 from pathlib import Path
 
@@ -14,33 +14,61 @@ GTFS = Path(__file__).resolve().parent.parent.parent / "data" / "GTFS"
 
 
 def load_data() -> pl.DataFrame:
-    """Load per-stop weighted OTP with coordinates."""
+    """Load per-stop route-weighted OTP with coordinates and mode."""
     return query_to_polars("""
         SELECT rs.stop_id, rs.route_id, rs.trips_7d,
                s.lat, s.lon, s.hood, s.muni,
+               r.mode,
                route_avg.avg_otp
         FROM route_stops rs
         JOIN stops s ON rs.stop_id = s.stop_id
+        JOIN routes r ON rs.route_id = r.route_id
         JOIN (
             SELECT route_id, AVG(otp) AS avg_otp
             FROM otp_monthly
             GROUP BY route_id
+            HAVING COUNT(*) >= 12
         ) route_avg ON rs.route_id = route_avg.route_id
     """)
 
 
 def analyze(df: pl.DataFrame) -> pl.DataFrame:
-    """Compute per-stop trip-weighted OTP."""
-    stop_otp = (
+    """Compute per-stop route-weighted OTP.
+
+    Each stop inherits the average OTP of the routes serving it, weighted by
+    trip frequency (trips_7d). This is a derived metric reflecting route
+    composition at each stop, not independently measured stop-level performance.
+    """
+    # Collect modes serving each stop for later reporting
+    stop_modes = (
+        df.group_by("stop_id")
+        .agg(modes=pl.col("mode").unique())
+    )
+
+    stop_otp_raw = (
         df.group_by(["stop_id", "lat", "lon", "hood", "muni"])
         .agg(
             weighted_otp=(pl.col("avg_otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
             route_count=pl.col("route_id").n_unique(),
             total_trips_7d=pl.col("trips_7d").sum(),
         )
-        .filter(pl.col("weighted_otp").is_not_null())
+    )
+
+    # Log dropped stops
+    n_before = stop_otp_raw.height
+    stop_otp = (
+        stop_otp_raw
+        .filter(pl.col("weighted_otp").is_not_null() & pl.col("weighted_otp").is_not_nan())
         .sort("weighted_otp")
     )
+    n_after = stop_otp.height
+    n_dropped = n_before - n_after
+    if n_dropped > 0:
+        print(f"  {n_dropped} stops dropped due to null/NaN OTP (zero total trips or missing data)")
+
+    # Join mode info
+    stop_otp = stop_otp.join(stop_modes, on="stop_id", how="left")
+
     return stop_otp
 
 
@@ -61,12 +89,12 @@ def make_chart(df: pl.DataFrame) -> None:
         s=4, alpha=0.6, edgecolors="none",
     )
 
-    fig.colorbar(sc, ax=ax, label="Weighted Average OTP", shrink=0.8)
+    fig.colorbar(sc, ax=ax, label="Route-Weighted OTP", shrink=0.8)
 
     system_avg = sum(otp) / len(otp)
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
-    ax.set_title(f"PRT Stop-Level On-Time Performance (system avg: {system_avg:.1%})")
+    ax.set_title(f"PRT Route-Weighted OTP at Stop (unweighted stop avg: {system_avg:.1%})")
     ax.set_aspect("equal")
 
     fig.tight_layout()
@@ -113,11 +141,12 @@ def load_route_shapes() -> dict[str, list[tuple[float, float]]]:
 
 
 def load_route_otp() -> dict[str, float]:
-    """Load average OTP per route from the database."""
+    """Load average OTP per route from the database (min 12 months)."""
     df = query_to_polars("""
         SELECT route_id, AVG(otp) AS avg_otp
         FROM otp_monthly
         GROUP BY route_id
+        HAVING COUNT(*) >= 12
     """)
     return dict(zip(df["route_id"].to_list(), df["avg_otp"].to_list()))
 
@@ -137,7 +166,7 @@ def make_interactive_map(
     colormap = LinearColormap(
         colors=["#d73027", "#fee08b", "#1a9850"],  # red -> yellow -> green
         vmin=0.5, vmax=0.9,
-        caption="Weighted Average OTP",
+        caption="Route-Weighted OTP",
     )
 
     # Route lines layer (added first so stops render on top)
@@ -227,17 +256,19 @@ def main() -> None:
 
     best = stop_otp.sort("weighted_otp", descending=True).head(3)
     worst = stop_otp.sort("weighted_otp").head(3)
-    print("\n  Best-performing stops:")
+    print("\n  Best-performing stops (route-weighted OTP):")
     for row in best.iter_rows(named=True):
-        hood = row["hood"] or "N/A"
-        print(f"    {row['stop_id']} ({hood}): {row['weighted_otp']:.1%}")
-    print("  Worst-performing stops:")
+        hood = row["hood"] if row["hood"] and row["hood"] != "0" else "N/A"
+        modes = ", ".join(sorted(row["modes"])) if row.get("modes") else "N/A"
+        print(f"    {row['stop_id']} ({hood}, {modes}): {row['weighted_otp']:.1%}")
+    print("  Worst-performing stops (route-weighted OTP):")
     for row in worst.iter_rows(named=True):
-        hood = row["hood"] or "N/A"
-        print(f"    {row['stop_id']} ({hood}): {row['weighted_otp']:.1%}")
+        hood = row["hood"] if row["hood"] and row["hood"] != "0" else "N/A"
+        modes = ", ".join(sorted(row["modes"])) if row.get("modes") else "N/A"
+        print(f"    {row['stop_id']} ({hood}, {modes}): {row['weighted_otp']:.1%}")
 
     print("\nSaving CSV...")
-    stop_otp.write_csv(OUT / "hotspot_map.csv")
+    stop_otp.drop("modes").write_csv(OUT / "hotspot_map.csv")
     print(f"  Saved to {OUT / 'hotspot_map.csv'}")
 
     print("\nGenerating chart...")

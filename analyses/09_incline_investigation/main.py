@@ -29,9 +29,9 @@ def investigate() -> str:
         lines.append("  No matching rows found.")
 
     # 2. OTP monthly
-    lines.append("\n## 2. OTP monthly (route_id = 'MI')")
+    lines.append("\n## 2. OTP monthly (route_id IN ('MI', 'DQI'))")
     otp = query_to_polars("""
-        SELECT * FROM otp_monthly WHERE route_id = 'MI'
+        SELECT * FROM otp_monthly WHERE route_id IN ('MI', 'DQI')
     """)
     if len(otp) > 0:
         lines.append(f"  {len(otp)} rows found:")
@@ -96,10 +96,11 @@ def investigate() -> str:
     # 6. Conclusion
     lines.append("\n## 6. Conclusion")
     if len(otp) == 0:
-        lines.append("  The Monongahela Incline (MI) exists in the routes table but has")
-        lines.append("  NO entries in otp_monthly. OTP was never recorded for this route")
-        lines.append("  in the dataset. This is a data pipeline artifact -- the Incline")
-        lines.append("  was included in the route catalog but excluded from OTP measurement.")
+        lines.append("  Neither the Monongahela Incline (MI) nor the Duquesne Incline (DQI)")
+        lines.append("  has ANY entries in otp_monthly. OTP was never recorded for either")
+        lines.append("  incline route in the dataset. This is a data pipeline artifact --")
+        lines.append("  the inclines were included in the route catalog but excluded from")
+        lines.append("  OTP measurement.")
     else:
         otp_values = otp["otp"].to_list()
         non_null = [v for v in otp_values if v is not None and v > 0]
@@ -129,7 +130,7 @@ def main() -> None:
     print(f"\n  Report saved to {report_path}")
 
     # Save any OTP data as CSV
-    otp = query_to_polars("SELECT * FROM otp_monthly WHERE route_id = 'MI'")
+    otp = query_to_polars("SELECT * FROM otp_monthly WHERE route_id IN ('MI', 'DQI')")
     route_stops = query_to_polars("""
         SELECT rs.*, s.stop_name
         FROM route_stops rs

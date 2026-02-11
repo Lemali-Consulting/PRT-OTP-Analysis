@@ -6,9 +6,9 @@ There is **no meaningful correlation** between peak weekday trip frequency and O
 
 ## Key Numbers
 
-- **All routes: Pearson r = 0.02** (p = 0.85, n = 93) -- essentially zero
-- **Bus only: Pearson r = -0.07** (p = 0.51, n = 90)
-- **Bus only: Spearman r = -0.12** (p = 0.24)
+- **All routes: Pearson r = 0.03** (p = 0.81, n = 92) -- essentially zero
+- **Bus only: Pearson r = -0.06** (p = 0.55, n = 89)
+- **Bus only: Spearman r = -0.11** (p = 0.29)
 
 ## Methodology Note
 
@@ -28,3 +28,8 @@ PRT should not expect OTP penalties from increasing service frequency on existin
 
 - `trips_wd` in `route_stops` represents current weekday frequency, not historical. Frequency may have changed over the analysis period.
 - `MAX(trips_wd)` captures the peak stop, which for short-turn routes may overstate the frequency experienced by riders at outer stops.
+- Routes with fewer than 12 months of OTP data are excluded (1 route dropped vs prior version).
+- Three correlation tests were run (Pearson all-routes, Pearson bus-only, Spearman bus-only) without multiple-comparison correction. Since all three are non-significant (smallest p = 0.29), correction would not change any conclusion.
+
+## Review History
+- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) -- 6 issues (1 significant). Updated METHODS.md to reflect MAX(trips_wd) instead of SUM; documented all three correlation tests; added minimum-month filter (HAVING COUNT >= 12); added NULL filter for trips_wd; replaced manual regression with scipy.stats.linregress; noted multiple-test caveat.

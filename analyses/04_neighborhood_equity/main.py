@@ -9,29 +9,77 @@ from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
 
+MIN_MONTHS = 12  # minimum months of OTP data per route
+
 
 def load_data() -> pl.DataFrame:
-    """Load OTP joined with route-stop-neighborhood data."""
-    return query_to_polars("""
-        SELECT rs.route_id, rs.stop_id, rs.trips_7d,
-               s.hood, s.muni, s.county,
-               o.month, o.otp
+    """Load route-level average OTP joined with route-stop-neighborhood data.
+
+    Pre-aggregates OTP to one row per route (AVG across months) before joining
+    to route_stops, so each route contributes one weight regardless of how many
+    months of data it has. Also filters NULL trips_7d and requires MIN_MONTHS.
+    """
+    return query_to_polars(f"""
+        WITH route_avg AS (
+            SELECT route_id, AVG(otp) AS avg_otp
+            FROM otp_monthly
+            GROUP BY route_id
+            HAVING COUNT(*) >= {MIN_MONTHS}
+        )
+        SELECT rs.route_id, rs.stop_id, s.hood, s.muni, s.county,
+               ra.avg_otp, rs.trips_7d
         FROM route_stops rs
-        JOIN stops s ON rs.stop_id = s.stop_id
+        JOIN route_avg ra ON rs.route_id = ra.route_id
+        LEFT JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE rs.trips_7d IS NOT NULL
+    """)
+
+
+def load_monthly_data() -> pl.DataFrame:
+    """Load per-month OTP with route-stop-neighborhood data for time series.
+
+    Uses the same pre-aggregation-then-join pattern per month to avoid
+    giving extra weight to routes with more months.
+    """
+    return query_to_polars(f"""
+        WITH route_month_count AS (
+            SELECT route_id
+            FROM otp_monthly
+            GROUP BY route_id
+            HAVING COUNT(*) >= {MIN_MONTHS}
+        )
+        SELECT rs.route_id, rs.stop_id, s.hood,
+               o.month, o.otp, rs.trips_7d
+        FROM route_stops rs
+        JOIN route_month_count rmc ON rs.route_id = rmc.route_id
         JOIN otp_monthly o ON rs.route_id = o.route_id
-        WHERE s.hood IS NOT NULL
+        LEFT JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE rs.trips_7d IS NOT NULL
+          AND s.hood IS NOT NULL
           AND s.hood != '0'
           AND s.hood != ''
     """)
 
 
-def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """Compute per-neighborhood OTP and rolling-quintile time series."""
-    # Per-neighborhood overall weighted OTP (for bar chart)
+def load_route_modes() -> pl.DataFrame:
+    """Load route mode information for bus-only stratification."""
+    return query_to_polars("SELECT route_id, mode FROM routes")
+
+
+def analyze(df: pl.DataFrame) -> pl.DataFrame:
+    """Compute per-neighborhood weighted and unweighted OTP from route-level averages."""
+    # Filter to valid neighborhoods
+    hood_df = df.filter(
+        pl.col("hood").is_not_null()
+        & (pl.col("hood") != "0")
+        & (pl.col("hood") != "")
+    )
+
+    # Per-neighborhood weighted OTP (weighted by trips_7d)
     hood_summary = (
-        df.group_by(["hood", "muni", "county"])
+        hood_df.group_by(["hood", "muni", "county"])
         .agg(
-            weighted_otp=(pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
+            weighted_otp=(pl.col("avg_otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
             route_count=pl.col("route_id").n_unique(),
             stop_count=pl.col("stop_id").n_unique(),
             total_trips_7d=pl.col("trips_7d").sum(),
@@ -39,13 +87,14 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
         .sort("weighted_otp")
     )
 
-    # Unweighted OTP: deduplicate by (hood, route_id, month) since a route's
-    # OTP is the same across all stops, then simple-average across routes.
+    # Unweighted OTP: one value per route per neighborhood (deduplicate across stops)
+    route_hood = (
+        hood_df.group_by(["hood", "route_id"])
+        .agg(avg_otp=pl.col("avg_otp").first())
+    )
     hood_unweighted = (
-        df.group_by(["hood", "route_id", "month"])
-        .agg(otp=pl.col("otp").first())
-        .group_by("hood")
-        .agg(unweighted_otp=pl.col("otp").mean())
+        route_hood.group_by("hood")
+        .agg(unweighted_otp=pl.col("avg_otp").mean())
     )
 
     hood_summary = hood_summary.join(hood_unweighted, on="hood", how="left")
@@ -53,9 +102,39 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
         otp_gap=(pl.col("weighted_otp") - pl.col("unweighted_otp")),
     ).sort("weighted_otp")
 
-    # Per-neighborhood-month weighted OTP
+    return hood_summary
+
+
+def analyze_bus_only(df: pl.DataFrame, route_modes: pl.DataFrame) -> pl.DataFrame:
+    """Compute per-neighborhood weighted OTP for bus routes only."""
+    # Filter to valid neighborhoods and BUS mode
+    bus_df = (
+        df.join(route_modes, on="route_id", how="left")
+        .filter(
+            pl.col("hood").is_not_null()
+            & (pl.col("hood") != "0")
+            & (pl.col("hood") != "")
+            & (pl.col("mode") == "BUS")
+        )
+    )
+
+    hood_bus = (
+        bus_df.group_by(["hood", "muni", "county"])
+        .agg(
+            bus_weighted_otp=(pl.col("avg_otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
+            bus_route_count=pl.col("route_id").n_unique(),
+        )
+        .sort("bus_weighted_otp")
+    )
+
+    return hood_bus
+
+
+def analyze_quintile_ts(monthly_df: pl.DataFrame) -> pl.DataFrame:
+    """Compute quintile time series from monthly data."""
+    # Per-neighborhood-month weighted OTP (deduplicate route OTP across stops first)
     hood_month = (
-        df.group_by(["hood", "month"])
+        monthly_df.group_by(["hood", "month"])
         .agg(
             weighted_otp=(pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
         )
@@ -85,7 +164,7 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
         .sort(["quintile", "month"])
     )
 
-    return hood_summary, quintile_ts
+    return quintile_ts
 
 
 def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -> None:
@@ -217,8 +296,8 @@ def main() -> None:
 
     print("\nLoading data...")
     df = load_data()
-    print(f"  {len(df):,} route-stop-month records loaded")
-    print(f"  {df['hood'].n_unique()} neighborhoods represented")
+    print(f"  {len(df):,} route-stop records loaded (route-level avg OTP, {MIN_MONTHS}+ months, non-null trips_7d)")
+    print(f"  {df.filter(pl.col('hood').is_not_null() & (pl.col('hood') != '0') & (pl.col('hood') != ''))['hood'].n_unique()} neighborhoods represented")
 
     # Check how many stops lack neighborhood data
     total_stops = query_to_polars("SELECT COUNT(*) AS n FROM stops")["n"][0]
@@ -227,8 +306,8 @@ def main() -> None:
     )["n"][0]
     print(f"  {total_stops - hood_stops} of {total_stops} stops excluded (missing/invalid neighborhood)")
 
-    print("\nAnalyzing...")
-    hood_summary, quintile_ts = analyze(df)
+    print("\nAnalyzing (all modes, pooled)...")
+    hood_summary = analyze(df)
     print(f"  {len(hood_summary)} neighborhoods ranked")
 
     best = hood_summary.sort("weighted_otp", descending=True).head(3)
@@ -239,6 +318,11 @@ def main() -> None:
     print("  Bottom 3 neighborhoods (weighted):")
     for row in worst.iter_rows(named=True):
         print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
+
+    # Route count range across neighborhoods
+    min_routes = hood_summary["route_count"].min()
+    max_routes = hood_summary["route_count"].max()
+    print(f"\n  Route count per neighborhood: {min_routes} to {max_routes}")
 
     # Frequency-weighting effect summary
     gaps = hood_summary["otp_gap"]
@@ -252,9 +336,54 @@ def main() -> None:
         print(f"    {row['hood']}: weighted={row['weighted_otp']:.1%}, "
               f"unweighted={row['unweighted_otp']:.1%}, gap={row['otp_gap']:+.2%}")
 
+    # Bus-only stratification
+    print("\nAnalyzing (bus only)...")
+    route_modes = load_route_modes()
+    hood_bus = analyze_bus_only(df, route_modes)
+    print(f"  {len(hood_bus)} neighborhoods with bus service")
+
+    # Join bus OTP to main summary for comparison
+    hood_summary = hood_summary.join(
+        hood_bus.select("hood", "bus_weighted_otp", "bus_route_count"),
+        on="hood",
+        how="left",
+    )
+
+    bus_best = hood_bus.sort("bus_weighted_otp", descending=True).head(3)
+    bus_worst = hood_bus.sort("bus_weighted_otp").head(3)
+    print("  Top 3 (bus only):")
+    for row in bus_best.iter_rows(named=True):
+        print(f"    {row['hood']} ({row['muni']}): {row['bus_weighted_otp']:.1%}")
+    print("  Bottom 3 (bus only):")
+    for row in bus_worst.iter_rows(named=True):
+        print(f"    {row['hood']} ({row['muni']}): {row['bus_weighted_otp']:.1%}")
+
+    # Check for Simpson's paradox: do rankings change between pooled and bus-only?
+    both = hood_summary.filter(pl.col("bus_weighted_otp").is_not_null())
+    diff = both.with_columns(
+        rank_diff=(
+            pl.col("weighted_otp").rank(descending=True) - pl.col("bus_weighted_otp").rank(descending=True)
+        ).abs()
+    )
+    big_shifts = diff.filter(pl.col("rank_diff") > 10).sort("rank_diff", descending=True)
+    if len(big_shifts) > 0:
+        print(f"\n  {len(big_shifts)} neighborhoods shift 10+ rank positions between pooled and bus-only")
+    else:
+        print("\n  No neighborhoods shift more than 10 rank positions between pooled and bus-only")
+
+    # Quintile time series
+    print("\nLoading monthly data for time series...")
+    monthly_df = load_monthly_data()
+    print(f"  {len(monthly_df):,} route-stop-month records loaded")
+
+    print("Analyzing quintile time series...")
+    quintile_ts = analyze_quintile_ts(monthly_df)
+
     print("\nSaving CSV...")
     hood_summary.write_csv(OUT / "neighborhood_otp.csv")
     print(f"  Saved to {OUT / 'neighborhood_otp.csv'}")
+    hood_bus.write_csv(OUT / "neighborhood_otp_bus_only.csv")
+    print(f"  Saved to {OUT / 'neighborhood_otp_bus_only.csv'}")
 
     print("\nGenerating charts...")
     make_chart(hood_summary, quintile_ts)

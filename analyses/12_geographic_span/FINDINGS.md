@@ -29,3 +29,7 @@ Both stop count and route distance independently degrade OTP, but stop consolida
 
 - Geographic span (max pairwise distance) is a crude proxy for actual route length. GTFS shape data would provide a more accurate route-length measurement.
 - Routes with fewer than 12 months of data are excluded to reduce noise.
+
+## Review History
+
+- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 4 issues (1 significant). Bus-only correlations now primary; Spearman added.

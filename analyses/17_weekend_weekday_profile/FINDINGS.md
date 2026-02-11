@@ -21,7 +21,12 @@ There is **no meaningful correlation** between a route's weekend-to-weekday serv
 - Neither Pearson nor Spearman correlations approach significance.
 - This null result makes sense: the weekend service ratio reflects demand patterns and scheduling choices, not route structure. A route with high weekend service isn't inherently harder to run on time.
 - Since OTP is reported monthly (not by day-of-week), it aggregates weekday and weekend performance, which may mask day-specific patterns.
+- Bus-only correlation (r = -0.06, p = 0.56) confirms the null result holds within the dominant mode.
 
 ## Implication
 
 Weekend vs weekday service intensity is not a useful predictor of OTP. The structural factors identified in other analyses (stop count, mode, route length) dominate.
+
+## Review History
+
+- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 2 issues (both moderate). Bus-only correlation added; caveats strengthened. Null finding unchanged.
