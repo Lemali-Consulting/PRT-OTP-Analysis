@@ -53,7 +53,12 @@ analyses/
    ```bash
    uv run python analyses/NN_short_name/main.py
    ```
-5. **Write FINDINGS.md after running the analysis.** Summarize the key results: what the data showed, notable numbers, and any caveats or limitations.
+5. **Write FINDINGS.md after running the analysis.** It should have five sections:
+   - **Summary** -- 1-2 sentence headline result with key statistic and significance test
+   - **Key Numbers** -- bullet list of headline statistics (means, effect sizes, sample sizes, date range)
+   - **Observations** -- detailed observations from the analysis, including trends and patterns
+   - **Discussion** -- interpretation of what the numbers mean, why they look the way they do, and what they do *not* mean
+   - **Caveats** -- limitations, data gaps, and reasons to be cautious about the findings
 6. **Generated output goes in `output/`.** Charts (`.png`), summary data (`.csv`), printed tables -- all in the `output/` subdirectory. Never commit large binary files; `.gitignore` them if needed.
 
 ## Numbering

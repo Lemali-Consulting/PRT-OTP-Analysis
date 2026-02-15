@@ -95,6 +95,18 @@ CREATE TABLE IF NOT EXISTS otp_monthly (
     otp      REAL,
     PRIMARY KEY (route_id, month)
 );
+
+CREATE TABLE IF NOT EXISTS ridership_monthly (
+    route_id       TEXT NOT NULL,
+    month          TEXT NOT NULL,
+    day_type       TEXT NOT NULL,
+    avg_riders     REAL,
+    day_count      INTEGER,
+    route_name     TEXT,
+    current_garage TEXT,
+    mode           TEXT,
+    PRIMARY KEY (route_id, month, day_type)
+);
 """
 
 
@@ -211,6 +223,20 @@ def build_stop_reference_table(ref_df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def build_ridership_table(ridership_df: pl.DataFrame) -> pl.DataFrame:
+    """Normalize ridership CSV into long format keyed by route_id, month, day_type."""
+    return ridership_df.select(
+        pl.col("route").cast(pl.String).alias("route_id"),
+        pl.col("month_start").str.slice(0, 7).alias("month"),  # "2017-01-01" → "2017-01"
+        pl.col("day_type"),
+        pl.col("avg_riders").cast(pl.Float64),
+        pl.col("day_count").cast(pl.Int64),
+        pl.col("route_full_name").alias("route_name"),
+        pl.col("current_garage"),
+        pl.col("mode"),
+    )
+
+
 def insert_df(conn: sqlite3.Connection, table: str, df: pl.DataFrame) -> int:
     """Insert a polars DataFrame into a SQLite table. Returns row count."""
     rows = df.to_dicts()
@@ -257,6 +283,9 @@ def main():
         DATA_DIR / "PRT_Stop_Reference_Lookup_Table.csv",
     )
 
+    ridership_csv = DATA_DIR / "average-ridership" / "12bb84ed-397e-435c-8d1b-8ce543108698.csv"
+    ridership_df = pl.read_csv(ridership_csv, infer_schema_length=0)
+
     # Build normalized tables
     print("Building tables...")
     routes = build_routes_table(otp_df, routes_sys_df)
@@ -264,6 +293,7 @@ def main():
     stops = build_stops_table(stops_df)
     route_stops = build_route_stops_table(stops_df)
     stop_ref = build_stop_reference_table(ref_df)
+    ridership = build_ridership_table(ridership_df)
 
     # Write to SQLite
     if DB_PATH.exists():
@@ -281,6 +311,7 @@ def main():
         ("route_stops", route_stops),
         ("stop_reference", stop_ref),
         ("otp_monthly", otp),
+        ("ridership_monthly", ridership),
     ]:
         count = insert_df(conn, name, df)
         print(f"  {name:20s} {count:>8,} rows")

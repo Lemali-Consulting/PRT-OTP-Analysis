@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 18 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 26 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -185,6 +185,46 @@ VIF values for all predictors are below 3, indicating moderate but manageable mu
 
 Premium bus advantage disappears after controlling for stop count and span -- those routes simply have fewer stops. The unexplained 53% likely reflects traffic, schedule design, staffing, and weather.
 
+## 19. Ridership-Weighted OTP (Analysis 19)
+
+Ridership-weighted system OTP (69.4%) runs **+1.6 percentage points higher** than trip-weighted OTP (67.8%), and the difference is highly significant (paired t = -18.1, p < 0.001, n = 70 months). The average PRT rider experiences slightly *better* on-time performance than the trip-weighted system average suggests.
+
+| Weighting Scheme | Mean OTP | Median OTP |
+|------------------|----------|------------|
+| Unweighted (all routes equal) | 69.9% | 70.3% |
+| Trip-weighted (scheduled frequency) | 67.8% | 67.8% |
+| Ridership-weighted (avg daily riders) | 69.4% | 69.2% |
+
+Both weighted series fall below the unweighted average, meaning both scheduled trips and actual riders concentrate somewhat on worse-performing routes. However, trip frequency overstates how much ridership is concentrated on the worst routes -- high-frequency routes tend to have many stops and poor OTP (Analysis 07), but riders don't fill those trips proportionally. This does *not* mean high-ridership routes have better OTP; it means ridership is distributed more evenly across the OTP spectrum than trip frequency is. The gap between trip-weighted and ridership-weighted was near zero during COVID (2020), widened to ~3 pp in late 2022, and has stabilized around 1--2 pp since 2023, likely reflecting post-COVID ridership redistribution. Analysis uses 93 routes with 12+ months of paired data over the Jan 2019 -- Oct 2024 overlap period.
+
+## 20. OTP -> Ridership Causality (Analysis 20)
+
+There is **no evidence that OTP declines predict subsequent ridership losses**. After detrending (subtracting system monthly mean) and Bonferroni correction, **0 of 93 routes** show statistically significant Granger causality from OTP to ridership (8/93 at uncorrected p < 0.05, consistent with chance). The lagged cross-correlations are weakly *negative* at all lags (median r = -0.18 at lag 0, flat through lag 6), suggesting reverse causality: months with lower ridership tend to have better OTP (less crowding, shorter dwell times), not that good OTP attracts riders. The null result may reflect monthly data being too coarse, riders having no alternative transit options, or confounders (employment, gas prices, COVID) dominating the signal. Analysis uses 93 routes with 36--70 months of paired data, detrended before testing.
+
+## 21. COVID Ridership vs OTP Recovery (Analysis 21)
+
+**Zero of 93 routes** have recovered to pre-COVID weekday ridership (median -43%). Routes that lost *more* ridership tended to see *better* OTP recovery (Pearson r = -0.21, p = 0.047; Spearman r = -0.29, p = 0.005), weakly supporting a crowding mechanism: fewer riders means shorter dwell times and better schedule adherence. However, the system is running far fewer riders and OTP has *still* declined for 58/93 routes, indicating the OTP decline is primarily driven by operational factors (staffing, traffic) rather than demand-side crowding. No subtype (local, flyer, busway, rail) recovered OTP significantly better than others (Kruskal-Wallis p = 0.58). Flyer routes lost the most ridership (median -68%) due to commute-demand collapse.
+
+## 22. Passenger-Weighted Delay Burden (Analysis 22)
+
+Over Jan 2019 -- Oct 2024, PRT accumulated **55.5 million late weekday rider-trips** (31% late rate). The top 10 routes account for **26.6%** of all late rider-trips. Ridership weighting substantially reshuffles route priorities: Route 51 (Carrick) ranks only 55th by OTP (68.6%) but **2nd by delay burden** due to massive ridership, while Route 77 (worst OTP at 54.9%) ranks only 18th by burden. The Spearman rank correlation between OTP rank and burden rank is only 0.40 -- OTP rank alone is a poor proxy for human impact. The biggest upward shifts are high-ridership rail/busway routes (P1 +77 ranks, RED +72); the biggest downward shifts are low-ridership flyers (65 -70, P69 -66). The system's total delay burden has paradoxically *decreased* post-COVID -- not because OTP improved, but because ridership collapsed.
+
+## 23. Garage-Level Performance (Analysis 23)
+
+PRT garages differ **significantly** in route-level OTP, and the difference **survives controlling for route structure** (stop count + span). A bus-only OLS model shows garage dummies add significant explanatory power beyond structural controls (F = 4.55, p = 0.005, R² increase from 0.31 to 0.41). **Collier** routes run +5.4 pp above East Liberty after controls (p < 0.001); **Ross** runs +2.9 pp (p = 0.04). West Mifflin's poor raw performance is largely explained by route structure (+1.4 pp, p = 0.36 after controls). The Collier advantage is operationally meaningful and could reflect corridor-level traffic differences or garage-specific practices. All garages move together on system-wide trends; relative ordering is stable over time.
+
+## 24. Weekday vs Weekend Ridership Trends (Analysis 24)
+
+Weekend ridership has recovered far more strongly than weekday ridership since COVID. As of October 2024, Saturday service is at **90.7%** of its January 2019 level and Sunday at **83.9%**, while weekday service is at just **64.5%** -- a 26 pp gap. Weekend's share of total ridership rose from **13.6% pre-COVID to 17.8% post-2023** (+4.2 pp), a structural shift consistent with remote work reducing weekday commuting while discretionary weekend travel returns. The weekend-to-weekday ridership ratio does **not** significantly correlate with route-level OTP (Pearson r = -0.20, p = 0.097, n = 67 routes), meaning the weekday ridership collapse is driven by exogenous demand factors, not service quality differences. Both Saturday and Sunday series show stronger seasonal swings (summer peaks, winter troughs) than weekday, consistent with weather-sensitive discretionary travel.
+
+## 25. Ridership Concentration & Equity (Analysis 25)
+
+Ridership is **moderately concentrated on low-OTP routes**. The bottom quintile by OTP (Q1, avg 61.2%) carries **29.6% of all ridership** (32.7% bus-only), far more than its 20% "fair share." Half of all bus ridership is on just 33/89 routes with OTP below 66.8%. The Gini concentration index is 0.068 (all routes) and **0.145 (bus-only)** -- rail in Q5 masks a more pronounced bus equity problem. The quintile distribution is U-shaped: both Q1 (worst OTP, high-ridership local bus) and Q5 (best OTP, rail/busway) carry disproportionate ridership, while mid-performing routes carry the least. Targeting Q1 bus routes (18 routes, 32.7% of bus ridership, avg OTP 61.2%) offers the highest human impact per intervention.
+
+## 26. Ridership in Multivariate OTP Model (Analysis 26)
+
+Adding log-transformed average weekday ridership to the Analysis 18 six-feature OLS model does **not** significantly improve explanatory power (F = 2.53, p = 0.116). R² increases by only 1.5 pp (0.499 to 0.514). Ridership is not collinear with stop count or span (VIF = 1.73), but is redundant with existing structural predictors. A ridership-only model (log_riders + is_rail) explains just 23.2% of variance versus 49.9% for the structural model. **High ridership does not independently degrade OTP** -- poor-performing routes happen to have high ridership because they are long, many-stop corridors, not because passenger volumes cause delays. This reinforces Analysis 10 (trip frequency null) and Analysis 19 (ridership-weighted OTP slightly higher than trip-weighted).
+
 ## Key Takeaways
 
 1. **PRT OTP has declined** from ~69% to ~62% since 2019 and has not recovered post-COVID.
@@ -197,3 +237,34 @@ Premium bus advantage disappears after controlling for stop count and span -- th
 8. **Transfer hubs do not independently predict worse OTP.** The raw stop-level gap (-3.5 pp) is a composition effect from poor-performing routes converging at hubs. At the route level, the correlation between hub connectivity and OTP is not significant (r = -0.15, p = 0.16).
 9. **Trip frequency, weekend service ratio, and directional asymmetry** do not predict OTP -- null results that narrow the field of actionable levers.
 10. **Anomalies and seasonality** are real but modest: September is the worst month, COVID and late 2022 produced system-wide shocks.
+
+## Analysis Index
+
+| # | Name | Summary |
+|---|------|---------|
+| 01 | [System Trend](analyses/01_system_trend/) | Tracks the overall PRT on-time performance trend from 2019 through 2025, including COVID impact and recovery. |
+| 02 | [Mode Comparison](analyses/02_mode_comparison/) | Compares on-time performance across service modes (BUS, RAIL, INCLINE) and route types (local, limited, express, busway). |
+| 03 | [Route Ranking](analyses/03_route_ranking/) | Ranks routes by average OTP, trend direction, and volatility to identify best/worst performers and most (in)consistent routes. |
+| 04 | [Neighborhood Equity](analyses/04_neighborhood_equity/) | Investigates whether on-time performance varies systematically by neighborhood and municipality. |
+| 05 | [Anomaly Investigation](analyses/05_anomaly_investigation/) | Identifies and investigates sharp OTP drops that may indicate route restructuring, detours, or data quality issues. |
+| 06 | [Seasonal Patterns](analyses/06_seasonal_patterns/) | Decomposes route-level OTP into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance. |
+| 07 | [Stop Count Vs Otp](analyses/07_stop_count_vs_otp/) | Tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average OTP with mode-based coloring. |
+| 08 | [Hotspot Map](analyses/08_hotspot_map/) | Visualizes stop-level on-time performance on a geographic scatter plot to identify corridor-level bottlenecks and clusters of poor performance. |
+| 09 | [Incline Investigation](analyses/09_incline_investigation/) | Audits the Monongahela Incline data across all database tables to determine why it appears in OTP data with zero/null values. |
+| 10 | [Frequency Vs Otp](analyses/10_frequency_vs_otp/) | Tests whether high-frequency routes have worse on-time performance, using weekday trip counts as a proxy for service frequency. |
+| 11 | [Directional Asymmetry](analyses/11_directional_asymmetry/) | Investigates whether routes with a structural imbalance between inbound and outbound trip frequency have worse on-time performance. |
+| 12 | [Geographic Span](analyses/12_geographic_span/) | Computes the geographic span (max distance between any two stops) for each route and tests whether longer routes have worse on-time performance, disentangling route length from stop count. |
+| 13 | [Correlation Clustering](analyses/13_correlation_clustering/) | Computes pairwise OTP time-series correlations between all routes and uses hierarchical clustering to identify groups of routes whose performance rises and falls together. |
+| 14 | [Covid Recovery](analyses/14_covid_recovery/) | Measures how far each route's OTP has recovered relative to its pre-COVID baseline and identifies route characteristics that predict faster or slower recovery. |
+| 15 | [Municipal Equity](analyses/15_municipal_equity/) | Aggregates on-time performance by municipality and county to assess service reliability equity at a broader geographic level than neighborhood analysis (Analysis 04). |
+| 16 | [Transfer Hub Performance](analyses/16_transfer_hub_performance/) | Identifies high-connectivity stops (served by many routes) and tests whether passengers at transfer hubs experience worse OTP than those at low-connectivity stops. |
+| 17 | [Weekend Weekday Profile](analyses/17_weekend_weekday_profile/) | Tests whether routes with different weekend-to-weekday service ratios show different OTP patterns, distinguishing commuter-oriented routes from all-day service routes. |
+| 18 | [Multivariate Model](analyses/18_multivariate_model/) | Combines stop count, mode, bus subtype, geographic span, and service profile into a single OLS regression model to quantify relative importance and total explained variance. |
+| 19 | [Ridership Weighted Otp](analyses/19_ridership_weighted_otp/) | Compute system OTP weighted by actual average daily ridership instead of scheduled trip frequency, to measure the average rider's experience. |
+| 20 | [Otp Ridership Causality](analyses/20_otp_ridership_causality/) | Test whether OTP declines predict subsequent ridership losses using lagged correlation and Granger causality tests. |
+| 21 | [Covid Ridership Recovery](analyses/21_covid_ridership_recovery/) | Compare ridership recovery trajectories with OTP recovery trajectories post-COVID to identify whether ridership recovery degrades OTP. |
+| 22 | [Delay Burden](analyses/22_delay_burden/) | Estimate late rider-trips per route per month by combining ridership with OTP to identify where the most total human impact occurs. |
+| 23 | [Garage Performance](analyses/23_garage_performance/) | Compare OTP and ridership trends across PRT garages (Ross, Collier, East Liberty, West Mifflin) to surface operational differences. |
+| 24 | [Daytype Ridership Trends](analyses/24_daytype_ridership_trends/) | Track how weekday, Saturday, and Sunday ridership patterns shifted post-COVID and whether weekend ridership share correlates with OTP. |
+| 25 | [Ridership Equity](analyses/25_ridership_equity/) | Measure what share of total system ridership is carried by the lowest-OTP routes using Lorenz curves and Gini coefficients. |
+| 26 | [Ridership Multivariate](analyses/26_ridership_multivariate/) | Add ridership as a predictor to the Analysis 18 OLS model to test whether it adds explanatory power beyond stop count, span, and mode. |

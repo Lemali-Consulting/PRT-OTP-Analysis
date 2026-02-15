@@ -8,6 +8,7 @@ dependencies = [
     "matplotlib>=3.10",
     "folium>=0.20.0",
     "scipy>=1.14",
+    "statsmodels>=0.14.6",
 ]
 
 [build-system]
