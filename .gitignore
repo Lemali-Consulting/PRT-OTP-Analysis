@@ -13,4 +13,5 @@ report/output/*.html
 data/prt.db-shm
 data/prt.db-wal
 data/penndot-traffic/*.json
+data/noaa-weather/*.csv
 nul

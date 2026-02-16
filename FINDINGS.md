@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 27 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 28 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -231,6 +231,14 @@ Total traffic volume (AADT) does **not** explain OTP variance after controlling 
 
 The null AADT result most likely reflects a measurement mismatch: AADT is a 24-hour annual average that smooths over peak-hour congestion, which is when buses operate most and are most affected. Peak-hour or speed/travel-time data would be a stronger test. The cumulative model-building picture across Analyses 18, 26, and 27 is that **roughly half of OTP variance is explained by route geometry and road type** (stop count, span, mode, truck share), and the other half likely requires operational data (schedule padding, driver availability, real-time traffic) not available in this dataset. For policy, the null result suggests rerouting buses to lower-traffic roads would not improve OTP; the truck_pct finding reinforces that arterial alignment (fewer stops per mile, better infrastructure) is the structural advantage.
 
+## 28. Weather Impact on OTP (Analysis 28)
+
+Weather variables show **moderate raw correlations** with system OTP (freeze_days r=+0.44, mean_tmin r=-0.40) that **strengthen after detrending** (freeze_days r=+0.57, mean_tmin r=-0.57), but the direction is **counterintuitive** -- colder, snowier months have *better* OTP. Weather jointly adds 15pp of R2 beyond a linear trend (F=3.44, p=0.008) at the system level, but does **not** significantly improve on month-of-year dummies (F=0.92, p=0.48). Conversely, month dummies do not significantly improve on weather variables either (F=1.09, p=0.39). Weather and seasonality are **statistically interchangeable** -- both capture the same seasonal signal through different variables, and neither adds beyond the other.
+
+Weather adjustment partially flattens the seasonal profile from Analysis 06: January's peak drops from 70.8% to 68.4% (-2.4pp) and September's trough rises from 64.0% to 65.3% (+1.3pp), narrowing the best-to-worst spread from 6.8pp to 3.8pp. Only September retains a significant month dummy (p=0.039) in the combined model.
+
+At the **route-month level** (n=6,672, 72 monthly clusters), weather explains just 4.5% of within-route OTP variation. With cluster-robust standard errors (acknowledging weather is constant across routes within a month), **no weather variable is significant** (all p>0.12). Weather is a system-level seasonal modulator, not a route-level discriminator -- all routes respond similarly to weather, providing no discriminating power for individual route performance. The counterintuitive cold=better direction suggests the mechanism is seasonal demand patterns (lower winter ridership and congestion) rather than weather as an impediment.
+
 ## Key Takeaways
 
 1. **PRT OTP has declined** from ~69% to ~62% since 2019 and has not recovered post-COVID.
@@ -243,6 +251,7 @@ The null AADT result most likely reflects a measurement mismatch: AADT is a 24-h
 8. **Transfer hubs do not independently predict worse OTP.** The raw stop-level gap (-3.5 pp) is a composition effect from poor-performing routes converging at hubs. At the route level, the correlation between hub connectivity and OTP is not significant (r = -0.15, p = 0.16).
 9. **Trip frequency, weekend service ratio, and directional asymmetry** do not predict OTP -- null results that narrow the field of actionable levers.
 10. **Anomalies and seasonality** are real but modest: September is the worst month, COVID and late 2022 produced system-wide shocks.
+11. **Weather does not independently explain OTP** beyond what month-of-year dummies already capture. Cold months have better OTP, but this reflects lower seasonal demand rather than a direct weather effect. At the route level, weather explains only 4.5% of within-route variation and is non-significant with proper clustering.
 
 ## Analysis Index
 
@@ -275,3 +284,4 @@ The null AADT result most likely reflects a measurement mismatch: AADT is a 24-h
 | 25 | [Ridership Equity](analyses/25_ridership_equity/) | Measure what share of total system ridership is carried by the lowest-OTP routes using Lorenz curves and Gini coefficients. |
 | 26 | [Ridership Multivariate](analyses/26_ridership_multivariate/) | Add ridership as a predictor to the Analysis 18 OLS model to test whether it adds explanatory power beyond stop count, span, and mode. |
 | 27 | [Traffic Congestion](analyses/27_traffic_congestion/) | Tests whether PennDOT AADT traffic volume explains OTP variance beyond structural features |
+| 28 | [Weather Impact](analyses/28_weather_impact/) | Tests whether weather (precipitation, snow, temperature) explains OTP variance or the counterintuitive seasonal pattern from Analysis 06. |

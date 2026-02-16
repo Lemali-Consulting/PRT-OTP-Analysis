@@ -2,6 +2,8 @@
 
 The multivariate model (Analysis 18) explains 47% of OTP variance using structural route characteristics (stop count, geographic span, mode). The remaining 53% reflects operational and environmental factors absent from this dataset. This document identifies the most valuable additional data sources, ordered by expected analytical impact.
 
+**Update (Feb 2026):** Four items have been obtained and analyzed since initial writing. See "Obtained" section below for results.
+
 ---
 
 ## High Priority
@@ -41,72 +43,7 @@ These would directly address the largest gaps in the current analysis.
 
 ---
 
-### 3. Ridership data (boardings per route or stop)
-
-**What:** Monthly or daily boardings per route, ideally per stop. Farebox or APC (automatic passenger counter) data.
-
-**Why:** The multivariate model has no demand-side variable. High-ridership routes likely have longer dwell times (more boarding/alighting), more crowding delays, and more variability. Ridership also matters for equity analysis -- a route with 60% OTP carrying 10,000 riders/day has far more impact than one carrying 500.
-
-**What it would enable:**
-- Ridership-weighted OTP as a more meaningful system metric
-- Dwell time modeling (boardings as a predictor of delay)
-- Ridership × OTP as a passenger-impact metric for prioritization
-- Demand elasticity: does poor OTP reduce ridership over time?
-
-**Likely source:** PRT publishes aggregate ridership in annual reports. Stop-level APC data would require a data request. NTD (National Transit Database) has route-level ridership for all FTA recipients.
-
----
-
-## Medium Priority
-
-These would strengthen specific analyses or enable new ones.
-
-### 4. Traffic volume and congestion data
-
-**What:** Average traffic speeds or congestion indices along major corridors, by time of day and month.
-
-**Why:** Analysis 12 showed geographic span independently degrades OTP, suggesting exposure to traffic conditions matters. But "span" is a crude proxy -- a 20 km route through suburbs faces different conditions than a 20 km route through downtown. Corridor-level traffic data would let us test whether congestion explains the residual variance the model can't capture.
-
-**What it would enable:**
-- Traffic congestion as a direct predictor in the multivariate model
-- Identification of specific corridor bottlenecks
-- Time-of-day analysis (peak vs off-peak OTP, if combined with AVL data)
-
-**Likely source:** PennDOT or SPC (Southwestern Pennsylvania Commission) maintain traffic count stations. Google Maps or HERE provide historical traffic data commercially. INRIX publishes corridor-level speed data for many metro areas.
-
----
-
-### 5. Weather data (daily precipitation, temperature, snow)
-
-**What:** Daily weather observations for the Pittsburgh region (precipitation, snowfall, temperature, ice events).
-
-**Why:** Analysis 06 found that winter months actually outperform fall, which is counterintuitive. Weather data would test whether snow days specifically degrade OTP (even if winter overall is fine due to lower ridership), and whether summer construction + heat events explain the fall trough.
-
-**What it would enable:**
-- Weather as a control variable in seasonal analysis
-- Extreme weather event attribution for anomaly detection
-- Snow/ice impact quantification for operational planning
-
-**Likely source:** NOAA/NWS station data for Pittsburgh International Airport (KPIT), freely available via [weather.gov](https://www.weather.gov/) or the NCEI API.
-
----
-
-### 6. Operator/depot assignment data
-
-**What:** Which garage/depot operates each route, and ideally staffing levels or operator seniority.
-
-**Why:** Analysis 13 found clusters of routes that co-move in OTP. One plausible explanation is shared depot assignment -- if a depot is short-staffed, all its routes suffer simultaneously. Without depot data, we can't distinguish "shared corridor" effects from "shared workforce" effects.
-
-**What it would enable:**
-- Depot-level OTP analysis (are some depots systematically worse?)
-- Staffing as a predictor of OTP variation
-- Causal interpretation of the correlation clusters from Analysis 13
-
-**Likely source:** PRT internal operations data. Depot-route assignments are sometimes published in service plans or union documents.
-
----
-
-### 7. Construction and detour records
+### 3. Construction and detour records
 
 **What:** Dates, locations, and affected routes for road construction, utility work, and planned detours.
 
@@ -125,15 +62,15 @@ These would strengthen specific analyses or enable new ones.
 
 Useful for completeness but unlikely to change major conclusions.
 
-### 8. On-time performance definition and measurement methodology
+### 5. On-time performance definition and measurement methodology
 
 **What:** PRT's internal documentation of how OTP is calculated -- threshold (e.g., 0-5 min late), measurement points (all stops vs timepoints vs origin/destination), and data source (AVL, manual, GPS).
 
-**Why:** DATA_DICTIONARY.md flags that the "on-time" definition is unspecified. Different thresholds and measurement points would produce different numbers. Understanding the methodology would improve interpretation of all 18 analyses.
+**Why:** DATA_DICTIONARY.md flags that the "on-time" definition is unspecified. Different thresholds and measurement points would produce different numbers. Understanding the methodology would improve interpretation of all 27 analyses.
 
 **Likely source:** PRT performance standards documentation, board presentations, or FTA reporting guidelines.
 
-### 9. Vehicle fleet data (age, type, capacity)
+### 6. Vehicle fleet data (age, type, capacity)
 
 **What:** Bus/rail vehicle assignments by route, including vehicle age and type.
 
@@ -141,7 +78,7 @@ Useful for completeness but unlikely to change major conclusions.
 
 **Likely source:** PRT fleet inventory (often published in capital plans or NTD reports).
 
-### 10. Signal priority and transit infrastructure data
+### 7. Signal priority and transit infrastructure data
 
 **What:** Locations of transit signal priority (TSP), bus-only lanes, queue jumps, and other infrastructure investments.
 
@@ -151,17 +88,44 @@ Useful for completeness but unlikely to change major conclusions.
 
 ---
 
+## Obtained Data (completed)
+
+These items have been acquired and analyzed. Summarized here for reference.
+
+### Ridership data (originally #3)
+
+**Obtained:** Route-level monthly average weekday ridership from PRT open data (Jan 2017 -- Oct 2024), loaded into `ridership_monthly` table.
+
+**Result:** Ridership does not add explanatory power to the multivariate model (Analysis 26: F=2.53, p=0.116, R2 change +1.5pp). High ridership does not independently degrade OTP -- poor-performing routes happen to have high ridership because they are long, many-stop corridors. However, ridership enabled Analyses 19-25 (ridership-weighted OTP, delay burden, equity, causality, COVID recovery, day-type trends).
+
+### Traffic volume data (originally #4)
+
+**Obtained:** PennDOT AADT (Annual Average Daily Traffic) for 2,923 Allegheny County road segments via ArcGIS REST API. Spatially joined to GTFS route shapes via KDTree; loaded into `route_traffic` table.
+
+**Result:** AADT is not significant after structural controls (Analysis 27: F=0.011, p=0.92). Truck percentage is significant (p=0.006, +5pp R2), likely proxying for arterial road classification. The null result is attributed to AADT being a 24-hour annual average that does not capture peak-hour congestion. **Time-of-day traffic speed data** (e.g., INRIX) remains the strongest untested congestion variable.
+
+### Weather data (originally #3)
+
+**Obtained:** NOAA GHCND daily weather from Pittsburgh International Airport (station USW00094823) via NCEI Access Data Service v1, covering Jan 2019 -- Dec 2025 (2,557 daily records). Aggregated to monthly and loaded into `weather_monthly` table. Fields: precipitation, snowfall, temperature (max/min), freeze days, hot days, wind speed.
+
+**Result:** Weather shows moderate detrended correlations with system OTP (freeze_days r=+0.57, mean_tmin r=-0.57) but in the counterintuitive direction -- cold months have *better* OTP. Weather is statistically interchangeable with month-of-year dummies (neither adds significantly beyond the other: F=0.92, p=0.48 and F=1.09, p=0.39). At the route-month level, weather explains only 4.5% of within-route OTP variation and is non-significant with cluster-robust SEs. The seasonal pattern reflects lower winter demand/congestion rather than a direct weather impediment.
+
+### Depot/operator assignments (originally #6)
+
+**Obtained:** Garage assignments from the `current_garage` field in ridership data (4 garages: Ross, Collier, East Liberty, West Mifflin).
+
+**Result:** Garage is significant after structural controls (Analysis 23: F=4.55, p=0.005, R2 increase from 0.31 to 0.41). Collier routes run +5.4pp above East Liberty after controls (p<0.001). West Mifflin's poor raw performance is explained by route structure.
+
+---
+
 ## Summary Table
 
 | # | Data Source | Primary Gap Addressed | Expected Impact on R² | Availability |
 |---|-----------|----------------------|----------------------|-------------|
 | 1 | AVL stop-level arrivals | Ecological fallacy in stop/neighborhood analyses | High | FOIA or data agreement |
 | 2 | Historical GTFS feeds | Static weights, schedule changes | Medium-High | Public archives |
-| 3 | Ridership (boardings) | No demand-side variable | Medium-High | NTD or PRT reports |
-| 4 | Traffic/congestion data | Corridor-level conditions | Medium | PennDOT, commercial |
-| 5 | Weather data | Seasonal/anomaly attribution | Medium | NOAA (free) |
-| 6 | Depot/operator assignments | Cluster causation | Medium | PRT internal |
-| 7 | Construction/detour records | Anomaly attribution | Low-Medium | Service alerts |
-| 8 | OTP definition docs | Interpretation of all analyses | Low (interpretive) | PRT documentation |
-| 9 | Vehicle fleet data | Residual variance | Low | NTD or capital plans |
-| 10 | Signal priority locations | Infrastructure impact | Low | Traffic engineering |
+| 3 | ~~Weather data~~ | ~~Seasonal/anomaly attribution~~ | ~~Medium~~ | **Obtained** (Analysis 28) |
+| 4 | Construction/detour records | Anomaly attribution | Low-Medium | Service alerts |
+| 5 | OTP definition docs | Interpretation of all analyses | Low (interpretive) | PRT documentation |
+| 6 | Vehicle fleet data | Residual variance | Low | NTD or capital plans |
+| 7 | Signal priority locations | Infrastructure impact | Low | Traffic engineering |
