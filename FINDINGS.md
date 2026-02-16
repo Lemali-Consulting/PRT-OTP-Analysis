@@ -4,9 +4,9 @@ Summary of results from 28 analyses of PRT on-time performance data (January 201
 
 ## 1. System-Wide Trend (Analysis 01)
 
-PRT on-time performance has **declined over the seven-year window**. Trip-weighted system OTP started around 69% in early 2019, spiked briefly to 75% in March 2020 (COVID-era low ridership), then fell steadily to a trough of 58% in September 2022. It has since stabilized in the **61--63% range** through late 2025, but has not recovered to pre-COVID levels. A bus-only stratification confirms the decline is not an artifact of mixing modes -- the bus-only trend closely tracks the all-mode average (gap averages ~0.5 pp) because bus routes dominate the system (90+ of ~93 reporting).
+PRT on-time performance has **declined over the seven-year window**. Trip-weighted system OTP started around 69% in early 2019, spiked briefly to 77% in March 2020 (COVID-era low ridership), then fell steadily to a trough of 60% in September 2022. It has since stabilized in the **63--65% range** through late 2025, but has not recovered to pre-COVID levels. A bus-only stratification confirms the decline is not an artifact of mixing modes -- the bus-only trend closely tracks the all-mode average (gap averages ~0.5 pp) because bus routes dominate the system (90+ of ~93 reporting).
 
-The unweighted average (treating all routes equally) consistently runs 2--3 percentage points above the weighted average, meaning high-frequency routes -- the ones carrying the most riders -- tend to perform worse than low-frequency ones. Route count ranges from 68 to 96 across months; most months have 93--96, but Nov 2020 is a low outlier at 68. Five routes (37, 42, P2, RLSH, SWL) are excluded from the weighted average due to missing `route_stops` data.
+Weights now use **time-varying scheduled trip counts** from WPRDC for Jan 2019 -- Mar 2021 (27 months), falling back to static `MAX(trips_7d)/7` from `route_stops` for later months. This fixes the previous SUM-across-stops conflation with route length and the static-weights-across-7-years problem. The weighted and unweighted averages now track very closely (~0.1 pp gap), confirming the previous ~2-3 pp gap was an artifact of the SUM-based weight inflation, not a genuine high-frequency penalty. Route count ranges from 68 to 96 across months; five routes (37, 42, P2, RLSH, SWL) are excluded from the weighted average due to missing weight data.
 
 ## 2. Mode Comparison (Analysis 02)
 
@@ -239,6 +239,14 @@ Weather adjustment partially flattens the seasonal profile from Analysis 06: Jan
 
 At the **route-month level** (n=6,672, 72 monthly clusters), weather explains just 4.5% of within-route OTP variation. With cluster-robust standard errors (acknowledging weather is constant across routes within a month), **no weather variable is significant** (all p>0.12). Weather is a system-level seasonal modulator, not a route-level discriminator -- all routes respond similarly to weather, providing no discriminating power for individual route performance. The counterintuitive cold=better direction suggests the mechanism is seasonal demand patterns (lower winter ridership and congestion) rather than weather as an impediment.
 
+## 29. Service Change Impact (Analysis 29)
+
+Schedule changes (pick period transitions) are associated with a small but statistically significant **positive** OTP shift (+0.6 pp mean, t=2.95, p=0.003), though the effect is weak and does not differ significantly by event type. Of 738 events across 101 routes, service increases (+118 trips/day) yield +1.3 pp OTP improvement, service cuts (-64 trips/day) yield +0.1 pp, and neutral restructurings yield +0.8 pp -- but the Kruskal-Wallis test finds no significant difference between types (H=4.03, p=0.13). The correlation between trip count change and OTP change is marginally significant (Spearman rho=0.074, p=0.045) but explains less than 1% of variance. COVID-period events (n=184) show a smaller effect (+0.2 pp) than non-COVID events (+0.8 pp). The positive mean delta may reflect PRT timing changes to coincide with operational improvements or seasonal gains rather than a causal effect of the schedule change itself.
+
+## 30. Service Level vs OTP Longitudinal (Analysis 30)
+
+Within-route month-over-month changes in scheduled trip frequency have **no significant relationship** with detrended OTP changes. Across 2,374 delta observations from 93 routes over 27 months (Jan 2019 -- Mar 2021), the overall effect is essentially zero (Pearson r=0.018, p=0.39; Spearman rho=-0.030, p=0.15). Bus-only results are similar (r=0.023, p=0.26). The pre-COVID subperiod shows a marginally negative slope (r=-0.052, p=0.07), suggesting adding trips slightly degraded OTP when the system was near capacity, but this does not survive multiple-comparison correction. The post-COVID subperiod is null (r=0.030, p=0.31). This confirms Analysis 10's cross-sectional null finding with a stronger longitudinal within-route design that controls for all time-invariant route characteristics, reinforcing the conclusion that **trip frequency is not a lever for OTP improvement**.
+
 ## Key Takeaways
 
 1. **PRT OTP has declined** from ~69% to ~62% since 2019 and has not recovered post-COVID.
@@ -285,3 +293,5 @@ At the **route-month level** (n=6,672, 72 monthly clusters), weather explains ju
 | 26 | [Ridership Multivariate](analyses/26_ridership_multivariate/) | Add ridership as a predictor to the Analysis 18 OLS model to test whether it adds explanatory power beyond stop count, span, and mode. |
 | 27 | [Traffic Congestion](analyses/27_traffic_congestion/) | Tests whether PennDOT AADT traffic volume explains OTP variance beyond structural features |
 | 28 | [Weather Impact](analyses/28_weather_impact/) | Tests whether weather (precipitation, snow, temperature) explains OTP variance or the counterintuitive seasonal pattern from Analysis 06. |
+| 29 | [Service Change Impact](analyses/29_service_change_impact/) | Do schedule changes (pick period transitions) correlate with OTP shifts? |
+| 30 | [Service Level Otp Longitudinal](analyses/30_service_level_otp_longitudinal/) | Within-route panel: does changing trip frequency improve or degrade OTP? |

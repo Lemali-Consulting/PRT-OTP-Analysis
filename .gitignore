@@ -14,4 +14,5 @@ data/prt.db-shm
 data/prt.db-wal
 data/penndot-traffic/*.json
 data/noaa-weather/*.csv
+data/wprdc-schedule/*.csv
 nul

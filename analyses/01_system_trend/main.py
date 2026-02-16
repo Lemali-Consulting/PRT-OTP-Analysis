@@ -11,14 +11,25 @@ OUT = output_dir(HERE)
 
 
 def load_data() -> pl.DataFrame:
-    """Load OTP data with per-route trip weights and mode from the database."""
+    """Load OTP data with time-varying trip weights and mode.
+
+    Uses scheduled_trips_monthly (WEEKDAY daily_trips) for Jan 2019 -- Mar 2021,
+    then falls back to MAX(trips_7d)/7 from route_stops for later months.
+    This fixes Methodology Issues #1 (SUM conflation) and #2 (static weights).
+    """
     return query_to_polars("""
         SELECT o.route_id, o.month, o.otp,
-               COALESCE(rs_agg.trips_7d, 0) AS trips_7d,
+               st.daily_trips AS sched_trips,
+               rs_agg.max_trips_daily,
+               COALESCE(st.daily_trips, rs_agg.max_trips_daily, 0) AS trips_weight,
                r.mode
         FROM otp_monthly o
+        LEFT JOIN scheduled_trips_monthly st
+            ON o.route_id = st.route_id
+            AND o.month = st.month
+            AND st.day_type = 'WEEKDAY'
         LEFT JOIN (
-            SELECT route_id, SUM(trips_7d) AS trips_7d
+            SELECT route_id, MAX(trips_7d) / 7.0 AS max_trips_daily
             FROM route_stops
             GROUP BY route_id
         ) rs_agg ON o.route_id = rs_agg.route_id
@@ -31,11 +42,13 @@ def _compute_monthly(df: pl.DataFrame) -> pl.DataFrame:
     monthly = (
         df.group_by("month")
         .agg(
-            weighted_otp=pl.when(pl.col("trips_7d").sum() > 0)
-            .then((pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum())
+            weighted_otp=pl.when(pl.col("trips_weight").sum() > 0)
+            .then((pl.col("otp") * pl.col("trips_weight")).sum() / pl.col("trips_weight").sum())
             .otherwise(pl.col("otp").mean()),
             unweighted_otp=pl.col("otp").mean(),
             route_count=pl.col("route_id").n_unique(),
+            pct_time_varying=(pl.col("sched_trips").is_not_null().sum().cast(pl.Float64)
+                              / pl.col("route_id").count() * 100),
         )
         .sort("month")
     )
@@ -73,6 +86,13 @@ def make_chart(all_df: pl.DataFrame, bus_df: pl.DataFrame) -> None:
     bus_x = [month_to_x[m] for m in bus_months if m in month_to_x]
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8), height_ratios=[3, 1])
+
+    # Shade the time-varying weight region (scheduled trips overlap)
+    overlap_start = next((i for i, m in enumerate(months) if m >= "2019-01"), None)
+    overlap_end = next((i for i, m in enumerate(months) if m > "2021-03"), len(months))
+    if overlap_start is not None:
+        ax1.axvspan(overlap_start, overlap_end, alpha=0.08, color="#2563eb",
+                    label="Time-varying weights")
 
     # Top panel: OTP time series
     ax1.plot(x, weighted, color="#2563eb", linewidth=1.5, label="All modes weighted")
@@ -128,6 +148,16 @@ def main() -> None:
     df = load_data()
     print(f"  {len(df):,} OTP observations loaded")
 
+    # Weight source diagnostics
+    has_sched = df.filter(pl.col("sched_trips").is_not_null())
+    has_static = df.filter(pl.col("sched_trips").is_null() & (pl.col("trips_weight") > 0))
+    has_none = df.filter(pl.col("trips_weight") == 0)
+    print(f"  Weight sources: {len(has_sched):,} time-varying, {len(has_static):,} static fallback, {len(has_none):,} zero-weight")
+
+    if len(has_sched) > 0:
+        sched_months = has_sched["month"].unique().sort()
+        print(f"  Time-varying range: {sched_months[0]} to {sched_months[-1]} ({len(sched_months)} months)")
+
     print("\nAnalyzing...")
     all_result, bus_result = analyze(df)
     print(f"  {len(all_result)} months computed (all modes)")
@@ -146,6 +176,11 @@ def main() -> None:
     min_rc = all_result["route_count"].min()
     max_rc = all_result["route_count"].max()
     print(f"  Route count range: {min_rc}--{max_rc}")
+
+    # Zero-weight routes
+    zero_routes = sorted(df.filter(pl.col("trips_weight") == 0)["route_id"].unique().to_list())
+    if zero_routes:
+        print(f"  Routes with zero weight (excluded from weighted avg): {zero_routes}")
 
     print("\nSaving CSVs...")
     all_result.write_csv(OUT / "system_trend.csv")
