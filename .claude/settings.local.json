@@ -30,7 +30,28 @@
       "Bash(ls:*)",
       "WebFetch(domain:gis.penndot.pa.gov)",
       "WebSearch",
-      "WebFetch(domain:gis.penndot.gov)"
+      "WebFetch(domain:gis.penndot.gov)",
+      "WebFetch(domain:www.ncei.noaa.gov)",
+      "WebFetch(domain:www.ncdc.noaa.gov)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:database.mobilitydata.org)",
+      "WebFetch(domain:transitfeeds.com)",
+      "WebFetch(domain:www.rideprt.org)",
+      "WebFetch(domain:mobilitydatabase.org)",
+      "WebFetch(domain:api.transit.land)",
+      "WebFetch(domain:www.interline.io)",
+      "WebFetch(domain:gtfs-data-exchange.appspot.com)",
+      "WebFetch(domain:www.transit.land)",
+      "WebFetch(domain:files.mobilitydatabase.org)",
+      "WebFetch(domain:openmobilitydata.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:web.archive.org)",
+      "WebFetch(domain:mdb.lrdu.org)",
+      "WebFetch(domain:data.wprdc.org)",
+      "Bash(curl:*)",
+      "Bash(xxd:*)",
+      "Bash(xargs:*)",
+      "Bash(PYTHONIOENCODING=utf-8 uv run python:*)"
     ]
   }
 }

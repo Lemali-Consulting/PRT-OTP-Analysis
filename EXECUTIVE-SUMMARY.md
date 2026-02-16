@@ -119,6 +119,12 @@ Analysis 24: Drop in ridership is primarily due to remote and hybrid work.
 
 25: Q1 (worst) bust routes have lowest OTP and highest ridership share -- targeting these would lead to the highest-impact intervention. 
 
+31: Stop consolidation makes sense because some stops have very low ridership. 
+
+32: "The downtown equity gap is particularly striking because these stops are the most visible face of the transit system. Visitors and new riders encountering a 2,800-rider/day stop with no shelter receive a signal about the system's investment priorities. Addressing the downtown/Oakland gaps would improve both rider experience and public perception."
+
+34: "most stops contribute very little ridership, and removing the lowest-usage ones would affect few riders while potentially improving OTP by reducing stop count."
+
 ## Data Needed
 Need stop-level boarding data to get a stronger sense of whether certain stops are rarely used (and, if they are within 200m of another stop, could easily be consolidated with limited negative impact on ridership)
 

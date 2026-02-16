@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 28 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 35 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -247,6 +247,26 @@ Schedule changes (pick period transitions) are associated with a small but stati
 
 Within-route month-over-month changes in scheduled trip frequency have **no significant relationship** with detrended OTP changes. Across 2,374 delta observations from 93 routes over 27 months (Jan 2019 -- Mar 2021), the overall effect is essentially zero (Pearson r=0.018, p=0.39; Spearman rho=-0.030, p=0.15). Bus-only results are similar (r=0.023, p=0.26). The pre-COVID subperiod shows a marginally negative slope (r=-0.052, p=0.07), suggesting adding trips slightly degraded OTP when the system was near capacity, but this does not survive multiple-comparison correction. The post-COVID subperiod is null (r=0.030, p=0.31). This confirms Analysis 10's cross-sectional null finding with a stronger longitudinal within-route design that controls for all time-invariant route characteristics, reinforcing the conclusion that **trip frequency is not a lever for OTP improvement**.
 
+## 31. Stop Consolidation Candidates (Analysis 31)
+
+43% of stop-route combinations see fewer than 5 daily boardings+alightings, and 99.4% of those have a same-route neighbor within 400 m. Using the stop-count/OTP regression slope (-0.059 pp per stop removed), removing these low-usage candidates yields an estimated average OTP gain of **+3.2 pp per route**, with Route 59 (Mon Valley) seeing the maximum at +10.2 pp from consolidating 174 of its 334 stops. Flyer routes (P10, P16, O5) have the most candidates (148-167 each), consistent with their long suburban corridors. 87 of 90 OTP-matched routes have at least one candidate. The estimate is conservative since the slope derives from cross-sectional rather than experimental variation.
+
+## 32. Shelter Equity (Analysis 32)
+
+Only **7.3% of bus stops have shelters**, yet those sheltered stops serve **31% of total ridership**. Sheltered stops have 5x the median usage of unsheltered stops (34 vs 7 riders/day, Mann-Whitney p = 9.2e-84). The top 20 unsheltered stops (1,200-2,800 riders/day) are concentrated in downtown and Oakland. Shelter ownership reveals divergent placement strategies: PAAC and City of Pittsburgh target moderate-to-high usage stops (165-204/day avg), while Lamar advertising shelters average only 26/day -- suggesting ad revenue rather than ridership drives their locations. Bus stops have just 7% shelter coverage versus 73% for busway and 100% for light rail.
+
+## 33. Pandemic Ridership Geography (Analysis 33)
+
+System weekday ridership fell **63.1%** between pre-pandemic and pandemic periods. The loss was **remarkably uniform geographically**: median stop-level change was -60% for downtown, -62% for the inner ring (2-8 km), and -59% for the outer ring (>8 km). The inner ring had the steepest aggregate loss (-65.7%), driven by Oakland/university-area stops that lost 70-87%. Outer suburbs retained ridership slightly better (-55.7% aggregate), consistent with more transit-dependent essential workers. Mode differences were minimal (bus -60%, busway -58%, light rail -56%). The geographic uniformity challenges the narrative that downtown transit was disproportionately affected -- the pandemic's impact was driven by system-wide behavioral shifts rather than location-specific factors.
+
+## 34. Ridership Concentration / Pareto (Analysis 34)
+
+PRT ridership is extremely concentrated: **2% of stops serve 50% of riders**, and **14% serve 80%**. The system-wide Gini coefficient is **0.824**. Per-route Gini ranges from 0.34 to 0.89 (median 0.65), with flyer routes showing the highest concentration. However, route-level ridership concentration has **no correlation with OTP** (Pearson r = -0.016, p = 0.88; Spearman rho = 0.103, p = 0.34). This null result suggests that dwell time at individual stops (a function of passenger volume) is not a dominant factor in OTP -- the time cost of *stopping itself* (deceleration, doors, acceleration) matters more than how many passengers board, reinforcing stop count as the key lever.
+
+## 35. Boarding/Alighting Flow Analysis (Analysis 35)
+
+System boardings (130,121/day) and alightings (129,684/day) are nearly balanced (ratio 1.003), but individual stops show strong directional asymmetry. **Inbound** stops net +22,385 boardings (ratio 1.36); **outbound** net -24,197 (ratio 0.73) -- confirming PRT's classic radial commuter pattern. The top generators (Smithfield St, 5th Ave) are outbound departure points; the top attractors (Wood St, Liberty Ave/Gateway) are inbound arrival points. This street-level split reflects downtown's one-way grid routing. Busway stations show split behavior: Wilkinsburg Platform C is a generator (+837/day) while Platform A is an attractor (-935/day). Oakland/university stops are net generators, suggesting the corridor is a secondary hub where students board outbound.
+
 ## Key Takeaways
 
 1. **PRT OTP has declined** from ~69% to ~62% since 2019 and has not recovered post-COVID.
@@ -295,3 +315,8 @@ Within-route month-over-month changes in scheduled trip frequency have **no sign
 | 28 | [Weather Impact](analyses/28_weather_impact/) | Tests whether weather (precipitation, snow, temperature) explains OTP variance or the counterintuitive seasonal pattern from Analysis 06. |
 | 29 | [Service Change Impact](analyses/29_service_change_impact/) | Do schedule changes (pick period transitions) correlate with OTP shifts? |
 | 30 | [Service Level Otp Longitudinal](analyses/30_service_level_otp_longitudinal/) | Within-route panel: does changing trip frequency improve or degrade OTP? |
+| 31 | [Stop Consolidation](analyses/31_stop_consolidation/) | Identifies low-usage stops with nearby neighbors as candidates for consolidation, estimates per-route OTP gains from reduced stop counts. |
+| 32 | [Shelter Equity](analyses/32_shelter_equity/) | Assesses whether bus shelters are equitably placed relative to stop-level ridership volume; identifies high-usage unsheltered stops. |
+| 33 | [Pandemic Ridership Geography](analyses/33_pandemic_ridership_geography/) | Maps the spatial pattern of stop-level ridership loss during the pandemic by distance zone, mode, and geography. |
+| 34 | [Ridership Concentration](analyses/34_ridership_concentration/) | Quantifies Pareto concentration of ridership across stops; tests whether route-level Gini correlates with OTP. |
+| 35 | [Boarding Alighting Flows](analyses/35_boarding_alighting_flows/) | Analyzes net boarding-alighting flows by stop and direction to identify major trip generators vs attractors. |
