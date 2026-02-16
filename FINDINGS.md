@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 26 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 27 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -225,6 +225,12 @@ Ridership is **moderately concentrated on low-OTP routes**. The bottom quintile 
 
 Adding log-transformed average weekday ridership to the Analysis 18 six-feature OLS model does **not** significantly improve explanatory power (F = 2.53, p = 0.116). R² increases by only 1.5 pp (0.499 to 0.514). Ridership is not collinear with stop count or span (VIF = 1.73), but is redundant with existing structural predictors. A ridership-only model (log_riders + is_rail) explains just 23.2% of variance versus 49.9% for the structural model. **High ridership does not independently degrade OTP** -- poor-performing routes happen to have high ridership because they are long, many-stop corridors, not because passenger volumes cause delays. This reinforces Analysis 10 (trip frequency null) and Analysis 19 (ridership-weighted OTP slightly higher than trip-weighted).
 
+## 27. Traffic Congestion and OTP (Analysis 27)
+
+Total traffic volume (AADT) does **not** explain OTP variance after controlling for structural features (F=0.011, p=0.92, R2 change +0.0001). Routes on high-traffic roads perform no differently than those on quieter ones. However, **truck percentage** is a significant predictor (p=0.006, beta=+0.26), jointly boosting R2 from 0.40 to 0.45 when added alongside AADT (joint F=3.97, p=0.023). The positive truck coefficient likely proxies for road classification -- truck-heavy corridors are wider arterials with longer signal phases and more predictable flow, not a direct truck-bus interaction. VIF for log_aadt is just 1.17 -- traffic volume is orthogonal to the structural features already in the model, it simply has no effect. 89 routes were matched to 2,923 PennDOT road segments via KDTree spatial join (median match rate 80%); 3 rail routes excluded for low match rate (<30%).
+
+The null AADT result most likely reflects a measurement mismatch: AADT is a 24-hour annual average that smooths over peak-hour congestion, which is when buses operate most and are most affected. Peak-hour or speed/travel-time data would be a stronger test. The cumulative model-building picture across Analyses 18, 26, and 27 is that **roughly half of OTP variance is explained by route geometry and road type** (stop count, span, mode, truck share), and the other half likely requires operational data (schedule padding, driver availability, real-time traffic) not available in this dataset. For policy, the null result suggests rerouting buses to lower-traffic roads would not improve OTP; the truck_pct finding reinforces that arterial alignment (fewer stops per mile, better infrastructure) is the structural advantage.
+
 ## Key Takeaways
 
 1. **PRT OTP has declined** from ~69% to ~62% since 2019 and has not recovered post-COVID.
@@ -268,3 +274,4 @@ Adding log-transformed average weekday ridership to the Analysis 18 six-feature 
 | 24 | [Daytype Ridership Trends](analyses/24_daytype_ridership_trends/) | Track how weekday, Saturday, and Sunday ridership patterns shifted post-COVID and whether weekend ridership share correlates with OTP. |
 | 25 | [Ridership Equity](analyses/25_ridership_equity/) | Measure what share of total system ridership is carried by the lowest-OTP routes using Lorenz curves and Gini coefficients. |
 | 26 | [Ridership Multivariate](analyses/26_ridership_multivariate/) | Add ridership as a predictor to the Analysis 18 OLS model to test whether it adds explanatory power beyond stop count, span, and mode. |
+| 27 | [Traffic Congestion](analyses/27_traffic_congestion/) | Tests whether PennDOT AADT traffic volume explains OTP variance beyond structural features |

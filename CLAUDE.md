@@ -12,4 +12,15 @@
 - See `CONTRIBUTING.md` for the full conventions.
 - When updating an analysis, be sure to update the corresponding local FINDINGS.md and METHODS.md, if applicable.
     - If the local FINDINGS.md is modified, be sure to modify the root-level FINDINGS.md as well
-    
+
+## Scaffolding tool (`scaffold.py`)
+- Always use `--json` for machine-readable output. Parse the result to confirm file paths and names.
+- Use `--dry-run` to preview what will be created before writing files.
+- **New project:** `uv run python scaffold.py scaffold <target-dir> --name <name> --package <pkg> --db <db_filename> --json`
+  - Creates the full project structure (pyproject.toml, src/, tests/, analyses/, docs/, etc.)
+  - Config values can also be set via `--config path/to/scaffold.toml`
+- **New analysis:** `uv run python scaffold.py add <name> --json`
+  - Auto-numbers from the highest existing analysis (e.g., `add my_topic` → `19_my_topic`)
+  - Use `--title "Custom Title"` and `--summary "Brief description"` to fill in README.md directly
+- **Update index:** `uv run python scaffold.py index --json`
+- **Run all analyses:** `uv run python scaffold.py run-all --json`

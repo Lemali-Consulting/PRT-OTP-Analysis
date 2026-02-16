@@ -20,7 +20,17 @@
       "Bash(git diff:*)",
       "Bash(echo:*)",
       "Bash(dir:*)",
-      "Bash(du:*)"
+      "Bash(du:*)",
+      "Bash(git push:*)",
+      "Bash(git -C \"C:\\\\Users\\\\maxac\\\\Code Projects\\\\PPT Research\\\\PRT-OTP-Analysis\" status data/GTFS/)",
+      "Bash(git -C \"C:\\\\Users\\\\maxac\\\\Code Projects\\\\PPT Research\\\\PRT-OTP-Analysis\" push)",
+      "Bash(git -C \"C:\\\\Users\\\\maxac\\\\Code Projects\\\\PPT Research\\\\PRT-OTP-Analysis\" lfs version:*)",
+      "Bash(git -C \"C:\\\\Users\\\\maxac\\\\Code Projects\\\\PPT Research\\\\PRT-OTP-Analysis\" status)",
+      "Bash(python -c:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:gis.penndot.pa.gov)",
+      "WebSearch",
+      "WebFetch(domain:gis.penndot.gov)"
     ]
   }
 }

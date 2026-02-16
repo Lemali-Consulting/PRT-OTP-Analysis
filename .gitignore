@@ -12,4 +12,5 @@ analyses/*/output/*.html
 report/output/*.html
 data/prt.db-shm
 data/prt.db-wal
+data/penndot-traffic/*.json
 nul

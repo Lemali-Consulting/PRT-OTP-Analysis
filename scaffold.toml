@@ -1,0 +1,23 @@
+[project]
+name = "my-research-project"
+package = "my_research_project"
+description = "Description of your research project"
+python_requires = ">=3.14"
+db_filename = "data.db"
+dependencies = ["polars>=1.38.1", "matplotlib>=3.10", "scipy>=1.14"]
+
+[env]
+DB_PATH = "Optional override for the database path"
+LOG_LEVEL = "DEBUG, INFO, WARNING, ERROR (default: INFO)"
+
+[red_team]
+categories = [
+    "A. Unit of Analysis",
+    "B. Stratification",
+    "C. Statistical Testing",
+    "D. Regression to the Mean",
+    "E. Composition and Panel Balance",
+    "F. Code-Documentation Consistency",
+    "G. Joins and Filters",
+    "H. Numerical and Implementation Correctness",
+]
