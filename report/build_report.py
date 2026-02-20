@@ -1,4 +1,4 @@
-"""Build a self-contained HTML report from all 18 PRT OTP analyses."""
+"""Build a self-contained HTML report from all 35 PRT OTP analyses."""
 
 import base64
 import re
@@ -33,6 +33,23 @@ ANALYSIS_REGISTRY = [
     ("16_transfer_hub_performance", "Transfer Hub Performance", ["connectivity_vs_otp.png", "hub_tier_comparison.png"]),
     ("17_weekend_weekday_profile", "Weekend vs Weekday Service Profile", ["weekend_ratio_vs_otp.png", "service_tier_comparison.png"]),
     ("18_multivariate_model", "Multivariate OTP Model", ["coefficient_plot.png", "predicted_vs_actual.png"]),
+    ("19_ridership_weighted_otp", "Ridership-Weighted OTP", ["ridership_weighted_otp_trend.png"]),
+    ("20_otp_ridership_causality", "OTP -> Ridership Causality", ["granger_summary.png", "lagged_crosscorr.png"]),
+    ("21_covid_ridership_recovery", "COVID Ridership vs OTP Recovery", ["recovery_by_subtype.png", "recovery_scatter.png"]),
+    ("22_delay_burden", "Passenger-Weighted Delay Burden", ["delay_burden_trend.png", "rate_vs_burden.png", "top10_burden.png"]),
+    ("23_garage_performance", "Garage-Level Performance", ["garage_boxplot.png", "garage_otp_trend.png"]),
+    ("24_daytype_ridership_trends", "Weekday vs Weekend Ridership Trends", ["daytype_ridership_trend.png", "weekend_share_trend.png", "weekend_share_vs_otp.png"]),
+    ("25_ridership_equity", "Ridership Concentration & Equity", ["quintile_summary.png", "ridership_lorenz.png"]),
+    ("26_ridership_multivariate", "Ridership in Multivariate OTP Model", ["coefficient_comparison.png", "partial_residual.png"]),
+    ("27_traffic_congestion", "Traffic Congestion and OTP", ["aadt_vs_otp_scatter.png", "coefficient_comparison.png", "partial_residual.png"]),
+    ("28_weather_impact", "Weather Impact on OTP", ["seasonal_weather_adjusted.png", "weather_correlation_heatmap.png", "weather_otp_timeseries.png", "weather_scatter_matrix.png"]),
+    ("29_service_change_impact", "Service Change Impact", ["service_change_impact.png"]),
+    ("30_service_level_otp_longitudinal", "Service Level vs OTP Longitudinal", ["service_level_scatter.png"]),
+    ("31_stop_consolidation", "Stop Consolidation Candidates", ["candidate_map.png", "otp_gain_by_route.png"]),
+    ("32_shelter_equity", "Shelter Equity", ["ridership_by_shelter.png", "shelter_coverage_by_mode.png"]),
+    ("33_pandemic_ridership_geography", "Pandemic Ridership Geography", ["change_by_zone.png", "ridership_change_map.png"]),
+    ("34_ridership_concentration", "Ridership Concentration / Pareto", ["gini_vs_otp.png", "pareto_curve.png"]),
+    ("35_boarding_alighting_flows", "Boarding/Alighting Flow Analysis", ["net_flow_map.png", "top_generators_attractors.png"]),
 ]
 
 
@@ -398,7 +415,7 @@ def assemble_report(toc: str, sections: list[str], takeaways: str,
     chart_count = sum(len(pngs) for _, _, pngs in ANALYSIS_REGISTRY)
 
     header = f"""<h1>PRT On-Time Performance Analysis</h1>
-<p class="subtitle">18 analyses &middot; 98 routes &middot; {chart_count} charts &middot;
+<p class="subtitle">35 analyses &middot; 98 routes &middot; {chart_count} charts &middot;
 January 2019 &ndash; November 2025 &middot; 7,651 monthly observations</p>"""
 
     takeaways_html = ""

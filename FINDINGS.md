@@ -249,7 +249,9 @@ Within-route month-over-month changes in scheduled trip frequency have **no sign
 
 ## 31. Stop Consolidation Candidates (Analysis 31)
 
-43% of stop-route combinations see fewer than 5 daily boardings+alightings, and 99.4% of those have a same-route neighbor within 400 m. Using the stop-count/OTP regression slope (-0.059 pp per stop removed), removing these low-usage candidates yields an estimated average OTP gain of **+3.2 pp per route**, with Route 59 (Mon Valley) seeing the maximum at +10.2 pp from consolidating 174 of its 334 stops. Flyer routes (P10, P16, O5) have the most candidates (148-167 each), consistent with their long suburban corridors. 87 of 90 OTP-matched routes have at least one candidate. The estimate is conservative since the slope derives from cross-sectional rather than experimental variation.
+43% of stop-route combinations see fewer than 5 daily boardings+alightings, and 99.4% of those have a same-route neighbor within 400 m. Using the stop-count/OTP regression slope (-0.059 pp per stop removed), removing these low-usage candidates yields a naive estimated average OTP gain of +3.2 pp per route, with Route 59 (Mon Valley) seeing the maximum at +10.2 pp from consolidating 174 of its 334 stops. Flyer routes (P10, P16, O5) have the most candidates (148-167 each), consistent with their long suburban corridors. 87 of 90 OTP-matched routes have at least one candidate.
+
+**However, the OTP gain estimate is likely overstated.** PRT bus drivers already skip stops where no one is waiting and no one has signaled to alight. A low-usage stop (<5 daily boardings) is empty on the vast majority of individual bus trips, so the bus already passes it without stopping most of the time -- removing the sign changes little operationally. The cross-sectional regression slope reflects that high-stop-count routes are structurally different (longer, more urban, more signals), not that each individual stop adds a fixed marginal delay. Analysis 34 reinforces this: per-stop ridership concentration has no correlation with OTP (r = -0.016), suggesting dwell time from passenger volumes is not the dominant mechanism. Additionally, stop removal raises accessibility concerns for riders with disabilities (400 m on hilly terrain may be prohibitive) and affects short-trip riders who depend on incremental stop spacing. The finding is better read as evidence that **route design with fewer, better-spaced stops** (limited-stop or express overlays) outperforms local-stop design, rather than as a case for piecemeal stop removal.
 
 ## 32. Shelter Equity (Analysis 32)
 
@@ -269,17 +271,42 @@ System boardings (130,121/day) and alightings (129,684/day) are nearly balanced 
 
 ## Key Takeaways
 
+### What drives OTP
+
 1. **PRT OTP has declined** from ~69% to ~62% since 2019 and has not recovered post-COVID.
 2. **Dedicated right-of-way matters most**: rail (84%) and busway (74%) routes dramatically outperform local bus (66%) routes.
 3. **Stop count is the strongest predictor** of poor OTP (r = -0.53 all routes n=92, r = -0.50 bus-only n=89). Routes with 150+ stops consistently underperform. This finding survives bus-only stratification, ruling out Simpson's paradox.
 4. **Route length independently degrades OTP** (partial r = -0.23 after controlling for stop count), but stop count has roughly twice the impact (partial r = -0.41).
-5. **A multivariate model explains 47% of variance** using stop count, span, mode, and a suppressor (n_munis). A reduced model with just stop count, span, and mode explains 40%. The remaining variance requires operational data not in this dataset.
-6. **The COVID decline is uneven but partially driven by regression to the mean** (r = -0.25, p = 0.02). Routes with extreme pre-COVID baselines naturally regressed toward the mean. There is no statistically significant difference in recovery across route subtypes (Kruskal-Wallis p = 0.24). The policy-relevant finding is narrower: specific local bus routes in the eastern corridor (71B, 58, 65) have deteriorated 15--21 pp beyond what RTM alone predicts.
-7. **Geographic inequity is structural**: municipalities on rail/busway get 80%+ OTP; those dependent on long local bus get 59--62%. The gap is driven by mode and route structure, not by geography per se.
-8. **Transfer hubs do not independently predict worse OTP.** The raw stop-level gap (-3.5 pp) is a composition effect from poor-performing routes converging at hubs. At the route level, the correlation between hub connectivity and OTP is not significant (r = -0.15, p = 0.16).
-9. **Trip frequency, weekend service ratio, and directional asymmetry** do not predict OTP -- null results that narrow the field of actionable levers.
-10. **Anomalies and seasonality** are real but modest: September is the worst month, COVID and late 2022 produced system-wide shocks.
-11. **Weather does not independently explain OTP** beyond what month-of-year dummies already capture. Cold months have better OTP, but this reflects lower seasonal demand rather than a direct weather effect. At the route level, weather explains only 4.5% of within-route variation and is non-significant with proper clustering.
+5. **About half of OTP variance is explained by route geometry and road type** (stop count, span, mode, truck share; R² ~ 0.45--0.50). The remaining variance likely requires operational data (schedule padding, driver availability, real-time traffic) not in this dataset.
+6. **Garage assignment matters beyond route structure.** Collier routes run +5.4 pp above East Liberty after controlling for stop count and span (p < 0.001), suggesting corridor-level or operational differences between garages.
+
+### What does not drive OTP
+
+7. **Trip frequency, ridership volume, weekend service ratio, and directional asymmetry** do not predict OTP -- null results confirmed both cross-sectionally and longitudinally that narrow the field of actionable levers.
+8. **Traffic volume (AADT) has no effect** after structural controls (p = 0.92), though truck percentage proxies for arterial road type and is significant (p = 0.006). Total congestion likely requires peak-hour data to test properly.
+9. **Weather does not independently explain OTP** beyond what month-of-year dummies already capture. Cold months have better OTP, reflecting lower seasonal demand rather than a direct weather effect. Weather and seasonality are statistically interchangeable.
+10. **Transfer hubs do not independently predict worse OTP.** The raw stop-level gap (-3.5 pp) is a composition effect from poor-performing routes converging at hubs.
+11. **Ridership concentration at stops does not affect OTP** (r = -0.016, p = 0.88). The time cost of stopping itself (deceleration, doors, acceleration) matters more than how many passengers board, reinforcing stop count as the key lever.
+
+### COVID and ridership
+
+12. **Zero of 93 routes have recovered to pre-COVID weekday ridership** (median -43%). Weekend ridership has recovered much more (Saturday 91%, Sunday 84% of baseline vs weekday 65%), reflecting a structural shift from remote work.
+13. **The COVID OTP decline is partially driven by regression to the mean** (r = -0.25, p = 0.02). Specific local bus routes in the eastern corridor (71B, 58, 65) have deteriorated 15--21 pp beyond what RTM alone predicts.
+14. **OTP declines do not predict subsequent ridership losses** (0/93 routes significant after correction). The weak negative correlation suggests reverse causality: lower ridership improves OTP through reduced crowding, not that poor OTP drives riders away.
+15. **Pandemic ridership loss was geographically uniform** (downtown -60%, inner ring -62%, outer ring -59%), challenging the narrative that downtown transit was disproportionately affected.
+
+### Equity and human impact
+
+16. **Geographic inequity is structural**: municipalities on rail/busway get 80%+ OTP; those dependent on long local bus get 59--62%. The gap is driven by mode and route structure, not by geography per se.
+17. **The average rider experiences slightly better OTP** than the trip-weighted average (+1.6 pp), but the bottom OTP quintile of bus routes carries 33% of bus ridership -- far more than its 20% fair share.
+18. **OTP rank is a poor proxy for human impact.** Route 51 ranks 55th by OTP but 2nd by delay burden due to massive ridership (Spearman rank correlation between OTP rank and burden rank is only 0.40). Targeting interventions by delay burden rather than OTP rate would better serve riders.
+19. **Only 7% of bus stops have shelters**, yet sheltered stops serve 31% of ridership. The top 20 unsheltered stops (1,200--2,800 riders/day) are concentrated in downtown and Oakland. Shelter placement by advertising companies correlates with ad revenue, not ridership.
+
+### Actionable levers
+
+20. **The stop count/OTP correlation points to route design, not individual stop removal.** 43% of stop-route combinations see fewer than 5 daily boardings, but buses already skip empty stops operationally, so removing signs at low-usage stops would likely yield far less than the naive regression estimate of +3.2 pp per route. The finding supports limited-stop or express overlays on high-ridership corridors rather than piecemeal stop consolidation, which also raises accessibility concerns for riders with disabilities and short-trip users.
+21. **Ridership is extremely concentrated** (2% of stops serve 50% of riders), reinforcing that the time cost of stopping itself outweighs passenger volume effects -- stop count correlates with OTP because it reflects route design philosophy, not because each stop adds fixed delay.
+22. **Schedule changes show no meaningful OTP lever.** Service increases, cuts, and restructurings all produce similar ~+0.6 pp shifts, and within-route trip frequency changes have no significant effect on detrended OTP.
 
 ## Analysis Index
 
