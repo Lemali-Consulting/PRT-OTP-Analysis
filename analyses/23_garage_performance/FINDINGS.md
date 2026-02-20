@@ -42,11 +42,19 @@ PRT garages differ **significantly** in route-level OTP, and the difference **su
 - The monthly trend chart shows all garages move together with system-wide trends (COVID spike, 2022 trough), but the relative ordering is stable: Collier consistently above Ross, which is consistently above East Liberty and West Mifflin.
 
 ## Discussion
-The controlled analysis overturns the initial interpretation that garage differences were purely a composition effect. **Collier's advantage is real and operationally meaningful**: after accounting for the fact that it operates shorter routes with fewer stops, Collier routes still outperform East Liberty routes by 5.4 pp. This could reflect differences in traffic conditions in the western suburbs, garage-level operational practices (scheduling, dispatch, maintenance), or corridor-specific factors not captured by stop count and span alone.
+The controlled analysis overturns the initial interpretation that garage differences were purely a composition effect. **Collier's advantage is real and operationally meaningful**: after accounting for the fact that it operates shorter routes with fewer stops, Collier routes still outperform East Liberty routes by 5.4 pp.
+
+Operational feedback from PRT-experienced observers identifies several likely explanations for the Collier advantage:
+
+1. **Lower corridor congestion.** Collier serves the western suburbs, which have less traffic congestion than the eastern corridors served by East Liberty and West Mifflin. The AADT-based congestion analysis (Analysis 27) found 24-hour traffic volume non-significant, but that measure is too coarse to capture the peak-hour congestion differences that matter for bus operations.
+2. **Shorter downtown routing.** Some Collier routes have very short segments in downtown Pittsburgh, reducing exposure to the congested street grid where delays accumulate. East Liberty routes tend to traverse longer downtown segments.
+3. **Route distribution.** Garages do not cover equal areas or operate equal numbers of routes. Collier's route portfolio may be inherently more favorable for OTP beyond what stop count and span capture.
+
+These factors suggest the garage effect is primarily a **corridor-level congestion proxy** rather than evidence of operational differences in garage management. The controlled model accounts for route length and stop count but not for the traffic environment each route operates in -- and the available traffic data (AADT) is too coarse to fill this gap.
 
 West Mifflin's poor raw performance, by contrast, *is* largely explained by route structure: it operates the long eastern-corridor routes, and after controlling for that, it is statistically indistinguishable from East Liberty.
 
-The R² increase from 0.31 to 0.41 suggests that garage assignment captures roughly 10% of OTP variance beyond what stop count and span explain -- a nontrivial amount that warrants further investigation with operational data (staffing, vehicle age, traffic conditions by corridor).
+The R² increase from 0.31 to 0.41 suggests that garage assignment captures roughly 10% of OTP variance beyond what stop count and span explain. Given the corridor-congestion explanation, this 10% likely represents traffic environment variance rather than garage-specific operational practices.
 
 ## Caveats
 - The `current_garage` field is a snapshot; historical garage assignments are not available. If routes were reassigned between garages, the analysis would not capture that (though the data shows no garage changes for any route).

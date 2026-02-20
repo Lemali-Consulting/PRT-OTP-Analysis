@@ -211,7 +211,7 @@ Over Jan 2019 -- Oct 2024, PRT accumulated **55.5 million late weekday rider-tri
 
 ## 23. Garage-Level Performance (Analysis 23)
 
-PRT garages differ **significantly** in route-level OTP, and the difference **survives controlling for route structure** (stop count + span). A bus-only OLS model shows garage dummies add significant explanatory power beyond structural controls (F = 4.55, p = 0.005, R² increase from 0.31 to 0.41). **Collier** routes run +5.4 pp above East Liberty after controls (p < 0.001); **Ross** runs +2.9 pp (p = 0.04). West Mifflin's poor raw performance is largely explained by route structure (+1.4 pp, p = 0.36 after controls). The Collier advantage is operationally meaningful and could reflect corridor-level traffic differences or garage-specific practices. All garages move together on system-wide trends; relative ordering is stable over time.
+PRT garages differ **significantly** in route-level OTP, and the difference **survives controlling for route structure** (stop count + span). A bus-only OLS model shows garage dummies add significant explanatory power beyond structural controls (F = 4.55, p = 0.005, R² increase from 0.31 to 0.41). **Collier** routes run +5.4 pp above East Liberty after controls (p < 0.001); **Ross** runs +2.9 pp (p = 0.04). West Mifflin's poor raw performance is largely explained by route structure (+1.4 pp, p = 0.36 after controls). Operational feedback indicates the Collier advantage is primarily a **corridor-level congestion proxy**: Collier serves less congested western suburbs, has routes with shorter downtown segments, and has a more favorable route portfolio -- rather than reflecting garage-specific operational practices. The 10% R² increase from garage dummies likely captures traffic environment variance not measurable with available AADT data. All garages move together on system-wide trends; relative ordering is stable over time.
 
 ## 24. Weekday vs Weekend Ridership Trends (Analysis 24)
 
@@ -278,7 +278,7 @@ System boardings (130,121/day) and alightings (129,684/day) are nearly balanced 
 3. **Stop count is the strongest predictor** of poor OTP (r = -0.53 all routes n=92, r = -0.50 bus-only n=89). Routes with 150+ stops consistently underperform. This finding survives bus-only stratification, ruling out Simpson's paradox.
 4. **Route length independently degrades OTP** (partial r = -0.23 after controlling for stop count), but stop count has roughly twice the impact (partial r = -0.41).
 5. **About half of OTP variance is explained by route geometry and road type** (stop count, span, mode, truck share; R² ~ 0.45--0.50). The remaining variance likely requires operational data (schedule padding, driver availability, real-time traffic) not in this dataset.
-6. **Garage assignment matters beyond route structure.** Collier routes run +5.4 pp above East Liberty after controlling for stop count and span (p < 0.001), suggesting corridor-level or operational differences between garages.
+6. **Garage differences reflect corridor congestion, not garage operations.** Collier routes run +5.4 pp above East Liberty after controlling for stop count and span (p < 0.001), but operational feedback confirms this reflects Collier's less congested western suburbs and shorter downtown routing rather than garage-level practices.
 
 ### What does not drive OTP
 
