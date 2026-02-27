@@ -11,9 +11,12 @@ How concentrated is ridership across stops? What fraction of stops serves 80% of
 - Generate a system-wide Pareto curve and a scatter plot of Gini vs OTP by route.
 
 ## Data
-- `data/bus-stop-usage/wprdc_stop_data.csv` -- stop-level boardings/alightings
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- route name and mode
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `wprdc_stop_data.csv` | Stop-level boardings/alightings | Local CSV (`data/bus-stop-usage/`) |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Route name and mode | `prt.db` table |
 
 ## Output
 - `output/pareto_system.csv` -- cumulative ridership share by stop rank

@@ -11,9 +11,12 @@ Do commuter-oriented routes (high weekday, low weekend service) perform differen
 - Scatter plot and box plot.
 
 ## Data
-- `route_stops` -- weekday, Saturday, Sunday trip counts per stop
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- mode and name
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `route_stops` | Weekday, Saturday, Sunday trip counts per stop | `prt.db` table |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode and name | `prt.db` table |
 
 ## Output
 - `output/service_profile.csv` -- per-route trip counts, weekend ratio, and OTP

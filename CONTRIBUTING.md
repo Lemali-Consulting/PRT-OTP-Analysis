@@ -43,7 +43,13 @@ analyses/
 3. **Write METHODS.md first.** It should have four sections:
    - **Question** -- what you're trying to answer
    - **Approach** -- how you'll answer it (steps, statistical methods, groupings)
-   - **Data** -- which tables/columns from `data/prt.db` you'll use
+   - **Data** -- a table listing each data source with columns: Name, Description, Source. Source should be one of: ``prt.db` table`, `Local CSV (data/…/)`, `GTFS file (data/GTFS/)`, or similar. Cross-table join conditions or general filtering notes go in a `**Notes:**` line below the table. Example:
+     ```markdown
+     | Name | Description | Source |
+     |------|-------------|--------|
+     | `otp_monthly` | Monthly OTP per route | `prt.db` table |
+     | `wprdc_stop_data.csv` | Stop-level boardings/alightings | Local CSV (`data/bus-stop-usage/`) |
+     ```
    - **Output** -- what files `main.py` will produce in `output/`
 4. **Write main.py.** Use `prt_otp_analysis.common` for DB access:
    ```python

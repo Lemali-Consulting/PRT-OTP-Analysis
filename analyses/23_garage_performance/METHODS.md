@@ -12,13 +12,16 @@ Do PRT garages (Ross, Collier, East Liberty, West Mifflin) differ systematically
 - Fit a controlled OLS model (bus-only): base model with stop_count and span_km, then full model adding garage dummy variables (East Liberty as reference, being the largest). Use an F-test on the nested models to determine if garage dummies add significant explanatory power beyond route structure.
 
 ## Data
-- `otp_monthly`: route_id, month, otp
-- `ridership_monthly`: route_id, month, current_garage, day_type='WEEKDAY', avg_riders
-- `routes`: route_id, mode for bus-only stratification
-- `route_stops`: route_id, stop_id for stop counts
-- `stops`: stop_id, lat, lon for geographic span computation
-- Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024).
-- Exclude routes with fewer than 12 months of paired data or NULL garage.
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, otp | `prt.db` table |
+| `ridership_monthly` | route_id, month, current_garage, avg_riders; filtered to day_type='WEEKDAY' | `prt.db` table |
+| `routes` | route_id, mode for bus-only stratification | `prt.db` table |
+| `route_stops` | route_id, stop_id for stop counts | `prt.db` table |
+| `stops` | stop_id, lat, lon for geographic span computation | `prt.db` table |
+
+**Notes:** Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024). Exclude routes with fewer than 12 months of paired data or NULL garage.
 
 ## Output
 - `output/garage_otp_trend.png` -- monthly OTP by garage

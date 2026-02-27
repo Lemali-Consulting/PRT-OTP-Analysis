@@ -39,15 +39,30 @@ def load_data() -> pl.DataFrame:
 
 def route_level_summary(df: pl.DataFrame) -> pl.DataFrame:
     """Compute route-level average OTP and ridership with garage assignment."""
-    return (
-        df.group_by("route_id", "current_garage", "mode")
+    # Take the most common garage per route to handle potential reassignments
+    garage_per_route = (
+        df.group_by("route_id", "current_garage")
+        .agg(n=pl.len())
+        .sort("n", descending=True)
+        .group_by("route_id")
+        .first()
+        .select("route_id", "current_garage")
+    )
+    mode_per_route = df.select("route_id", "mode").unique(subset=["route_id"])
+
+    route_agg = (
+        df.group_by("route_id")
         .agg(
             avg_otp=pl.col("otp").mean(),
             avg_riders=pl.col("avg_riders").mean(),
             n_months=pl.col("month").count(),
         )
-        .sort("current_garage", "avg_otp")
     )
+    result = route_agg.join(garage_per_route, on="route_id").join(mode_per_route, on="route_id")
+    assert result["route_id"].n_unique() == len(result), (
+        "route_level_summary produced duplicate route_ids — a route may have changed garages"
+    )
+    return result.sort("current_garage", "avg_otp")
 
 
 def garage_summary(route_df: pl.DataFrame) -> pl.DataFrame:

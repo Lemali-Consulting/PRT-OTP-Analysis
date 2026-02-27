@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import polars as pl
+from scipy import stats
 
 from prt_otp_analysis.common import output_dir, setup_plotting
 
@@ -222,10 +223,41 @@ def main() -> None:
         print(f"  {z}: median {sub['pct_change'].median():+.0f}%, "
               f"aggregate {z_pct:+.1f}%, n={len(sub):,}")
 
+    # Formal tests for zone differences
+    zone_order = ["Downtown (< 2 km)", "Inner ring (2-8 km)", "Outer ring (> 8 km)"]
+    zone_groups = [
+        valid.filter(pl.col("zone") == z)["pct_change"].drop_nulls().to_list()
+        for z in zone_order
+    ]
+    if all(len(g) >= 3 for g in zone_groups):
+        h_stat, kw_p = stats.kruskal(*zone_groups)
+        print(f"\n  Kruskal-Wallis (zones): H={h_stat:.2f}, p={kw_p:.4f}")
+        if kw_p < 0.05:
+            # Pairwise Mann-Whitney with Bonferroni correction (3 pairs)
+            pairs = [(0, 1), (0, 2), (1, 2)]
+            print("  Pairwise Mann-Whitney (Bonferroni-corrected, 3 tests):")
+            for i, j in pairs:
+                u_stat, mw_p = stats.mannwhitneyu(zone_groups[i], zone_groups[j], alternative="two-sided")
+                adj_p = min(mw_p * 3, 1.0)
+                sig = "*" if adj_p < 0.05 else ""
+                print(f"    {zone_order[i]} vs {zone_order[j]}: U={u_stat:.0f}, p={adj_p:.4f} {sig}")
+
     print("\nBy mode:")
     for mode in valid["mode"].unique().drop_nulls().sort().to_list():
         sub = valid.filter(pl.col("mode") == mode)
         print(f"  {mode:12s}: median {sub['pct_change'].median():+.0f}%, n={len(sub):,}")
+
+    # Formal test for mode differences
+    mode_groups = []
+    mode_names = []
+    for mode in valid["mode"].unique().drop_nulls().sort().to_list():
+        vals = valid.filter(pl.col("mode") == mode)["pct_change"].drop_nulls().to_list()
+        if len(vals) >= 3:
+            mode_groups.append(vals)
+            mode_names.append(mode)
+    if len(mode_groups) >= 2:
+        h_stat, kw_p = stats.kruskal(*mode_groups)
+        print(f"  Kruskal-Wallis (modes): H={h_stat:.2f}, p={kw_p:.4f}")
 
     print("\nTop 10 stops with largest absolute loss:")
     biggest_loss = valid.sort("abs_change").head(10)

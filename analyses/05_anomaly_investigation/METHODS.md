@@ -14,8 +14,11 @@ What explains sharp OTP deviations (both drops and spikes) for routes across the
 - Routes with fewer than 7 months of data are excluded from anomaly detection due to the rolling window requirement (shift + min_samples=6).
 
 ## Data
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- route metadata
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Route metadata | `prt.db` table |
 
 ## Output
 - `output/anomalies.csv` -- all flagged anomaly months

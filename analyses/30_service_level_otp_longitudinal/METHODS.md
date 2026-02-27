@@ -13,9 +13,12 @@ Within the same route over time, does increasing or decreasing scheduled trip fr
 - Scatter plot: delta_trips vs detrended delta_otp, with regression line and confidence band.
 
 ## Data
-- `scheduled_trips_monthly` -- WEEKDAY daily trip counts per route per month (Jan 2019 -- Mar 2021)
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- mode classification for bus-only stratification
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `scheduled_trips_monthly` | WEEKDAY daily trip counts per route per month (Jan 2019 -- Mar 2021) | `prt.db` table |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode classification for bus-only stratification | `prt.db` table |
 
 ## Output
 - `output/service_level_panel.csv` -- route-month panel with delta_trips, delta_otp, detrended delta_otp

@@ -19,6 +19,8 @@ Pittsburgh Regional Transit (PRT) on-time performance and system data, normalize
 | `route_stops`    | 11,078  | Bridge: which stops serve which routes   |
 | `stop_reference` | 7,554   | Dimension: historical stop reference     |
 | `otp_monthly`    | 7,651   | Fact: monthly on-time performance        |
+| `ntd_agency`     | 2,340   | Dimension: NTD agency-mode-TOS combos    |
+| `ntd_ridership`  | 673,920 | Fact: monthly UPT by agency/mode/TOS     |
 
 ### `routes`
 
@@ -86,6 +88,36 @@ Historical stop lookup table -- all stops ever in the PRT system.
 
 Primary key: `(route_id, month)`. Rows with NULL OTP in the source CSV are excluded.
 
+### `ntd_agency`
+
+National Transit Database agency dimension — one row per agency-mode-TOS combination.
+
+| Column        | Type        | Description                        |
+|---------------|-------------|------------------------------------|
+| `ntd_id`      | INTEGER PK  | NTD agency ID (e.g. 30022 = PRT)   |
+| `agency_name` | TEXT        | Agency name                         |
+| `mode`        | TEXT PK     | Mode code (MB=bus, LR=light rail, etc.) |
+| `tos`         | TEXT PK     | Type of service (DO=directly operated, PT=purchased transport) |
+| `hq_city`     | TEXT        | Headquarters city                   |
+| `hq_state`    | TEXT        | Headquarters state                  |
+| `uza_name`    | TEXT        | Urbanized area name                 |
+
+Primary key: `(ntd_id, mode, tos)`. Source: NTD Monthly Module Excel, Master sheet.
+
+### `ntd_ridership`
+
+Monthly unlinked passenger trips (UPT) from the NTD Monthly Module, Jan 2002–Dec 2025.
+
+| Column   | Type        | Description                         |
+|----------|-------------|-------------------------------------|
+| `ntd_id` | INTEGER FK  | References `ntd_agency.ntd_id`      |
+| `mode`   | TEXT FK     | Mode code                           |
+| `tos`    | TEXT FK     | Type of service                     |
+| `month`  | TEXT PK     | `"2002-01"` through `"2025-12"`     |
+| `upt`    | INTEGER     | Unlinked passenger trips (nullable) |
+
+Primary key: `(ntd_id, mode, tos, month)`. Source: NTD Monthly Module Excel, UPT sheet. Built by `src/prt_otp_analysis/ntd_ridership.py`.
+
 ## Route ID Reconciliation
 
 Route codes are extracted from `routes_by_month.csv` by splitting on `" - "` (first token).
@@ -105,6 +137,7 @@ Route codes are extracted from `routes_by_month.csv` by splitting on `" - "` (fi
 | `PRT_Current_Routes_Full_System_*.csv` | 277 | `routes` |
 | `PRT_Stop_Reference_Lookup_Table.csv` | 7,554 | `stop_reference` |
 | `Transit_stops_*.geojson` | 17,546 | Not used (same data as stops CSV) |
+| `ntd-monthly-ridership/*.xlsx` | 2,340 agencies x 288 months | `ntd_agency`, `ntd_ridership` |
 
 ---
 

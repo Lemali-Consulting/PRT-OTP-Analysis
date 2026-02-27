@@ -13,7 +13,10 @@ Are bus shelters equitably distributed relative to ridership? Which high-usage s
 - Generate charts: ridership distribution by shelter status, shelter owner breakdown, and a priority list of unsheltered high-usage stops.
 
 ## Data
-- `data/bus-stop-usage/wprdc_stop_data.csv` -- stop-level boardings/alightings, shelter status, stop type, mode
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `wprdc_stop_data.csv` | Stop-level boardings/alightings, shelter status, stop type, mode | Local CSV (`data/bus-stop-usage/`) |
 
 ## Output
 - `output/shelter_equity_summary.csv` -- per-stop summary with usage and shelter status

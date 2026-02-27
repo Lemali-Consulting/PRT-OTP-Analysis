@@ -13,11 +13,15 @@ Where do poor-performing routes cluster geographically? Are there corridor-level
 - Stops with null or NaN OTP (due to zero total trips or missing data) are excluded from the map.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route (averaged across all months, routes with < 12 months excluded)
-- `route_stops` -- which stops are served by which routes, with trip counts
-- `routes` -- route metadata including mode
-- `stops` -- lat/lon coordinates
-- GTFS `shapes.txt` and `trips.txt` -- route polyline geometries
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route (averaged across all months, routes with < 12 months excluded) | `prt.db` table |
+| `route_stops` | Which stops are served by which routes, with trip counts | `prt.db` table |
+| `routes` | Route metadata including mode | `prt.db` table |
+| `stops` | Lat/lon coordinates | `prt.db` table |
+| `shapes.txt` | Route polyline geometries | GTFS file (`data/GTFS/`) |
+| `trips.txt` | Route-to-shape mapping | GTFS file (`data/GTFS/`) |
 
 ## Output
 - `output/hotspot_map.csv` -- per-stop route-weighted OTP with coordinates

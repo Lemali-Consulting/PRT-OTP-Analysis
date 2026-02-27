@@ -15,9 +15,12 @@ PRT system OTP declined from ~69% pre-COVID to ~62% currently (Analysis 01). But
 - Test whether mode, stop count, or bus subtype predicts recovery.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- mode classification
-- `route_stops` -- stop count per route
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |
+| `route_stops` | Stop count per route | `prt.db` table |
 
 ## Output
 - `output/covid_recovery.csv` -- per-route baseline, current, delta, and characteristics

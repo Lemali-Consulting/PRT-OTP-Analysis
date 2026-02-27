@@ -10,9 +10,12 @@ Is there a correlation between how often a route runs (trip frequency) and its o
 - Compute Pearson correlation (all routes), Pearson correlation (bus-only), and Spearman rank correlation (bus-only).
 
 ## Data
-- `otp_monthly` -- monthly OTP per route
-- `route_stops` -- trip counts (`trips_wd`, `trips_7d`)
-- `routes` -- mode classification
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `route_stops` | Trip counts (`trips_wd`, `trips_7d`) | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |
 
 ## Output
 - `output/frequency_otp.csv` -- per-route frequency and OTP summary

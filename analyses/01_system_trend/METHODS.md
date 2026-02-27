@@ -13,10 +13,13 @@ Is PRT on-time performance improving, declining, or stable over the 2019--2025 p
 - Compute year-over-year change to quantify the direction.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route
-- `scheduled_trips_monthly` -- WPRDC time-varying daily trip counts per route per month (WEEKDAY), Nov 2016 -- Mar 2021
-- `route_stops` -- static trip counts for fallback weighting (Apr 2021 onward)
-- `routes` -- mode classification (used to compute bus-only trends)
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `scheduled_trips_monthly` | WPRDC time-varying daily trip counts per route per month (WEEKDAY), Nov 2016 -- Mar 2021 | `prt.db` table |
+| `route_stops` | Static trip counts for fallback weighting (Apr 2021 onward) | `prt.db` table |
+| `routes` | Mode classification (used to compute bus-only trends) | `prt.db` table |
 
 ## Output
 - `output/system_trend.csv` -- monthly weighted and unweighted OTP (all modes), with pct_time_varying column

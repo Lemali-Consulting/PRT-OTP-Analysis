@@ -14,10 +14,14 @@ Does traffic volume (AADT) explain OTP variance beyond stop count, geographic sp
 - Generate bivariate scatter (AADT vs OTP), coefficient comparison chart, and partial residual plot.
 
 ## Data
-- `otp_monthly`: route_id, month, otp (averaged to route-level, 12+ months required)
-- `route_traffic`: route_id, weighted_aadt, avg_truck_pct, match_rate (from `traffic_overlay.py`)
-- `route_stops`: stop counts, trip frequencies; `stops`: lat/lon for geographic span
-- `routes`: route_id, mode for subtype classification
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, otp (averaged to route-level, 12+ months required) | `prt.db` table |
+| `route_traffic` | route_id, weighted_aadt, avg_truck_pct, match_rate (built by `traffic_overlay.py`) | `prt.db` table |
+| `route_stops` | stop counts, trip frequencies | `prt.db` table |
+| `stops` | lat, lon for geographic span computation | `prt.db` table |
+| `routes` | route_id, mode for subtype classification | `prt.db` table |
 
 ## Output
 - `output/model_comparison.csv` -- regression results for all models

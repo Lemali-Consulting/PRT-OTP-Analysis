@@ -9,6 +9,7 @@ dependencies = [
     "folium>=0.20.0",
     "scipy>=1.14",
     "statsmodels>=0.14.6",
+    "fastexcel>=0.12",
 ]
 
 [build-system]

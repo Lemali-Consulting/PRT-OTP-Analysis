@@ -11,11 +11,14 @@ The Monongahela Incline may have zero or missing OTP data. Is this a data pipeli
 - Summarize findings as a data quality report.
 
 ## Data
-- `otp_monthly` -- any MI records
-- `routes` -- MI metadata
-- `route_stops` -- MI stop associations
-- `stops` -- physical Incline stops
-- `stop_reference` -- historical Incline stops
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Any MI records | `prt.db` table |
+| `routes` | MI metadata | `prt.db` table |
+| `route_stops` | MI stop associations | `prt.db` table |
+| `stops` | Physical Incline stops | `prt.db` table |
+| `stop_reference` | Historical Incline stops | `prt.db` table |
 
 ## Output
 - `output/incline_report.csv` -- all data found for MI across tables

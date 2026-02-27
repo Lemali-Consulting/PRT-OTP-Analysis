@@ -98,6 +98,8 @@ These items have been acquired and analyzed. Summarized here for reference.
 
 **Result:** Ridership does not add explanatory power to the multivariate model (Analysis 26: F=2.53, p=0.116, R2 change +1.5pp). High ridership does not independently degrade OTP -- poor-performing routes happen to have high ridership because they are long, many-stop corridors. However, ridership enabled Analyses 19-25 (ridership-weighted OTP, delay burden, equity, causality, COVID recovery, day-type trends).
 
+**Remaining gap:** All ridership data is route-level daily averages. The dwell-time mechanism -- crowded buses mean slower boarding at each stop -- requires **per-trip passenger load** data (e.g., APC counts by trip and stop). This would test whether OTP degrades above a crowding threshold that route-level averages wash out. See also AVL data (item #1), which could provide dwell time breakdowns.
+
 ### Traffic volume data (originally #4)
 
 **Obtained:** PennDOT AADT (Annual Average Daily Traffic) for 2,923 Allegheny County road segments via ArcGIS REST API. Spatially joined to GTFS route shapes via KDTree; loaded into `route_traffic` table.

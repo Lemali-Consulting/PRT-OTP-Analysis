@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 from scipy import stats as sp_stats
-from statsmodels.tsa.stattools import grangercausalitytests
+from statsmodels.tsa.stattools import adfuller, grangercausalitytests
 
 from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
 
@@ -91,16 +91,82 @@ def aggregate_crosscorr(ccdf: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def run_granger_tests(df: pl.DataFrame) -> pl.DataFrame:
-    """Run Granger causality tests (OTP -> ridership) for each route."""
+def check_stationarity(df: pl.DataFrame, alpha: float = 0.05) -> dict:
+    """Run ADF tests on each route's detrended OTP and ridership series.
+
+    Returns a dict with summary statistics and a per-route DataFrame.
+    """
+    routes = df["route_id"].unique().sort().to_list()
+    results = []
+    for route in routes:
+        rdf = df.filter(pl.col("route_id") == route).sort("month")
+        otp = rdf["otp_dt"].to_numpy()
+        riders = rdf["riders_dt"].to_numpy()
+        try:
+            otp_adf_p = adfuller(otp, autolag="AIC")[1]
+        except Exception:
+            otp_adf_p = None
+        try:
+            riders_adf_p = adfuller(riders, autolag="AIC")[1]
+        except Exception:
+            riders_adf_p = None
+        results.append({
+            "route_id": route,
+            "otp_adf_p": otp_adf_p,
+            "riders_adf_p": riders_adf_p,
+            "otp_stationary": otp_adf_p is not None and otp_adf_p < alpha,
+            "riders_stationary": riders_adf_p is not None and riders_adf_p < alpha,
+        })
+    adf_df = pl.DataFrame(results).with_columns(
+        pl.col("otp_stationary").cast(pl.Boolean),
+        pl.col("riders_stationary").cast(pl.Boolean),
+    )
+    n = len(routes)
+    n_otp_stat = adf_df.filter(pl.col("otp_stationary")).height
+    n_riders_stat = adf_df.filter(pl.col("riders_stationary")).height
+    n_both_stat = adf_df.filter(pl.col("otp_stationary") & pl.col("riders_stationary")).height
+    return {
+        "adf_df": adf_df,
+        "n_routes": n,
+        "n_otp_stationary": n_otp_stat,
+        "n_riders_stationary": n_riders_stat,
+        "n_both_stationary": n_both_stat,
+    }
+
+
+def run_granger_tests(df: pl.DataFrame, adf_df: pl.DataFrame) -> pl.DataFrame:
+    """Run Granger causality tests (OTP -> ridership) for each route.
+
+    First-differences non-stationary series before testing.
+    """
     routes = df["route_id"].unique().sort().to_list()
     n_routes = len(routes)
+    adf_lookup = {
+        row["route_id"]: (row["otp_stationary"], row["riders_stationary"])
+        for row in adf_df.iter_rows(named=True)
+    }
     results = []
 
     for route in routes:
         rdf = df.filter(pl.col("route_id") == route).sort("month")
         otp = rdf["otp_dt"].to_numpy()
         riders = rdf["riders_dt"].to_numpy()
+
+        otp_stat, riders_stat = adf_lookup.get(route, (True, True))
+        differenced = not (otp_stat and riders_stat)
+
+        # First-difference if either series is non-stationary
+        if differenced:
+            otp = np.diff(otp)
+            riders = np.diff(riders)
+
+        if len(otp) < MAX_LAG + 5:
+            results.append({
+                "route_id": route, "best_lag": None, "f_stat": None,
+                "p_value": None, "p_bonferroni": None,
+                "n_months": len(rdf), "differenced": differenced,
+            })
+            continue
 
         # statsmodels expects [y, x] where we test if x Granger-causes y
         data = np.column_stack([riders, otp])
@@ -130,6 +196,7 @@ def run_granger_tests(df: pl.DataFrame) -> pl.DataFrame:
             "p_value": best_p,
             "p_bonferroni": min(best_p * n_routes, 1.0) if best_p is not None else None,
             "n_months": len(rdf),
+            "differenced": differenced,
         })
 
     return pl.DataFrame(results)
@@ -220,8 +287,16 @@ def main() -> None:
               f"[{row['q25_r']:+.4f}, {row['q75_r']:+.4f}]  "
               f"{row['n_significant']}/{row['n_routes']}")
 
+    print("\nChecking stationarity (ADF tests on detrended series)...")
+    adf_results = check_stationarity(df)
+    print(f"  OTP stationary:      {adf_results['n_otp_stationary']}/{adf_results['n_routes']} routes")
+    print(f"  Ridership stationary: {adf_results['n_riders_stationary']}/{adf_results['n_routes']} routes")
+    print(f"  Both stationary:     {adf_results['n_both_stationary']}/{adf_results['n_routes']} routes")
+    n_diff = adf_results['n_routes'] - adf_results['n_both_stationary']
+    print(f"  Will first-difference {n_diff} routes before Granger testing")
+
     print("\nRunning Granger causality tests...")
-    gdf = run_granger_tests(df)
+    gdf = run_granger_tests(df, adf_results["adf_df"])
     valid = gdf.filter(pl.col("p_value").is_not_null())
     n_sig = valid.filter(pl.col("p_value") < 0.05).height
     n_bonf = valid.filter(pl.col("p_bonferroni") < 0.05).height

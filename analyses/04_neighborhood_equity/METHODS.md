@@ -15,10 +15,13 @@ Are certain neighborhoods or municipalities systematically underserved by on-tim
 - Examine whether the gap between best- and worst-served areas is widening or narrowing over time via rolling quintile assignment on monthly data.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route (routes with fewer than 12 months excluded)
-- `route_stops` -- links routes to stops with trip counts (rows with NULL `trips_7d` excluded)
-- `stops` -- neighborhood and municipality for each stop
-- `routes` -- mode (BUS, RAIL) for bus-only stratification
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route (routes with fewer than 12 months excluded) | `prt.db` table |
+| `route_stops` | Links routes to stops with trip counts (rows with NULL `trips_7d` excluded) | `prt.db` table |
+| `stops` | Neighborhood and municipality for each stop | `prt.db` table |
+| `routes` | Mode (BUS, RAIL) for bus-only stratification | `prt.db` table |
 
 ## Output
 - `output/neighborhood_otp.csv` -- OTP aggregated by neighborhood (weighted, unweighted, gap, and bus-only weighted)

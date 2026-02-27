@@ -12,10 +12,13 @@ Do passengers at major transfer hubs -- stops served by many routes -- experienc
 - Scatter plot of connectivity vs stop-level OTP.
 
 ## Data
-- `route_stops` -- which routes serve which stops, with trip counts
-- `stops` -- stop names and coordinates
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- mode for context
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `route_stops` | Which routes serve which stops, with trip counts | `prt.db` table |
+| `stops` | Stop names and coordinates | `prt.db` table |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode for context | `prt.db` table |
 
 ## Output
 - `output/hub_performance.csv` -- per-stop connectivity, OTP, and classification

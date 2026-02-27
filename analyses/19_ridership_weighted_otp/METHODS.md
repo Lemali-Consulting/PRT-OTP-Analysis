@@ -14,11 +14,14 @@ How does the average rider's on-time experience differ from the average route's 
 - Test whether the ridership-weighted series is significantly different from the trip-weighted series (paired t-test or Wilcoxon).
 
 ## Data
-- `otp_monthly`: route, month, otp
-- `data/average-ridership/`: route, month_start, day_type='WEEKDAY', avg_riders
-- `route_stops`: for trip-weighted baseline (trips_wd)
-- Join on route code and month; restrict to overlap period (Jan 2019 -- Oct 2024).
-- Exclude routes with fewer than 12 months of data.
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Route, month, OTP | `prt.db` table |
+| `average-ridership` | Route, month_start, day_type='WEEKDAY', avg_riders | Local CSV (`data/average-ridership/`) |
+| `route_stops` | For trip-weighted baseline (trips_wd) | `prt.db` table |
+
+**Notes:** Join on route code and month; restrict to overlap period (Jan 2019 -- Oct 2024). Exclude routes with fewer than 12 months of data.
 
 ## Output
 - `output/ridership_weighted_otp_trend.png` -- three-series time plot

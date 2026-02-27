@@ -13,9 +13,15 @@ Which routes' OTP values move together over time? Identifying co-moving clusters
 - Visualize with a dendrogram and a clustered correlation heatmap.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route (time series)
-- `routes` -- mode and name for labeling
-- `route_stops` + `stops` -- stop count and geography for cluster characterization
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route (time series) | `prt.db` table |
+| `routes` | Mode and name for labeling | `prt.db` table |
+| `route_stops` | Stop count per route for cluster characterization | `prt.db` table |
+| `stops` | Geography for cluster characterization | `prt.db` table |
+
+**Notes:** `route_stops` is joined to `stops` to derive stop count and geographic location per route.
 
 ## Output
 - `output/cluster_membership.csv` -- route-to-cluster assignment with cluster characteristics

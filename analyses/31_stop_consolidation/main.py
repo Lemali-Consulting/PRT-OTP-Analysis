@@ -128,7 +128,7 @@ def find_candidates(usage: pl.DataFrame) -> pl.DataFrame:
 
 
 def route_summary(candidates: pl.DataFrame, route_otp: pl.DataFrame, slope: float) -> pl.DataFrame:
-    """Build per-route consolidation summary with estimated OTP gain."""
+    """Build per-route consolidation summary with estimated OTP gain (bus-only)."""
     # Count candidates per route (using route_name from CSV = route_id in DB)
     per_route = (
         candidates.group_by("route_name")
@@ -146,10 +146,13 @@ def route_summary(candidates: pl.DataFrame, route_otp: pl.DataFrame, slope: floa
         how="inner",
     )
 
+    # Only apply bus-only regression slope to bus routes; flag non-bus as extrapolation
     merged = merged.with_columns(
         (pl.col("stop_count") - pl.col("n_candidates")).alias("projected_stops"),
-        # slope is negative, removing stops means multiplying removed count by -slope
-        (-slope * pl.col("n_candidates")).alias("est_otp_gain"),
+        pl.when(pl.col("mode") == "BUS")
+        .then(-slope * pl.col("n_candidates"))
+        .otherwise(None)
+        .alias("est_otp_gain"),
     )
 
     return merged.sort("est_otp_gain", descending=True)
@@ -160,7 +163,9 @@ def make_charts(candidates: pl.DataFrame, summary: pl.DataFrame) -> None:
     plt = setup_plotting()
 
     # --- Bar chart: top 20 routes by estimated OTP gain ---
-    top = summary.filter(pl.col("n_candidates") > 0).sort("est_otp_gain", descending=True).head(20)
+    top = summary.filter(
+        (pl.col("n_candidates") > 0) & pl.col("est_otp_gain").is_not_null()
+    ).sort("est_otp_gain", descending=True).head(20)
     if len(top) == 0:
         print("  No routes with candidates -- skipping bar chart.")
         return

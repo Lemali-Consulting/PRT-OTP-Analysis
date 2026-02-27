@@ -12,10 +12,13 @@ Analysis 04 examined neighborhood equity but lost 58% of stops due to missing `h
 - Bar chart of top/bottom municipalities, and Pittsburgh vs suburban comparison.
 
 ## Data
-- `stops` -- municipality (`muni`) and county for each stop
-- `route_stops` -- links routes to stops with trip counts
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- mode classification
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `stops` | Municipality (`muni`) and county for each stop | `prt.db` table |
+| `route_stops` | Links routes to stops with trip counts | `prt.db` table |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |
 
 ## Output
 - `output/municipal_otp.csv` -- per-municipality average OTP and stop count

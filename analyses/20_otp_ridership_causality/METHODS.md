@@ -9,13 +9,17 @@ Does a decline in on-time performance predict subsequent ridership losses? If so
 - Aggregate cross-correlations across routes (median and IQR) to identify the dominant lag.
 - Run Granger causality tests (statsmodels) on routes with sufficient data (36+ months), testing whether lagged OTP improves ridership prediction beyond ridership's own autoregressive trend.
 - Control for system-wide trends by detrending both series (subtract system monthly mean) before testing.
+- Check stationarity of each route's detrended series using the Augmented Dickey-Fuller (ADF) test. For routes where either series is non-stationary (ADF p >= 0.05), first-difference both series before Granger testing to avoid spurious regression.
 - Report the share of routes where Granger causality is significant at p < 0.05, with Bonferroni correction.
 
 ## Data
-- `otp_monthly`: route_id, month, otp
-- `ridership_monthly`: route_id, month, day_type='WEEKDAY', avg_riders
-- Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024).
-- Exclude routes with fewer than 36 months of paired data.
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, OTP | `prt.db` table |
+| `ridership_monthly` | route_id, month, day_type='WEEKDAY', avg_riders | `prt.db` table |
+
+**Notes:** Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024). Exclude routes with fewer than 36 months of paired data.
 
 ## Output
 - `output/lagged_crosscorr.png` -- median cross-correlation by lag with IQR band

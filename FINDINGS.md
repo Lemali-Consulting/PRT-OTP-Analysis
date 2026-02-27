@@ -203,7 +203,7 @@ There is **no evidence that OTP declines predict subsequent ridership losses**. 
 
 ## 21. COVID Ridership vs OTP Recovery (Analysis 21)
 
-**Zero of 93 routes** have recovered to pre-COVID weekday ridership (median -43%). Routes that lost *more* ridership tended to see *better* OTP recovery (Pearson r = -0.21, p = 0.047; Spearman r = -0.29, p = 0.005), weakly supporting a crowding mechanism: fewer riders means shorter dwell times and better schedule adherence. However, the system is running far fewer riders and OTP has *still* declined for 58/93 routes, indicating the OTP decline is primarily driven by operational factors (staffing, traffic) rather than demand-side crowding. No subtype (local, flyer, busway, rail) recovered OTP significantly better than others (Kruskal-Wallis p = 0.58). Flyer routes lost the most ridership (median -68%) due to commute-demand collapse.
+**Zero of 93 routes** have recovered to pre-COVID weekday ridership (median -43%). Routes that lost *more* ridership tended to see *better* OTP recovery (Pearson r = -0.21, p = 0.047; Spearman r = -0.29, p = 0.005), weakly supporting a crowding mechanism: fewer riders means shorter dwell times and better schedule adherence. However, a regression-to-the-mean test (baseline OTP vs OTP delta: r = -0.18, p = 0.08) suggests this correlation may be partly artifactual. The system is running far fewer riders and OTP has *still* declined for 58/93 routes, indicating the OTP decline is primarily driven by operational factors (staffing, traffic) rather than demand-side crowding. No subtype (local, flyer, busway, rail) recovered OTP significantly better than others (Kruskal-Wallis p = 0.58). Flyer routes lost the most ridership (median -68%) due to commute-demand collapse.
 
 ## 22. Passenger-Weighted Delay Burden (Analysis 22)
 
@@ -241,7 +241,7 @@ At the **route-month level** (n=6,672, 72 monthly clusters), weather explains ju
 
 ## 29. Service Change Impact (Analysis 29)
 
-Schedule changes (pick period transitions) are associated with a small but statistically significant **positive** OTP shift (+0.6 pp mean, t=2.95, p=0.003), though the effect is weak and does not differ significantly by event type. Of 738 events across 101 routes, service increases (+118 trips/day) yield +1.3 pp OTP improvement, service cuts (-64 trips/day) yield +0.1 pp, and neutral restructurings yield +0.8 pp -- but the Kruskal-Wallis test finds no significant difference between types (H=4.03, p=0.13). The correlation between trip count change and OTP change is marginally significant (Spearman rho=0.074, p=0.045) but explains less than 1% of variance. COVID-period events (n=184) show a smaller effect (+0.2 pp) than non-COVID events (+0.8 pp). The positive mean delta may reflect PRT timing changes to coincide with operational improvements or seasonal gains rather than a causal effect of the schedule change itself.
+Schedule changes (pick period transitions) are associated with a small but statistically significant **positive** OTP shift (+0.6 pp mean). A route-clustered t-test (averaging within route first, n=93 route means) confirms significance (t=4.37, p<0.001), robust to within-route non-independence. Of 737 events across 101 routes (consecutive months only), service increases (+118 trips/day) yield +1.3 pp OTP improvement, service cuts (-64 trips/day) yield +0.1 pp, and neutral restructurings yield +0.8 pp -- but the Kruskal-Wallis test finds no significant difference between types (H=4.43, p=0.11). COVID-period events (n=184) show a smaller effect (+0.2 pp) than non-COVID events (+0.7 pp). The positive mean delta may reflect PRT timing changes to coincide with operational improvements or seasonal gains rather than a causal effect of the schedule change itself.
 
 ## 30. Service Level vs OTP Longitudinal (Analysis 30)
 
@@ -259,7 +259,7 @@ Only **7.3% of bus stops have shelters**, yet those sheltered stops serve **31% 
 
 ## 33. Pandemic Ridership Geography (Analysis 33)
 
-System weekday ridership fell **63.1%** between pre-pandemic and pandemic periods. The loss was **remarkably uniform geographically**: median stop-level change was -60% for downtown, -62% for the inner ring (2-8 km), and -59% for the outer ring (>8 km). The inner ring had the steepest aggregate loss (-65.7%), driven by Oakland/university-area stops that lost 70-87%. Outer suburbs retained ridership slightly better (-55.7% aggregate), consistent with more transit-dependent essential workers. Mode differences were minimal (bus -60%, busway -58%, light rail -56%). The geographic uniformity challenges the narrative that downtown transit was disproportionately affected -- the pandemic's impact was driven by system-wide behavioral shifts rather than location-specific factors.
+System weekday ridership fell **63.1%** between pre-pandemic and pandemic periods. The loss was **remarkably uniform geographically**: median stop-level change was -60% for downtown, -62% for the inner ring (2-8 km), and -59% for the outer ring (>8 km). Zone differences are statistically significant (Kruskal-Wallis H=13.4, p=0.001), driven by the inner ring losing significantly more than the outer ring (Bonferroni-corrected p=0.001); downtown does not differ significantly from either ring. The inner ring had the steepest aggregate loss (-65.7%), driven by Oakland/university-area stops that lost 70-87%. Outer suburbs retained ridership slightly better (-55.7% aggregate), consistent with more transit-dependent essential workers. Mode differences were not statistically significant (Kruskal-Wallis p=0.49; bus -60%, busway -58%, light rail -56%). The geographic uniformity challenges the narrative that downtown transit was disproportionately affected -- the pandemic's impact was driven by system-wide behavioral shifts rather than location-specific factors.
 
 ## 34. Ridership Concentration / Pareto (Analysis 34)
 
@@ -267,7 +267,15 @@ PRT ridership is extremely concentrated: **2% of stops serve 50% of riders**, an
 
 ## 35. Boarding/Alighting Flow Analysis (Analysis 35)
 
-System boardings (130,121/day) and alightings (129,684/day) are nearly balanced (ratio 1.003), but individual stops show strong directional asymmetry. **Inbound** stops net +22,385 boardings (ratio 1.36); **outbound** net -24,197 (ratio 0.73) -- confirming PRT's classic radial commuter pattern. The top generators (Smithfield St, 5th Ave) are outbound departure points; the top attractors (Wood St, Liberty Ave/Gateway) are inbound arrival points. This street-level split reflects downtown's one-way grid routing. Busway stations show split behavior: Wilkinsburg Platform C is a generator (+837/day) while Platform A is an attractor (-935/day). Oakland/university stops are net generators, suggesting the corridor is a secondary hub where students board outbound.
+System boardings (130,121/day) and alightings (129,684/day) are nearly balanced (ratio 1.003), but individual stops show strong directional asymmetry. **Inbound** stops net +11,207 boardings (ratio 1.36); **outbound** net -12,234 (ratio 0.72) -- confirming PRT's classic radial commuter pattern. The top generators (Smithfield St, 5th Ave) are outbound departure points; the top attractors (Wood St, Liberty Ave/Gateway) are inbound arrival points. This street-level split reflects downtown's one-way grid routing. Busway stations show split behavior: Wilkinsburg Platform C is a generator (+837/day) while Platform A is an attractor (-935/day). Oakland/university stops are net generators, suggesting the corridor is a secondary hub where students board outbound.
+
+## 36. National Ridership Growth (Analysis 36)
+
+Among the 150 largest US transit agencies, the median ridership change from 2019 to 2024 was **−22.4%**. Only **11 of 150 agencies (7%)** recovered to pre-pandemic levels. PRT ranks **136th out of 150** with a **−42.4% decline** (64.1M → 36.9M UPT), placing it in the bottom quintile — substantially worse than the national median. The distribution is roughly normal around −22%, with a long left tail of commuter-heavy agencies (BART −56%, Metrolink −60%). The few agencies that exceeded 2019 levels (Alexandria +35%, Richmond +24%, Tucson +22%) tend to be smaller systems that restructured routes or adopted fare-free programs.
+
+## 37. Peer City Ridership Comparison (Analysis 37)
+
+Among 8 peer mid-size transit agencies, Pittsburgh ties with St. Louis for the **lowest overall ridership recovery at 57.6%** of 2019 levels. Cleveland leads at 77.4%, followed by Baltimore (72.8%) and Portland (67.4%). **Bus recovery outpaces rail at all 8 peers**: PRT bus is at 59.2% (7th of 8) while PRT light rail is at **43.6% (worst of all 8 peers)**. The rail drag is the largest single factor in Pittsburgh's low ranking — if PRT rail matched the peer median (~56%), overall recovery would be ~60%. Pittsburgh's indexed trajectory flattens earlier than most peers (~mid-2022), suggesting recovery stalled while cities like Cleveland and Baltimore continued improving.
 
 ## Key Takeaways
 
@@ -294,6 +302,7 @@ System boardings (130,121/day) and alightings (129,684/day) are nearly balanced 
 13. **The COVID OTP decline is partially driven by regression to the mean** (r = -0.25, p = 0.02). Specific local bus routes in the eastern corridor (71B, 58, 65) have deteriorated 15--21 pp beyond what RTM alone predicts.
 14. **OTP declines do not predict subsequent ridership losses** (0/93 routes significant after correction). The weak negative correlation suggests reverse causality: lower ridership improves OTP through reduced crowding, not that poor OTP drives riders away.
 15. **Pandemic ridership loss was geographically uniform** (downtown -60%, inner ring -62%, outer ring -59%), challenging the narrative that downtown transit was disproportionately affected.
+16. **PRT's recovery lags national peers.** At −42.4%, PRT ranks 136th of 150 large agencies (median −22.4%). Among 8 peer mid-size cities, Pittsburgh ties for last at 57.6% recovery; light rail at 43.6% is the worst peer-city rail recovery.
 
 ### Equity and human impact
 
@@ -342,8 +351,10 @@ System boardings (130,121/day) and alightings (129,684/day) are nearly balanced 
 | 28 | [Weather Impact](analyses/28_weather_impact/) | Tests whether weather (precipitation, snow, temperature) explains OTP variance or the counterintuitive seasonal pattern from Analysis 06. |
 | 29 | [Service Change Impact](analyses/29_service_change_impact/) | Do schedule changes (pick period transitions) correlate with OTP shifts? |
 | 30 | [Service Level Otp Longitudinal](analyses/30_service_level_otp_longitudinal/) | Within-route panel: does changing trip frequency improve or degrade OTP? |
-| 31 | [Stop Consolidation](analyses/31_stop_consolidation/) | Identifies low-usage stops with nearby neighbors as candidates for consolidation, estimates per-route OTP gains from reduced stop counts. |
-| 32 | [Shelter Equity](analyses/32_shelter_equity/) | Assesses whether bus shelters are equitably placed relative to stop-level ridership volume; identifies high-usage unsheltered stops. |
-| 33 | [Pandemic Ridership Geography](analyses/33_pandemic_ridership_geography/) | Maps the spatial pattern of stop-level ridership loss during the pandemic by distance zone, mode, and geography. |
-| 34 | [Ridership Concentration](analyses/34_ridership_concentration/) | Quantifies Pareto concentration of ridership across stops; tests whether route-level Gini correlates with OTP. |
-| 35 | [Boarding Alighting Flows](analyses/35_boarding_alighting_flows/) | Analyzes net boarding-alighting flows by stop and direction to identify major trip generators vs attractors. |
+| 31 | [Stop Consolidation](analyses/31_stop_consolidation/) | Identify low-usage stops that could be consolidated to improve OTP, leveraging the finding that stop count is the strongest OTP predictor. |
+| 32 | [Shelter Equity](analyses/32_shelter_equity/) | Assess whether bus shelters are equitably placed relative to stop-level ridership volume and demographics. |
+| 33 | [Pandemic Ridership Geography](analyses/33_pandemic_ridership_geography/) | Map the spatial pattern of stop-level ridership loss and recovery between pre-pandemic and pandemic periods. |
+| 34 | [Ridership Concentration](analyses/34_ridership_concentration/) | Quantify how concentrated ridership is across stops and test whether concentration correlates with route OTP. |
+| 35 | [Boarding Alighting Flows](analyses/35_boarding_alighting_flows/) | Analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors. |
+| 36 | [National Ridership Growth](analyses/36_national_ridership_growth/) | Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies using NTD data; rank PRT nationally. |
+| 37 | [Peer City Ridership](analyses/37_peer_city_ridership/) | Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits. |

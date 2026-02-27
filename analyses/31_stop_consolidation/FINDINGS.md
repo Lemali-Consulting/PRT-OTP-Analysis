@@ -50,3 +50,7 @@ Stop consolidation remains politically sensitive. Community opposition to stop r
 - Stop usage data is from FY2019 (pre-pandemic); current usage patterns may have shifted.
 - Some stops may appear low-usage on one route but serve high volumes on other routes at the same physical location; the data is per stop-route, not per physical stop.
 - Projected stop counts can go negative for routes where the CSV has more stop-route combinations than the DB stop count (due to different data vintages).
+
+## Review History
+
+- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md) — 1 significant issue. OTP gain estimates now produced only for bus routes; non-bus routes set to null (bus-only regression slope not applicable to rail/busway). METHODS.md updated to reflect independent slope computation.

@@ -11,9 +11,13 @@ How have weekday, Saturday, and Sunday ridership patterns changed over time, and
 - Plot the weekend share trend over time system-wide: weekend share = (SAT total riders + SUN total riders) / (WEEKDAY + SAT + SUN total riders).
 
 ## Data
-- `ridership_monthly`: route_id, month, day_type, avg_riders, day_count
-- `otp_monthly`: route_id, month, otp (for correlation with weekend share)
-- All day types used for ridership trends; overlap period (Jan 2019 -- Oct 2024) for OTP correlation.
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `ridership_monthly` | route_id, month, day_type, avg_riders, day_count; all day types used for ridership trends | `prt.db` table |
+| `otp_monthly` | route_id, month, otp; used for correlation with weekend share | `prt.db` table |
+
+**Notes:** Overlap period (Jan 2019 -- Oct 2024) for OTP correlation.
 
 ## Output
 - `output/daytype_ridership_trend.png` -- indexed ridership by day type over time

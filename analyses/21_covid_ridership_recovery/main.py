@@ -100,6 +100,12 @@ def analyze(df: pl.DataFrame) -> dict:
     results["spearman_r"] = r_s
     results["spearman_p"] = p_s
 
+    # Regression to the mean test: corr(baseline_otp, otp_delta)
+    baseline_otp = df["baseline_otp"].to_numpy()
+    rtm_r, rtm_p = stats.pearsonr(baseline_otp, otp_d)
+    results["rtm_r"] = rtm_r
+    results["rtm_p"] = rtm_p
+
     # Summary counts
     results["n_both_improved"] = int(((otp_d > 0) & (rider_r > 0)).sum())
     results["n_both_declined"] = int(((otp_d < 0) & (rider_r < 0)).sum())
@@ -254,6 +260,12 @@ def main() -> None:
     print(f"\n  Ridership recovery vs OTP recovery:")
     print(f"    Pearson:  r = {results['pearson_r']:.4f}, p = {results['pearson_p']:.4f}")
     print(f"    Spearman: r = {results['spearman_r']:.4f}, p = {results['spearman_p']:.4f}")
+
+    print(f"\n  Regression to the mean test (baseline OTP vs OTP delta):")
+    print(f"    Pearson:  r = {results['rtm_r']:.4f}, p = {results['rtm_p']:.4f}")
+    if results['rtm_p'] < 0.05:
+        print("    => RTM detected: routes with extreme baseline OTP regress toward the mean.")
+        print("       The ridership-OTP correlation may be partly artifactual.")
 
     if "kruskal_h" in results:
         print(f"\n  Kruskal-Wallis (OTP delta by subtype):")

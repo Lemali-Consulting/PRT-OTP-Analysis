@@ -12,10 +12,14 @@ Which routes impose the largest total delay burden on riders, accounting for bot
 - Compare the "worst by rate" (lowest OTP) with "worst by burden" (most late rider-trips) to show how ridership weighting shifts priorities.
 
 ## Data
-- `otp_monthly`: route_id, month, otp
-- `ridership_monthly`: route_id, month, day_type='WEEKDAY', avg_riders, day_count
-- `routes`: route_id, route_name
-- Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024).
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, otp | `prt.db` table |
+| `ridership_monthly` | route_id, month, avg_riders, day_count; filtered to day_type='WEEKDAY' | `prt.db` table |
+| `routes` | route_id, route_name | `prt.db` table |
+
+**Notes:** Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024).
 
 ## Output
 - `output/delay_burden_ranking.csv` -- routes ranked by total late rider-trips

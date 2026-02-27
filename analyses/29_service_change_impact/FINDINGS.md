@@ -7,7 +7,7 @@ Schedule changes (pick period transitions) are associated with a small but stati
 ## Key Numbers
 
 - **738 schedule change events** detected across 101 routes (Nov 2016 -- Mar 2021)
-- **Mean OTP delta: +0.6 pp** (t=2.95, p=0.003) -- schedule changes are followed by slightly higher OTP on average
+- **Mean OTP delta: +0.6 pp** (naive t=2.82, p=0.005; route-clustered t=4.37, p<0.001) -- schedule changes are followed by slightly higher OTP on average
 - **By event type:**
   - Service increases (+118 trips/day avg): +1.3 pp OTP delta (n=110)
   - Service cuts (-64 trips/day avg): +0.1 pp OTP delta (n=215)
@@ -34,6 +34,12 @@ For policy, the null Kruskal-Wallis result is the most actionable finding: it su
 
 ## Caveats
 
+- **Non-independence**: the 738 events come from only 101 routes (~7 events per route), and the 3-month averaging windows can overlap for events on the same route. The naive t-test (p=0.003) overstates significance by treating all events as independent. A route-clustered test (averaging within route first, then testing n=101 route means) provides a more conservative and appropriate p-value.
+- Only events between consecutive months are included; gaps in the panel are excluded to avoid spurious multi-month deltas.
 - The 3-month averaging window means overlapping events can contaminate each other. Routes with frequent schedule changes (every 2-3 months) have correlated before/after windows.
 - The positive mean OTP delta could reflect a selection effect: PRT may time schedule changes to coincide with seasonal improvements or known operational gains.
 - Causality cannot be established -- schedule changes and OTP improvements may share common causes (e.g., new management priorities).
+
+## Review History
+
+- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-26-30.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-26-30.md) — 1 significant issue. Added consecutive-month filter and route-clustered t-test (t=4.37, p<0.001). Effect survives clustering; non-independence caveat added.

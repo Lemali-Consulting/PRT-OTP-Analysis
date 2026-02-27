@@ -12,7 +12,10 @@ Which stops are major trip generators (net boardings) vs trip attractors (net al
 - Compute the boarding-to-alighting ratio per stop and examine its distribution.
 
 ## Data
-- `data/bus-stop-usage/wprdc_stop_data.csv` -- stop-level boardings/alightings by route, direction, and period
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `wprdc_stop_data.csv` | Stop-level boardings/alightings by route, direction, and period | Local CSV (`data/bus-stop-usage/`) |
 
 ## Output
 - `output/stop_net_flow.csv` -- per-stop boardings, alightings, net flow, and classification

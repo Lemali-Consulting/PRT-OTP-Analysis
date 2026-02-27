@@ -13,10 +13,14 @@ What share of total system ridership is carried by the lowest-performing (worst 
 - Repeat all analyses for bus-only to control for mode effects.
 
 ## Data
-- `otp_monthly`: route_id, month, otp
-- `ridership_monthly`: route_id, month, day_type='WEEKDAY', avg_riders
-- `routes`: route_id, mode
-- Overlap period (Jan 2019 -- Oct 2024); exclude routes with fewer than 12 months of paired data.
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, otp | `prt.db` table |
+| `ridership_monthly` | route_id, month, avg_riders; filtered to day_type='WEEKDAY' | `prt.db` table |
+| `routes` | route_id, mode | `prt.db` table |
+
+**Notes:** Overlap period (Jan 2019 -- Oct 2024); exclude routes with fewer than 12 months of paired data.
 
 ## Output
 - `output/ridership_lorenz.png` -- Lorenz curve of ridership vs OTP rank (all routes + bus-only)

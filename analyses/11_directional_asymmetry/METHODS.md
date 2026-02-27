@@ -12,9 +12,12 @@ Does a structural directional imbalance in trip frequency correlate with worse O
 - Investigate routes with highest asymmetry.
 
 ## Data
-- `route_stops` -- directional trip counts
-- `otp_monthly` -- OTP per route
-- `routes` -- route metadata
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `route_stops` | Directional trip counts | `prt.db` table |
+| `otp_monthly` | OTP per route | `prt.db` table |
+| `routes` | Route metadata | `prt.db` table |
 
 ## Output
 - `output/directional_asymmetry.csv` -- per-route directional trip breakdown and OTP

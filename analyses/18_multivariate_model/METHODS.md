@@ -11,10 +11,13 @@ How much of OTP variation can we explain with available structural variables? Wh
 - Generate a coefficient plot and a predicted-vs-actual scatter plot.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route (averaged)
-- `route_stops` -- stop count, trip counts per route
-- `stops` -- lat/lon for span calculation, muni for jurisdiction count
-- `routes` -- mode classification
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route (averaged) | `prt.db` table |
+| `route_stops` | Stop count, trip counts per route | `prt.db` table |
+| `stops` | Lat/lon for span calculation, muni for jurisdiction count | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |
 
 ## Output
 - `output/model_coefficients.csv` -- feature, coefficient, std error, p-value, beta weight

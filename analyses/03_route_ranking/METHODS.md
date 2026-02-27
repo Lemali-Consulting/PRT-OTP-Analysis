@@ -14,9 +14,12 @@ Which routes are the best and worst performers? Which are improving or declining
 - Flag routes with high volatility that may warrant anomaly investigation.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- route metadata (name, mode)
-- `route_stops` -- stop count as a complexity proxy (5 routes lack entries in this table)
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Route metadata (name, mode) | `prt.db` table |
+| `route_stops` | Stop count as a complexity proxy (5 routes lack entries in this table) | `prt.db` table |
 
 ## Output
 - `output/route_ranking.csv` -- per-route summary stats, slopes with SEs/CIs, overall and within-mode rankings

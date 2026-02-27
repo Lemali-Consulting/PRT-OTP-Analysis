@@ -12,10 +12,13 @@ Does the geographic extent of a route predict on-time performance independently 
 - Scatter plots for span vs OTP and stop density vs OTP.
 
 ## Data
-- `route_stops` -- links routes to stops
-- `stops` -- lat/lon coordinates
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- mode classification
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `route_stops` | Links routes to stops | `prt.db` table |
+| `stops` | Lat/lon coordinates | `prt.db` table |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |
 
 ## Output
 - `output/geographic_span.csv` -- per-route span, stop density, stop count, avg OTP

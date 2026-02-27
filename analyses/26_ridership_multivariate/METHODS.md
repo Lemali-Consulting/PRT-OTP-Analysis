@@ -13,11 +13,16 @@ Does average ridership add explanatory power to the Analysis 18 OLS model (stop 
 - Repeat with bus-only subset.
 
 ## Data
-- `otp_monthly`: route_id, month, otp (averaged to route-level)
-- `ridership_monthly`: route_id, month, day_type='WEEKDAY', avg_riders (averaged across all months)
-- `route_stops`: route_id, stop_id for stop counts; stops lat/lon for geographic span
-- `routes`: route_id, mode for subtype classification
-- Overlap period (Jan 2019 -- Oct 2024); exclude routes with fewer than 12 months of paired data.
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, otp (averaged to route-level) | `prt.db` table |
+| `ridership_monthly` | route_id, month, avg_riders (averaged across all months); filtered to day_type='WEEKDAY' | `prt.db` table |
+| `route_stops` | route_id, stop_id for stop counts | `prt.db` table |
+| `stops` | lat, lon for geographic span computation | `prt.db` table |
+| `routes` | route_id, mode for subtype classification | `prt.db` table |
+
+**Notes:** Overlap period (Jan 2019 -- Oct 2024); exclude routes with fewer than 12 months of paired data.
 
 ## Output
 - `output/model_comparison.csv` -- side-by-side regression results (base vs expanded vs bus-only)

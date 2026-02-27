@@ -27,10 +27,12 @@ Three analysis blocks test weather's explanatory power at different levels:
 
 ## Data
 
-- `weather_monthly` -- monthly weather aggregates from NOAA GHCND station USW00094823 (Pittsburgh Intl Airport). Built by `src/prt_otp_analysis/weather.py`.
-- `otp_monthly` -- route-month OTP observations.
-- `routes` -- route metadata (mode, name).
-- `route_stops` -- trip counts for weighting.
+| Name | Description | Source |
+|------|-------------|--------|
+| `weather_monthly` | Monthly weather aggregates from NOAA GHCND station USW00094823 (Pittsburgh Intl Airport); built by `weather.py` | `prt.db` table |
+| `otp_monthly` | Route-month OTP observations | `prt.db` table |
+| `routes` | Route metadata (mode, name) | `prt.db` table |
+| `route_stops` | Trip counts for weighting | `prt.db` table |
 
 ## Output
 

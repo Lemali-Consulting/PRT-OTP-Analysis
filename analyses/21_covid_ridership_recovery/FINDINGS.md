@@ -26,8 +26,13 @@ The most policy-relevant finding is the **universal ridership collapse**: every 
 The absence of subtype differences (Kruskal-Wallis p = 0.58) confirms Analysis 14's finding: no route type has recovered OTP systematically better or worse than others.
 
 ## Caveats
+- **Regression to the mean**: baseline OTP is negatively correlated with OTP delta (as found in Analysis 14 for the same OTP data), meaning routes with extreme pre-COVID OTP tend to regress toward the mean regardless of ridership changes. The headline correlation (r = -0.21, p = 0.047) may be partly artifactual due to RTM. The Spearman result (r = -0.29, p = 0.005) is more robust but the RTM caveat still applies.
 - The ridership data ends Oct 2024; more recent ridership trends are not captured.
 - "Recovery" is defined as a simple average comparison between two periods, not a trajectory analysis. A route could be on an upward trend that the period average does not fully reflect.
 - The correlation between ridership change and OTP change does not establish causation; both could be driven by a third factor (e.g., service cuts, schedule changes).
 - Flyer and busway subtypes have small sample sizes (n=17 and n=3), limiting subtype-level conclusions.
 - Ridership data is weekday only; weekend recovery patterns may differ.
+
+## Review History
+
+- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md) — 1 significant issue. Added RTM test (baseline OTP vs OTP delta: r=-0.18, p=0.08). Borderline RTM; caveat added.

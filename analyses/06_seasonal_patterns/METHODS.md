@@ -16,9 +16,12 @@ Do PRT routes exhibit consistent seasonal OTP patterns? Are summer or winter mon
 - Route-level analysis requires at least 3 years of data (36 months) for reliable seasonal estimates.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route
-- `route_stops` -- trip counts for weighting
-- `routes` -- route metadata
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `route_stops` | Trip counts for weighting | `prt.db` table |
+| `routes` | Route metadata | `prt.db` table |
 
 ## Output
 - `output/seasonal_patterns.csv` -- month-of-year seasonal profile per route

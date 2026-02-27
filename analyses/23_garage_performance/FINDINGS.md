@@ -61,3 +61,7 @@ The R² increase from 0.31 to 0.41 suggests that garage assignment captures roug
 - The controlled model uses only stop count and span as structural controls. Adding further controls (e.g., traffic density, road type, schedule slack) could reduce or eliminate the garage effect.
 - The F-test assumes normally distributed residuals; the Kruskal-Wallis test (non-parametric) is more robust but does not support covariates.
 - South Hills Village (n=3 rail routes) and Incline (excluded, no OTP data) are too small for meaningful comparison and are excluded from the controlled model.
+
+## Review History
+
+- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md) — 1 significant issue. Added route-garage uniqueness guard: most-common garage per route used for grouping, with assertion to catch future data with reassignments.

@@ -17,9 +17,12 @@ Does light rail (dedicated right-of-way) consistently outperform bus? Do limited
 - Test whether the mode gap changes over time.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route
-- `routes` -- mode classification (filter out UNKNOWN)
-- `route_stops` -- trip counts for trip-weighted mode averages
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode classification (filter out UNKNOWN) | `prt.db` table |
+| `route_stops` | Trip counts for trip-weighted mode averages | `prt.db` table |
 
 ## Output
 - `output/mode_comparison.csv` -- monthly OTP by mode/type (unweighted)

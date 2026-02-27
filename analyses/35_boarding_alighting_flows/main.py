@@ -78,8 +78,17 @@ def load_directional_flows() -> pl.DataFrame:
         & pl.col("direction").is_not_null()
     )
 
+    # Average across datekeys per stop-route-direction first, then sum to direction level
+    per_stop_route = (
+        df.group_by(["stop_id", "route_name", "direction"])
+        .agg(
+            pl.col("avg_ons").mean().alias("avg_ons"),
+            pl.col("avg_offs").mean().alias("avg_offs"),
+        )
+    )
+
     return (
-        df.group_by("direction")
+        per_stop_route.group_by("direction")
         .agg(
             pl.col("avg_ons").sum().alias("total_ons"),
             pl.col("avg_offs").sum().alias("total_offs"),

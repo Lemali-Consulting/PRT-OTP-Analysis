@@ -1,4 +1,4 @@
-"""Build a self-contained HTML report from all 35 PRT OTP analyses."""
+"""Build a self-contained HTML report from all 37 PRT OTP analyses."""
 
 import base64
 import re
@@ -50,6 +50,8 @@ ANALYSIS_REGISTRY = [
     ("33_pandemic_ridership_geography", "Pandemic Ridership Geography", ["change_by_zone.png", "ridership_change_map.png"]),
     ("34_ridership_concentration", "Ridership Concentration / Pareto", ["gini_vs_otp.png", "pareto_curve.png"]),
     ("35_boarding_alighting_flows", "Boarding/Alighting Flow Analysis", ["net_flow_map.png", "top_generators_attractors.png"]),
+    ("36_national_ridership_growth", "National Ridership Growth (2019 vs 2024)", ["ridership_growth_distribution.png", "ridership_growth_ranking.png"]),
+    ("37_peer_city_ridership", "Peer City Ridership Comparison", ["peer_ridership_indexed.png", "peer_recovery_bar.png", "peer_mode_breakdown.png"]),
 ]
 
 
@@ -415,7 +417,7 @@ def assemble_report(toc: str, sections: list[str], takeaways: str,
     chart_count = sum(len(pngs) for _, _, pngs in ANALYSIS_REGISTRY)
 
     header = f"""<h1>PRT On-Time Performance Analysis</h1>
-<p class="subtitle">35 analyses &middot; 98 routes &middot; {chart_count} charts &middot;
+<p class="subtitle">37 analyses &middot; 98 routes &middot; {chart_count} charts &middot;
 January 2019 &ndash; November 2025 &middot; 7,651 monthly observations</p>"""
 
     takeaways_html = ""

@@ -13,9 +13,12 @@ Do routes with more stops have worse on-time performance? Each stop is another o
 **Note:** Stop counts come from the current `route_stops` snapshot, while OTP is averaged across all historical months. Routes that changed stop configurations over time will have a mismatch between their current stop count and the OTP values from earlier periods.
 
 ## Data
-- `otp_monthly` -- monthly OTP per route
-- `route_stops` -- stop count per route
-- `routes` -- mode classification
+
+| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `route_stops` | Stop count per route | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |
 
 ## Output
 - `output/stop_count_otp.csv` -- per-route stop count and average OTP

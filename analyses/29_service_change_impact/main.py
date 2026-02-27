@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import numpy as np
 import polars as pl
 from scipy import stats
 
@@ -29,8 +30,16 @@ def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
     return sched, otp
 
 
+def _is_consecutive_month(prev: str, curr: str) -> bool:
+    """Return True if curr is exactly one calendar month after prev (YYYY-MM strings)."""
+    py, pm = int(prev[:4]), int(prev[5:7])
+    cy, cm = int(curr[:4]), int(curr[5:7])
+    expected_y, expected_m = (py, pm + 1) if pm < 12 else (py + 1, 1)
+    return cy == expected_y and cm == expected_m
+
+
 def detect_change_events(sched: pl.DataFrame) -> pl.DataFrame:
-    """Find months where a route's pick_id changes from the prior month."""
+    """Find months where a route's pick_id changes from the prior consecutive month."""
     df = sched.sort(["route_id", "month"])
 
     df = df.with_columns(
@@ -40,18 +49,26 @@ def detect_change_events(sched: pl.DataFrame) -> pl.DataFrame:
     )
 
     # A change event occurs when pick_id differs from the previous month
+    # AND the months are consecutive (no gap)
     events = df.filter(
         pl.col("prev_pick").is_not_null() & (pl.col("pick_id") != pl.col("prev_pick"))
-    ).select(
+    )
+
+    # Filter to consecutive months only to avoid spurious gap-spanning events
+    consecutive_mask = [
+        _is_consecutive_month(prev, curr)
+        for prev, curr in zip(events["prev_month"].to_list(), events["month"].to_list())
+    ]
+    events = events.filter(pl.Series(consecutive_mask))
+
+    events = events.select(
         "route_id",
         pl.col("month").alias("change_month"),
         pl.col("prev_pick").alias("old_pick"),
         pl.col("pick_id").alias("new_pick"),
         pl.col("prev_trips").alias("trips_before"),
         pl.col("daily_trips").alias("trips_after"),
-    )
-
-    events = events.with_columns(
+    ).with_columns(
         trip_delta=(pl.col("trips_after") - pl.col("trips_before")),
     )
 
@@ -184,6 +201,20 @@ def main() -> None:
     t_stat, p_val = stats.ttest_1samp(otp_deltas, 0)
     print(f"\n  Overall OTP delta: mean={df['otp_delta'].mean():.4f}, median={df['otp_delta'].median():.4f}")
     print(f"  One-sample t-test (H0: delta=0): t={t_stat:.2f}, p={p_val:.4f}")
+    print(f"    (NOTE: naive t-test treats {len(otp_deltas)} events as independent)")
+
+    # Route-clustered test: average within route first, then test route means
+    route_means = (
+        df.group_by("route_id")
+        .agg(
+            mean_delta=pl.col("otp_delta").mean(),
+            n_events=pl.len(),
+        )
+    )
+    route_deltas = route_means["mean_delta"].to_numpy()
+    n_routes = len(route_deltas)
+    t_clust, p_clust = stats.ttest_1samp(route_deltas, 0)
+    print(f"  Route-clustered t-test (n={n_routes} route means): t={t_clust:.2f}, p={p_clust:.4f}")
 
     # By event type
     summary = summarize(df)

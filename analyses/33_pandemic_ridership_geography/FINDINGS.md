@@ -10,7 +10,9 @@ System-wide weekday ridership fell 63% between the pre-pandemic baseline (Sep 20
 - **Downtown (< 2 km)**: median -60%, aggregate -64.1% (n=369)
 - **Inner ring (2-8 km)**: median -62%, aggregate -65.7% (n=2,658)
 - **Outer ring (> 8 km)**: median -59%, aggregate -55.7% (n=3,529)
-- By mode: Bus -60%, Busway -58%, Light Rail -56%
+- **Kruskal-Wallis (zones)**: H=13.40, p=0.001 -- zones differ significantly
+  - Pairwise (Bonferroni): inner ring vs outer ring p=0.001; downtown vs either ring p>0.8
+- By mode: Bus -60%, Busway -58%, Light Rail -56% (Kruskal-Wallis H=0.48, p=0.49 -- not significant)
 - Largest single-stop loss: **Liberty Ave at Market St** (-2,329 riders/day, -73%)
 
 ## Observations
@@ -19,7 +21,8 @@ System-wide weekday ridership fell 63% between the pre-pandemic baseline (Sep 20
 - **Outer suburbs retained ridership slightly better** (-55.7% aggregate), consistent with more essential/transit-dependent riders in these areas.
 - **The biggest absolute losses are clustered in two corridors**: downtown (Liberty Ave, Smithfield St) and Oakland/university area (5th Ave at Thackeray, Forbes Ave at Morewood). These are commuter and student-heavy stops.
 - **The distribution is unimodal with a long right tail**: most stops lost 40-80%, but a small number gained riders, likely reflecting route restructuring or localized demand shifts.
-- **Mode differences are minimal**: busway and light rail fared marginally better than bus, but only by 2-4 percentage points.
+- **Mode differences are not statistically significant** (Kruskal-Wallis p=0.49): busway and light rail fared marginally better than bus, but only by 2-4 percentage points.
+- **Zone differences are statistically significant** (Kruskal-Wallis p=0.001): pairwise tests show the inner ring lost significantly more than the outer ring (Bonferroni-corrected p=0.001), while downtown does not differ significantly from either ring.
 
 ## Discussion
 The geographic uniformity of ridership loss challenges the narrative that the pandemic disproportionately affected downtown transit. While downtown and Oakland stops did lose the most riders in absolute terms (because they started highest), the *rate* of loss was nearly identical everywhere. This suggests the pandemic's impact was driven more by system-wide behavioral shifts (remote work, fear of shared spaces) than by location-specific factors.
@@ -33,3 +36,7 @@ The Oakland/university corridor stands out as a potential recovery target: these
 - The data captures only weekday usage. Weekend patterns may show different geographic signatures.
 - Some stops may have been temporarily closed or rerouted during the pandemic, inflating apparent losses.
 - The zone classification uses simple distance rings; a neighborhood-level analysis might reveal more nuance.
+
+## Review History
+
+- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md) — 1 significant issue. Added Kruskal-Wallis + pairwise Mann-Whitney tests for zone and mode differences. Zones significant (p=0.001, inner vs outer); modes not significant (p=0.49).

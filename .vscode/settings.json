@@ -4,83 +4,85 @@
     ],
 
     "workbench.colorCustomizations": {
-        // Base: asphalt dark with subtle warmth
-        "editor.background": "#1a1c20",
-        "editor.foreground": "#d8dce3",
-        "editorLineNumber.foreground": "#4a4e57",
-        "editorLineNumber.activeForeground": "#8b919e",
-        "editor.lineHighlightBackground": "#22252b",
+        // Base: warm amber-tinted dark
+        "editor.background": "#24200b",
+        "editor.foreground": "#e2dfc8",
+        "editorLineNumber.foreground": "#585433",
+        "editorLineNumber.activeForeground": "#97947a",
+        "editor.lineHighlightBackground": "#302c13",
         "editor.selectionBackground": "#2d5a8a55",
-        "editor.wordHighlightBackground": "#3a3f4a44",
+        "editor.wordHighlightBackground": "#48442444",
 
         // Sidebar: platform gray
-        "sideBar.background": "#16181c",
-        "sideBar.foreground": "#b0b6c3",
-        "sideBarTitle.foreground": "#d8dce3",
-        "sideBarSectionHeader.background": "#1e2026",
-        "sideBarSectionHeader.foreground": "#8b919e",
+        "sideBar.background": "#1f1b08",
+        "sideBar.foreground": "#bfbb9e",
+        "sideBarTitle.foreground": "#e2dfc8",
+        "sideBarSectionHeader.background": "#2a260e",
+        "sideBarSectionHeader.foreground": "#97947a",
 
         // Activity bar: deep rail
-        "activityBar.background": "#111318",
-        "activityBar.foreground": "#e0e4eb",
-        "activityBar.inactiveForeground": "#5a6070",
+        "activityBar.background": "#1a1605",
+        "activityBar.foreground": "#ebe7cf",
+        "activityBar.inactiveForeground": "#666249",
         "activityBarBadge.background": "#e63946",
         "activityBarBadge.foreground": "#ffffff",
 
         // Title bar
-        "titleBar.activeBackground": "#111318",
-        "titleBar.activeForeground": "#b0b6c3",
-        "titleBar.inactiveBackground": "#111318",
+        "titleBar.activeBackground": "#1a1605",
+        "titleBar.activeForeground": "#bfbb9e",
+        "titleBar.inactiveBackground": "#1a1605",
 
         // Tabs: route selector
-        "editorGroupHeader.tabsBackground": "#16181c",
-        "tab.activeBackground": "#1a1c20",
-        "tab.activeForeground": "#e0e4eb",
-        "tab.inactiveBackground": "#16181c",
-        "tab.inactiveForeground": "#6a7080",
+        "editorGroupHeader.tabsBackground": "#1f1b08",
+        "tab.activeBackground": "#24200b",
+        "tab.activeForeground": "#ebe7cf",
+        "tab.inactiveBackground": "#1f1b08",
+        "tab.inactiveForeground": "#767258",
         "tab.activeBorderTop": "#2196f3",
-        "tab.hoverBackground": "#22252b",
+        "tab.hoverBackground": "#302c13",
 
         // Status bar: signal strip
-        "statusBar.background": "#0d47a1",
-        "statusBar.foreground": "#e0e4eb",
+        "statusBar.background": "#e6a817",
+        "statusBar.foreground": "#1a1605",
+        "statusBarItem.remoteBackground": "#e6a817",
+        "statusBarItem.remoteForeground": "#1a1605",
         "statusBar.debuggingBackground": "#e63946",
         "statusBar.noFolderBackground": "#37474f",
 
         // Terminal: tunnel view
-        "terminal.background": "#14161a",
-        "terminal.foreground": "#d0d4db",
+        "terminal.background": "#1c1806",
+        "terminal.foreground": "#dbd7c0",
         "terminal.ansiBlue": "#2196f3",
         "terminal.ansiRed": "#e63946",
         "terminal.ansiGreen": "#2ec4b6",
         "terminal.ansiYellow": "#ffb703",
         "terminal.ansiCyan": "#48cae4",
         "terminal.ansiMagenta": "#c77dba",
-        "terminal.ansiWhite": "#d8dce3",
+        "terminal.ansiWhite": "#e2dfc8",
         "terminal.ansiBrightBlue": "#64b5f6",
         "terminal.ansiBrightRed": "#ff6b6b",
         "terminal.ansiBrightGreen": "#57ead8",
         "terminal.ansiBrightYellow": "#ffd166",
 
         // Panels & borders: platform edge
-        "panel.background": "#16181c",
-        "panel.border": "#2a2e36",
-        "panelTitle.activeForeground": "#d8dce3",
+        "panel.background": "#1f1b08",
+        "panel.border": "#393517",
+        "panelTitle.activeForeground": "#e2dfc8",
         "panelTitle.activeBorder": "#2196f3",
         "focusBorder": "#2196f380",
-        "editorWidget.background": "#1e2026",
+        "editorWidget.background": "#2a260e",
 
         // Lists & trees
         "list.activeSelectionBackground": "#2d5a8a55",
-        "list.activeSelectionForeground": "#e0e4eb",
-        "list.hoverBackground": "#22252b",
-        "list.inactiveSelectionBackground": "#22252b",
+        "list.activeSelectionForeground": "#ebe7cf",
+        "list.hoverBackground": "#302c13",
+        "list.inactiveSelectionBackground": "#302c13",
 
         // Input fields: ticket machine
-        "input.background": "#22252b",
-        "input.foreground": "#d8dce3",
-        "input.border": "#3a3f4a",
-        "input.placeholderForeground": "#5a6070",
+        "input.background": "#302c13",
+        "input.foreground": "#e2dfc8",
+        "input.border": "#484424",
+        "input.placeholderForeground": "#666249",
         "inputOption.activeBorder": "#2196f3",
 
         // Buttons
@@ -90,26 +92,26 @@
 
         // Peek view
         "peekView.border": "#2196f3",
-        "peekViewEditor.background": "#1e2026",
-        "peekViewResult.background": "#16181c",
-        "peekViewTitle.background": "#111318",
+        "peekViewEditor.background": "#2a260e",
+        "peekViewResult.background": "#1f1b08",
+        "peekViewTitle.background": "#1a1605",
 
         // Git decorations: line status
         "gitDecoration.modifiedResourceForeground": "#ffb703",
         "gitDecoration.untrackedResourceForeground": "#2ec4b6",
         "gitDecoration.deletedResourceForeground": "#e63946",
         "gitDecoration.conflictingResourceForeground": "#c77dba",
-        "gitDecoration.ignoredResourceForeground": "#4a4e57",
+        "gitDecoration.ignoredResourceForeground": "#585433",
 
         // Minimap
-        "minimap.background": "#14161a",
-        "minimapSlider.background": "#2a2e3640",
-        "minimapSlider.hoverBackground": "#2a2e3660",
+        "minimap.background": "#1c1806",
+        "minimapSlider.background": "#39351740",
+        "minimapSlider.hoverBackground": "#39351760",
 
         // Scrollbar
-        "scrollbarSlider.background": "#2a2e3650",
-        "scrollbarSlider.hoverBackground": "#3a3f4a70",
-        "scrollbarSlider.activeBackground": "#4a4e5790",
+        "scrollbarSlider.background": "#39351750",
+        "scrollbarSlider.hoverBackground": "#48442470",
+        "scrollbarSlider.activeBackground": "#58543390",
 
         // Bracket colors: route lines
         "editorBracketHighlight.foreground1": "#2196f3",
@@ -151,7 +153,7 @@
             {
                 "name": "Wayfinding — variables & parameters",
                 "scope": ["variable", "variable.parameter", "variable.other"],
-                "settings": { "foreground": "#d8dce3" }
+                "settings": { "foreground": "#e2dfc8" }
             },
             {
                 "name": "Signage — decorators & annotations",
@@ -161,7 +163,7 @@
             {
                 "name": "Platform — operators & punctuation",
                 "scope": ["keyword.operator", "punctuation"],
-                "settings": { "foreground": "#8b919e" }
+                "settings": { "foreground": "#97947a" }
             },
             {
                 "name": "Route map — imports & modules",

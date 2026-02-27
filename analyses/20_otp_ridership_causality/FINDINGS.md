@@ -10,6 +10,7 @@ There is **no evidence that OTP declines predict subsequent ridership losses**. 
 - Cross-correlations are flat across lags 0--6 -- no dominant lag emerges
 - 93 routes with 36+ months of paired OTP + ridership data (57--70 months each)
 - Both series detrended by subtracting system-wide monthly mean before testing
+- ADF stationarity test applied per route; routes with non-stationary detrended series are first-differenced before Granger testing to avoid spurious regression
 
 ## Observations
 - The p-value histogram is roughly uniform (with a small pile-up near zero), consistent with the null hypothesis being true for most routes.
@@ -28,3 +29,7 @@ The hypothesis that poor OTP drives riders away is intuitive, but this data cann
 - The 70-month overlap period with monthly granularity gives limited statistical power for 6-lag models (effective sample ~60 per route).
 - Detrending removes system-wide trends but not route-specific shocks (e.g., service changes, construction).
 - Bonferroni correction is conservative; a less strict correction (e.g., Benjamini-Hochberg) might yield a few significant routes, but the overall pattern would remain weak.
+
+## Review History
+
+- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md) — 1 significant issue. Added ADF stationarity tests; non-stationary routes are first-differenced before Granger testing. Null result confirmed as robust.
