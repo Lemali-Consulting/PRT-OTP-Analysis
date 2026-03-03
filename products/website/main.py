@@ -222,7 +222,8 @@ def main() -> None:
         )
         (page_dir / "index.html").write_text(html, encoding="utf-8")
 
-        rel_path = f"{page.kind}/{page.slug}/index.html"
+        kind_path = "analyses" if page.kind == "analysis" else page.kind
+        rel_path = f"{kind_path}/{page.slug}/index.html"
         site_items.append({"title": page.title, "path": rel_path, "group": page.group})
 
         for src in sources:
