@@ -19,6 +19,23 @@ except ModuleNotFoundError:  # pragma: no cover - fallback for minimal environme
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
+GENERIC_SOURCE_DESCRIPTIONS = {
+    "file": "Project data file consumed by one or more analyses or pipeline steps.",
+    "api": "External API consumed by one or more pipeline steps.",
+    "table": "Database table consumed by one or more analyses.",
+    "dependency": "Python library dependency used by one or more analyses or pipeline steps.",
+}
+DEPENDENCY_DESCRIPTIONS = {
+    "numpy": "Numerical computing library for vectorized arrays and matrix operations.",
+    "polars": "Dataframe library used for fast tabular data transformations and aggregation.",
+    "scipy": "Scientific computing library used for statistical tests and numerical routines.",
+    "statsmodels": "Statistical modeling library used for regression and time-series methods.",
+    "matplotlib": "Plotting library used to generate static charts.",
+    "folium": "Mapping library used to render interactive geospatial visualizations.",
+    "yaml": "YAML parsing library used to read and write manifest metadata.",
+    "jinja2": "Templating library used to render static HTML pages.",
+    "mistune": "Markdown parser used to convert findings and methods docs into HTML.",
+}
 
 
 @dataclass
@@ -77,6 +94,25 @@ def build_table_lookup(pages: list[Page]) -> dict[str, Page]:
         for table in page.manifest.get("tables_produced", []):
             name = table.get("name") if isinstance(table, dict) else str(table)
             lookup[name] = page
+    return lookup
+
+
+def build_table_descriptions(pages: list[Page]) -> dict[str, str]:
+    """Map produced table names to one-sentence descriptions from pipeline manifests."""
+    lookup: dict[str, str] = {}
+    for page in pages:
+        if page.kind != "pipeline":
+            continue
+        for table in page.manifest.get("tables_produced", []):
+            if isinstance(table, dict):
+                name = str(table.get("name", "")).strip()
+                desc = str(table.get("description", "")).strip()
+            else:
+                name = str(table).strip()
+                desc = ""
+            if not name:
+                continue
+            lookup[name] = sentence(desc) or "Database table produced by a pipeline step."
     return lookup
 
 
@@ -189,35 +225,84 @@ def _md_table_to_html(lines: list[str]) -> str:
     return html
 
 
-def page_sources(page: Page, table_lookup: dict[str, Page]) -> list[dict[str, str]]:
+def sentence(text: str) -> str:
+    """Normalize text into a concise one-sentence description."""
+    value = text.strip()
+    if not value:
+        return ""
+    if value[-1] not in ".!?":
+        value += "."
+    return value
+
+
+def dependency_description(name: str) -> str:
+    """Return one-sentence description for a dependency name."""
+    key = name.strip().lower()
+    return DEPENDENCY_DESCRIPTIONS.get(
+        key,
+        "Python library dependency used by one or more analyses or pipeline steps.",
+    )
+
+
+def _prefer_description(current: str, candidate: str, kind: str) -> str:
+    """Keep the more specific source description when merging inventory entries."""
+    current_s = sentence(current)
+    candidate_s = sentence(candidate)
+    generic = GENERIC_SOURCE_DESCRIPTIONS.get(kind, "")
+    if not current_s:
+        return candidate_s or generic
+    if not candidate_s:
+        return current_s
+    if current_s == generic and candidate_s != generic:
+        return candidate_s
+    if len(candidate_s) > len(current_s) and candidate_s != generic:
+        return candidate_s
+    return current_s
+
+
+def page_sources(
+    page: Page, table_lookup: dict[str, Page], table_descriptions: dict[str, str]
+) -> list[dict[str, str]]:
     """Build a normalized source list for one page."""
     out: list[dict[str, str]] = []
     for item in page.manifest.get("files", []):
+        name = item.get("path", "file")
+        desc = sentence(item.get("description", ""))
         out.append(
             {
-                "name": item.get("path", "file"),
+                "name": name,
                 "kind": "file",
-                "description": item.get("description", ""),
+                "description": desc or GENERIC_SOURCE_DESCRIPTIONS["file"],
             }
         )
     for item in page.manifest.get("apis", []):
+        name = item.get("name", item.get("url", "api"))
+        desc = sentence(item.get("description", ""))
         out.append(
             {
-                "name": item.get("name", item.get("url", "api")),
+                "name": name,
                 "kind": "api",
-                "description": item.get("description", ""),
+                "description": desc or GENERIC_SOURCE_DESCRIPTIONS["api"],
             }
         )
     for table in page.manifest.get("tables", []):
         producer = table_lookup.get(table)
-        desc = f"Consumed DB table. Produced by {producer.slug}." if producer else "Consumed DB table."
+        table_desc = table_descriptions.get(table, "")
+        if producer and table_desc:
+            desc = f"{table_desc} Produced by {producer.title}."
+        elif table_desc:
+            desc = table_desc
+        elif producer:
+            desc = f"Database table consumed by this page and produced by {producer.title}."
+        else:
+            desc = GENERIC_SOURCE_DESCRIPTIONS["table"]
         out.append({"name": table, "kind": "table", "description": desc})
     for dep in page.manifest.get("dependencies", []):
         out.append(
             {
                 "name": dep,
                 "kind": "dependency",
-                "description": "Python library dependency used by this analysis/pipeline step.",
+                "description": dependency_description(dep),
             }
         )
     return out
@@ -316,17 +401,170 @@ def collect_output_images(page: Page) -> list[dict[str, str]]:
 def write_css() -> None:
     """Write stylesheet for generated pages."""
     css = """
-body { font-family: Georgia, 'Times New Roman', serif; margin: 0; background: #f7f3ea; color: #1e1e1e; }
-.site-nav { display: flex; gap: 1rem; padding: 1rem; background: #12343b; color: #fff; flex-wrap: wrap; }
-.site-nav a { color: #fff; text-decoration: none; }
-.site-nav .brand { font-weight: 700; margin-right: 1rem; }
-.container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
-.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-img { max-width: 100%; height: auto; border: 1px solid #ddd; }
-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-th, td { border: 1px solid #bbb; padding: 0.5rem; text-align: left; }
-.markdown p { line-height: 1.6; }
-pre.mermaid { overflow-x: auto; background: #fff; padding: 0.5rem; border: 1px solid #ddd; }
+:root {
+  --bg: #f7efe2;
+  --ink: #172026;
+  --ink-muted: #42515c;
+  --panel: #fffdf9;
+  --line: #c8b6a1;
+  --accent: #a34f2f;
+  --accent-soft: #f4dfce;
+  --accent-alt: #1e6f66;
+  --radius: 14px;
+  --shadow: 0 14px 30px rgba(36, 20, 4, 0.08);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "IBM Plex Sans", "Trebuchet MS", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(1200px 600px at 12% -5%, #ffe4cc 0%, transparent 55%),
+              radial-gradient(900px 500px at 100% 12%, #dcefe9 0%, transparent 52%),
+              var(--bg);
+  line-height: 1.55;
+}
+.bg-layer { position: fixed; inset: 0; pointer-events: none; z-index: -1; }
+.bg-layer-one { background: linear-gradient(135deg, rgba(163,79,47,0.06), transparent 40%); }
+.bg-layer-two { background: linear-gradient(310deg, rgba(30,111,102,0.08), transparent 45%); }
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(8px);
+  background: rgba(247, 239, 226, 0.88);
+  border-bottom: 1px solid rgba(163, 79, 47, 0.18);
+}
+.site-nav {
+  max-width: 1160px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1.25rem;
+}
+.site-nav a { color: var(--ink); text-decoration: none; }
+.site-nav a:hover { color: var(--accent); }
+.brand {
+  font-family: "Fraunces", "Georgia", serif;
+  font-weight: 700;
+  font-size: 1.18rem;
+  letter-spacing: 0.01em;
+}
+.nav-links { display: flex; gap: 1rem; flex-wrap: wrap; font-weight: 500; }
+.container { max-width: 1160px; margin: 0 auto; padding: 1.25rem; }
+.shell { display: grid; gap: 1.2rem; }
+.hero {
+  background: linear-gradient(150deg, #1f403d 0%, #285552 35%, #a34f2f 100%);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  box-shadow: var(--shadow);
+}
+.hero-compact { padding: 1.35rem 1.2rem; }
+.hero h1 {
+  font-family: "Fraunces", "Georgia", serif;
+  margin: 0.15rem 0 0.45rem;
+  line-height: 1.08;
+  font-size: clamp(1.7rem, 2.8vw, 2.5rem);
+}
+.kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.84;
+  font-weight: 600;
+}
+.lede { margin: 0; color: rgba(255,255,255,0.9); max-width: 70ch; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.05rem 1.1rem;
+  box-shadow: var(--shadow);
+}
+h2, h3 {
+  font-family: "Fraunces", "Georgia", serif;
+  margin: 0.35rem 0 0.7rem;
+  line-height: 1.2;
+}
+a { color: var(--accent-alt); text-decoration-thickness: 2px; text-underline-offset: 2px; }
+a:hover { color: var(--accent); }
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.85rem;
+}
+.card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.9rem;
+  background: #fffaf4;
+  display: grid;
+  gap: 0.4rem;
+}
+.card h3 { margin: 0; font-size: 1.05rem; }
+.card p { margin: 0; color: var(--ink-muted); font-size: 0.94rem; }
+.tag {
+  justify-self: start;
+  display: inline-block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  border: 1px solid #d8b79a;
+  background: var(--accent-soft);
+  color: #7a331d;
+}
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.95rem;
+}
+.shot-card {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+img { max-width: 100%; height: auto; display: block; }
+figcaption {
+  padding: 0.55rem 0.65rem;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--line);
+}
+.source-table, table { width: 100%; border-collapse: collapse; }
+th, td {
+  border: 1px solid var(--line);
+  padding: 0.52rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: #f4e5d2; font-weight: 700; }
+.markdown h1, .markdown h2, .markdown h3 { margin-top: 1rem; }
+.markdown p { margin: 0.65rem 0; }
+.markdown ul, .markdown ol { margin: 0.45rem 0 0.65rem 1.2rem; }
+.markdown table { margin: 0.8rem 0; }
+pre.mermaid {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.6rem;
+}
+@media (max-width: 760px) {
+  .site-nav { align-items: flex-start; flex-direction: column; }
+  .nav-links { gap: 0.65rem; }
+  .container { padding: 0.85rem; }
+  .hero { padding: 1.2rem 0.95rem; }
+  .panel { padding: 0.85rem; }
+  th, td { font-size: 0.9rem; }
+}
 """
     (OUTPUT_DIR / "style.css").write_text(css.strip() + "\n", encoding="utf-8")
 
@@ -338,6 +576,7 @@ def main() -> None:
 
     pages = discover_pages()
     table_lookup = build_table_lookup(pages)
+    table_descriptions = build_table_descriptions(pages)
 
     site_items = []
     source_index: dict[tuple[str, str], dict] = {}
@@ -350,7 +589,7 @@ def main() -> None:
         findings_html = md_to_html(PROJECT_ROOT / page.rel_dir / "FINDINGS.md")
         methods_html = md_to_html(PROJECT_ROOT / page.rel_dir / "METHODS.md")
         output_images = collect_output_images(page)
-        sources = page_sources(page, table_lookup)
+        sources = page_sources(page, table_lookup, table_descriptions)
         mermaid = build_mermaid_page(page, table_lookup)
 
         html = env.get_template("page.html").render(
@@ -384,6 +623,9 @@ def main() -> None:
                     "description": src["description"],
                     "consumers": [],
                 },
+            )
+            entry["description"] = _prefer_description(
+                entry.get("description", ""), src.get("description", ""), src["kind"]
             )
             entry["consumers"].append({"title": page.title, "path": rel_path})
 

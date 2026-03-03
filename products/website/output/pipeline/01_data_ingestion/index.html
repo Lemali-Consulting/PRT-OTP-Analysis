@@ -4,26 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Ingestion - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
-    <a href="../../index.html#pipeline">Pipeline</a>
-    <a href="../../index.html#analyses">Analyses</a>
-    <a href="../../sources.html">Sources</a>
-    <a href="../../glossary.html">Glossary</a>
-  </nav>
-  <main class="container">
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
     
-<h1>Data Ingestion</h1>
-<p><strong>Type:</strong> pipeline</p>
+<section class="hero hero-compact">
+  <p class="kicker">Pipeline</p>
+  <h1>Data Ingestion</h1>
+  
+</section>
 
 
-
-<section>
+<section class="panel">
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   01_data_ingestion["Data Ingestion"]
@@ -51,7 +62,7 @@
 
 
 
-<section>
+<section class="panel">
   <h2>Findings</h2>
   <div class="markdown"><h1>Findings: Data Ingestion</h1>
 <h2>Summary</h2>
@@ -64,7 +75,7 @@
 
 
 
-<section>
+<section class="panel">
   <h2>Methods</h2>
   <div class="markdown"><h1>Methods: Data Ingestion</h1>
 <h2>Question</h2>
@@ -79,39 +90,39 @@
 
 
 
-<section>
+<section class="panel">
   <h2>Sources</h2>
-  <table>
+  <table class="source-table">
     <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
     
       <tr>
         <td>data/routes_by_month.csv</td>
-        <td>file</td>
+        <td><span class="tag">file</span></td>
         <td>Monthly route OTP source table in wide format.</td>
       </tr>
     
       <tr>
         <td>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</td>
-        <td>file</td>
+        <td><span class="tag">file</span></td>
         <td>Current route metadata and mode classifications.</td>
       </tr>
     
       <tr>
         <td>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</td>
-        <td>file</td>
+        <td><span class="tag">file</span></td>
         <td>Current stop-to-route coverage and trip counts.</td>
       </tr>
     
       <tr>
         <td>data/PRT_Stop_Reference_Lookup_Table.csv</td>
-        <td>file</td>
+        <td><span class="tag">file</span></td>
         <td>Historical stop reference file with geography attributes.</td>
       </tr>
     
       <tr>
         <td>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</td>
-        <td>file</td>
+        <td><span class="tag">file</span></td>
         <td>Average ridership by route and month.</td>
       </tr>
     

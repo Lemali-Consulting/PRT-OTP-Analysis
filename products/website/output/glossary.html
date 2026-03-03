@@ -4,39 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Glossary - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="index.html" class="brand">PRT OTP Analysis</a>
-    <a href="index.html#pipeline">Pipeline</a>
-    <a href="index.html#analyses">Analyses</a>
-    <a href="sources.html">Sources</a>
-    <a href="glossary.html">Glossary</a>
-  </nav>
-  <main class="container">
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="index.html#pipeline">Pipeline</a>
+        <a href="index.html#analyses">Analyses</a>
+        <a href="sources.html">Sources</a>
+        <a href="glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
     
-<h1>Glossary</h1>
+<section class="hero hero-compact">
+  <p class="kicker">Reference</p>
+  <h1>Glossary</h1>
+  <p class="lede">Common statistical and transit terms used throughout the analyses.</p>
+</section>
 
-  <h2>Transit Metrics</h2>
-  <ul>
-  
-    <li><strong>OTP</strong> (OTP): On-time performance, represented as a fraction between 0 and 1.</li>
-  
-    <li><strong>Ridership-Weighted OTP</strong>: OTP averaged using passenger counts as weights.</li>
-  
-  </ul>
+  <section class="panel">
+    <h2>Transit Metrics</h2>
+    <div class="card-grid">
+    
+      <article class="card">
+        <h3>OTP (OTP)</h3>
+        <p>On-time performance, represented as a fraction between 0 and 1.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Ridership-Weighted OTP</h3>
+        <p>OTP averaged using passenger counts as weights.</p>
+      </article>
+    
+    </div>
+  </section>
 
-  <h2>Statistical Methods</h2>
-  <ul>
-  
-    <li><strong>Pearson Correlation</strong>: Linear association statistic ranging from -1 to 1.</li>
-  
-    <li><strong>Spearman Correlation</strong>: Rank-based monotonic association statistic.</li>
-  
-  </ul>
+  <section class="panel">
+    <h2>Statistical Methods</h2>
+    <div class="card-grid">
+    
+      <article class="card">
+        <h3>Pearson Correlation</h3>
+        <p>Linear association statistic ranging from -1 to 1.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Spearman Correlation</h3>
+        <p>Rank-based monotonic association statistic.</p>
+      </article>
+    
+    </div>
+  </section>
 
 
   </main>

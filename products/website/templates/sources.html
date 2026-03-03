@@ -1,10 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Sources - PRT OTP Analysis{% endblock %}
 {% block content %}
-<h1>Sources Inventory</h1>
-<ul>
-{% for src in sources %}
-  <li><a href="{{ src.path }}">{{ src.name }}</a> ({{ src.kind }})</li>
-{% endfor %}
-</ul>
+<section class="hero hero-compact">
+  <p class="kicker">Reference</p>
+  <h1>Sources Inventory</h1>
+  <p class="lede">Unified catalog of files, APIs, tables, and library dependencies used in this project.</p>
+</section>
+
+<section class="panel">
+  <table class="source-table">
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    {% for src in sources %}
+      <tr>
+        <td><a href="{{ src.path }}">{{ src.name }}</a></td>
+        <td><span class="tag">{{ src.kind }}</span></td>
+        <td>{{ src.description }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
 {% endblock %}

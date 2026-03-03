@@ -4,26 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>matplotlib - Source Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="../index.html" class="brand">PRT OTP Analysis</a>
-    <a href="../index.html#pipeline">Pipeline</a>
-    <a href="../index.html#analyses">Analyses</a>
-    <a href="../sources.html">Sources</a>
-    <a href="../glossary.html">Glossary</a>
-  </nav>
-  <main class="container">
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../index.html#pipeline">Pipeline</a>
+        <a href="../index.html#analyses">Analyses</a>
+        <a href="../sources.html">Sources</a>
+        <a href="../glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
     
-<h1>matplotlib</h1>
-<p><strong>Type:</strong> dependency</p>
-<p>Python library dependency used by this analysis/pipeline step.</p>
+<section class="hero hero-compact">
+  <p class="kicker">Dependency</p>
+  <h1>matplotlib</h1>
+  <p class="lede">Plotting library used to generate static charts.</p>
+</section>
 
 
-<section>
+<section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
   src["matplotlib"]
@@ -33,14 +44,22 @@
 </section>
 
 
-<h2>Consumed By</h2>
-<ul>
-
-  <li><a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a></li>
-
-  <li><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></li>
-
-</ul>
+<section class="panel">
+  <h2>Consumed By</h2>
+  <div class="card-grid">
+  
+    <article class="card">
+      <h3><a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+  </div>
+</section>
 
   </main>
 </body>

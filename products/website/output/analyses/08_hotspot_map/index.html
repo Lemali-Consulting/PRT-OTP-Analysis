@@ -4,26 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>08: Hot-Spot Map - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
-    <a href="../../index.html#pipeline">Pipeline</a>
-    <a href="../../index.html#analyses">Analyses</a>
-    <a href="../../sources.html">Sources</a>
-    <a href="../../glossary.html">Glossary</a>
-  </nav>
-  <main class="container">
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
     
-<h1>08: Hot-Spot Map</h1>
-<p><strong>Type:</strong> analysis</p>
-<p><strong>Group:</strong> Core OTP Patterns</p>
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>08: Hot-Spot Map</h1>
+  <p class="lede">Core OTP Patterns</p>
+</section>
 
 
-<section>
+<section class="panel">
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   08_hotspot_map["08: Hot-Spot Map"]
@@ -53,7 +64,7 @@
 
 
 
-<section>
+<section class="panel">
   <h2>Findings</h2>
   <div class="markdown"><h1>Findings: Hot-Spot Map</h1>
 <h2>Important: Derived Metric</h2>
@@ -77,7 +88,7 @@
 
 
 
-<section>
+<section class="panel">
   <h2>Methods</h2>
   <div class="markdown"><h1>Methods: Hot-Spot Map</h1>
 <h2>Question</h2>
@@ -92,58 +103,58 @@
 
 
 
-<section>
+<section class="panel">
   <h2>Sources</h2>
-  <table>
+  <table class="source-table">
     <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
     
       <tr>
         <td>otp_monthly</td>
-        <td>table</td>
-        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+        <td><span class="tag">table</span></td>
+        <td>Monthly OTP values by route. Produced by Data Ingestion.</td>
       </tr>
     
       <tr>
         <td>route_stops</td>
-        <td>table</td>
-        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+        <td><span class="tag">table</span></td>
+        <td>Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</td>
       </tr>
     
       <tr>
         <td>routes</td>
-        <td>table</td>
-        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+        <td><span class="tag">table</span></td>
+        <td>Route dimension table. Produced by Data Ingestion.</td>
       </tr>
     
       <tr>
         <td>stops</td>
-        <td>table</td>
-        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+        <td><span class="tag">table</span></td>
+        <td>Physical stop dimension table. Produced by Data Ingestion.</td>
       </tr>
     
       <tr>
         <td>branca</td>
-        <td>dependency</td>
-        <td>Python library dependency used by this analysis/pipeline step.</td>
+        <td><span class="tag">dependency</span></td>
+        <td>Python library dependency used by one or more analyses or pipeline steps.</td>
       </tr>
     
       <tr>
         <td>folium</td>
-        <td>dependency</td>
-        <td>Python library dependency used by this analysis/pipeline step.</td>
+        <td><span class="tag">dependency</span></td>
+        <td>Mapping library used to render interactive geospatial visualizations.</td>
       </tr>
     
       <tr>
         <td>matplotlib</td>
-        <td>dependency</td>
-        <td>Python library dependency used by this analysis/pipeline step.</td>
+        <td><span class="tag">dependency</span></td>
+        <td>Plotting library used to generate static charts.</td>
       </tr>
     
       <tr>
         <td>polars</td>
-        <td>dependency</td>
-        <td>Python library dependency used by this analysis/pipeline step.</td>
+        <td><span class="tag">dependency</span></td>
+        <td>Dataframe library used for fast tabular data transformations and aggregation.</td>
       </tr>
     
     </tbody>

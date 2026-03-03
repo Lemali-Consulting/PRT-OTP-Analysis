@@ -1,30 +1,32 @@
 {% extends "base.html" %}
 {% block title %}{{ page.title }} - PRT OTP Analysis{% endblock %}
 {% block content %}
-<h1>{{ page.title }}</h1>
-<p><strong>Type:</strong> {{ page.kind }}</p>
-{% if page.group %}<p><strong>Group:</strong> {{ page.group }}</p>{% endif %}
+<section class="hero hero-compact">
+  <p class="kicker">{{ page.kind | title }}</p>
+  <h1>{{ page.title }}</h1>
+  {% if page.group %}<p class="lede">{{ page.group }}</p>{% endif %}
+</section>
 
 {% if mermaid_diagram %}
-<section>
+<section class="panel">
   <h2>Data Provenance</h2>
   <pre class="mermaid">{{ mermaid_diagram }}</pre>
 </section>
 {% endif %}
 
 {% if findings_html %}
-<section>
+<section class="panel">
   <h2>Findings</h2>
   <div class="markdown">{{ findings_html | safe }}</div>
 </section>
 {% endif %}
 
 {% if output_images %}
-<section>
+<section class="panel">
   <h2>Output</h2>
   <div class="gallery">
     {% for img in output_images %}
-      <figure>
+      <figure class="shot-card">
         <img src="{{ img.src }}" alt="{{ img.alt }}" loading="lazy">
         <figcaption>{{ img.label }}</figcaption>
       </figure>
@@ -34,22 +36,22 @@
 {% endif %}
 
 {% if methods_html %}
-<section>
+<section class="panel">
   <h2>Methods</h2>
   <div class="markdown">{{ methods_html | safe }}</div>
 </section>
 {% endif %}
 
 {% if page_sources %}
-<section>
+<section class="panel">
   <h2>Sources</h2>
-  <table>
+  <table class="source-table">
     <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
     {% for src in page_sources %}
       <tr>
         <td>{{ src.name }}</td>
-        <td>{{ src.kind }}</td>
+        <td><span class="tag">{{ src.kind }}</span></td>
         <td>{{ src.description }}</td>
       </tr>
     {% endfor %}

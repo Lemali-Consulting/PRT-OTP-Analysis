@@ -1,21 +1,28 @@
 {% extends "base.html" %}
 {% block title %}{{ source.name }} - Source Detail{% endblock %}
 {% block content %}
-<h1>{{ source.name }}</h1>
-<p><strong>Type:</strong> {{ source.kind }}</p>
-<p>{{ source.description }}</p>
+<section class="hero hero-compact">
+  <p class="kicker">{{ source.kind | title }}</p>
+  <h1>{{ source.name }}</h1>
+  <p class="lede">{{ source.description }}</p>
+</section>
 
 {% if mermaid_diagram %}
-<section>
+<section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">{{ mermaid_diagram }}</pre>
 </section>
 {% endif %}
 
-<h2>Consumed By</h2>
-<ul>
-{% for page in consumers %}
-  <li><a href="{{ page.path }}">{{ page.title }}</a></li>
-{% endfor %}
-</ul>
+<section class="panel">
+  <h2>Consumed By</h2>
+  <div class="card-grid">
+  {% for page in consumers %}
+    <article class="card">
+      <h3><a href="{{ page.path }}">{{ page.title }}</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  {% endfor %}
+  </div>
+</section>
 {% endblock %}

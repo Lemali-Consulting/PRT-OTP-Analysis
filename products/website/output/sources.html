@@ -4,70 +4,181 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sources - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="index.html" class="brand">PRT OTP Analysis</a>
-    <a href="index.html#pipeline">Pipeline</a>
-    <a href="index.html#analyses">Analyses</a>
-    <a href="sources.html">Sources</a>
-    <a href="glossary.html">Glossary</a>
-  </nav>
-  <main class="container">
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="index.html#pipeline">Pipeline</a>
+        <a href="index.html#analyses">Analyses</a>
+        <a href="sources.html">Sources</a>
+        <a href="glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
     
-<h1>Sources Inventory</h1>
-<ul>
+<section class="hero hero-compact">
+  <p class="kicker">Reference</p>
+  <h1>Sources Inventory</h1>
+  <p class="lede">Unified catalog of files, APIs, tables, and library dependencies used in this project.</p>
+</section>
 
-  <li><a href="sources/source-000.html">branca</a> (dependency)</li>
-
-  <li><a href="sources/source-001.html">folium</a> (dependency)</li>
-
-  <li><a href="sources/source-002.html">matplotlib</a> (dependency)</li>
-
-  <li><a href="sources/source-003.html">numpy</a> (dependency)</li>
-
-  <li><a href="sources/source-004.html">polars</a> (dependency)</li>
-
-  <li><a href="sources/source-005.html">scipy</a> (dependency)</li>
-
-  <li><a href="sources/source-006.html">statsmodels</a> (dependency)</li>
-
-  <li><a href="sources/source-007.html">data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</a> (file)</li>
-
-  <li><a href="sources/source-008.html">data/PRT_Stop_Reference_Lookup_Table.csv</a> (file)</li>
-
-  <li><a href="sources/source-009.html">data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</a> (file)</li>
-
-  <li><a href="sources/source-010.html">data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</a> (file)</li>
-
-  <li><a href="sources/source-011.html">data/routes_by_month.csv</a> (file)</li>
-
-  <li><a href="sources/source-012.html">ntd_agency</a> (table)</li>
-
-  <li><a href="sources/source-013.html">ntd_ridership</a> (table)</li>
-
-  <li><a href="sources/source-014.html">otp_monthly</a> (table)</li>
-
-  <li><a href="sources/source-015.html">ridership_monthly</a> (table)</li>
-
-  <li><a href="sources/source-016.html">route_stops</a> (table)</li>
-
-  <li><a href="sources/source-017.html">route_traffic</a> (table)</li>
-
-  <li><a href="sources/source-018.html">routes</a> (table)</li>
-
-  <li><a href="sources/source-019.html">scheduled_trips_monthly</a> (table)</li>
-
-  <li><a href="sources/source-020.html">stop_reference</a> (table)</li>
-
-  <li><a href="sources/source-021.html">stops</a> (table)</li>
-
-  <li><a href="sources/source-022.html">weather_monthly</a> (table)</li>
-
-</ul>
+<section class="panel">
+  <table class="source-table">
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td><a href="sources/source-000.html">branca</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Python library dependency used by one or more analyses or pipeline steps.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-001.html">folium</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Mapping library used to render interactive geospatial visualizations.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-002.html">matplotlib</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Plotting library used to generate static charts.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-003.html">numpy</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Numerical computing library for vectorized arrays and matrix operations.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-004.html">polars</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Dataframe library used for fast tabular data transformations and aggregation.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-005.html">scipy</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Scientific computing library used for statistical tests and numerical routines.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-006.html">statsmodels</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Statistical modeling library used for regression and time-series methods.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-007.html">data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</a></td>
+        <td><span class="tag">file</span></td>
+        <td>Current route metadata and mode classifications.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-008.html">data/PRT_Stop_Reference_Lookup_Table.csv</a></td>
+        <td><span class="tag">file</span></td>
+        <td>Historical stop reference file with geography attributes.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-009.html">data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</a></td>
+        <td><span class="tag">file</span></td>
+        <td>Current stop-to-route coverage and trip counts.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-010.html">data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</a></td>
+        <td><span class="tag">file</span></td>
+        <td>Average ridership by route and month.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-011.html">data/routes_by_month.csv</a></td>
+        <td><span class="tag">file</span></td>
+        <td>Monthly route OTP source table in wide format.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-012.html">ntd_agency</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Database table consumed by one or more analyses.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-013.html">ntd_ridership</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Database table consumed by one or more analyses.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-014.html">otp_monthly</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Monthly OTP values by route. Produced by Data Ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-015.html">ridership_monthly</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Monthly ridership by route and day type. Produced by Data Ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-016.html">route_stops</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-017.html">route_traffic</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Database table consumed by one or more analyses.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-018.html">routes</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Route dimension table. Produced by Data Ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-019.html">scheduled_trips_monthly</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Database table consumed by one or more analyses.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-020.html">stop_reference</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Historical stop metadata and geography. Produced by Data Ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-021.html">stops</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Physical stop dimension table. Produced by Data Ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-022.html">weather_monthly</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Database table consumed by one or more analyses.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
 
   </main>
 </body>

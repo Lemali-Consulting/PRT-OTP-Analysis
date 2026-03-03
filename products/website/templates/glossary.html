@@ -1,13 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Glossary - PRT OTP Analysis{% endblock %}
 {% block content %}
-<h1>Glossary</h1>
+<section class="hero hero-compact">
+  <p class="kicker">Reference</p>
+  <h1>Glossary</h1>
+  <p class="lede">Common statistical and transit terms used throughout the analyses.</p>
+</section>
 {% for category in categories %}
-  <h2>{{ category.name }}</h2>
-  <ul>
-  {% for term in category.terms %}
-    <li><strong>{{ term.term }}</strong>{% if term.abbreviation %} ({{ term.abbreviation }}){% endif %}: {{ term.definition }}</li>
-  {% endfor %}
-  </ul>
+  <section class="panel">
+    <h2>{{ category.name }}</h2>
+    <div class="card-grid">
+    {% for term in category.terms %}
+      <article class="card">
+        <h3>{{ term.term }}{% if term.abbreviation %} ({{ term.abbreviation }}){% endif %}</h3>
+        <p>{{ term.definition }}</p>
+      </article>
+    {% endfor %}
+    </div>
+  </section>
 {% endfor %}
 {% endblock %}

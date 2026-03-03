@@ -1,27 +1,35 @@
 {% extends "base.html" %}
 {% block title %}Index - PRT OTP Analysis{% endblock %}
 {% block content %}
-<h1>PRT OTP Analysis</h1>
-<p>Generated documentation site for pipeline and analyses.</p>
+<section class="hero">
+  <p class="kicker">Transit Performance Knowledge Base</p>
+  <h1>PRT OTP Analysis</h1>
+  <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
+</section>
 
+<section class="panel">
 <h2 id="pipeline">Pipeline</h2>
-<ul>
+<div class="card-grid">
 {% for p in pipeline %}
-  <li>
-    <a href="{{ p.path }}">{{ p.title }}</a>
-    {% if p.description %} - {{ p.description }}{% endif %}
-  </li>
+  <article class="card">
+    <h3><a href="{{ p.path }}">{{ p.title }}</a></h3>
+    <p>{{ p.description }}</p>
+    <span class="tag">Pipeline</span>
+  </article>
 {% endfor %}
-</ul>
+</div>
+</section>
 
+<section class="panel">
 <h2 id="analyses">Analyses</h2>
-<ul>
+<div class="card-grid">
 {% for a in analyses %}
-  <li>
-    <a href="{{ a.path }}">{{ a.title }}</a>
-    {% if a.description %} - {{ a.description }}{% endif %}
-    {% if a.group %} ({{ a.group }}){% endif %}
-  </li>
+  <article class="card">
+    <h3><a href="{{ a.path }}">{{ a.title }}</a></h3>
+    <p>{{ a.description }}</p>
+    {% if a.group %}<span class="tag">{{ a.group }}</span>{% endif %}
+  </article>
 {% endfor %}
-</ul>
+</div>
+</section>
 {% endblock %}
