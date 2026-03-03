@@ -11,3 +11,13 @@ dependencies:
 - numpy
 - polars
 - scipy
+outputs:
+- path: service_change_events.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: service_change_impact.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: service_change_summary.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.

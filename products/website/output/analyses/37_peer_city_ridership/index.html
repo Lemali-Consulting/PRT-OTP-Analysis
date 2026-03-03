@@ -39,6 +39,7 @@
   <pre class="mermaid">flowchart LR
   37_peer_city_ridership["37 - Peer City Ridership Comparison"]
   t_ntd_ridership["ntd_ridership"] --> 37_peer_city_ridership
+  05_ntd_ridership["NTD Ridership ETL"] --> t_ntd_ridership
   d1_37_peer_city_ridership["polars (lib)"] --> 37_peer_city_ridership
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
@@ -48,7 +49,8 @@
   classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
   class 37_peer_city_ridership page;
   class t_ntd_ridership table;
-  class d1_37_peer_city_ridership dep;</pre>
+  class d1_37_peer_city_ridership dep;
+  class 05_ntd_ridership pipeline;</pre>
 </section>
 
 
@@ -57,15 +59,37 @@
   <h2>Findings</h2>
   <div class="markdown"><h1>Findings: Peer City Ridership Comparison</h1>
 <h2>Summary</h2>
-<p>Among 8 peer mid-size transit agencies, Pittsburgh ties with St. Louis for the lowest overall ridership recovery at 57.6% of 2019 levels (2024 average). Cleveland leads peers at 77.4%. PRT&#x27;s bus recovery (59.2%) and rail recovery (43.6%) both rank near the bottom of the peer group.</p>
+<p>Among 8 peer mid-size transit agencies, Pittsburgh ties with St. Louis for the lowest overall ridership recovery at 57.6% of 2019 levels (2024 average). Cleveland leads peers at 77.4%. PRT's bus recovery (59.2%) and rail recovery (43.6%) both rank near the bottom of the peer group.</p>
 <h2>Key Numbers</h2>
-<ul><li>Pittsburgh 2024 recovery: 57.6% of 2019 average</li><li>Peer group range: 57.6% (Pittsburgh/St. Louis) to 77.4% (Cleveland)</li><li>PRT bus recovery: 59.2% (7th of 8 peers; only St. Louis lower at 57.8%)</li><li>PRT rail recovery: 43.6% (lowest of all 8 peers)</li><li>Best bus recovery: Cleveland at 83.0%</li><li>Best rail recovery: Baltimore at 64.5%</li><li>All 8 peers remain below 2019 levels as of 2024</li><li>COVID trough (Apr 2020): all peers dropped to ~10–20% of 2019 levels</li></ul>
+<ul>
+<li>Pittsburgh 2024 recovery: 57.6% of 2019 average</li>
+<li>Peer group range: 57.6% (Pittsburgh/St. Louis) to 77.4% (Cleveland)</li>
+<li>PRT bus recovery: 59.2% (7th of 8 peers; only St. Louis lower at 57.8%)</li>
+<li>PRT rail recovery: 43.6% (lowest of all 8 peers)</li>
+<li>Best bus recovery: Cleveland at 83.0%</li>
+<li>Best rail recovery: Baltimore at 64.5%</li>
+<li>All 8 peers remain below 2019 levels as of 2024</li>
+<li>COVID trough (Apr 2020): all peers dropped to ~10–20% of 2019 levels</li>
+</ul>
 <h2>Observations</h2>
-<ul><li>Cleveland&#x27;s relatively strong recovery (77.4%) may reflect its smaller pre-pandemic base and sustained bus ridership in a less remote-work-prone labor market.</li><li>Bus recovery outpaces rail recovery at all 8 peers without exception. The bus-rail gap ranges from ~2 pp (Minneapolis) to ~28 pp (Cleveland).</li><li>Pittsburgh&#x27;s light rail (T) at 43.6% is the weakest rail recovery in the peer group, consistent with the T&#x27;s low frequency and suburban commuter orientation.</li><li>Portland (67.4%) and Baltimore (72.8%) show stronger recovery despite comparable city size, suggesting that service investments and fare policy may matter.</li><li>The indexed time series shows all 8 peers following a similar pandemic trajectory: sharp drop in Apr 2020, gradual recovery through 2021–2022, then plateauing in 2023–2024.</li><li>Pittsburgh&#x27;s trajectory flattens earlier than most peers, suggesting recovery stalled around mid-2022.</li></ul>
+<ul>
+<li>Cleveland's relatively strong recovery (77.4%) may reflect its smaller pre-pandemic base and sustained bus ridership in a less remote-work-prone labor market.</li>
+<li>Bus recovery outpaces rail recovery at all 8 peers without exception. The bus-rail gap ranges from ~2 pp (Minneapolis) to ~28 pp (Cleveland).</li>
+<li>Pittsburgh's light rail (T) at 43.6% is the weakest rail recovery in the peer group, consistent with the T's low frequency and suburban commuter orientation.</li>
+<li>Portland (67.4%) and Baltimore (72.8%) show stronger recovery despite comparable city size, suggesting that service investments and fare policy may matter.</li>
+<li>The indexed time series shows all 8 peers following a similar pandemic trajectory: sharp drop in Apr 2020, gradual recovery through 2021–2022, then plateauing in 2023–2024.</li>
+<li>Pittsburgh's trajectory flattens earlier than most peers, suggesting recovery stalled around mid-2022.</li>
+</ul>
 <h2>Discussion</h2>
-<p>Pittsburgh&#x27;s position at the bottom of this peer group is concerning but not extreme — St. Louis is equally low. The light rail drag is the largest single factor: if PRT&#x27;s rail had recovered to the peer median (~56%), overall recovery would be ~60%. The bus recovery gap versus peers like Cleveland and Portland suggests room for improvement through service frequency, reliability, or fare initiatives.</p>
+<p>Pittsburgh's position at the bottom of this peer group is concerning but not extreme — St. Louis is equally low. The light rail drag is the largest single factor: if PRT's rail had recovered to the peer median (~56%), overall recovery would be ~60%. The bus recovery gap versus peers like Cleveland and Portland suggests room for improvement through service frequency, reliability, or fare initiatives.</p>
 <h2>Caveats</h2>
-<ul><li>Peer selection is subjective; different peer sets could yield different rankings. These 8 were chosen for comparable metro size and multimodal service.</li><li>NTD data aggregates all modes including demand-response (paratransit), which is excluded from the bus/rail breakdown but included in overall totals.</li><li>Recovery percentages compare 2024 monthly average to 2019 monthly average. Seasonal patterns may differ between cities.</li><li>Some agencies may have had major service changes (route restructures, fare changes) that affect ridership independent of pandemic recovery.</li></ul></div>
+<ul>
+<li>Peer selection is subjective; different peer sets could yield different rankings. These 8 were chosen for comparable metro size and multimodal service.</li>
+<li>NTD data aggregates all modes including demand-response (paratransit), which is excluded from the bus/rail breakdown but included in overall totals.</li>
+<li>Recovery percentages compare 2024 monthly average to 2019 monthly average. Seasonal patterns may differ between cities.</li>
+<li>Some agencies may have had major service changes (route restructures, fare changes) that affect ridership independent of pandemic recovery.</li>
+</ul>
+</div>
 </section>
 
 
@@ -75,18 +99,54 @@
   <div class="gallery">
     
       <figure class="shot-card">
-        <img src="assets/analyses/37_peer_city_ridership/peer_mode_breakdown.png" alt="peer_mode_breakdown" loading="lazy">
-        <figcaption>peer_mode_breakdown.png</figcaption>
+        
+          <img src="assets/analyses/37_peer_city_ridership/peer_mode_breakdown.png" alt="peer_mode_breakdown" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/37_peer_city_ridership/peer_mode_breakdown.png" target="_blank" rel="noopener noreferrer">peer_mode_breakdown.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
       </figure>
     
       <figure class="shot-card">
-        <img src="assets/analyses/37_peer_city_ridership/peer_recovery_bar.png" alt="peer_recovery_bar" loading="lazy">
-        <figcaption>peer_recovery_bar.png</figcaption>
+        
+          <img src="assets/analyses/37_peer_city_ridership/peer_recovery_bar.png" alt="peer_recovery_bar" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/37_peer_city_ridership/peer_recovery_bar.png" target="_blank" rel="noopener noreferrer">peer_recovery_bar.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
       </figure>
     
       <figure class="shot-card">
-        <img src="assets/analyses/37_peer_city_ridership/peer_ridership_indexed.png" alt="peer_ridership_indexed" loading="lazy">
-        <figcaption>peer_ridership_indexed.png</figcaption>
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/37_peer_city_ridership/peer_recovery_summary.csv" target="_blank" rel="noopener noreferrer">peer_recovery_summary.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/37_peer_city_ridership/peer_ridership_data.csv" target="_blank" rel="noopener noreferrer">peer_ridership_data.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/37_peer_city_ridership/peer_ridership_indexed.png" alt="peer_ridership_indexed" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/37_peer_city_ridership/peer_ridership_indexed.png" target="_blank" rel="noopener noreferrer">peer_ridership_indexed.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
       </figure>
     
   </div>
@@ -98,13 +158,30 @@
   <h2>Methods</h2>
   <div class="markdown"><h1>Methods: Peer City Ridership Comparison</h1>
 <h2>Question</h2>
-<p>How does Pittsburgh&#x27;s ridership trajectory and post-pandemic recovery compare to 7 peer cities from 2019 through 2025?</p>
+<p>How does Pittsburgh's ridership trajectory and post-pandemic recovery compare to 7 peer cities from 2019 through 2025?</p>
 <h2>Approach</h2>
-<ul><li>Select 8 peer transit agencies by NTD ID: Pittsburgh (30022), Baltimore (30034), Cleveland (50015), Denver (80006), St. Louis (70006), Buffalo (20004), Portland (8), Minneapolis (50027).</li><li>Sum monthly UPT across all modes and TOS per agency, Jan 2019–Dec 2025.</li><li>Index each agency&#x27;s monthly total to its 2019 monthly average (= 100) to normalize for size.</li><li>Plot indexed ridership trajectories for all 8 peers.</li><li>Compute 2024 vs 2019 recovery percentage for each peer.</li><li>Break down recovery by mode (bus vs rail) where the agency operates both.</li></ul>
+<ul>
+<li>Select 8 peer transit agencies by NTD ID: Pittsburgh (30022), Baltimore (30034), Cleveland (50015), Denver (80006), St. Louis (70006), Buffalo (20004), Portland (8), Minneapolis (50027).</li>
+<li>Sum monthly UPT across all modes and TOS per agency, Jan 2019–Dec 2025.</li>
+<li>Index each agency's monthly total to its 2019 monthly average (= 100) to normalize for size.</li>
+<li>Plot indexed ridership trajectories for all 8 peers.</li>
+<li>Compute 2024 vs 2019 recovery percentage for each peer.</li>
+<li>Break down recovery by mode (bus vs rail) where the agency operates both.</li>
+</ul>
 <h2>Data</h2>
-<ul><li><code>ntd_ridership</code> — monthly UPT by agency/mode/TOS, filtered to Jan 2019–Dec 2025.</li><li><code>ntd_agency</code> — agency names and mode codes.</li></ul>
+<ul>
+<li><code>ntd_ridership</code> — monthly UPT by agency/mode/TOS, filtered to Jan 2019–Dec 2025.</li>
+<li><code>ntd_agency</code> — agency names and mode codes.</li>
+</ul>
 <h2>Output</h2>
-<ul><li><code>output/peer_ridership_indexed.png</code> — time-series line chart of indexed ridership for all 8 peers.</li><li><code>output/peer_recovery_bar.png</code> — bar chart of 2024 vs 2019 recovery %, PRT highlighted.</li><li><code>output/peer_mode_breakdown.png</code> — bus vs rail recovery by peer city.</li><li><code>output/peer_ridership_data.csv</code> — monthly indexed data for all peers.</li><li><code>output/peer_recovery_summary.csv</code> — per-peer recovery metrics.</li></ul></div>
+<ul>
+<li><code>output/peer_ridership_indexed.png</code> — time-series line chart of indexed ridership for all 8 peers.</li>
+<li><code>output/peer_recovery_bar.png</code> — bar chart of 2024 vs 2019 recovery %, PRT highlighted.</li>
+<li><code>output/peer_mode_breakdown.png</code> — bus vs rail recovery by peer city.</li>
+<li><code>output/peer_ridership_data.csv</code> — monthly indexed data for all peers.</li>
+<li><code>output/peer_recovery_summary.csv</code> — per-peer recovery metrics.</li>
+</ul>
+</div>
 </section>
 
 
@@ -118,7 +195,7 @@
       <tr>
         <td>ntd_ridership</td>
         <td><span class="tag">table</span></td>
-        <td>Database table consumed by one or more analyses.</td>
+        <td>Monthly UPT facts by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</td>
       </tr>
     
       <tr>

@@ -14,3 +14,13 @@ dependencies:
 - numpy
 - polars
 - scipy
+outputs:
+- path: cluster_membership.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: correlation_heatmap.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: dendrogram.png
+  kind: image
+  description: Generated chart image produced by this analysis.

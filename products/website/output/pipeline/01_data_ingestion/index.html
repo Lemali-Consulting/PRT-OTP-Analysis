@@ -68,7 +68,11 @@
 <h2>Summary</h2>
 <p>The ingestion step rebuilds <code>data/prt.db</code> from source CSV inputs and validates expected core tables.</p>
 <h2>Notes</h2>
-<ul><li>This step is deterministic for a fixed set of input files.</li><li>Analyses assume this database exists and is readable.</li></ul></div>
+<ul>
+<li>This step is deterministic for a fixed set of input files.</li>
+<li>Analyses assume this database exists and is readable.</li>
+</ul>
+</div>
 </section>
 
 
@@ -81,11 +85,26 @@
 <h2>Question</h2>
 <p>How do we reproducibly build a normalized SQLite database used by all analyses?</p>
 <h2>Approach</h2>
-<ol><li>Read canonical CSV sources from <code>data/</code>.</li><li>Normalize and reshape route, stop, OTP, and ridership records.</li><li>Rebuild <code>data/prt.db</code> with expected tables and constraints.</li><li>Emit basic verification output (row counts and sanity checks).</li></ol>
+<ol>
+<li>Read canonical CSV sources from <code>data/</code>.</li>
+<li>Normalize and reshape route, stop, OTP, and ridership records.</li>
+<li>Rebuild <code>data/prt.db</code> with expected tables and constraints.</li>
+<li>Emit basic verification output (row counts and sanity checks).</li>
+</ol>
 <h2>Data</h2>
-<ul><li><code>data/routes_by_month.csv</code></li><li><code>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</code></li><li><code>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</code></li><li><code>data/PRT_Stop_Reference_Lookup_Table.csv</code></li><li><code>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</code></li></ul>
+<ul>
+<li><code>data/routes_by_month.csv</code></li>
+<li><code>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</code></li>
+<li><code>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</code></li>
+<li><code>data/PRT_Stop_Reference_Lookup_Table.csv</code></li>
+<li><code>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</code></li>
+</ul>
 <h2>Output</h2>
-<ul><li><code>data/prt.db</code> -- normalized SQLite database for downstream analyses.</li><li>Console verification logs (table counts and sample diagnostics).</li></ul></div>
+<ul>
+<li><code>data/prt.db</code> -- normalized SQLite database for downstream analyses.</li>
+<li>Console verification logs (table counts and sample diagnostics).</li>
+</ul>
+</div>
 </section>
 
 

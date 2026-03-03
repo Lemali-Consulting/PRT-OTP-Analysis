@@ -66,16 +66,41 @@
 <h2>Summary</h2>
 <p>There is <strong>no evidence that OTP declines predict subsequent ridership losses</strong>. After detrending and Bonferroni correction, zero of 93 routes show statistically significant Granger causality from OTP to ridership. The raw cross-correlations are weakly <em>negative</em>, suggesting the opposite direction: months with lower ridership tend to have better OTP.</p>
 <h2>Key Numbers</h2>
-<ul><li><strong>Granger causality</strong>: 8/93 routes significant at p &lt; 0.05 uncorrected; <strong>0/93 after Bonferroni correction</strong></li><li><strong>Median cross-correlation at lag 0</strong>: r = -0.18 (IQR: [-0.41, +0.10])</li><li><strong>Median cross-correlation at lag 1</strong>: r = -0.15 (IQR: [-0.38, +0.09])</li><li>Cross-correlations are flat across lags 0--6 -- no dominant lag emerges</li><li>93 routes with 36+ months of paired OTP + ridership data (57--70 months each)</li><li>Both series detrended by subtracting system-wide monthly mean before testing</li><li>ADF stationarity test applied per route; routes with non-stationary detrended series are first-differenced before Granger testing to avoid spurious regression</li></ul>
+<ul>
+<li><strong>Granger causality</strong>: 8/93 routes significant at p &lt; 0.05 uncorrected; <strong>0/93 after Bonferroni correction</strong></li>
+<li><strong>Median cross-correlation at lag 0</strong>: r = -0.18 (IQR: [-0.41, +0.10])</li>
+<li><strong>Median cross-correlation at lag 1</strong>: r = -0.15 (IQR: [-0.38, +0.09])</li>
+<li>Cross-correlations are flat across lags 0--6 -- no dominant lag emerges</li>
+<li>93 routes with 36+ months of paired OTP + ridership data (57--70 months each)</li>
+<li>Both series detrended by subtracting system-wide monthly mean before testing</li>
+<li>ADF stationarity test applied per route; routes with non-stationary detrended series are first-differenced before Granger testing to avoid spurious regression</li>
+</ul>
 <h2>Observations</h2>
-<ul><li>The p-value histogram is roughly uniform (with a small pile-up near zero), consistent with the null hypothesis being true for most routes.</li><li>Of the 8 nominally significant routes, 3 have best lag = 1 month and the rest are scattered across lags 2--6. No consistent lag structure emerges.</li><li>The weakly negative contemporaneous correlation (median r = -0.18) is consistent with <strong>reverse causality</strong>: months when fewer people ride (summer, holidays) see better OTP because of reduced dwell times and less crowding, not because good OTP attracts riders.</li></ul>
+<ul>
+<li>The p-value histogram is roughly uniform (with a small pile-up near zero), consistent with the null hypothesis being true for most routes.</li>
+<li>Of the 8 nominally significant routes, 3 have best lag = 1 month and the rest are scattered across lags 2--6. No consistent lag structure emerges.</li>
+<li>The weakly negative contemporaneous correlation (median r = -0.18) is consistent with <strong>reverse causality</strong>: months when fewer people ride (summer, holidays) see better OTP because of reduced dwell times and less crowding, not because good OTP attracts riders.</li>
+</ul>
 <h2>Discussion</h2>
 <p>The hypothesis that poor OTP drives riders away is intuitive, but this data cannot confirm it. Several factors may explain the null result:</p>
-<ul><li><strong>Temporal resolution is too coarse</strong>: monthly data may be too slow to capture rider responses, which could operate at the trip or week level.</li><li><strong>Riders have limited alternatives</strong>: in a single-provider transit system, riders may tolerate poor OTP because they have no substitute, especially for commute trips.</li><li><strong>Confounders dominate</strong>: ridership is driven primarily by employment, gas prices, weather, and COVID -- factors far larger than OTP fluctuations. The detrending removes system-wide trends but not route-specific confounders.</li><li><strong>Reverse causality may mask the effect</strong>: if high ridership causes poor OTP (crowding, dwell times) while poor OTP also causes ridership loss, the two effects partially cancel.</li></ul>
+<ul>
+<li><strong>Temporal resolution is too coarse</strong>: monthly data may be too slow to capture rider responses, which could operate at the trip or week level.</li>
+<li><strong>Riders have limited alternatives</strong>: in a single-provider transit system, riders may tolerate poor OTP because they have no substitute, especially for commute trips.</li>
+<li><strong>Confounders dominate</strong>: ridership is driven primarily by employment, gas prices, weather, and COVID -- factors far larger than OTP fluctuations. The detrending removes system-wide trends but not route-specific confounders.</li>
+<li><strong>Reverse causality may mask the effect</strong>: if high ridership causes poor OTP (crowding, dwell times) while poor OTP also causes ridership loss, the two effects partially cancel.</li>
+</ul>
 <h2>Caveats</h2>
-<ul><li>Granger causality tests linear predictive ability, not true causation. A null result does not prove OTP has no effect on ridership.</li><li>The 70-month overlap period with monthly granularity gives limited statistical power for 6-lag models (effective sample ~60 per route).</li><li>Detrending removes system-wide trends but not route-specific shocks (e.g., service changes, construction).</li><li>Bonferroni correction is conservative; a less strict correction (e.g., Benjamini-Hochberg) might yield a few significant routes, but the overall pattern would remain weak.</li></ul>
+<ul>
+<li>Granger causality tests linear predictive ability, not true causation. A null result does not prove OTP has no effect on ridership.</li>
+<li>The 70-month overlap period with monthly granularity gives limited statistical power for 6-lag models (effective sample ~60 per route).</li>
+<li>Detrending removes system-wide trends but not route-specific shocks (e.g., service changes, construction).</li>
+<li>Bonferroni correction is conservative; a less strict correction (e.g., Benjamini-Hochberg) might yield a few significant routes, but the overall pattern would remain weak.</li>
+</ul>
 <h2>Review History</h2>
-<ul><li>2026-02-27: <a href="../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md">RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md</a> — 1 significant issue. Added ADF stationarity tests; non-stationary routes are first-differenced before Granger testing. Null result confirmed as robust.</li></ul></div>
+<ul>
+<li>2026-02-27: <a href="../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md">RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md</a> — 1 significant issue. Added ADF stationarity tests; non-stationary routes are first-differenced before Granger testing. Null result confirmed as robust.</li>
+</ul>
+</div>
 </section>
 
 
@@ -85,13 +110,43 @@
   <div class="gallery">
     
       <figure class="shot-card">
-        <img src="assets/analyses/20_otp_ridership_causality/granger_summary.png" alt="granger_summary" loading="lazy">
-        <figcaption>granger_summary.png</figcaption>
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/20_otp_ridership_causality/granger_results.csv" target="_blank" rel="noopener noreferrer">granger_results.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
       </figure>
     
       <figure class="shot-card">
-        <img src="assets/analyses/20_otp_ridership_causality/lagged_crosscorr.png" alt="lagged_crosscorr" loading="lazy">
-        <figcaption>lagged_crosscorr.png</figcaption>
+        
+          <img src="assets/analyses/20_otp_ridership_causality/granger_summary.png" alt="granger_summary" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/20_otp_ridership_causality/granger_summary.png" target="_blank" rel="noopener noreferrer">granger_summary.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/20_otp_ridership_causality/lagged_crosscorr.csv" target="_blank" rel="noopener noreferrer">lagged_crosscorr.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/20_otp_ridership_causality/lagged_crosscorr.png" alt="lagged_crosscorr" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/20_otp_ridership_causality/lagged_crosscorr.png" target="_blank" rel="noopener noreferrer">lagged_crosscorr.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
       </figure>
     
   </div>
@@ -105,12 +160,45 @@
 <h2>Question</h2>
 <p>Does a decline in on-time performance predict subsequent ridership losses? If so, at what lag and magnitude?</p>
 <h2>Approach</h2>
-<ul><li>Join monthly OTP with monthly weekday ridership by route and month over the overlap period.</li><li>For each route, compute lagged cross-correlations between OTP and ridership at lags of 1--6 months (OTP leading ridership).</li><li>Aggregate cross-correlations across routes (median and IQR) to identify the dominant lag.</li><li>Run Granger causality tests (statsmodels) on routes with sufficient data (36+ months), testing whether lagged OTP improves ridership prediction beyond ridership&#x27;s own autoregressive trend.</li><li>Control for system-wide trends by detrending both series (subtract system monthly mean) before testing.</li><li>Check stationarity of each route&#x27;s detrended series using the Augmented Dickey-Fuller (ADF) test. For routes where either series is non-stationary (ADF p &gt;= 0.05), first-difference both series before Granger testing to avoid spurious regression.</li><li>Report the share of routes where Granger causality is significant at p &lt; 0.05, with Bonferroni correction.</li></ul>
+<ul>
+<li>Join monthly OTP with monthly weekday ridership by route and month over the overlap period.</li>
+<li>For each route, compute lagged cross-correlations between OTP and ridership at lags of 1--6 months (OTP leading ridership).</li>
+<li>Aggregate cross-correlations across routes (median and IQR) to identify the dominant lag.</li>
+<li>Run Granger causality tests (statsmodels) on routes with sufficient data (36+ months), testing whether lagged OTP improves ridership prediction beyond ridership's own autoregressive trend.</li>
+<li>Control for system-wide trends by detrending both series (subtract system monthly mean) before testing.</li>
+<li>Check stationarity of each route's detrended series using the Augmented Dickey-Fuller (ADF) test. For routes where either series is non-stationary (ADF p &gt;= 0.05), first-difference both series before Granger testing to avoid spurious regression.</li>
+<li>Report the share of routes where Granger causality is significant at p &lt; 0.05, with Bonferroni correction.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>route_id, month, OTP</td><td><code>prt.db</code> table</td></tr><tr><td><code>ridership_monthly</code></td><td>route_id, month, day_type=&#x27;WEEKDAY&#x27;, avg_riders</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>route_id, month, OTP</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>ridership_monthly</code></td>
+  <td>route_id, month, day_type='WEEKDAY', avg_riders</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Notes:</strong> Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024). Exclude routes with fewer than 36 months of paired data.</p>
 <h2>Output</h2>
-<ul><li><code>output/lagged_crosscorr.png</code> -- median cross-correlation by lag with IQR band</li><li><code>output/granger_results.csv</code> -- per-route Granger test results (F-stat, p-value, optimal lag)</li><li><code>output/granger_summary.png</code> -- histogram of p-values across routes</li></ul></div>
+<ul>
+<li><code>output/lagged_crosscorr.png</code> -- median cross-correlation by lag with IQR band</li>
+<li><code>output/granger_results.csv</code> -- per-route Granger test results (F-stat, p-value, optimal lag)</li>
+<li><code>output/granger_summary.png</code> -- histogram of p-values across routes</li>
+</ul>
+</div>
 </section>
 
 

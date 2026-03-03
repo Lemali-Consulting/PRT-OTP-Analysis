@@ -14,3 +14,16 @@ dependencies:
 - numpy
 - polars
 - scipy
+outputs:
+- path: gini_vs_otp.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: pareto_curve.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: pareto_system.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: route_gini.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.

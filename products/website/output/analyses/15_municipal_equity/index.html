@@ -68,18 +68,77 @@
 <h2>Summary</h2>
 <p>81 municipalities had enough stops (10+) to analyze. There is a <strong>25 pp spread</strong> between the best and worst municipalities, similar to the neighborhood-level equity gap. Cross-jurisdictional routes (serving 2+ municipalities) perform no differently from single-municipality routes.</p>
 <h2>Key Numbers</h2>
-<ul><li><strong>81 municipalities</strong> analyzed (with much better data coverage than the 89 neighborhoods in Analysis 04)</li><li>Best: <strong>Castle Shannon borough</strong> (84.0%)</li><li>Worst: <strong>Plum borough</strong> (59.1%)</li><li>Spread: <strong>24.9 pp</strong></li><li>Suburban median OTP: <strong>68.1%</strong></li><li>Cross-jurisdictional routes (n=74): avg OTP = 69.5%</li><li>Single-municipality routes (n=19): avg OTP = 69.2%</li><li>Cross vs single t-test: p = 0.85 -- no significant difference</li></ul>
+<ul>
+<li><strong>81 municipalities</strong> analyzed (with much better data coverage than the 89 neighborhoods in Analysis 04)</li>
+<li>Best: <strong>Castle Shannon borough</strong> (84.0%)</li>
+<li>Worst: <strong>Plum borough</strong> (59.1%)</li>
+<li>Spread: <strong>24.9 pp</strong></li>
+<li>Suburban median OTP: <strong>68.1%</strong></li>
+<li>Cross-jurisdictional routes (n=74): avg OTP = 69.5%</li>
+<li>Single-municipality routes (n=19): avg OTP = 69.2%</li>
+<li>Cross vs single t-test: p = 0.85 -- no significant difference</li>
+</ul>
 <h2>Observations</h2>
-<ul><li>The best-performing municipalities (Castle Shannon, Dormont, Beechview) are all served by the light rail T line, consistent with the mode advantage found in Analysis 02.</li><li>The worst-performing municipalities (Plum, Penn Hills, Wilkinsburg) are served primarily by long local bus routes through the eastern corridor.</li><li>The suburban median OTP (68.1%) is very close to the overall system average, suggesting no systematic suburban vs urban disadvantage.</li><li>Cross-jurisdictional routes -- which might be expected to suffer from longer distances and more complexity -- perform identically to single-municipality routes. Route length and stop count matter more than jurisdictional boundaries.</li><li>The municipal analysis has much better data coverage than the neighborhood analysis (Analysis 04), which lost 58% of stops due to missing <code>hood</code> data.</li></ul>
+<ul>
+<li>The best-performing municipalities (Castle Shannon, Dormont, Beechview) are all served by the light rail T line, consistent with the mode advantage found in Analysis 02.</li>
+<li>The worst-performing municipalities (Plum, Penn Hills, Wilkinsburg) are served primarily by long local bus routes through the eastern corridor.</li>
+<li>The suburban median OTP (68.1%) is very close to the overall system average, suggesting no systematic suburban vs urban disadvantage.</li>
+<li>Cross-jurisdictional routes -- which might be expected to suffer from longer distances and more complexity -- perform identically to single-municipality routes. Route length and stop count matter more than jurisdictional boundaries.</li>
+<li>The municipal analysis has much better data coverage than the neighborhood analysis (Analysis 04), which lost 58% of stops due to missing <code>hood</code> data.</li>
+</ul>
 <h2>Implication</h2>
 <p>The equity gap is driven by <strong>mode and route structure</strong>, not by geography per se. Municipalities on rail or busway corridors get 80%+ OTP; those served only by long local bus routes get 60%. Municipal boundaries and suburban/urban distinctions are not meaningful predictors.</p>
 <h2>Caveats</h2>
-<ul><li>Route OTP is projected onto stops and then onto municipalities (ecological fallacy). A route&#x27;s performance may vary along its length, and municipalities at the ends of long routes may experience different OTP than those near the middle.</li><li>Trip weights (<code>trips_7d</code>) are a static snapshot applied across the full study period. Service levels changed over time, especially during COVID.</li></ul>
+<ul>
+<li>Route OTP is projected onto stops and then onto municipalities (ecological fallacy). A route's performance may vary along its length, and municipalities at the ends of long routes may experience different OTP than those near the middle.</li>
+<li>Trip weights (<code>trips_7d</code>) are a static snapshot applied across the full study period. Service levels changed over time, especially during COVID.</li>
+</ul>
 <h2>Review History</h2>
-<ul><li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 3 issues (2 significant, inherent to data). Ecological fallacy documented; Welch&#x27;s t-test applied (no material change).</li></ul></div>
+<ul>
+<li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 3 issues (2 significant, inherent to data). Ecological fallacy documented; Welch's t-test applied (no material change).</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/15_municipal_equity/municipal_otp.csv" target="_blank" rel="noopener noreferrer">municipal_otp.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/15_municipal_equity/pittsburgh_vs_suburban.png" alt="pittsburgh_vs_suburban" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/15_municipal_equity/pittsburgh_vs_suburban.png" target="_blank" rel="noopener noreferrer">pittsburgh_vs_suburban.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/15_municipal_equity/top_bottom_municipalities.png" alt="top_bottom_municipalities" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/15_municipal_equity/top_bottom_municipalities.png" target="_blank" rel="noopener noreferrer">top_bottom_municipalities.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -89,11 +148,53 @@
 <h2>Question</h2>
 <p>Analysis 04 examined neighborhood equity but lost 58% of stops due to missing <code>hood</code> data. The <code>muni</code> (municipality) and <code>county</code> fields have broader coverage. Do suburban municipalities get better or worse service reliability than the City of Pittsburgh? Do routes that cross municipal boundaries perform differently?</p>
 <h2>Approach</h2>
-<ul><li>For each stop, assign OTP from the routes serving it (trip-weighted average from <code>route_stops</code> and <code>otp_monthly</code>).</li><li>Aggregate stop-level OTP by municipality and county, weighted by trips.</li><li>Rank municipalities by average OTP.</li><li>Identify <strong>cross-jurisdictional routes</strong> (routes with stops in 2+ municipalities) and compare their OTP to single-municipality routes.</li><li>Compare Pittsburgh city vs suburban municipalities.</li><li>Bar chart of top/bottom municipalities, and Pittsburgh vs suburban comparison.</li></ul>
+<ul>
+<li>For each stop, assign OTP from the routes serving it (trip-weighted average from <code>route_stops</code> and <code>otp_monthly</code>).</li>
+<li>Aggregate stop-level OTP by municipality and county, weighted by trips.</li>
+<li>Rank municipalities by average OTP.</li>
+<li>Identify <strong>cross-jurisdictional routes</strong> (routes with stops in 2+ municipalities) and compare their OTP to single-municipality routes.</li>
+<li>Compare Pittsburgh city vs suburban municipalities.</li>
+<li>Bar chart of top/bottom municipalities, and Pittsburgh vs suburban comparison.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>stops</code></td><td>Municipality (<code>muni</code>) and county for each stop</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>Links routes to stops with trip counts</td><td><code>prt.db</code> table</td></tr><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Mode classification</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>stops</code></td>
+  <td>Municipality (<code>muni</code>) and county for each stop</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>Links routes to stops with trip counts</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Monthly OTP per route</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>Mode classification</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <h2>Output</h2>
-<ul><li><code>output/municipal_otp.csv</code> -- per-municipality average OTP and stop count</li><li><code>output/top_bottom_municipalities.png</code> -- bar chart of best/worst municipalities</li><li><code>output/pittsburgh_vs_suburban.png</code> -- comparison chart</li></ul></div>
+<ul>
+<li><code>output/municipal_otp.csv</code> -- per-municipality average OTP and stop count</li>
+<li><code>output/top_bottom_municipalities.png</code> -- bar chart of best/worst municipalities</li>
+<li><code>output/pittsburgh_vs_suburban.png</code> -- comparison chart</li>
+</ul>
+</div>
 </section>
 
 

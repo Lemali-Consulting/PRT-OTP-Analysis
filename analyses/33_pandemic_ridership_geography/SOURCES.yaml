@@ -12,3 +12,13 @@ dependencies:
 - numpy
 - polars
 - scipy
+outputs:
+- path: change_by_zone.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: pandemic_change_by_stop.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: ridership_change_map.png
+  kind: image
+  description: Generated chart image produced by this analysis.

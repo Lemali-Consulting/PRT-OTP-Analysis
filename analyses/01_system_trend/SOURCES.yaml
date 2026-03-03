@@ -12,3 +12,13 @@ description: Tracks the overall PRT on-time performance trend from 2019 through 
   including COVID impact and recovery.
 dependencies:
 - polars
+outputs:
+- path: system_trend.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: system_trend.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: system_trend_bus_only.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.

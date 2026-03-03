@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NTD Ridership ETL - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Pipeline</p>
+  <h1>NTD Ridership ETL</h1>
+  
+</section>
+
+
+<section class="panel">
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  05_ntd_ridership["NTD Ridership ETL"]
+  f1_05_ntd_ridership["data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx"] --> 05_ntd_ridership
+  05_ntd_ridership --> tp_ntd_agency["ntd_agency"]
+  05_ntd_ridership --> tp_ntd_ridership["ntd_ridership"]
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 05_ntd_ridership page;
+  class tp_ntd_agency,tp_ntd_ridership table;
+  class f1_05_ntd_ridership file;</pre>
+</section>
+
+
+
+<section class="panel">
+  <h2>Findings</h2>
+  <div class="markdown"><h1>Findings: NTD Ridership ETL</h1>
+<h2>Summary</h2>
+<p>National agency and monthly ridership tables are loaded into <code>prt.db</code> for peer and trend benchmarking.</p>
+<h2>Notes</h2>
+<ul>
+<li>Uses the local NTD workbook checked into <code>data/ntd-monthly-ridership/</code>.</li>
+<li>Emits verification summaries for PRT and top agencies.</li>
+</ul>
+</div>
+</section>
+
+
+
+
+
+<section class="panel">
+  <h2>Methods</h2>
+  <div class="markdown"><h1>Methods: NTD Ridership ETL</h1>
+<h2>Question</h2>
+<p>How do we load national monthly ridership benchmarks into the project database?</p>
+<h2>Approach</h2>
+<ol>
+<li>Read agency dimension rows from NTD workbook Master sheet.</li>
+<li>Unpivot monthly UPT values from wide to long format.</li>
+<li>Normalize month keys to <code>YYYY-MM</code>.</li>
+<li>Rebuild <code>ntd_agency</code> and <code>ntd_ridership</code> tables in <code>prt.db</code>.</li>
+</ol>
+<h2>Data</h2>
+<ul>
+<li>NTD monthly ridership workbook in <code>data/ntd-monthly-ridership/</code></li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>ntd_agency</code> table in <code>data/prt.db</code></li>
+<li><code>ntd_ridership</code> table in <code>data/prt.db</code></li>
+</ul>
+</div>
+</section>
+
+
+
+<section class="panel">
+  <h2>Sources</h2>
+  <table class="source-table">
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</td>
+        <td><span class="tag">file</span></td>
+        <td>NTD monthly ridership workbook containing agency metadata and UPT series.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

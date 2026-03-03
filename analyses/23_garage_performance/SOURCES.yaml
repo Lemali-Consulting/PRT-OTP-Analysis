@@ -15,3 +15,19 @@ dependencies:
 - numpy
 - polars
 - scipy
+outputs:
+- path: garage_boxplot.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: garage_monthly.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: garage_otp_trend.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: garage_route_detail.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: garage_summary.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.

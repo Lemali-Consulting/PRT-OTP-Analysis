@@ -14,3 +14,10 @@ dependencies:
 - numpy
 - polars
 - scipy
+outputs:
+- path: route_ranking.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: top_bottom_routes.png
+  kind: image
+  description: Generated chart image produced by this analysis.

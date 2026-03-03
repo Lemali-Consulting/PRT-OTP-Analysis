@@ -65,28 +65,153 @@
 <h2>Methodology Note</h2>
 <p>The anomaly detector uses a 12-month rolling window shifted by one month, so the current observation is never included in its own baseline. This prevents self-dampening of z-scores and produces more sensitive detection (842 anomalies vs. 406 with the unshifted approach). When the rolling standard deviation is near zero (constant OTP over the window), z-scores are set to 0.0 to avoid division-by-zero artifacts.</p>
 <h2>Routes with Most Anomalies</h2>
-<table><thead><tr><th>Route</th><th>Anomalies</th></tr></thead><tbody><tr><td>79 - East Hills</td><td>18</td></tr><tr><td>19L - Emsworth Limited</td><td>16</td></tr><tr><td>RED - Castle Shannon via Beechview</td><td>15</td></tr><tr><td>54 - North Side-Oakland-South Side</td><td>15</td></tr><tr><td>28X - Airport Flyer</td><td>14</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Route</th>
+  <th>Anomalies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>79 - East Hills</td>
+  <td>18</td>
+</tr>
+<tr>
+  <td>19L - Emsworth Limited</td>
+  <td>16</td>
+</tr>
+<tr>
+  <td>RED - Castle Shannon via Beechview</td>
+  <td>15</td>
+</tr>
+<tr>
+  <td>54 - North Side-Oakland-South Side</td>
+  <td>15</td>
+</tr>
+<tr>
+  <td>28X - Airport Flyer</td>
+  <td>14</td>
+</tr>
+</tbody>
+</table>
 <h2>Anomaly Rates by Mode</h2>
-<table><thead><tr><th>Mode</th><th>Anomalies</th><th>Total Months</th><th>Rate</th></tr></thead><tbody><tr><td>BUS</td><td>801</td><td>6,794</td><td>11.8%</td></tr><tr><td>RAIL</td><td>32</td><td>224</td><td>14.3%</td></tr><tr><td>UNKNOWN</td><td>9</td><td>58</td><td>15.5%</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Mode</th>
+  <th>Anomalies</th>
+  <th>Total Months</th>
+  <th>Rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>BUS</td>
+  <td>801</td>
+  <td>6,794</td>
+  <td>11.8%</td>
+</tr>
+<tr>
+  <td>RAIL</td>
+  <td>32</td>
+  <td>224</td>
+  <td>14.3%</td>
+</tr>
+<tr>
+  <td>UNKNOWN</td>
+  <td>9</td>
+  <td>58</td>
+  <td>15.5%</td>
+</tr>
+</tbody>
+</table>
 <p>RAIL routes show a slightly higher anomaly rate (14.3%) despite consistently high OTP. This is because their performance is normally very stable, so even moderate dips trigger the 2-sigma threshold. The 5 UNKNOWN-mode routes (RLSH, P2, 42, SWL, 37) are included in the analysis; most have very few months of data.</p>
 <h2>Expected vs Actual False-Positive Rate</h2>
 <p>With 7,076 evaluated route-month observations and a 2-sigma two-sided threshold, the expected false-positive rate under normality is approximately 4.6%, yielding ~322 expected false positives. The actual count of 842 anomalies is <strong>2.6x the null expectation</strong>, indicating that a substantial majority of flagged anomalies reflect genuine OTP deviations beyond what random variation would produce. However, roughly 300-350 of the 842 could be expected by chance alone, so not every flagged anomaly should be interpreted as a &quot;real&quot; event.</p>
 <h2>Lagged-Window Trend Bias</h2>
-<p>The lagged rolling window introduces a systematic bias for trending routes. When a route&#x27;s OTP is declining, the baseline (computed from the prior 12 months) is always slightly above the current value, making negative anomalies more likely. Conversely, improving routes are biased toward positive anomalies. This means the anomaly detector is more sensitive to deviations in the direction of the trend. No detrending is applied, so some fraction of flagged anomalies may reflect gradual trends rather than abrupt shocks.</p>
+<p>The lagged rolling window introduces a systematic bias for trending routes. When a route's OTP is declining, the baseline (computed from the prior 12 months) is always slightly above the current value, making negative anomalies more likely. Conversely, improving routes are biased toward positive anomalies. This means the anomaly detector is more sensitive to deviations in the direction of the trend. No detrending is applied, so some fraction of flagged anomalies may reflect gradual trends rather than abrupt shocks.</p>
 <h2>Key Anomaly Clusters</h2>
-<ul><li><strong>March--June 2020 (COVID):</strong> Many routes showed <em>positive</em> anomalies -- OTP improved because reduced ridership meant less dwell time and fewer delays. This was a temporary artifact, not genuine improvement.</li><li><strong>Late 2022:</strong> A cluster of negative anomalies across many routes, coinciding with the system-wide OTP trough (58% in September 2022). May indicate staffing shortages, construction, or service restructuring.</li><li><strong>Route 79 (East Hills):</strong> The most anomaly-prone route, with 18 flagged months, indicating persistent instability in schedule adherence.</li></ul>
+<ul>
+<li><strong>March--June 2020 (COVID):</strong> Many routes showed <em>positive</em> anomalies -- OTP improved because reduced ridership meant less dwell time and fewer delays. This was a temporary artifact, not genuine improvement.</li>
+<li><strong>Late 2022:</strong> A cluster of negative anomalies across many routes, coinciding with the system-wide OTP trough (58% in September 2022). May indicate staffing shortages, construction, or service restructuring.</li>
+<li><strong>Route 79 (East Hills):</strong> The most anomaly-prone route, with 18 flagged months, indicating persistent instability in schedule adherence.</li>
+</ul>
 <h2>Excluded Routes</h2>
 <p>4 routes were excluded from anomaly detection because they have fewer than 7 months of data (the rolling window requires shift(1) + min_samples=6):</p>
-<table><thead><tr><th>Route</th><th>Months</th></tr></thead><tbody><tr><td>37 - Castle Shannon</td><td>3</td></tr><tr><td>53 - Homestead Park</td><td>2</td></tr><tr><td>42 - Potomac</td><td>3</td></tr><tr><td>RLSH - Red Line Shuttle</td><td>3</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Route</th>
+  <th>Months</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>37 - Castle Shannon</td>
+  <td>3</td>
+</tr>
+<tr>
+  <td>53 - Homestead Park</td>
+  <td>2</td>
+</tr>
+<tr>
+  <td>42 - Potomac</td>
+  <td>3</td>
+</tr>
+<tr>
+  <td>RLSH - Red Line Shuttle</td>
+  <td>3</td>
+</tr>
+</tbody>
+</table>
 <h2>Observations</h2>
-<ul><li>The lagged window methodology results in more anomalies being flagged, particularly for routes with gradual trends, since the baseline is always slightly behind.</li><li>Rail routes (RED, BLUE) have many anomalies despite high average OTP because their performance is normally very consistent, so even moderate dips trigger the 2-sigma threshold.</li><li>The z-score method requires at least 6 months of rolling history, so the first few months of each route&#x27;s data are not evaluated.</li><li>5 UNKNOWN-mode routes are included in the analysis (RLSH, P2, 42, SWL, 37). Most have very few months of data.</li></ul>
+<ul>
+<li>The lagged window methodology results in more anomalies being flagged, particularly for routes with gradual trends, since the baseline is always slightly behind.</li>
+<li>Rail routes (RED, BLUE) have many anomalies despite high average OTP because their performance is normally very consistent, so even moderate dips trigger the 2-sigma threshold.</li>
+<li>The z-score method requires at least 6 months of rolling history, so the first few months of each route's data are not evaluated.</li>
+<li>5 UNKNOWN-mode routes are included in the analysis (RLSH, P2, 42, SWL, 37). Most have very few months of data.</li>
+</ul>
 <h2>Caveats</h2>
-<ul><li>Without external data (PRT service advisories, construction records, staffing reports), anomalies can only be flagged, not explained.</li><li>The known events dictionary is limited to COVID dates. More events could be added with PRT service change records.</li></ul>
+<ul>
+<li>Without external data (PRT service advisories, construction records, staffing reports), anomalies can only be flagged, not explained.</li>
+<li>The known events dictionary is limited to COVID dates. More events could be added with PRT service change records.</li>
+</ul>
 <h2>Review History</h2>
-<ul><li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 7 issues (1 significant). Added division-by-zero guard for z-scores, mode-stratified anomaly rates, false-positive rate context, trend bias documentation, excluded route documentation, two-sided detection clarification, and UNKNOWN-mode route documentation.</li></ul></div>
+<ul>
+<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 7 issues (1 significant). Added division-by-zero guard for z-scores, mode-stratified anomaly rates, false-positive rate context, trend bias documentation, excluded route documentation, two-sided detection clarification, and UNKNOWN-mode route documentation.</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/05_anomaly_investigation/anomalies.csv" target="_blank" rel="noopener noreferrer">anomalies.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/05_anomaly_investigation/anomaly_profiles.png" alt="anomaly_profiles" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/05_anomaly_investigation/anomaly_profiles.png" target="_blank" rel="noopener noreferrer">anomaly_profiles.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -96,11 +221,44 @@
 <h2>Question</h2>
 <p>What explains sharp OTP deviations (both drops and spikes) for routes across the system? Are they real performance issues or data artifacts?</p>
 <h2>Approach</h2>
-<ul><li>For each route, flag months where OTP deviates more than 2 standard deviations from the route&#x27;s rolling 12-month mean (two-sided: both positive and negative deviations).</li><li>Use a lagged rolling window (current month excluded from baseline) to prevent self-dampening of z-scores.</li><li>Guard against division by zero: when rolling standard deviation is near zero (&lt; 1e-9), set z-score to 0.0.</li><li>Catalog all flagged anomalies with route, month, OTP value, and deviation magnitude.</li><li>Cross-reference known events: COVID shutdowns (Mar 2020), PRT service restructurings, construction projects.</li><li>Report anomaly rates stratified by mode (BUS, RAIL, UNKNOWN).</li><li>Compare actual anomaly count to the expected false-positive rate under normality (~4.6% for a 2-sigma two-sided threshold).</li><li>Routes with fewer than 7 months of data are excluded from anomaly detection due to the rolling window requirement (shift + min_samples=6).</li></ul>
+<ul>
+<li>For each route, flag months where OTP deviates more than 2 standard deviations from the route's rolling 12-month mean (two-sided: both positive and negative deviations).</li>
+<li>Use a lagged rolling window (current month excluded from baseline) to prevent self-dampening of z-scores.</li>
+<li>Guard against division by zero: when rolling standard deviation is near zero (&lt; 1e-9), set z-score to 0.0.</li>
+<li>Catalog all flagged anomalies with route, month, OTP value, and deviation magnitude.</li>
+<li>Cross-reference known events: COVID shutdowns (Mar 2020), PRT service restructurings, construction projects.</li>
+<li>Report anomaly rates stratified by mode (BUS, RAIL, UNKNOWN).</li>
+<li>Compare actual anomaly count to the expected false-positive rate under normality (~4.6% for a 2-sigma two-sided threshold).</li>
+<li>Routes with fewer than 7 months of data are excluded from anomaly detection due to the rolling window requirement (shift + min_samples=6).</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Route metadata</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Monthly OTP per route</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>Route metadata</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <h2>Output</h2>
-<ul><li><code>output/anomalies.csv</code> -- all flagged anomaly months</li><li><code>output/anomaly_profiles.png</code> -- time series for routes with most anomalies</li></ul></div>
+<ul>
+<li><code>output/anomalies.csv</code> -- all flagged anomaly months</li>
+<li><code>output/anomaly_profiles.png</code> -- time series for routes with most anomalies</li>
+</ul>
+</div>
 </section>
 
 

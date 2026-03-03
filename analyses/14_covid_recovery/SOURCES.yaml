@@ -13,3 +13,16 @@ dependencies:
 - numpy
 - polars
 - scipy
+outputs:
+- path: covid_recovery.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: recovery_by_mode.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: recovery_distribution.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: regression_to_mean.png
+  kind: image
+  description: Generated chart image produced by this analysis.

@@ -128,6 +128,33 @@ a:hover { color: var(--accent); }
   background: #fff;
   overflow: hidden;
 }
+.artifact-frame {
+  width: 100%;
+  height: 320px;
+  border: 0;
+  background: #fff;
+}
+.artifact-body {
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.35rem;
+}
+.artifact-kind {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  font-weight: 700;
+}
+.artifact-link {
+  font-weight: 600;
+  word-break: break-word;
+}
+.artifact-desc {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
 img { max-width: 100%; height: auto; display: block; }
 figcaption {
   padding: 0.55rem 0.65rem;

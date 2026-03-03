@@ -14,3 +14,13 @@ description: Identifies high-connectivity stops (served by many routes) and test
 dependencies:
 - polars
 - scipy
+outputs:
+- path: connectivity_vs_otp.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: hub_performance.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: hub_tier_comparison.png
+  kind: image
+  description: Generated chart image produced by this analysis.

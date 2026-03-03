@@ -11,3 +11,16 @@ description: Track how weekday, Saturday, and Sunday ridership patterns shifted 
 dependencies:
 - polars
 - scipy
+outputs:
+- path: daytype_ridership_trend.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: daytype_summary.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: weekend_share_trend.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: weekend_share_vs_otp.png
+  kind: image
+  description: Generated chart image produced by this analysis.

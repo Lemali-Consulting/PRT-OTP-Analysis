@@ -69,21 +69,135 @@
 <h2>Summary</h2>
 <p>A six-feature OLS model explains <strong>47.2% of OTP variance</strong> (adjusted R² = 0.435) across 92 routes. Three features are significant: stop count, geographic span, and rail mode. The model confirms that structural route characteristics explain nearly half of all performance variation, with the remaining 53% attributable to unmeasured factors (traffic, staffing, weather, schedule design).</p>
 <h2>Key Numbers</h2>
-<ul><li><strong>R² = 0.472</strong>, <strong>Adjusted R² = 0.435</strong></li><li><strong>n = 92 routes</strong>, <strong>k = 6 features</strong></li></ul>
-<table><thead><tr><th>Feature</th><th>Coefficient</th><th>p-value</th><th>Beta Weight</th><th>Significant?</th></tr></thead><tbody><tr><td>stop_count</td><td>-0.0006</td><td>&lt;0.001</td><td>-0.49</td><td>***</td></tr><tr><td>span_km</td><td>-0.0049</td><td>&lt;0.001</td><td>-0.47</td><td>***</td></tr><tr><td>is_rail</td><td>+0.133</td><td>&lt;0.001</td><td>+0.34</td><td>***</td></tr><tr><td>n_munis</td><td>+0.009</td><td>0.001</td><td>+0.41</td><td>**</td></tr><tr><td>is_premium_bus</td><td>+0.007</td><td>0.70</td><td>+0.05</td><td></td></tr><tr><td>weekend_ratio</td><td>-0.006</td><td>0.79</td><td>-0.03</td><td></td></tr></tbody></table>
+<ul>
+<li><strong>R² = 0.472</strong>, <strong>Adjusted R² = 0.435</strong></li>
+<li><strong>n = 92 routes</strong>, <strong>k = 6 features</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+  <th>Feature</th>
+  <th>Coefficient</th>
+  <th>p-value</th>
+  <th>Beta Weight</th>
+  <th>Significant?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>stop_count</td>
+  <td>-0.0006</td>
+  <td>&lt;0.001</td>
+  <td>-0.49</td>
+  <td>***</td>
+</tr>
+<tr>
+  <td>span_km</td>
+  <td>-0.0049</td>
+  <td>&lt;0.001</td>
+  <td>-0.47</td>
+  <td>***</td>
+</tr>
+<tr>
+  <td>is_rail</td>
+  <td>+0.133</td>
+  <td>&lt;0.001</td>
+  <td>+0.34</td>
+  <td>***</td>
+</tr>
+<tr>
+  <td>n_munis</td>
+  <td>+0.009</td>
+  <td>0.001</td>
+  <td>+0.41</td>
+  <td>**</td>
+</tr>
+<tr>
+  <td>is_premium_bus</td>
+  <td>+0.007</td>
+  <td>0.70</td>
+  <td>+0.05</td>
+  <td></td>
+</tr>
+<tr>
+  <td>weekend_ratio</td>
+  <td>-0.006</td>
+  <td>0.79</td>
+  <td>-0.03</td>
+  <td></td>
+</tr>
+</tbody>
+</table>
 <h2>Observations</h2>
-<ul><li><strong>Stop count</strong> (beta = -0.49) and <strong>geographic span</strong> (beta = -0.47) are the two strongest predictors, with nearly equal standardized effects. Each additional stop costs roughly -0.06 pp OTP; each additional km of span costs roughly -0.49 pp.</li><li><strong>Rail mode</strong> (beta = +0.34) provides a +13.3 pp OTP advantage over bus after controlling for structural factors. This is partly inherent to rail (dedicated right-of-way) and not fully captured by other features.</li><li><strong>Number of municipalities</strong> has a surprising positive coefficient (+0.009 per muni, beta = +0.41). This is likely a suppressor effect: after controlling for stop count and span, routes that serve more municipalities tend to be express/busway routes that skip stops, which perform better.</li><li><strong>Premium bus</strong> (busway/flyer/express/limited) is not significant once stop count and span are controlled -- these routes&#x27; advantage is fully explained by having fewer stops and shorter spans, not by their service type per se.</li><li><strong>Weekend ratio</strong> is not significant, confirming the null finding from Analysis 17.</li></ul>
+<ul>
+<li><strong>Stop count</strong> (beta = -0.49) and <strong>geographic span</strong> (beta = -0.47) are the two strongest predictors, with nearly equal standardized effects. Each additional stop costs roughly -0.06 pp OTP; each additional km of span costs roughly -0.49 pp.</li>
+<li><strong>Rail mode</strong> (beta = +0.34) provides a +13.3 pp OTP advantage over bus after controlling for structural factors. This is partly inherent to rail (dedicated right-of-way) and not fully captured by other features.</li>
+<li><strong>Number of municipalities</strong> has a surprising positive coefficient (+0.009 per muni, beta = +0.41). This is likely a suppressor effect: after controlling for stop count and span, routes that serve more municipalities tend to be express/busway routes that skip stops, which perform better.</li>
+<li><strong>Premium bus</strong> (busway/flyer/express/limited) is not significant once stop count and span are controlled -- these routes' advantage is fully explained by having fewer stops and shorter spans, not by their service type per se.</li>
+<li><strong>Weekend ratio</strong> is not significant, confirming the null finding from Analysis 17.</li>
+</ul>
 <h2>Model Interpretation</h2>
-<p>The 47% R² means that knowing just a route&#x27;s stop count, length, and mode gets you almost halfway to predicting its OTP. The unexplained 53% likely reflects:</p>
-<ul><li>Traffic conditions and road geometry</li><li>Schedule design (running time padding, layover adequacy)</li><li>Driver staffing and experience</li><li>Passenger volume and dwell time variation</li><li>Weather and construction effects</li></ul>
+<p>The 47% R² means that knowing just a route's stop count, length, and mode gets you almost halfway to predicting its OTP. The unexplained 53% likely reflects:</p>
+<ul>
+<li>Traffic conditions and road geometry</li>
+<li>Schedule design (running time padding, layover adequacy)</li>
+<li>Driver staffing and experience</li>
+<li>Passenger volume and dwell time variation</li>
+<li>Weather and construction effects</li>
+</ul>
 <p>These factors would require operational data not present in this dataset.</p>
 <h2>Caveats</h2>
-<ul><li>OLS assumes linear relationships and independent errors. Some non-linearity is visible in the residuals.</li><li>The n_munis coefficient is a suppressor and should not be interpreted as &quot;more municipalities = better OTP.&quot;</li><li>With only 92 observations and 6 predictors, the model is at the edge of stable estimation.</li></ul>
+<ul>
+<li>OLS assumes linear relationships and independent errors. Some non-linearity is visible in the residuals.</li>
+<li>The n_munis coefficient is a suppressor and should not be interpreted as &quot;more municipalities = better OTP.&quot;</li>
+<li>With only 92 observations and 6 predictors, the model is at the edge of stable estimation.</li>
+</ul>
 <h2>Review History</h2>
-<ul><li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 4 issues (3 significant). VIF check added; n_munis labeled as suppressor; numerical stability improved.</li></ul></div>
+<ul>
+<li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 4 issues (3 significant). VIF check added; n_munis labeled as suppressor; numerical stability improved.</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/18_multivariate_model/coefficient_plot.png" alt="coefficient_plot" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/18_multivariate_model/coefficient_plot.png" target="_blank" rel="noopener noreferrer">coefficient_plot.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/18_multivariate_model/model_coefficients.csv" target="_blank" rel="noopener noreferrer">model_coefficients.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/18_multivariate_model/predicted_vs_actual.png" alt="predicted_vs_actual" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/18_multivariate_model/predicted_vs_actual.png" target="_blank" rel="noopener noreferrer">predicted_vs_actual.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -93,11 +207,52 @@
 <h2>Question</h2>
 <p>How much of OTP variation can we explain with available structural variables? Which factors matter most when all are considered simultaneously? Previous analyses found effects for stop count (Analysis 07), mode (Analysis 02), and geographic span (Analysis 12), but these were tested individually. A multivariate model quantifies relative importance and reveals how much variance remains unexplained.</p>
 <h2>Approach</h2>
-<ul><li>For each route with OTP data, assemble features: stop count, geographic span (km), mode (BUS/RAIL dummy), bus subtype (local/limited/express/busway/flyer dummies), weekend service ratio, and number of municipalities served.</li><li>Fit an OLS regression with average OTP as the dependent variable.</li><li>Report R-squared, adjusted R-squared, and per-feature coefficients with p-values.</li><li>Use standardized coefficients (beta weights) to compare relative importance across features with different scales.</li><li>Generate a coefficient plot and a predicted-vs-actual scatter plot.</li></ul>
+<ul>
+<li>For each route with OTP data, assemble features: stop count, geographic span (km), mode (BUS/RAIL dummy), bus subtype (local/limited/express/busway/flyer dummies), weekend service ratio, and number of municipalities served.</li>
+<li>Fit an OLS regression with average OTP as the dependent variable.</li>
+<li>Report R-squared, adjusted R-squared, and per-feature coefficients with p-values.</li>
+<li>Use standardized coefficients (beta weights) to compare relative importance across features with different scales.</li>
+<li>Generate a coefficient plot and a predicted-vs-actual scatter plot.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route (averaged)</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>Stop count, trip counts per route</td><td><code>prt.db</code> table</td></tr><tr><td><code>stops</code></td><td>Lat/lon for span calculation, muni for jurisdiction count</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Mode classification</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Monthly OTP per route (averaged)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>Stop count, trip counts per route</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>Lat/lon for span calculation, muni for jurisdiction count</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>Mode classification</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <h2>Output</h2>
-<ul><li><code>output/model_coefficients.csv</code> -- feature, coefficient, std error, p-value, beta weight</li><li><code>output/coefficient_plot.png</code> -- horizontal bar chart of standardized coefficients</li><li><code>output/predicted_vs_actual.png</code> -- scatter plot with 1:1 line</li></ul></div>
+<ul>
+<li><code>output/model_coefficients.csv</code> -- feature, coefficient, std error, p-value, beta weight</li>
+<li><code>output/coefficient_plot.png</code> -- horizontal bar chart of standardized coefficients</li>
+<li><code>output/predicted_vs_actual.png</code> -- scatter plot with 1:1 line</li>
+</ul>
+</div>
 </section>
 
 

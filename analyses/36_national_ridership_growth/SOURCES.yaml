@@ -10,3 +10,13 @@ description: Compare 2019-to-2024 ridership recovery across the 150 largest US t
   agencies using NTD data; rank PRT nationally.
 dependencies:
 - polars
+outputs:
+- path: ridership_growth_data.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: ridership_growth_distribution.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: ridership_growth_ranking.png
+  kind: image
+  description: Generated chart image produced by this analysis.

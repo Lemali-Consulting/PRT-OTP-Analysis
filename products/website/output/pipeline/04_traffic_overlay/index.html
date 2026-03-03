@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traffic Overlay ETL - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Pipeline</p>
+  <h1>Traffic Overlay ETL</h1>
+  
+</section>
+
+
+<section class="panel">
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  04_traffic_overlay["Traffic Overlay ETL"]
+  f1_04_traffic_overlay["data/penndot-traffic/aadt_raw.json"] --> 04_traffic_overlay
+  f2_04_traffic_overlay["data/GTFS/shapes.txt"] --> 04_traffic_overlay
+  f3_04_traffic_overlay["data/GTFS/trips.txt"] --> 04_traffic_overlay
+  a1_04_traffic_overlay["PennDOT ArcGIS Roadway Traffic Layer"] --> 04_traffic_overlay
+  04_traffic_overlay --> tp_route_traffic["route_traffic"]
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 04_traffic_overlay page;
+  class tp_route_traffic table;
+  class f1_04_traffic_overlay,f2_04_traffic_overlay,f3_04_traffic_overlay file;
+  class a1_04_traffic_overlay api;</pre>
+</section>
+
+
+
+<section class="panel">
+  <h2>Findings</h2>
+  <div class="markdown"><h1>Findings: Traffic Overlay ETL</h1>
+<h2>Summary</h2>
+<p>Route-level traffic exposure metrics are computed from PennDOT AADT segments and written to <code>prt.db</code>.</p>
+<h2>Notes</h2>
+<ul>
+<li>Matching diagnostics include segment counts and route match rates.</li>
+<li>Cached PennDOT responses are reused when available.</li>
+</ul>
+</div>
+</section>
+
+
+
+
+
+<section class="panel">
+  <h2>Methods</h2>
+  <div class="markdown"><h1>Methods: Traffic Overlay ETL</h1>
+<h2>Question</h2>
+<p>How do we estimate roadway traffic exposure for each transit route?</p>
+<h2>Approach</h2>
+<ol>
+<li>Fetch or read cached PennDOT roadway traffic segments for Allegheny County.</li>
+<li>Load GTFS route geometry and densify segment points.</li>
+<li>Perform KDTree spatial matching between route points and roadway segments.</li>
+<li>Aggregate matched segment AADT/truck metrics by route.</li>
+<li>Rebuild <code>route_traffic</code> in <code>prt.db</code>.</li>
+</ol>
+<h2>Data</h2>
+<ul>
+<li>PennDOT ArcGIS roadway traffic layer (AADT/truck share)</li>
+<li>GTFS <code>shapes.txt</code> and <code>trips.txt</code></li>
+<li>Cached PennDOT JSON under <code>data/penndot-traffic/</code></li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>route_traffic</code> table in <code>data/prt.db</code></li>
+</ul>
+</div>
+</section>
+
+
+
+<section class="panel">
+  <h2>Sources</h2>
+  <table class="source-table">
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>data/penndot-traffic/aadt_raw.json</td>
+        <td><span class="tag">file</span></td>
+        <td>Cached PennDOT ArcGIS feature response for Allegheny County roadway segments.</td>
+      </tr>
+    
+      <tr>
+        <td>data/GTFS/shapes.txt</td>
+        <td><span class="tag">file</span></td>
+        <td>GTFS route shape geometry points.</td>
+      </tr>
+    
+      <tr>
+        <td>data/GTFS/trips.txt</td>
+        <td><span class="tag">file</span></td>
+        <td>GTFS shape-to-route mapping.</td>
+      </tr>
+    
+      <tr>
+        <td>PennDOT ArcGIS Roadway Traffic Layer</td>
+        <td><span class="tag">api</span></td>
+        <td>Public roadway segment AADT and truck percentage attributes.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

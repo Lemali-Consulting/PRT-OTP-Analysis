@@ -13,3 +13,16 @@ description: Audits the Monongahela Incline data across all database tables to d
   why it appears in OTP data with zero/null values.
 dependencies:
 - polars
+outputs:
+- path: incline_report.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: incline_report.txt
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: incline_route_stops.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: incline_stop_reference.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.

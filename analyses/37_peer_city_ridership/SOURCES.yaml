@@ -9,3 +9,19 @@ description: Track indexed monthly ridership for Pittsburgh and 7 peer cities fr
   2019-2025 using NTD data; compare recovery trajectories and mode splits.
 dependencies:
 - polars
+outputs:
+- path: peer_mode_breakdown.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: peer_recovery_bar.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: peer_recovery_summary.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: peer_ridership_data.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: peer_ridership_indexed.png
+  kind: image
+  description: Generated chart image produced by this analysis.

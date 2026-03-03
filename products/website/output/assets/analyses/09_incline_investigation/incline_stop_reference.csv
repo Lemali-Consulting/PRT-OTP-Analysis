@@ -1,0 +1,8 @@
+stop_id,stop_code,stop_name,stop_source,public_stop,lat,lon,mode,first_served,last_served,county,muni,hood
+W06290,99900,DUQUESNE INCLINE AT LOWER STATION,2510_gtfs,yes,40.440126,-80.018026,INCLINE,1503,2510,"Allegheny County, PA","Pittsburgh city (Allegheny, PA)",South Shore
+W06300,99899,DUQUESNE INCLINE AT UPPER STATION,2510_gtfs,yes,40.43851,-80.019468,INCLINE,1503,2510,"Allegheny County, PA","Pittsburgh city (Allegheny, PA)",Mount Washington
+W15307,99898,MONONGAHELA INCLINE AT UPPER STATION,2510_gtfs,yes,40.431371,-80.006097,INCLINE,1503,2510,"Allegheny County, PA","Pittsburgh city (Allegheny, PA)",Mount Washington
+W15308,99897,MONONGAHELA INCLINE AT LOWER STATION,2510_gtfs,yes,40.432559,-80.004904,INCLINE,1503,2510,"Allegheny County, PA","Pittsburgh city (Allegheny, PA)",South Shore
+W25800,2260,W CARSON ST AT DUQUESNE INCLINE,2510_gtfs,yes,40.439865,-80.017433,BUS,1503,2510,"Allegheny County, PA","Pittsburgh city (Allegheny, PA)",South Shore
+W26000,2309,W CARSON ST OPP DUQUESNE INCLINE,2510_gtfs,yes,40.439872,-80.017169,BUS,1503,2510,"Allegheny County, PA","Pittsburgh city (Allegheny, PA)",South Shore
+X07000,15842,GRANDVIEW AVE AT #1209 (DUQUESNE INCLINE),2510_gtfs,yes,40.438188,-80.018936,BUS,1503,2510,"Allegheny County, PA","Pittsburgh city (Allegheny, PA)",Duquesne Heights

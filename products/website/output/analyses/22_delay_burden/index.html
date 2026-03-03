@@ -66,20 +66,143 @@
 <h2>Summary</h2>
 <p>Over the Jan 2019 -- Oct 2024 overlap period, PRT accumulated <strong>55.5 million late weekday rider-trips</strong> out of 179.2 million total (31% late rate). The top 10 routes by delay burden account for <strong>26.6% of all late rider-trips</strong>, and ridership weighting substantially reshuffles which routes appear most problematic compared to a pure OTP ranking.</p>
 <h2>Key Numbers</h2>
-<ul><li><strong>55.5 million</strong> cumulative late weekday rider-trips (Jan 2019 -- Oct 2024)</li><li><strong>179.2 million</strong> total weekday rider-trips; <strong>31.0%</strong> system late rate</li><li><strong>Top 10 routes</strong> account for 26.6% of all late rider-trips</li><li>Rank correlation between OTP rank and burden rank: Spearman r = 0.40 (p &lt; 0.001) -- moderate, meaning ridership significantly reshuffles priorities</li><li>93 routes with paired OTP + ridership data</li></ul>
+<ul>
+<li><strong>55.5 million</strong> cumulative late weekday rider-trips (Jan 2019 -- Oct 2024)</li>
+<li><strong>179.2 million</strong> total weekday rider-trips; <strong>31.0%</strong> system late rate</li>
+<li><strong>Top 10 routes</strong> account for 26.6% of all late rider-trips</li>
+<li>Rank correlation between OTP rank and burden rank: Spearman r = 0.40 (p &lt; 0.001) -- moderate, meaning ridership significantly reshuffles priorities</li>
+<li>93 routes with paired OTP + ridership data</li>
+</ul>
 <h2>Top 10 Routes by Delay Burden</h2>
-<table><thead><tr><th>Burden Rank</th><th>Route</th><th>OTP Rank</th><th>Avg OTP</th><th>Cumulative Late Rider-Trips</th></tr></thead><tbody><tr><td>1</td><td>61C - McKeesport-Homestead</td><td>3</td><td>59.0%</td><td>2,765,662</td></tr><tr><td>2</td><td>51 - Carrick</td><td>55</td><td>68.6%</td><td>2,360,226</td></tr><tr><td>3</td><td>71C - Point Breeze</td><td>8</td><td>60.9%</td><td>2,241,803</td></tr><tr><td>4</td><td>61A - North Braddock</td><td>7</td><td>60.6%</td><td>2,135,034</td></tr><tr><td>5</td><td>71B - Highland Park</td><td>10</td><td>61.9%</td><td>2,086,371</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Burden Rank</th>
+  <th>Route</th>
+  <th>OTP Rank</th>
+  <th>Avg OTP</th>
+  <th>Cumulative Late Rider-Trips</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td>61C - McKeesport-Homestead</td>
+  <td>3</td>
+  <td>59.0%</td>
+  <td>2,765,662</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>51 - Carrick</td>
+  <td>55</td>
+  <td>68.6%</td>
+  <td>2,360,226</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>71C - Point Breeze</td>
+  <td>8</td>
+  <td>60.9%</td>
+  <td>2,241,803</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>61A - North Braddock</td>
+  <td>7</td>
+  <td>60.6%</td>
+  <td>2,135,034</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>71B - Highland Park</td>
+  <td>10</td>
+  <td>61.9%</td>
+  <td>2,086,371</td>
+</tr>
+</tbody>
+</table>
 <p>Route 51 (Carrick) is the standout example: it ranks only 55th by OTP (68.6%, near the system average) but <strong>2nd by delay burden</strong> because it carries massive ridership. Conversely, Route 77 (Penn Hills) has the worst OTP (54.9%) but ranks only 18th by burden because fewer people ride it.</p>
 <h2>Observations</h2>
-<ul><li><strong>Ridership dramatically reshuffles priorities.</strong> The Spearman rank correlation between OTP rank and burden rank is only 0.40 -- OTP rank alone is a poor proxy for human impact.</li><li>The <strong>biggest upward shifts</strong> (more burden than OTP suggests) are high-ridership transit routes: P1 East Busway (+77 ranks), RED light rail (+72), BLUE light rail (+65). These routes have decent OTP (80%+) but carry so many riders that even their small late fractions generate substantial burden.</li><li>The <strong>biggest downward shifts</strong> (less burden than OTP suggests) are low-ridership flyers: 65 Squirrel Hill (-70), P69 Trafford Flyer (-66), P13 Mount Royal Flyer (-51). These have poor OTP but few riders, so the total human impact is small.</li><li>The <strong>delay burden trend</strong> shows a sharp drop during COVID (1.5M to 0.3M monthly late rider-trips), then a partial recovery to ~0.8-1.0M by 2024 -- still well below pre-COVID levels primarily because ridership hasn&#x27;t recovered.</li><li>Pre-COVID, the system averaged ~1.3M late rider-trips per month. Post-COVID (2023-2024), it averages ~0.8M -- a 40% reduction driven almost entirely by ridership collapse, not OTP improvement.</li></ul>
+<ul>
+<li><strong>Ridership dramatically reshuffles priorities.</strong> The Spearman rank correlation between OTP rank and burden rank is only 0.40 -- OTP rank alone is a poor proxy for human impact.</li>
+<li>The <strong>biggest upward shifts</strong> (more burden than OTP suggests) are high-ridership transit routes: P1 East Busway (+77 ranks), RED light rail (+72), BLUE light rail (+65). These routes have decent OTP (80%+) but carry so many riders that even their small late fractions generate substantial burden.</li>
+<li>The <strong>biggest downward shifts</strong> (less burden than OTP suggests) are low-ridership flyers: 65 Squirrel Hill (-70), P69 Trafford Flyer (-66), P13 Mount Royal Flyer (-51). These have poor OTP but few riders, so the total human impact is small.</li>
+<li>The <strong>delay burden trend</strong> shows a sharp drop during COVID (1.5M to 0.3M monthly late rider-trips), then a partial recovery to ~0.8-1.0M by 2024 -- still well below pre-COVID levels primarily because ridership hasn't recovered.</li>
+<li>Pre-COVID, the system averaged ~1.3M late rider-trips per month. Post-COVID (2023-2024), it averages ~0.8M -- a 40% reduction driven almost entirely by ridership collapse, not OTP improvement.</li>
+</ul>
 <h2>Discussion</h2>
-<p>This analysis reframes the OTP problem from &quot;which routes are most unreliable&quot; to &quot;where does unreliability affect the most people.&quot; The two questions give different answers. A policy intervention on Route 51 (the #2 burden route) would affect more riders than fixing Route 77 (the #1 worst OTP route), even though 51&#x27;s OTP is 14 pp better. Similarly, even small OTP improvements on high-ridership rail/busway routes would reduce more late rider-trips than large OTP improvements on low-ridership flyers.</p>
-<p>The system&#x27;s total delay burden has paradoxically <em>decreased</em> post-COVID -- not because service improved, but because fewer people are riding. If ridership recovers without OTP improvements, the burden will return to or exceed pre-COVID levels.</p>
+<p>This analysis reframes the OTP problem from &quot;which routes are most unreliable&quot; to &quot;where does unreliability affect the most people.&quot; The two questions give different answers. A policy intervention on Route 51 (the #2 burden route) would affect more riders than fixing Route 77 (the #1 worst OTP route), even though 51's OTP is 14 pp better. Similarly, even small OTP improvements on high-ridership rail/busway routes would reduce more late rider-trips than large OTP improvements on low-ridership flyers.</p>
+<p>The system's total delay burden has paradoxically <em>decreased</em> post-COVID -- not because service improved, but because fewer people are riding. If ridership recovers without OTP improvements, the burden will return to or exceed pre-COVID levels.</p>
 <h2>Caveats</h2>
-<ul><li>&quot;Late rider-trips&quot; is a derived metric: <code>avg_riders <em> day_count </em> (1 - OTP)</code>. It does not measure actual delay duration -- a trip that is 1 minute late counts the same as one that is 30 minutes late.</li><li>Ridership data is weekday only; weekend burden is not captured.</li><li>OTP is a route-level monthly average; stop-level or trip-level variation is not reflected.</li><li>The metric assumes all riders on a route experience the same OTP, which is an approximation -- riders at different stops on the same route may have different experiences.</li></ul></div>
+<ul>
+<li>&quot;Late rider-trips&quot; is a derived metric: <code>avg_riders * day_count * (1 - OTP)</code>. It does not measure actual delay duration -- a trip that is 1 minute late counts the same as one that is 30 minutes late.</li>
+<li>Ridership data is weekday only; weekend burden is not captured.</li>
+<li>OTP is a route-level monthly average; stop-level or trip-level variation is not reflected.</li>
+<li>The metric assumes all riders on a route experience the same OTP, which is an approximation -- riders at different stops on the same route may have different experiences.</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/22_delay_burden/delay_burden_monthly.csv" target="_blank" rel="noopener noreferrer">delay_burden_monthly.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/22_delay_burden/delay_burden_ranking.csv" target="_blank" rel="noopener noreferrer">delay_burden_ranking.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/22_delay_burden/delay_burden_trend.png" alt="delay_burden_trend" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/22_delay_burden/delay_burden_trend.png" target="_blank" rel="noopener noreferrer">delay_burden_trend.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/22_delay_burden/rate_vs_burden.png" alt="rate_vs_burden" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/22_delay_burden/rate_vs_burden.png" target="_blank" rel="noopener noreferrer">rate_vs_burden.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/22_delay_burden/top10_burden.png" alt="top10_burden" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/22_delay_burden/top10_burden.png" target="_blank" rel="noopener noreferrer">top10_burden.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -89,12 +212,50 @@
 <h2>Question</h2>
 <p>Which routes impose the largest total delay burden on riders, accounting for both OTP and ridership volume?</p>
 <h2>Approach</h2>
-<ul><li>Join monthly OTP with monthly weekday ridership by route and month.</li><li>Compute monthly late rider-trips per route: <code>avg_riders <em> day_count </em> (1 - otp)</code> where otp is on a 0--1 scale.</li><li>Rank routes by total and average monthly late rider-trips.</li><li>Compute system-wide monthly late rider-trips and plot the trend over time.</li><li>Identify the top 10 routes by cumulative late rider-trips -- these are where interventions would affect the most people.</li><li>Compare the &quot;worst by rate&quot; (lowest OTP) with &quot;worst by burden&quot; (most late rider-trips) to show how ridership weighting shifts priorities.</li></ul>
+<ul>
+<li>Join monthly OTP with monthly weekday ridership by route and month.</li>
+<li>Compute monthly late rider-trips per route: <code>avg_riders * day_count * (1 - otp)</code> where otp is on a 0--1 scale.</li>
+<li>Rank routes by total and average monthly late rider-trips.</li>
+<li>Compute system-wide monthly late rider-trips and plot the trend over time.</li>
+<li>Identify the top 10 routes by cumulative late rider-trips -- these are where interventions would affect the most people.</li>
+<li>Compare the &quot;worst by rate&quot; (lowest OTP) with &quot;worst by burden&quot; (most late rider-trips) to show how ridership weighting shifts priorities.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>route_id, month, otp</td><td><code>prt.db</code> table</td></tr><tr><td><code>ridership_monthly</code></td><td>route_id, month, avg_riders, day_count; filtered to day_type=&#x27;WEEKDAY&#x27;</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>route_id, route_name</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>route_id, month, otp</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>ridership_monthly</code></td>
+  <td>route_id, month, avg_riders, day_count; filtered to day_type='WEEKDAY'</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>route_id, route_name</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Notes:</strong> Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024).</p>
 <h2>Output</h2>
-<ul><li><code>output/delay_burden_ranking.csv</code> -- routes ranked by total late rider-trips</li><li><code>output/delay_burden_trend.png</code> -- system-wide monthly late rider-trips</li><li><code>output/rate_vs_burden.png</code> -- scatter comparing OTP rank with delay burden rank</li><li><code>output/top10_burden.png</code> -- bar chart of top 10 routes by late rider-trips</li></ul></div>
+<ul>
+<li><code>output/delay_burden_ranking.csv</code> -- routes ranked by total late rider-trips</li>
+<li><code>output/delay_burden_trend.png</code> -- system-wide monthly late rider-trips</li>
+<li><code>output/rate_vs_burden.png</code> -- scatter comparing OTP rank with delay burden rank</li>
+<li><code>output/top10_burden.png</code> -- bar chart of top 10 routes by late rider-trips</li>
+</ul>
+</div>
 </section>
 
 

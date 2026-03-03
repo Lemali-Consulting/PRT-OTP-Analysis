@@ -13,3 +13,13 @@ dependencies:
 - numpy
 - polars
 - scipy
+outputs:
+- path: recovery_by_subtype.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: recovery_data.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: recovery_scatter.png
+  kind: image
+  description: Generated chart image produced by this analysis.

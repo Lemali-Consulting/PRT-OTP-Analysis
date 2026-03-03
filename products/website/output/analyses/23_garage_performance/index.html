@@ -71,25 +71,149 @@
 <h2>Summary</h2>
 <p>PRT garages differ <strong>significantly</strong> in route-level OTP, and the difference <strong>survives controlling for route structure</strong>. An OLS model with stop count and geographic span as controls shows that garage dummies add significant explanatory power (F = 4.55, p = 0.005). Collier garage routes run +5.4 pp above East Liberty routes after controlling for stop count and span (p &lt; 0.001).</p>
 <h2>Key Numbers</h2>
-<table><thead><tr><th>Garage</th><th>Routes</th><th>Mean OTP</th><th>Ridership-Wtd OTP</th><th>Avg Daily Riders</th></tr></thead><tbody><tr><td>South Hills Village</td><td>3</td><td>85.4%</td><td>85.3%</td><td>11,588</td></tr><tr><td>Collier</td><td>18</td><td>73.6%</td><td>73.9%</td><td>14,226</td></tr><tr><td>Ross</td><td>22</td><td>70.7%</td><td>69.5%</td><td>20,141</td></tr><tr><td>West Mifflin</td><td>19</td><td>67.9%</td><td>65.8%</td><td>32,388</td></tr><tr><td>East Liberty</td><td>31</td><td>67.1%</td><td>67.5%</td><td>42,259</td></tr></tbody></table>
-<ul><li><strong>Kruskal-Wallis (all routes)</strong>: H = 24.4, p = 0.0001 (5 garages)</li><li><strong>Kruskal-Wallis (bus only)</strong>: H = 20.0, p = 0.0002 (4 garages)</li><li>93 routes with 12+ months of paired data</li></ul>
+<table>
+<thead>
+<tr>
+  <th>Garage</th>
+  <th>Routes</th>
+  <th>Mean OTP</th>
+  <th>Ridership-Wtd OTP</th>
+  <th>Avg Daily Riders</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>South Hills Village</td>
+  <td>3</td>
+  <td>85.4%</td>
+  <td>85.3%</td>
+  <td>11,588</td>
+</tr>
+<tr>
+  <td>Collier</td>
+  <td>18</td>
+  <td>73.6%</td>
+  <td>73.9%</td>
+  <td>14,226</td>
+</tr>
+<tr>
+  <td>Ross</td>
+  <td>22</td>
+  <td>70.7%</td>
+  <td>69.5%</td>
+  <td>20,141</td>
+</tr>
+<tr>
+  <td>West Mifflin</td>
+  <td>19</td>
+  <td>67.9%</td>
+  <td>65.8%</td>
+  <td>32,388</td>
+</tr>
+<tr>
+  <td>East Liberty</td>
+  <td>31</td>
+  <td>67.1%</td>
+  <td>67.5%</td>
+  <td>42,259</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Kruskal-Wallis (all routes)</strong>: H = 24.4, p = 0.0001 (5 garages)</li>
+<li><strong>Kruskal-Wallis (bus only)</strong>: H = 20.0, p = 0.0002 (4 garages)</li>
+<li>93 routes with 12+ months of paired data</li>
+</ul>
 <h3>Controlled OLS Model (bus only, n = 89, reference = East Liberty)</h3>
-<table><thead><tr><th>Model</th><th>R²</th><th>Adj R²</th></tr></thead><tbody><tr><td>Base (stop_count + span)</td><td>0.313</td><td>0.297</td></tr><tr><td>Full (+ garage dummies)</td><td>0.410</td><td>0.374</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Model</th>
+  <th>R²</th>
+  <th>Adj R²</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Base (stop_count + span)</td>
+  <td>0.313</td>
+  <td>0.297</td>
+</tr>
+<tr>
+  <td>Full (+ garage dummies)</td>
+  <td>0.410</td>
+  <td>0.374</td>
+</tr>
+</tbody>
+</table>
 <p><strong>F-test for garage dummies: F = 4.55, p = 0.005</strong> -- garages are significant after controls.</p>
-<table><thead><tr><th>Feature</th><th>Coefficient</th><th>p-value</th></tr></thead><tbody><tr><td>stop_count</td><td>-0.00039</td><td>0.001</td></tr><tr><td>span_km</td><td>-0.0022</td><td>0.014</td></tr><tr><td>garage_Collier</td><td>+0.054</td><td>&lt;0.001</td></tr><tr><td>garage_Ross</td><td>+0.029</td><td>0.040</td></tr><tr><td>garage_West_Mifflin</td><td>+0.014</td><td>0.358</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Feature</th>
+  <th>Coefficient</th>
+  <th>p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>stop_count</td>
+  <td>-0.00039</td>
+  <td>0.001</td>
+</tr>
+<tr>
+  <td>span_km</td>
+  <td>-0.0022</td>
+  <td>0.014</td>
+</tr>
+<tr>
+  <td>garage_Collier</td>
+  <td>+0.054</td>
+  <td>&lt;0.001</td>
+</tr>
+<tr>
+  <td>garage_Ross</td>
+  <td>+0.029</td>
+  <td>0.040</td>
+</tr>
+<tr>
+  <td>garage_West_Mifflin</td>
+  <td>+0.014</td>
+  <td>0.358</td>
+</tr>
+</tbody>
+</table>
 <h2>Observations</h2>
-<ul><li><strong>Collier</strong> routes outperform East Liberty by +5.4 pp even after controlling for stop count and span (p &lt; 0.001). This is a substantial and statistically robust effect.</li><li><strong>Ross</strong> routes outperform East Liberty by +2.9 pp after controls (p = 0.04), a marginally significant effect.</li><li><strong>West Mifflin</strong> does not differ significantly from East Liberty after controls (+1.4 pp, p = 0.36). The raw difference between these two garages (0.8 pp) was largely explained by route structure.</li><li>Adding garage dummies increases R² from 0.313 to 0.410 (+9.7 pp), a meaningful improvement beyond what route structure alone explains.</li><li>The monthly trend chart shows all garages move together with system-wide trends (COVID spike, 2022 trough), but the relative ordering is stable: Collier consistently above Ross, which is consistently above East Liberty and West Mifflin.</li></ul>
+<ul>
+<li><strong>Collier</strong> routes outperform East Liberty by +5.4 pp even after controlling for stop count and span (p &lt; 0.001). This is a substantial and statistically robust effect.</li>
+<li><strong>Ross</strong> routes outperform East Liberty by +2.9 pp after controls (p = 0.04), a marginally significant effect.</li>
+<li><strong>West Mifflin</strong> does not differ significantly from East Liberty after controls (+1.4 pp, p = 0.36). The raw difference between these two garages (0.8 pp) was largely explained by route structure.</li>
+<li>Adding garage dummies increases R² from 0.313 to 0.410 (+9.7 pp), a meaningful improvement beyond what route structure alone explains.</li>
+<li>The monthly trend chart shows all garages move together with system-wide trends (COVID spike, 2022 trough), but the relative ordering is stable: Collier consistently above Ross, which is consistently above East Liberty and West Mifflin.</li>
+</ul>
 <h2>Discussion</h2>
-<p>The controlled analysis overturns the initial interpretation that garage differences were purely a composition effect. <strong>Collier&#x27;s advantage is real and operationally meaningful</strong>: after accounting for the fact that it operates shorter routes with fewer stops, Collier routes still outperform East Liberty routes by 5.4 pp.</p>
+<p>The controlled analysis overturns the initial interpretation that garage differences were purely a composition effect. <strong>Collier's advantage is real and operationally meaningful</strong>: after accounting for the fact that it operates shorter routes with fewer stops, Collier routes still outperform East Liberty routes by 5.4 pp.</p>
 <p>Operational feedback from PRT-experienced observers identifies several likely explanations for the Collier advantage:</p>
-<ol><li><strong>Lower corridor congestion.</strong> Collier serves the western suburbs, which have less traffic congestion than the eastern corridors served by East Liberty and West Mifflin. The AADT-based congestion analysis (Analysis 27) found 24-hour traffic volume non-significant, but that measure is too coarse to capture the peak-hour congestion differences that matter for bus operations.</li><li><strong>Shorter downtown routing.</strong> Some Collier routes have very short segments in downtown Pittsburgh, reducing exposure to the congested street grid where delays accumulate. East Liberty routes tend to traverse longer downtown segments.</li><li><strong>Route distribution.</strong> Garages do not cover equal areas or operate equal numbers of routes. Collier&#x27;s route portfolio may be inherently more favorable for OTP beyond what stop count and span capture.</li></ol>
+<ol>
+<li><strong>Lower corridor congestion.</strong> Collier serves the western suburbs, which have less traffic congestion than the eastern corridors served by East Liberty and West Mifflin. The AADT-based congestion analysis (Analysis 27) found 24-hour traffic volume non-significant, but that measure is too coarse to capture the peak-hour congestion differences that matter for bus operations.</li>
+<li><strong>Shorter downtown routing.</strong> Some Collier routes have very short segments in downtown Pittsburgh, reducing exposure to the congested street grid where delays accumulate. East Liberty routes tend to traverse longer downtown segments.</li>
+<li><strong>Route distribution.</strong> Garages do not cover equal areas or operate equal numbers of routes. Collier's route portfolio may be inherently more favorable for OTP beyond what stop count and span capture.</li>
+</ol>
 <p>These factors suggest the garage effect is primarily a <strong>corridor-level congestion proxy</strong> rather than evidence of operational differences in garage management. The controlled model accounts for route length and stop count but not for the traffic environment each route operates in -- and the available traffic data (AADT) is too coarse to fill this gap.</p>
-<p>West Mifflin&#x27;s poor raw performance, by contrast, <em>is</em> largely explained by route structure: it operates the long eastern-corridor routes, and after controlling for that, it is statistically indistinguishable from East Liberty.</p>
+<p>West Mifflin's poor raw performance, by contrast, <em>is</em> largely explained by route structure: it operates the long eastern-corridor routes, and after controlling for that, it is statistically indistinguishable from East Liberty.</p>
 <p>The R² increase from 0.31 to 0.41 suggests that garage assignment captures roughly 10% of OTP variance beyond what stop count and span explain. Given the corridor-congestion explanation, this 10% likely represents traffic environment variance rather than garage-specific operational practices.</p>
 <h2>Caveats</h2>
-<ul><li>The <code>current_garage</code> field is a snapshot; historical garage assignments are not available. If routes were reassigned between garages, the analysis would not capture that (though the data shows no garage changes for any route).</li><li>The controlled model uses only stop count and span as structural controls. Adding further controls (e.g., traffic density, road type, schedule slack) could reduce or eliminate the garage effect.</li><li>The F-test assumes normally distributed residuals; the Kruskal-Wallis test (non-parametric) is more robust but does not support covariates.</li><li>South Hills Village (n=3 rail routes) and Incline (excluded, no OTP data) are too small for meaningful comparison and are excluded from the controlled model.</li></ul>
+<ul>
+<li>The <code>current_garage</code> field is a snapshot; historical garage assignments are not available. If routes were reassigned between garages, the analysis would not capture that (though the data shows no garage changes for any route).</li>
+<li>The controlled model uses only stop count and span as structural controls. Adding further controls (e.g., traffic density, road type, schedule slack) could reduce or eliminate the garage effect.</li>
+<li>The F-test assumes normally distributed residuals; the Kruskal-Wallis test (non-parametric) is more robust but does not support covariates.</li>
+<li>South Hills Village (n=3 rail routes) and Incline (excluded, no OTP data) are too small for meaningful comparison and are excluded from the controlled model.</li>
+</ul>
 <h2>Review History</h2>
-<ul><li>2026-02-27: <a href="../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md">RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md</a> — 1 significant issue. Added route-garage uniqueness guard: most-common garage per route used for grouping, with assertion to catch future data with reassignments.</li></ul></div>
+<ul>
+<li>2026-02-27: <a href="../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md">RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md</a> — 1 significant issue. Added route-garage uniqueness guard: most-common garage per route used for grouping, with assertion to catch future data with reassignments.</li>
+</ul>
+</div>
 </section>
 
 
@@ -99,13 +223,52 @@
   <div class="gallery">
     
       <figure class="shot-card">
-        <img src="assets/analyses/23_garage_performance/garage_boxplot.png" alt="garage_boxplot" loading="lazy">
-        <figcaption>garage_boxplot.png</figcaption>
+        
+          <img src="assets/analyses/23_garage_performance/garage_boxplot.png" alt="garage_boxplot" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/23_garage_performance/garage_boxplot.png" target="_blank" rel="noopener noreferrer">garage_boxplot.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
       </figure>
     
       <figure class="shot-card">
-        <img src="assets/analyses/23_garage_performance/garage_otp_trend.png" alt="garage_otp_trend" loading="lazy">
-        <figcaption>garage_otp_trend.png</figcaption>
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/23_garage_performance/garage_monthly.csv" target="_blank" rel="noopener noreferrer">garage_monthly.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/23_garage_performance/garage_otp_trend.png" alt="garage_otp_trend" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/23_garage_performance/garage_otp_trend.png" target="_blank" rel="noopener noreferrer">garage_otp_trend.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/23_garage_performance/garage_route_detail.csv" target="_blank" rel="noopener noreferrer">garage_route_detail.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/23_garage_performance/garage_summary.csv" target="_blank" rel="noopener noreferrer">garage_summary.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
       </figure>
     
   </div>
@@ -119,12 +282,59 @@
 <h2>Question</h2>
 <p>Do PRT garages (Ross, Collier, East Liberty, West Mifflin) differ systematically in the OTP and ridership of routes they operate?</p>
 <h2>Approach</h2>
-<ul><li>Join ridership data (which includes <code>current_garage</code>) with OTP data by route and month.</li><li>Compute garage-level aggregate OTP (ridership-weighted and unweighted) and total ridership per month.</li><li>Test for differences across garages using Kruskal-Wallis on route-level average OTP, grouped by garage.</li><li>Plot garage-level OTP trends over time to see if garages diverge or move together.</li><li>Control for route composition (garages may differ because they operate different types of routes, not because of operational quality) by comparing within-mode (bus-only) results.</li><li>Fit a controlled OLS model (bus-only): base model with stop_count and span_km, then full model adding garage dummy variables (East Liberty as reference, being the largest). Use an F-test on the nested models to determine if garage dummies add significant explanatory power beyond route structure.</li></ul>
+<ul>
+<li>Join ridership data (which includes <code>current_garage</code>) with OTP data by route and month.</li>
+<li>Compute garage-level aggregate OTP (ridership-weighted and unweighted) and total ridership per month.</li>
+<li>Test for differences across garages using Kruskal-Wallis on route-level average OTP, grouped by garage.</li>
+<li>Plot garage-level OTP trends over time to see if garages diverge or move together.</li>
+<li>Control for route composition (garages may differ because they operate different types of routes, not because of operational quality) by comparing within-mode (bus-only) results.</li>
+<li>Fit a controlled OLS model (bus-only): base model with stop_count and span_km, then full model adding garage dummy variables (East Liberty as reference, being the largest). Use an F-test on the nested models to determine if garage dummies add significant explanatory power beyond route structure.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>route_id, month, otp</td><td><code>prt.db</code> table</td></tr><tr><td><code>ridership_monthly</code></td><td>route_id, month, current_garage, avg_riders; filtered to day_type=&#x27;WEEKDAY&#x27;</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>route_id, mode for bus-only stratification</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>route_id, stop_id for stop counts</td><td><code>prt.db</code> table</td></tr><tr><td><code>stops</code></td><td>stop_id, lat, lon for geographic span computation</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>route_id, month, otp</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>ridership_monthly</code></td>
+  <td>route_id, month, current_garage, avg_riders; filtered to day_type='WEEKDAY'</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>route_id, mode for bus-only stratification</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>route_id, stop_id for stop counts</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>stop_id, lat, lon for geographic span computation</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Notes:</strong> Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024). Exclude routes with fewer than 12 months of paired data or NULL garage.</p>
 <h2>Output</h2>
-<ul><li><code>output/garage_otp_trend.png</code> -- monthly OTP by garage</li><li><code>output/garage_boxplot.png</code> -- OTP distribution by garage</li><li><code>output/garage_summary.csv</code> -- garage-level summary statistics</li></ul></div>
+<ul>
+<li><code>output/garage_otp_trend.png</code> -- monthly OTP by garage</li>
+<li><code>output/garage_boxplot.png</code> -- OTP distribution by garage</li>
+<li><code>output/garage_summary.csv</code> -- garage-level summary statistics</li>
+</ul>
+</div>
 </section>
 
 

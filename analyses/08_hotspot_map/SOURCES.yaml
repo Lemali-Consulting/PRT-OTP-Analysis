@@ -15,3 +15,13 @@ dependencies:
 - folium
 - matplotlib
 - polars
+outputs:
+- path: hotspot_map.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: hotspot_map.html
+  kind: html
+  description: Generated interactive HTML artifact produced by this analysis.
+- path: hotspot_map.png
+  kind: image
+  description: Generated chart image produced by this analysis.

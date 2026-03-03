@@ -3,41 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>monthly - Source Detail</title>
+  <title>scheduled_trips_monthly - Source Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="../index.html" class="brand">PRT OTP Analysis</a>
-    <a href="../index.html#pipeline">Pipeline</a>
-    <a href="../index.html#analyses">Analyses</a>
-    <a href="../sources.html">Sources</a>
-    <a href="../glossary.html">Glossary</a>
-  </nav>
-  <main class="container">
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../index.html#pipeline">Pipeline</a>
+        <a href="../index.html#analyses">Analyses</a>
+        <a href="../sources.html">Sources</a>
+        <a href="../glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
     
-<h1>monthly</h1>
-<p><strong>Type:</strong> table</p>
-<p>Consumed DB table.</p>
+<section class="hero hero-compact">
+  <p class="kicker">Table</p>
+  <h1>scheduled_trips_monthly</h1>
+  <p class="lede">Monthly route/day-type scheduled trip counts and distance metrics. Produced by Scheduled Trips ETL.</p>
+</section>
 
 
-<section>
+<section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["monthly"]
-  src --> c1["04 - Neighborhood Equity"]
+  src["scheduled_trips_monthly"]
+  src --> c1["01 - System-Wide OTP Trend"]
+  src --> c2["29 - Service Change Impact on OTP"]
+  src --> c3["30 - Service Level vs OTP Longitudinal"]
 </pre>
 </section>
 
 
-<h2>Consumed By</h2>
-<ul>
-
-  <li><a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a></li>
-
-</ul>
+<section class="panel">
+  <h2>Consumed By</h2>
+  <div class="card-grid">
+  
+    <article class="card">
+      <h3><a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+  </div>
+</section>
 
   </main>
 </body>

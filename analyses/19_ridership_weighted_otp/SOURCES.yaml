@@ -12,3 +12,13 @@ description: Compute system OTP weighted by actual average daily ridership inste
 dependencies:
 - polars
 - scipy
+outputs:
+- path: ridership_weighted_otp_trend.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: summary_stats.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: weighting_comparison.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.

@@ -12,3 +12,19 @@ description: Estimate late rider-trips per route per month by combining ridershi
 dependencies:
 - polars
 - scipy
+outputs:
+- path: delay_burden_monthly.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: delay_burden_ranking.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: delay_burden_trend.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: rate_vs_burden.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: top10_burden.png
+  kind: image
+  description: Generated chart image produced by this analysis.

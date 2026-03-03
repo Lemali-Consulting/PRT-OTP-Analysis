@@ -67,19 +67,130 @@
 <h2>Summary</h2>
 <p>After <strong>detrending</strong> (subtracting system-wide monthly mean OTP), hierarchical clustering on pairwise OTP correlations produced <strong>6 clusters</strong> (selected by silhouette score optimization). Detrending removes the dominant COVID/seasonal signal that otherwise causes all routes to appear positively correlated, revealing genuine differential behavior.</p>
 <h2>Key Numbers</h2>
-<table><thead><tr><th>Cluster</th><th>Routes</th><th>Avg OTP</th><th>Avg Stops</th><th>Character</th></tr></thead><tbody><tr><td>1</td><td>23</td><td>66.8%</td><td>118</td><td>Lowest-performing cluster, high stop count</td></tr><tr><td>2</td><td>9</td><td>74.0%</td><td>114</td><td>Best-performing cluster</td></tr><tr><td>3</td><td>27</td><td>71.8%</td><td>105</td><td>Largest cluster, above-average performance</td></tr><tr><td>4</td><td>11</td><td>69.4%</td><td>106</td><td>Mid-performing</td></tr><tr><td>5</td><td>13</td><td>67.5%</td><td>108</td><td>Below-average</td></tr><tr><td>6</td><td>10</td><td>68.9%</td><td>146</td><td>Highest stop count</td></tr></tbody></table>
-<ul><li>Silhouette scores ranged from 0.13 to 0.18 (k=6 was optimal at 0.178)</li><li>0 route pairs excluded for insufficient overlap</li></ul>
+<table>
+<thead>
+<tr>
+  <th>Cluster</th>
+  <th>Routes</th>
+  <th>Avg OTP</th>
+  <th>Avg Stops</th>
+  <th>Character</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>1</td>
+  <td>23</td>
+  <td>66.8%</td>
+  <td>118</td>
+  <td>Lowest-performing cluster, high stop count</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>9</td>
+  <td>74.0%</td>
+  <td>114</td>
+  <td>Best-performing cluster</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>27</td>
+  <td>71.8%</td>
+  <td>105</td>
+  <td>Largest cluster, above-average performance</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>11</td>
+  <td>69.4%</td>
+  <td>106</td>
+  <td>Mid-performing</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>13</td>
+  <td>67.5%</td>
+  <td>108</td>
+  <td>Below-average</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td>10</td>
+  <td>68.9%</td>
+  <td>146</td>
+  <td>Highest stop count</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Silhouette scores ranged from 0.13 to 0.18 (k=6 was optimal at 0.178)</li>
+<li>0 route pairs excluded for insufficient overlap</li>
+</ul>
 <h2>Methodology</h2>
-<ul><li><strong>Detrending</strong>: System-wide monthly mean OTP is subtracted from each route&#x27;s OTP before computing correlations. This ensures clusters reflect differential route behavior rather than common system-wide trends (COVID, seasonal cycles).</li><li><strong>Linkage</strong>: Average linkage (valid for non-Euclidean correlation distance), replacing the original Ward&#x27;s method.</li><li><strong>Cluster count</strong>: Selected by silhouette score optimization over k=3..10, replacing the hardcoded k=6.</li><li><strong>Imputation</strong>: Route pairs with insufficient overlap are imputed with median correlation rather than 0.0.</li></ul>
+<ul>
+<li><strong>Detrending</strong>: System-wide monthly mean OTP is subtracted from each route's OTP before computing correlations. This ensures clusters reflect differential route behavior rather than common system-wide trends (COVID, seasonal cycles).</li>
+<li><strong>Linkage</strong>: Average linkage (valid for non-Euclidean correlation distance), replacing the original Ward's method.</li>
+<li><strong>Cluster count</strong>: Selected by silhouette score optimization over k=3..10, replacing the hardcoded k=6.</li>
+<li><strong>Imputation</strong>: Route pairs with insufficient overlap are imputed with median correlation rather than 0.0.</li>
+</ul>
 <h2>Observations</h2>
-<ul><li>With detrending, the clusters are more evenly sized and differentiated by OTP level.</li><li>The highest stop-count cluster (Cluster 6, 146 avg stops) does not have the worst OTP (68.9%), suggesting that after removing system-wide trends, route complexity alone doesn&#x27;t determine co-movement.</li><li>Low silhouette scores (0.13-0.18) indicate moderate cluster separation -- routes don&#x27;t form tightly distinct groups. This is expected given that detrended OTP residuals have limited signal.</li><li>Without depot or corridor data, the clusters remain descriptive -- we can see which routes move together but cannot explain <em>why</em>.</li></ul>
+<ul>
+<li>With detrending, the clusters are more evenly sized and differentiated by OTP level.</li>
+<li>The highest stop-count cluster (Cluster 6, 146 avg stops) does not have the worst OTP (68.9%), suggesting that after removing system-wide trends, route complexity alone doesn't determine co-movement.</li>
+<li>Low silhouette scores (0.13-0.18) indicate moderate cluster separation -- routes don't form tightly distinct groups. This is expected given that detrended OTP residuals have limited signal.</li>
+<li>Without depot or corridor data, the clusters remain descriptive -- we can see which routes move together but cannot explain <em>why</em>.</li>
+</ul>
 <h2>Caveats</h2>
-<ul><li>Silhouette scores below 0.25 indicate weak cluster structure. The 6-cluster solution is the best available, but route co-movement may be more continuous than discrete.</li><li>All modes are pooled. With only ~3 rail routes, stratification by mode is not feasible.</li></ul>
+<ul>
+<li>Silhouette scores below 0.25 indicate weak cluster structure. The 6-cluster solution is the best available, but route co-movement may be more continuous than discrete.</li>
+<li>All modes are pooled. With only ~3 rail routes, stratification by mode is not feasible.</li>
+</ul>
 <h2>Review History</h2>
-<ul><li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 5 issues (2 significant). Detrended correlations, average linkage, silhouette-based k selection; cluster composition changed entirely.</li></ul></div>
+<ul>
+<li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 5 issues (2 significant). Detrended correlations, average linkage, silhouette-based k selection; cluster composition changed entirely.</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/13_correlation_clustering/cluster_membership.csv" target="_blank" rel="noopener noreferrer">cluster_membership.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/13_correlation_clustering/correlation_heatmap.png" alt="correlation_heatmap" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/13_correlation_clustering/correlation_heatmap.png" target="_blank" rel="noopener noreferrer">correlation_heatmap.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/13_correlation_clustering/dendrogram.png" alt="dendrogram" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/13_correlation_clustering/dendrogram.png" target="_blank" rel="noopener noreferrer">dendrogram.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -87,14 +198,57 @@
   <h2>Methods</h2>
   <div class="markdown"><h1>Methods: Cross-Route Correlation Clustering</h1>
 <h2>Question</h2>
-<p>Which routes&#x27; OTP values move together over time? Identifying co-moving clusters could reveal shared causal factors -- same corridor, same depot, same traffic bottleneck, or common external shocks.</p>
+<p>Which routes' OTP values move together over time? Identifying co-moving clusters could reveal shared causal factors -- same corridor, same depot, same traffic bottleneck, or common external shocks.</p>
 <h2>Approach</h2>
-<ul><li>Build a route x month matrix of OTP values from <code>otp_monthly</code>.</li><li>Filter to routes with at least 36 months of data to ensure meaningful correlations.</li><li>Compute pairwise Pearson correlation between every pair of routes&#x27; monthly OTP series (using only overlapping months).</li><li>Convert correlation to distance (1 - r) and apply Ward&#x27;s hierarchical clustering via <code>scipy.cluster.hierarchy</code>.</li><li>Cut the dendrogram to produce a manageable number of clusters (target ~5-8).</li><li>Characterize each cluster by mode, average OTP, stop count, and geographic location.</li><li>Visualize with a dendrogram and a clustered correlation heatmap.</li></ul>
+<ul>
+<li>Build a route x month matrix of OTP values from <code>otp_monthly</code>.</li>
+<li>Filter to routes with at least 36 months of data to ensure meaningful correlations.</li>
+<li>Compute pairwise Pearson correlation between every pair of routes' monthly OTP series (using only overlapping months).</li>
+<li>Convert correlation to distance (1 - r) and apply Ward's hierarchical clustering via <code>scipy.cluster.hierarchy</code>.</li>
+<li>Cut the dendrogram to produce a manageable number of clusters (target ~5-8).</li>
+<li>Characterize each cluster by mode, average OTP, stop count, and geographic location.</li>
+<li>Visualize with a dendrogram and a clustered correlation heatmap.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route (time series)</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Mode and name for labeling</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>Stop count per route for cluster characterization</td><td><code>prt.db</code> table</td></tr><tr><td><code>stops</code></td><td>Geography for cluster characterization</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Monthly OTP per route (time series)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>Mode and name for labeling</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>Stop count per route for cluster characterization</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>Geography for cluster characterization</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Notes:</strong> <code>route_stops</code> is joined to <code>stops</code> to derive stop count and geographic location per route.</p>
 <h2>Output</h2>
-<ul><li><code>output/cluster_membership.csv</code> -- route-to-cluster assignment with cluster characteristics</li><li><code>output/dendrogram.png</code> -- hierarchical clustering dendrogram</li><li><code>output/correlation_heatmap.png</code> -- pairwise correlation matrix ordered by cluster</li></ul></div>
+<ul>
+<li><code>output/cluster_membership.csv</code> -- route-to-cluster assignment with cluster characteristics</li>
+<li><code>output/dendrogram.png</code> -- hierarchical clustering dendrogram</li>
+<li><code>output/correlation_heatmap.png</code> -- pairwise correlation matrix ordered by cluster</li>
+</ul>
+</div>
 </section>
 
 

@@ -12,3 +12,10 @@ description: Decomposes route-level OTP into trend, seasonal, and residual compo
 dependencies:
 - numpy
 - polars
+outputs:
+- path: seasonal_patterns.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: seasonal_patterns.png
+  kind: image
+  description: Generated chart image produced by this analysis.

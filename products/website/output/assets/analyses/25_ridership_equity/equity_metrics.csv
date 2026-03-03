@@ -1,0 +1,9 @@
+metric,value
+gini_all,0.0682074490923752
+gini_bus,0.14471086644485331
+otp_at_50pct_all,0.68025
+otp_at_50pct_bus,0.6683314285714286
+routes_for_50pct_all,39.0
+routes_for_50pct_bus,33.0
+n_routes_all,93.0
+n_routes_bus,89.0

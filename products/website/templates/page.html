@@ -21,14 +21,22 @@
 </section>
 {% endif %}
 
-{% if output_images %}
+{% if output_artifacts %}
 <section class="panel">
   <h2>Output</h2>
   <div class="gallery">
-    {% for img in output_images %}
+    {% for artifact in output_artifacts %}
       <figure class="shot-card">
-        <img src="{{ img.src }}" alt="{{ img.alt }}" loading="lazy">
-        <figcaption>{{ img.label }}</figcaption>
+        {% if artifact.kind == "image" %}
+          <img src="{{ artifact.src }}" alt="{{ artifact.alt }}" loading="lazy">
+        {% elif artifact.kind == "html" %}
+          <iframe class="artifact-frame" src="{{ artifact.src }}" title="{{ artifact.label }}" loading="lazy"></iframe>
+        {% endif %}
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">{{ artifact.kind }}</span>
+          <a class="artifact-link" href="{{ artifact.src }}" target="_blank" rel="noopener noreferrer">{{ artifact.label }}</a>
+          <p class="artifact-desc">{{ artifact.description }}</p>
+        </figcaption>
       </figure>
     {% endfor %}
   </div>

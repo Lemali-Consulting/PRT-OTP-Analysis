@@ -72,19 +72,78 @@
 <h2>Summary</h2>
 <p>6,212 stops were mapped with route-weighted OTP (after excluding 2 stops with null/NaN OTP due to zero total trips, and excluding routes with fewer than 12 months of data). Poor performance clusters in <strong>eastern Pittsburgh</strong> (Penn Hills, Squirrel Hill, Highland Park), while the best performance follows the <strong>light rail and busway corridors</strong>.</p>
 <h2>Geographic Patterns</h2>
-<ul><li><strong>Best corridors:</strong> The light rail T line (Beechview/Overbrook south to Library) and the East Busway (Wilkinsburg to downtown) form clear green bands on the map, with 80%+ OTP at most stops.</li><li><strong>Worst corridors:</strong> Eastern neighborhoods served by Route 77 (Penn Hills) show the lowest stop-level OTP at 55.8%. The 61-series routes through McKeesport and Homestead also form a low-OTP cluster.</li><li><strong>Downtown:</strong> Mixed performance. Stops in the Golden Triangle are served by many routes, so their weighted OTP reflects the system average (~65--70%).</li></ul>
+<ul>
+<li><strong>Best corridors:</strong> The light rail T line (Beechview/Overbrook south to Library) and the East Busway (Wilkinsburg to downtown) form clear green bands on the map, with 80%+ OTP at most stops.</li>
+<li><strong>Worst corridors:</strong> Eastern neighborhoods served by Route 77 (Penn Hills) show the lowest stop-level OTP at 55.8%. The 61-series routes through McKeesport and Homestead also form a low-OTP cluster.</li>
+<li><strong>Downtown:</strong> Mixed performance. Stops in the Golden Triangle are served by many routes, so their weighted OTP reflects the system average (~65--70%).</li>
+</ul>
 <h2>Mode Context</h2>
-<p>The best-performing stops (88.4%) are all served exclusively by BUS routes -- specifically Route 18 (Manchester). The high-OTP corridor along the T line reflects rail&#x27;s structural advantage (dedicated right-of-way), not independently measured stop performance. When interpreting the map:</p>
-<ul><li><strong>Rail stops</strong> (light rail T line) appear green primarily because RAIL routes average ~84% OTP system-wide. These stops&#x27; high performance reflects mode advantage, not stop-specific factors.</li><li><strong>Busway stops</strong> (East Busway, West Busway) also appear green for similar reasons -- dedicated right-of-way.</li><li><strong>Genuinely high-performing bus stops</strong> include those on Route 18 (Manchester, 88.4%) and Route 39 (Brookline), which achieve high OTP on mixed-traffic streets.</li></ul>
+<p>The best-performing stops (88.4%) are all served exclusively by BUS routes -- specifically Route 18 (Manchester). The high-OTP corridor along the T line reflects rail's structural advantage (dedicated right-of-way), not independently measured stop performance. When interpreting the map:</p>
+<ul>
+<li><strong>Rail stops</strong> (light rail T line) appear green primarily because RAIL routes average ~84% OTP system-wide. These stops' high performance reflects mode advantage, not stop-specific factors.</li>
+<li><strong>Busway stops</strong> (East Busway, West Busway) also appear green for similar reasons -- dedicated right-of-way.</li>
+<li><strong>Genuinely high-performing bus stops</strong> include those on Route 18 (Manchester, 88.4%) and Route 39 (Brookline), which achieve high OTP on mixed-traffic streets.</li>
+</ul>
 <h2>Observations</h2>
-<ul><li>The worst-performing stops (55.8%) are exclusively served by Route 77, the system&#x27;s lowest-ranked route.</li><li>The best-performing stops (88.4%) are exclusively served by Route 18 (Manchester) -- a bus route, not rail.</li><li>Stops served by multiple routes tend toward the system mean, since the weighting blends good and bad routes.</li><li>The system average displayed in the chart title (unweighted stop-level average) treats every stop equally regardless of trip volume. A trip-weighted system average would differ slightly.</li></ul>
+<ul>
+<li>The worst-performing stops (55.8%) are exclusively served by Route 77, the system's lowest-ranked route.</li>
+<li>The best-performing stops (88.4%) are exclusively served by Route 18 (Manchester) -- a bus route, not rail.</li>
+<li>Stops served by multiple routes tend toward the system mean, since the weighting blends good and bad routes.</li>
+<li>The system average displayed in the chart title (unweighted stop-level average) treats every stop equally regardless of trip volume. A trip-weighted system average would differ slightly.</li>
+</ul>
 <h2>Caveats</h2>
-<ul><li>The map uses a simple lat/lon scatter, not a true geographic projection. At Pittsburgh&#x27;s latitude, this introduces minor distortion but the overall shape is recognizable.</li><li>Stops with null or NaN OTP values (2 stops) were <strong>excluded</strong> from the map.</li><li>OTP is averaged across all months (2019--2025), so the map doesn&#x27;t show temporal changes.</li><li>Routes with fewer than 12 months of OTP data were excluded to avoid projecting noisy estimates onto the map.</li></ul>
+<ul>
+<li>The map uses a simple lat/lon scatter, not a true geographic projection. At Pittsburgh's latitude, this introduces minor distortion but the overall shape is recognizable.</li>
+<li>Stops with null or NaN OTP values (2 stops) were <strong>excluded</strong> from the map.</li>
+<li>OTP is averaged across all months (2019--2025), so the map doesn't show temporal changes.</li>
+<li>Routes with fewer than 12 months of OTP data were excluded to avoid projecting noisy estimates onto the map.</li>
+</ul>
 <h2>Review History</h2>
-<ul><li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 7 issues (1 significant). Documented derived-metric nature of stop OTP, added mode column and bus/rail context, added minimum 12-month filter for route OTP, clarified unweighted system average, corrected NaN claim, fixed hood=&quot;0&quot; sentinel, added dropped-stop logging.</li></ul></div>
+<ul>
+<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 7 issues (1 significant). Documented derived-metric nature of stop OTP, added mode column and bus/rail context, added minimum 12-month filter for route OTP, clarified unweighted system average, corrected NaN claim, fixed hood=&quot;0&quot; sentinel, added dropped-stop logging.</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/08_hotspot_map/hotspot_map.csv" target="_blank" rel="noopener noreferrer">hotspot_map.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <iframe class="artifact-frame" src="assets/analyses/08_hotspot_map/hotspot_map.html" title="hotspot_map.html" loading="lazy"></iframe>
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">html</span>
+          <a class="artifact-link" href="assets/analyses/08_hotspot_map/hotspot_map.html" target="_blank" rel="noopener noreferrer">hotspot_map.html</a>
+          <p class="artifact-desc">Generated interactive HTML artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/08_hotspot_map/hotspot_map.png" alt="hotspot_map" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/08_hotspot_map/hotspot_map.png" target="_blank" rel="noopener noreferrer">hotspot_map.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -94,11 +153,64 @@
 <h2>Question</h2>
 <p>Where do poor-performing routes cluster geographically? Are there corridor-level bottlenecks visible on a map?</p>
 <h2>Approach</h2>
-<ul><li>For each stop, compute the trip-weighted average OTP of all routes serving it. This is a <strong>derived metric</strong> (&quot;route-weighted OTP&quot;): each stop inherits the average OTP of the routes serving it, weighted by trip frequency (<code>trips_7d</code>). It reflects route composition at each stop, not independently measured stop-level performance.</li><li>Only include routes with at least 12 months of OTP data to avoid projecting noisy estimates onto the map.</li><li>Plot stops on a lat/lon scatter plot, colored by route-weighted OTP performance.</li><li>Use a diverging red-yellow-green colormap so low OTP areas are immediately visible.</li><li>Display the unweighted stop-level average as a reference (note: this is unweighted across stops, not weighted by trip volume).</li><li>Track the mode (BUS/RAIL) of routes serving each stop for context.</li><li>Stops with null or NaN OTP (due to zero total trips or missing data) are excluded from the map.</li></ul>
+<ul>
+<li>For each stop, compute the trip-weighted average OTP of all routes serving it. This is a <strong>derived metric</strong> (&quot;route-weighted OTP&quot;): each stop inherits the average OTP of the routes serving it, weighted by trip frequency (<code>trips_7d</code>). It reflects route composition at each stop, not independently measured stop-level performance.</li>
+<li>Only include routes with at least 12 months of OTP data to avoid projecting noisy estimates onto the map.</li>
+<li>Plot stops on a lat/lon scatter plot, colored by route-weighted OTP performance.</li>
+<li>Use a diverging red-yellow-green colormap so low OTP areas are immediately visible.</li>
+<li>Display the unweighted stop-level average as a reference (note: this is unweighted across stops, not weighted by trip volume).</li>
+<li>Track the mode (BUS/RAIL) of routes serving each stop for context.</li>
+<li>Stops with null or NaN OTP (due to zero total trips or missing data) are excluded from the map.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route (averaged across all months, routes with &lt; 12 months excluded)</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>Which stops are served by which routes, with trip counts</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Route metadata including mode</td><td><code>prt.db</code> table</td></tr><tr><td><code>stops</code></td><td>Lat/lon coordinates</td><td><code>prt.db</code> table</td></tr><tr><td><code>shapes.txt</code></td><td>Route polyline geometries</td><td>GTFS file (<code>data/GTFS/</code>)</td></tr><tr><td><code>trips.txt</code></td><td>Route-to-shape mapping</td><td>GTFS file (<code>data/GTFS/</code>)</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Monthly OTP per route (averaged across all months, routes with &lt; 12 months excluded)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>Which stops are served by which routes, with trip counts</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>Route metadata including mode</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>Lat/lon coordinates</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>shapes.txt</code></td>
+  <td>Route polyline geometries</td>
+  <td>GTFS file (<code>data/GTFS/</code>)</td>
+</tr>
+<tr>
+  <td><code>trips.txt</code></td>
+  <td>Route-to-shape mapping</td>
+  <td>GTFS file (<code>data/GTFS/</code>)</td>
+</tr>
+</tbody>
+</table>
 <h2>Output</h2>
-<ul><li><code>output/hotspot_map.csv</code> -- per-stop route-weighted OTP with coordinates</li><li><code>output/hotspot_map.png</code> -- geographic scatter plot</li><li><code>output/hotspot_map.html</code> -- interactive folium map over OpenStreetMap tiles with per-stop popups</li></ul></div>
+<ul>
+<li><code>output/hotspot_map.csv</code> -- per-stop route-weighted OTP with coordinates</li>
+<li><code>output/hotspot_map.png</code> -- geographic scatter plot</li>
+<li><code>output/hotspot_map.html</code> -- interactive folium map over OpenStreetMap tiles with per-stop popups</li>
+</ul>
+</div>
 </section>
 
 

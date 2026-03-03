@@ -12,3 +12,16 @@ description: Measure what share of total system ridership is carried by the lowe
 dependencies:
 - numpy
 - polars
+outputs:
+- path: equity_metrics.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: quintile_detail.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: quintile_summary.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: ridership_lorenz.png
+  kind: image
+  description: Generated chart image produced by this analysis.

@@ -12,3 +12,10 @@ description: Tests whether routes with more stops have worse on-time performance
 dependencies:
 - polars
 - scipy
+outputs:
+- path: stop_count_otp.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: stop_count_vs_otp.png
+  kind: image
+  description: Generated chart image produced by this analysis.

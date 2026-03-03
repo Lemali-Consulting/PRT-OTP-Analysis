@@ -12,3 +12,10 @@ description: Investigates whether routes with a structural imbalance between inb
 dependencies:
 - polars
 - scipy
+outputs:
+- path: directional_asymmetry.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: directional_asymmetry.png
+  kind: image
+  description: Generated chart image produced by this analysis.

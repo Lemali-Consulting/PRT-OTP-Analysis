@@ -13,3 +13,16 @@ dependencies:
 - polars
 - scipy
 - statsmodels
+outputs:
+- path: granger_results.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: granger_summary.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: lagged_crosscorr.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: lagged_crosscorr.png
+  kind: image
+  description: Generated chart image produced by this analysis.

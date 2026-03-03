@@ -13,3 +13,13 @@ description: Tests whether routes with different weekend-to-weekday service rati
 dependencies:
 - polars
 - scipy
+outputs:
+- path: service_profile.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: service_tier_comparison.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: weekend_ratio_vs_otp.png
+  kind: image
+  description: Generated chart image produced by this analysis.

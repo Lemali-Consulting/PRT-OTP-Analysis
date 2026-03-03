@@ -66,22 +66,100 @@
 <h2>Summary</h2>
 <p>The correlation between directional trip imbalance and OTP is <strong>weak and not statistically significant</strong> (r = -0.12, p = 0.26). After correcting methodology issues in the original analysis, PRT routes show very little directional asymmetry, and what asymmetry exists does not predict OTP.</p>
 <h2>Key Numbers</h2>
-<ul><li><strong>All routes: Pearson r = -0.12</strong> (p = 0.26, n = 90)</li><li><strong>Bus only: Pearson r = -0.12</strong> (p = 0.28, n = 87)</li><li><strong>Bus only: Spearman r = -0.17</strong> (p = 0.11)</li><li>Maximum asymmetry index: 0.077 (Route 19L)</li></ul>
+<ul>
+<li><strong>All routes: Pearson r = -0.12</strong> (p = 0.26, n = 90)</li>
+<li><strong>Bus only: Pearson r = -0.12</strong> (p = 0.28, n = 87)</li>
+<li><strong>Bus only: Spearman r = -0.17</strong> (p = 0.11)</li>
+<li>Maximum asymmetry index: 0.077 (Route 19L)</li>
+</ul>
 <h2>Methodology Note</h2>
-<p>The original analysis used <code>SUM(trips_wd)</code> per direction and excluded stops with <code>direction = &#x27;IB,OB&#x27;</code>. This inflated asymmetry because IB,OB stops (common on shared corridors) were dropped rather than counted in both directions. Routes 11 and 60 appeared 100% asymmetric because their IB stops were all coded as IB,OB. The corrected analysis uses <code>MAX(trips_wd)</code> per direction (peak frequency, not total stop-visits), includes IB,OB stops in both directions, and excludes routes present in only one direction.</p>
+<p>The original analysis used <code>SUM(trips_wd)</code> per direction and excluded stops with <code>direction = 'IB,OB'</code>. This inflated asymmetry because IB,OB stops (common on shared corridors) were dropped rather than counted in both directions. Routes 11 and 60 appeared 100% asymmetric because their IB stops were all coded as IB,OB. The corrected analysis uses <code>MAX(trips_wd)</code> per direction (peak frequency, not total stop-visits), includes IB,OB stops in both directions, and excludes routes present in only one direction.</p>
 <h2>Most Asymmetric Routes</h2>
-<table><thead><tr><th>Route</th><th>IB Trips</th><th>OB Trips</th><th>Asymmetry</th><th>OTP</th></tr></thead><tbody><tr><td>19L - Emsworth Limited</td><td>7</td><td>6</td><td>0.077</td><td>66.0%</td></tr><tr><td>67 - Monroeville</td><td>27</td><td>25</td><td>0.038</td><td>60.4%</td></tr><tr><td>29 - Robinson</td><td>22</td><td>21</td><td>0.023</td><td>65.1%</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Route</th>
+  <th>IB Trips</th>
+  <th>OB Trips</th>
+  <th>Asymmetry</th>
+  <th>OTP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>19L - Emsworth Limited</td>
+  <td>7</td>
+  <td>6</td>
+  <td>0.077</td>
+  <td>66.0%</td>
+</tr>
+<tr>
+  <td>67 - Monroeville</td>
+  <td>27</td>
+  <td>25</td>
+  <td>0.038</td>
+  <td>60.4%</td>
+</tr>
+<tr>
+  <td>29 - Robinson</td>
+  <td>22</td>
+  <td>21</td>
+  <td>0.023</td>
+  <td>65.1%</td>
+</tr>
+</tbody>
+</table>
 <h2>Observations</h2>
-<ul><li>With corrected methodology, PRT routes are remarkably balanced directionally. The most asymmetric route (19L) has only a 7.7% imbalance (7 vs 6 trips), and most routes are at or near 0%.</li><li>The previous finding of routes with 100% asymmetry (Routes 11 and 60) was a data artifact caused by excluding bidirectional (IB,OB) stops. These routes are excluded in the corrected analysis because they lack separate IB and OB data after the fix.</li><li>The slight negative correlation (r = -0.12) suggests marginally worse OTP with more asymmetry, but the effect is too small and not statistically significant.</li></ul>
+<ul>
+<li>With corrected methodology, PRT routes are remarkably balanced directionally. The most asymmetric route (19L) has only a 7.7% imbalance (7 vs 6 trips), and most routes are at or near 0%.</li>
+<li>The previous finding of routes with 100% asymmetry (Routes 11 and 60) was a data artifact caused by excluding bidirectional (IB,OB) stops. These routes are excluded in the corrected analysis because they lack separate IB and OB data after the fix.</li>
+<li>The slight negative correlation (r = -0.12) suggests marginally worse OTP with more asymmetry, but the effect is too small and not statistically significant.</li>
+</ul>
 <h2>Conclusion</h2>
 <p>Directional imbalance does not predict OTP. PRT routes are sufficiently balanced that this is not a measurable factor in schedule adherence. The hypothesis that scheduling asymmetry creates operational strain is not supported by this data.</p>
 <h2>Caveats</h2>
-<ul><li>The analysis uses peak trip frequency (<code>MAX(trips_wd)</code>) at a single stop per direction, which may not capture all scheduling nuances.</li><li>The <code>route_stops</code> data reflects current service, not historical. Historical asymmetry may have differed.</li><li>Including IB,OB stops in both directions can compress the asymmetry index toward zero when an IB,OB stop has the highest <code>trips_wd</code> for a route. In that case, both IB and OB MAX values equal the same number, mechanically forcing asymmetry to zero. This is a known limitation -- the alternative (excluding IB,OB stops) creates the opposite bias by dropping data.</li><li>Routes with fewer than 12 months of OTP data are excluded.</li><li>Three correlation tests were run (Pearson all-routes, Pearson bus-only, Spearman bus-only) without multiple-comparison correction. Since all three are non-significant (smallest p = 0.11), correction would not change any conclusion.</li></ul>
+<ul>
+<li>The analysis uses peak trip frequency (<code>MAX(trips_wd)</code>) at a single stop per direction, which may not capture all scheduling nuances.</li>
+<li>The <code>route_stops</code> data reflects current service, not historical. Historical asymmetry may have differed.</li>
+<li>Including IB,OB stops in both directions can compress the asymmetry index toward zero when an IB,OB stop has the highest <code>trips_wd</code> for a route. In that case, both IB and OB MAX values equal the same number, mechanically forcing asymmetry to zero. This is a known limitation -- the alternative (excluding IB,OB stops) creates the opposite bias by dropping data.</li>
+<li>Routes with fewer than 12 months of OTP data are excluded.</li>
+<li>Three correlation tests were run (Pearson all-routes, Pearson bus-only, Spearman bus-only) without multiple-comparison correction. Since all three are non-significant (smallest p = 0.11), correction would not change any conclusion.</li>
+</ul>
 <h2>Review History</h2>
-<ul><li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 7 issues (1 significant). Updated METHODS.md to correctly describe IB,OB handling (include in both, not exclude); corrected &quot;total trips&quot; to &quot;peak frequency (MAX)&quot;; added minimum-month filter (HAVING COUNT &gt;= 12); added NULL filter for trips_wd; replaced manual regression with scipy.stats.linregress; documented IB,OB compression effect; noted multiple-test caveat.</li></ul></div>
+<ul>
+<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 7 issues (1 significant). Updated METHODS.md to correctly describe IB,OB handling (include in both, not exclude); corrected &quot;total trips&quot; to &quot;peak frequency (MAX)&quot;; added minimum-month filter (HAVING COUNT &gt;= 12); added NULL filter for trips_wd; replaced manual regression with scipy.stats.linregress; documented IB,OB compression effect; noted multiple-test caveat.</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/11_directional_asymmetry/directional_asymmetry.csv" target="_blank" rel="noopener noreferrer">directional_asymmetry.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/11_directional_asymmetry/directional_asymmetry.png" alt="directional_asymmetry" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/11_directional_asymmetry/directional_asymmetry.png" target="_blank" rel="noopener noreferrer">directional_asymmetry.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -91,11 +169,47 @@
 <h2>Question</h2>
 <p>Does a structural directional imbalance in trip frequency correlate with worse OTP? Routes with significantly different IB vs OB trip counts may face operational challenges.</p>
 <h2>Approach</h2>
-<ul><li>For each route, compute peak IB frequency and peak OB frequency (<code>MAX(trips_wd)</code>) from <code>route_stops</code>. Stops with <code>trips_wd IS NULL</code> are excluded.</li><li>Include stops with <code>IB,OB</code> direction in both IB and OB counts to avoid exclusion bias.</li><li>Compute an asymmetry index: abs(IB_trips - OB_trips) / (IB_trips + OB_trips).</li><li>Compute average OTP per route from <code>otp_monthly</code>, requiring at least 12 months of data (<code>HAVING COUNT(*) &gt;= 12</code>).</li><li>Correlate asymmetry with average OTP using Pearson (all routes), Pearson (bus-only), and Spearman (bus-only).</li><li>Investigate routes with highest asymmetry.</li></ul>
+<ul>
+<li>For each route, compute peak IB frequency and peak OB frequency (<code>MAX(trips_wd)</code>) from <code>route_stops</code>. Stops with <code>trips_wd IS NULL</code> are excluded.</li>
+<li>Include stops with <code>IB,OB</code> direction in both IB and OB counts to avoid exclusion bias.</li>
+<li>Compute an asymmetry index: abs(IB_trips - OB_trips) / (IB_trips + OB_trips).</li>
+<li>Compute average OTP per route from <code>otp_monthly</code>, requiring at least 12 months of data (<code>HAVING COUNT(*) &gt;= 12</code>).</li>
+<li>Correlate asymmetry with average OTP using Pearson (all routes), Pearson (bus-only), and Spearman (bus-only).</li>
+<li>Investigate routes with highest asymmetry.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>route_stops</code></td><td>Directional trip counts</td><td><code>prt.db</code> table</td></tr><tr><td><code>otp_monthly</code></td><td>OTP per route</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Route metadata</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>Directional trip counts</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>OTP per route</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>Route metadata</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <h2>Output</h2>
-<ul><li><code>output/directional_asymmetry.csv</code> -- per-route directional trip breakdown and OTP</li><li><code>output/directional_asymmetry.png</code> -- scatter plot of asymmetry vs OTP</li></ul></div>
+<ul>
+<li><code>output/directional_asymmetry.csv</code> -- per-route directional trip breakdown and OTP</li>
+<li><code>output/directional_asymmetry.png</code> -- scatter plot of asymmetry vs OTP</li>
+</ul>
+</div>
 </section>
 
 

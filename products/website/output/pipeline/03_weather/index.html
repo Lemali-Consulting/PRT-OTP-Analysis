@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather ETL - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Pipeline</p>
+  <h1>Weather ETL</h1>
+  
+</section>
+
+
+<section class="panel">
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  03_weather["Weather ETL"]
+  f1_03_weather["data/noaa-weather/daily_raw.csv"] --> 03_weather
+  a1_03_weather["NOAA NCEI Daily Summaries API"] --> 03_weather
+  03_weather --> tp_weather_monthly["weather_monthly"]
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 03_weather page;
+  class tp_weather_monthly table;
+  class f1_03_weather file;
+  class a1_03_weather api;</pre>
+</section>
+
+
+
+<section class="panel">
+  <h2>Findings</h2>
+  <div class="markdown"><h1>Findings: Weather ETL</h1>
+<h2>Summary</h2>
+<p>Monthly weather features are loaded into <code>prt.db</code> and validated for overlap with OTP months.</p>
+<h2>Notes</h2>
+<ul>
+<li>Uses cached raw weather CSV when present.</li>
+<li>Emits seasonality sanity checks and null-rate diagnostics.</li>
+</ul>
+</div>
+</section>
+
+
+
+
+
+<section class="panel">
+  <h2>Methods</h2>
+  <div class="markdown"><h1>Methods: Weather ETL</h1>
+<h2>Question</h2>
+<p>How do we produce a monthly weather feature table aligned to OTP months?</p>
+<h2>Approach</h2>
+<ol>
+<li>Fetch or read cached NOAA daily observations for Pittsburgh airport station.</li>
+<li>Aggregate daily metrics to monthly precipitation, snowfall, temperature, wind, and event-day counts.</li>
+<li>Rebuild <code>weather_monthly</code> in <code>prt.db</code>.</li>
+<li>Verify temporal overlap with <code>otp_monthly</code>.</li>
+</ol>
+<h2>Data</h2>
+<ul>
+<li>NOAA daily summaries API (<code>PRCP</code>, <code>SNOW</code>, <code>SNWD</code>, <code>TMAX</code>, <code>TMIN</code>, <code>AWND</code>)</li>
+<li>Cached CSV under <code>data/noaa-weather/</code></li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>weather_monthly</code> table in <code>data/prt.db</code></li>
+</ul>
+</div>
+</section>
+
+
+
+<section class="panel">
+  <h2>Sources</h2>
+  <table class="source-table">
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>data/noaa-weather/daily_raw.csv</td>
+        <td><span class="tag">file</span></td>
+        <td>Cached NOAA daily observations for Pittsburgh station.</td>
+      </tr>
+    
+      <tr>
+        <td>NOAA NCEI Daily Summaries API</td>
+        <td><span class="tag">api</span></td>
+        <td>Daily weather observations for station USW00094823 (Pittsburgh).</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

@@ -64,19 +64,94 @@
   <h2>Findings</h2>
   <div class="markdown"><h1>Findings: Weekend vs Weekday Service Profile</h1>
 <h2>Summary</h2>
-<p>There is <strong>no meaningful correlation</strong> between a route&#x27;s weekend-to-weekday service ratio and its OTP. Routes that run heavy weekend service perform identically to commuter-oriented weekday-heavy routes.</p>
+<p>There is <strong>no meaningful correlation</strong> between a route's weekend-to-weekday service ratio and its OTP. Routes that run heavy weekend service perform identically to commuter-oriented weekday-heavy routes.</p>
 <h2>Key Numbers</h2>
-<ul><li><strong>Pearson r = -0.03</strong> (p = 0.79, n = 93)</li><li><strong>Spearman rho = -0.02</strong> (p = 0.84)</li></ul>
-<table><thead><tr><th>Service Tier</th><th>Routes</th><th>Mean OTP</th></tr></thead><tbody><tr><td>Weekday-heavy (&lt;0.3)</td><td>27</td><td>69.8%</td></tr><tr><td>Balanced (0.3-0.7)</td><td>45</td><td>68.8%</td></tr><tr><td>Weekend-heavy (&gt;0.7)</td><td>21</td><td>70.3%</td></tr></tbody></table>
+<ul>
+<li><strong>Pearson r = -0.03</strong> (p = 0.79, n = 93)</li>
+<li><strong>Spearman rho = -0.02</strong> (p = 0.84)</li>
+</ul>
+<table>
+<thead>
+<tr>
+  <th>Service Tier</th>
+  <th>Routes</th>
+  <th>Mean OTP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Weekday-heavy (&lt;0.3)</td>
+  <td>27</td>
+  <td>69.8%</td>
+</tr>
+<tr>
+  <td>Balanced (0.3-0.7)</td>
+  <td>45</td>
+  <td>68.8%</td>
+</tr>
+<tr>
+  <td>Weekend-heavy (&gt;0.7)</td>
+  <td>21</td>
+  <td>70.3%</td>
+</tr>
+</tbody>
+</table>
 <h2>Observations</h2>
-<ul><li>The three service tiers are virtually indistinguishable in OTP (69.8%, 68.8%, 70.3%).</li><li>Neither Pearson nor Spearman correlations approach significance.</li><li>This null result makes sense: the weekend service ratio reflects demand patterns and scheduling choices, not route structure. A route with high weekend service isn&#x27;t inherently harder to run on time.</li><li>Since OTP is reported monthly (not by day-of-week), it aggregates weekday and weekend performance, which may mask day-specific patterns.</li><li>Bus-only correlation (r = -0.06, p = 0.56) confirms the null result holds within the dominant mode.</li></ul>
+<ul>
+<li>The three service tiers are virtually indistinguishable in OTP (69.8%, 68.8%, 70.3%).</li>
+<li>Neither Pearson nor Spearman correlations approach significance.</li>
+<li>This null result makes sense: the weekend service ratio reflects demand patterns and scheduling choices, not route structure. A route with high weekend service isn't inherently harder to run on time.</li>
+<li>Since OTP is reported monthly (not by day-of-week), it aggregates weekday and weekend performance, which may mask day-specific patterns.</li>
+<li>Bus-only correlation (r = -0.06, p = 0.56) confirms the null result holds within the dominant mode.</li>
+</ul>
 <h2>Implication</h2>
 <p>Weekend vs weekday service intensity is not a useful predictor of OTP. The structural factors identified in other analyses (stop count, mode, route length) dominate.</p>
 <h2>Review History</h2>
-<ul><li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 2 issues (both moderate). Bus-only correlation added; caveats strengthened. Null finding unchanged.</li></ul></div>
+<ul>
+<li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 2 issues (both moderate). Bus-only correlation added; caveats strengthened. Null finding unchanged.</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/17_weekend_weekday_profile/service_profile.csv" target="_blank" rel="noopener noreferrer">service_profile.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/17_weekend_weekday_profile/service_tier_comparison.png" alt="service_tier_comparison" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/17_weekend_weekday_profile/service_tier_comparison.png" target="_blank" rel="noopener noreferrer">service_tier_comparison.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+          <img src="assets/analyses/17_weekend_weekday_profile/weekend_ratio_vs_otp.png" alt="weekend_ratio_vs_otp" loading="lazy">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="assets/analyses/17_weekend_weekday_profile/weekend_ratio_vs_otp.png" target="_blank" rel="noopener noreferrer">weekend_ratio_vs_otp.png</a>
+          <p class="artifact-desc">Generated chart image produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -86,11 +161,47 @@
 <h2>Question</h2>
 <p>Do commuter-oriented routes (high weekday, low weekend service) perform differently than all-day routes (similar weekday and weekend service)? The ratio of weekend to weekday trips signals route purpose, and since OTP is reported monthly, it likely reflects weekday-dominant measurement.</p>
 <h2>Approach</h2>
-<ul><li>For each route, compute peak weekday trips (MAX trips_wd), peak Saturday trips (MAX trips_sa), and peak Sunday trips (MAX trips_su) from <code>route_stops</code>.</li><li>Compute <strong>weekend ratio</strong> = (max_sa + max_su) / (2 * max_wd), representing the proportion of weekday service provided on weekends (1.0 = identical, 0 = weekday-only).</li><li>Correlate weekend ratio with average OTP.</li><li>Classify routes as <strong>weekday-heavy</strong> (ratio &lt; 0.3), <strong>balanced</strong> (0.3-0.7), or <strong>weekend-heavy</strong> (&gt; 0.7) and compare OTP distributions.</li><li>Scatter plot and box plot.</li></ul>
+<ul>
+<li>For each route, compute peak weekday trips (MAX trips_wd), peak Saturday trips (MAX trips_sa), and peak Sunday trips (MAX trips_su) from <code>route_stops</code>.</li>
+<li>Compute <strong>weekend ratio</strong> = (max_sa + max_su) / (2 * max_wd), representing the proportion of weekday service provided on weekends (1.0 = identical, 0 = weekday-only).</li>
+<li>Correlate weekend ratio with average OTP.</li>
+<li>Classify routes as <strong>weekday-heavy</strong> (ratio &lt; 0.3), <strong>balanced</strong> (0.3-0.7), or <strong>weekend-heavy</strong> (&gt; 0.7) and compare OTP distributions.</li>
+<li>Scatter plot and box plot.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>route_stops</code></td><td>Weekday, Saturday, Sunday trip counts per stop</td><td><code>prt.db</code> table</td></tr><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Mode and name</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>Weekday, Saturday, Sunday trip counts per stop</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Monthly OTP per route</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>Mode and name</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <h2>Output</h2>
-<ul><li><code>output/service_profile.csv</code> -- per-route trip counts, weekend ratio, and OTP</li><li><code>output/weekend_ratio_vs_otp.png</code> -- scatter plot</li><li><code>output/service_tier_comparison.png</code> -- box plot by service profile tier</li></ul></div>
+<ul>
+<li><code>output/service_profile.csv</code> -- per-route trip counts, weekend ratio, and OTP</li>
+<li><code>output/weekend_ratio_vs_otp.png</code> -- scatter plot</li>
+<li><code>output/service_tier_comparison.png</code> -- box plot by service profile tier</li>
+</ul>
+</div>
 </section>
 
 

@@ -26,12 +26,15 @@ GENERIC_SOURCE_DESCRIPTIONS = {
     "dependency": "Python library dependency used by one or more analyses or pipeline steps.",
 }
 DEPENDENCY_DESCRIPTIONS = {
+    "branca": "Utility library used by Folium for map templating, colormaps, and HTML components.",
     "numpy": "Numerical computing library for vectorized arrays and matrix operations.",
     "polars": "Dataframe library used for fast tabular data transformations and aggregation.",
     "scipy": "Scientific computing library used for statistical tests and numerical routines.",
     "statsmodels": "Statistical modeling library used for regression and time-series methods.",
     "matplotlib": "Plotting library used to generate static charts.",
     "folium": "Mapping library used to render interactive geospatial visualizations.",
+    "xyzservices": "Catalog of map tile provider metadata used by mapping and geospatial visualization tools.",
+    "requests": "HTTP client library used to fetch remote APIs and web resources.",
     "yaml": "YAML parsing library used to read and write manifest metadata.",
     "jinja2": "Templating library used to render static HTML pages.",
     "mistune": "Markdown parser used to convert findings and methods docs into HTML.",
@@ -374,28 +377,68 @@ def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
     return "\n".join(lines)
 
 
-def collect_output_images(page: Page) -> list[dict[str, str]]:
-    """Copy output images to website output and return render metadata."""
+def collect_outputs(page: Page) -> tuple[list[dict[str, str]], list[str]]:
+    """Copy declared output artifacts to website output and return metadata/errors."""
     src_dir = PROJECT_ROOT / page.rel_dir / "output"
+    declared = page.manifest.get("outputs", [])
     if not src_dir.exists():
-        return []
-    images = []
+        if not declared:
+            return [], []
+        return [], [f"{page.rel_dir}: output directory missing but outputs are declared"]
+
+    artifacts: list[dict[str, str]] = []
+    errors: list[str] = []
     kind_path = "analyses" if page.kind == "analysis" else page.kind
     dest_dir = OUTPUT_DIR / "assets" / kind_path / page.slug
     dest_dir.mkdir(parents=True, exist_ok=True)
-    for path in sorted(src_dir.iterdir()):
-        if path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".svg"}:
+
+    # Backward compatibility for manifests that do not declare outputs yet.
+    if not declared:
+        for path in sorted(src_dir.iterdir()):
+            if path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".svg"}:
+                continue
+            target = dest_dir / path.name
+            shutil.copy2(path, target)
+            artifacts.append(
+                {
+                    "src": f"assets/{kind_path}/{page.slug}/{path.name}",
+                    "alt": path.stem,
+                    "label": path.name,
+                    "kind": "image",
+                    "description": "Generated chart image produced by this page.",
+                }
+            )
+        return artifacts, errors
+
+    for item in declared:
+        rel_path = str(item.get("path", "")).strip()
+        kind = str(item.get("kind", "file")).strip().lower() or "file"
+        description = sentence(str(item.get("description", "")).strip())
+        if not rel_path:
+            errors.append(f"{page.rel_dir}: outputs entry missing 'path'")
             continue
+
+        path = src_dir / rel_path
+        if not path.exists():
+            errors.append(f"{page.rel_dir}: declared output missing: output/{rel_path}")
+            continue
+        if not path.is_file():
+            errors.append(f"{page.rel_dir}: declared output is not a file: output/{rel_path}")
+            continue
+
         target = dest_dir / path.name
         shutil.copy2(path, target)
-        images.append(
+        artifacts.append(
             {
                 "src": f"assets/{kind_path}/{page.slug}/{path.name}",
                 "alt": path.stem,
                 "label": path.name,
+                "kind": kind,
+                "description": description or "Generated artifact produced by this page.",
             }
         )
-    return images
+
+    return artifacts, errors
 
 
 def write_css() -> None:
@@ -531,6 +574,33 @@ a:hover { color: var(--accent); }
   background: #fff;
   overflow: hidden;
 }
+.artifact-frame {
+  width: 100%;
+  height: 320px;
+  border: 0;
+  background: #fff;
+}
+.artifact-body {
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.35rem;
+}
+.artifact-kind {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  font-weight: 700;
+}
+.artifact-link {
+  font-weight: 600;
+  word-break: break-word;
+}
+.artifact-desc {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
 img { max-width: 100%; height: auto; display: block; }
 figcaption {
   padding: 0.55rem 0.65rem;
@@ -580,6 +650,7 @@ def main() -> None:
 
     site_items = []
     source_index: dict[tuple[str, str], dict] = {}
+    output_errors: list[str] = []
 
     for page in pages:
         kind_path = "analyses" if page.kind == "analysis" else page.kind
@@ -588,7 +659,8 @@ def main() -> None:
 
         findings_html = md_to_html(PROJECT_ROOT / page.rel_dir / "FINDINGS.md")
         methods_html = md_to_html(PROJECT_ROOT / page.rel_dir / "METHODS.md")
-        output_images = collect_output_images(page)
+        output_artifacts, errors = collect_outputs(page)
+        output_errors.extend(errors)
         sources = page_sources(page, table_lookup, table_descriptions)
         mermaid = build_mermaid_page(page, table_lookup)
 
@@ -597,7 +669,7 @@ def main() -> None:
             page=page,
             findings_html=findings_html,
             methods_html=methods_html,
-            output_images=output_images,
+            output_artifacts=output_artifacts,
             page_sources=sources,
             mermaid_diagram=mermaid,
         )
@@ -669,6 +741,10 @@ def main() -> None:
         categories=glossary_data.get("categories", []),
     )
     (OUTPUT_DIR / "glossary.html").write_text(glossary_html, encoding="utf-8")
+
+    if output_errors:
+        details = "\n".join(f"  - {msg}" for msg in output_errors)
+        raise RuntimeError(f"Website generation failed due to output validation errors:\n{details}")
 
     write_css()
     print(f"Generated website output at {OUTPUT_DIR}")

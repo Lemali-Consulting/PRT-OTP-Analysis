@@ -12,3 +12,16 @@ description: Investigates whether on-time performance varies systematically by n
   and municipality.
 dependencies:
 - polars
+outputs:
+- path: neighborhood_equity.png
+  kind: image
+  description: Generated chart image produced by this analysis.
+- path: neighborhood_otp.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: neighborhood_otp_bus_only.csv
+  kind: data
+  description: Generated tabular or textual data artifact produced by this analysis.
+- path: weighted_vs_unweighted_otp.png
+  kind: image
+  description: Generated chart image produced by this analysis.

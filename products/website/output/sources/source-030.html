@@ -3,41 +3,225 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>mode - Source Detail</title>
+  <title>routes - Source Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
 </head>
 <body>
-  <nav class="site-nav">
-    <a href="../index.html" class="brand">PRT OTP Analysis</a>
-    <a href="../index.html#pipeline">Pipeline</a>
-    <a href="../index.html#analyses">Analyses</a>
-    <a href="../sources.html">Sources</a>
-    <a href="../glossary.html">Glossary</a>
-  </nav>
-  <main class="container">
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../index.html#pipeline">Pipeline</a>
+        <a href="../index.html#analyses">Analyses</a>
+        <a href="../sources.html">Sources</a>
+        <a href="../glossary.html">Glossary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
     
-<h1>mode</h1>
-<p><strong>Type:</strong> table</p>
-<p>Consumed DB table.</p>
+<section class="hero hero-compact">
+  <p class="kicker">Table</p>
+  <h1>routes</h1>
+  <p class="lede">Route dimension table. Produced by Data Ingestion.</p>
+</section>
 
 
-<section>
+<section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["mode"]
-  src --> c1["08: Hot-Spot Map"]
+  src["routes"]
+  src --> c1["Scheduled Trips ETL"]
+  src --> c2["01 - System-Wide OTP Trend"]
+  src --> c3["02 - Mode Comparison"]
+  src --> c4["03 - Route Ranking"]
+  src --> c5["04 - Neighborhood Equity"]
+  src --> c6["05 - Anomaly Investigation"]
+  src --> c7["06: Seasonal Patterns"]
+  src --> c8["07: Stop Count vs OTP"]
+  src --> c9["08: Hot-Spot Map"]
+  src --> c10["09: Incline Investigation"]
+  src --> c11["10: Trip Frequency vs OTP"]
+  src --> c12["11: Directional Asymmetry"]
+  src --> c13["12: Route Geographic Span vs OTP"]
+  src --> c14["13: Cross-Route Correlation Clustering"]
+  src --> c15["14: COVID Recovery Trajectories"]
+  src --> c16["15: Municipal/County Equity"]
+  src --> c17["16: Transfer Hub Performance"]
+  src --> c18["17: Weekend vs Weekday Service Profile"]
+  src --> c19["18: Multivariate OTP Model"]
+  src --> c20["21 - COVID Ridership vs OTP Recovery"]
+  src --> c21["22 - Passenger-Weighted Delay Burden"]
+  src --> c22["23 - Garage-Level Performance"]
+  src --> c23["25 - Ridership Concentration & Equity"]
+  src --> c24["26 - Ridership in Multivariate OTP Model"]
+  src --> c25["27 - Traffic Congestion and OTP"]
+  src --> c26["28 - Weather Impact"]
+  src --> c27["30 - Service Level vs OTP Longitudinal"]
+  src --> c28["31 - Stop Consolidation Candidates"]
+  src --> c29["34 - Ridership Concentration (Pareto)"]
 </pre>
 </section>
 
 
-<h2>Consumed By</h2>
-<ul>
-
-  <li><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></li>
-
-</ul>
+<section class="panel">
+  <h2>Consumed By</h2>
+  <div class="card-grid">
+  
+    <article class="card">
+      <h3><a href="pipeline/02_scheduled_trips/index.html">Scheduled Trips ETL</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/10_frequency_vs_otp/index.html">10: Trip Frequency vs OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/11_directional_asymmetry/index.html">11: Directional Asymmetry</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/17_weekend_weekday_profile/index.html">17: Weekend vs Weekday Service Profile</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+  </div>
+</section>
 
   </main>
 </body>

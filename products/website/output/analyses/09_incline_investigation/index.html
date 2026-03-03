@@ -67,18 +67,104 @@
   <h2>Findings</h2>
   <div class="markdown"><h1>Findings: Incline Investigation</h1>
 <h2>Summary</h2>
-<p>The Monongahela Incline is a <strong>data pipeline artifact</strong>. It appears in the route catalog but has zero OTP measurements. OTP was never recorded for either of Pittsburgh&#x27;s two inclines.</p>
+<p>The Monongahela Incline is a <strong>data pipeline artifact</strong>. It appears in the route catalog but has zero OTP measurements. OTP was never recorded for either of Pittsburgh's two inclines.</p>
 <h2>What the Data Shows</h2>
-<table><thead><tr><th>Table</th><th>MI Records</th><th>Details</th></tr></thead><tbody><tr><td><code>routes</code></td><td>1 row</td><td>route_id=MI, mode=INCLINE</td></tr><tr><td><code>otp_monthly</code></td><td><strong>0 rows</strong></td><td>No OTP data whatsoever</td></tr><tr><td><code>route_stops</code></td><td>2 rows</td><td>Upper Station, Lower Station (78 weekday trips, 549 weekly)</td></tr><tr><td><code>stops</code></td><td>2 Incline stops</td><td>W15307 (Upper, Mount Washington), W15308 (Lower, South Shore)</td></tr><tr><td><code>stop_reference</code></td><td>4 Incline stops</td><td>Both inclines present historically (first_served=1503, last_served=2510)</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Table</th>
+  <th>MI Records</th>
+  <th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>routes</code></td>
+  <td>1 row</td>
+  <td>route_id=MI, mode=INCLINE</td>
+</tr>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td><strong>0 rows</strong></td>
+  <td>No OTP data whatsoever</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>2 rows</td>
+  <td>Upper Station, Lower Station (78 weekday trips, 549 weekly)</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>2 Incline stops</td>
+  <td>W15307 (Upper, Mount Washington), W15308 (Lower, South Shore)</td>
+</tr>
+<tr>
+  <td><code>stop_reference</code></td>
+  <td>4 Incline stops</td>
+  <td>Both inclines present historically (first_served=1503, last_served=2510)</td>
+</tr>
+</tbody>
+</table>
 <h2>Observations</h2>
-<ul><li>Both the Monongahela Incline (MI) and the Duquesne Incline (DQI) exist in the <code>routes</code> table with mode=INCLINE, but neither has any OTP data.</li><li>The inclines are physically operational and appear in PRT&#x27;s GTFS feed with regular service (78 weekday trips).</li><li>The OTP measurement system (whatever generates <code>routes_by_month.csv</code>) simply does not cover incline routes. This is likely because inclines run on a fixed schedule with no traffic interference, making OTP measurement less meaningful.</li><li>The ANALYSIS-PROPOSAL.md described this as &quot;zero values&quot; -- in fact, there are no values at all, not even zeros.</li></ul>
+<ul>
+<li>Both the Monongahela Incline (MI) and the Duquesne Incline (DQI) exist in the <code>routes</code> table with mode=INCLINE, but neither has any OTP data.</li>
+<li>The inclines are physically operational and appear in PRT's GTFS feed with regular service (78 weekday trips).</li>
+<li>The OTP measurement system (whatever generates <code>routes_by_month.csv</code>) simply does not cover incline routes. This is likely because inclines run on a fixed schedule with no traffic interference, making OTP measurement less meaningful.</li>
+<li>The ANALYSIS-PROPOSAL.md described this as &quot;zero values&quot; -- in fact, there are no values at all, not even zeros.</li>
+</ul>
 <h2>Conclusion</h2>
-<p>This is not a data quality issue to fix. The inclines were included in the route catalog because they&#x27;re part of PRT&#x27;s GTFS feed, but were excluded from OTP measurement, likely by design. No further action needed.</p>
+<p>This is not a data quality issue to fix. The inclines were included in the route catalog because they're part of PRT's GTFS feed, but were excluded from OTP measurement, likely by design. No further action needed.</p>
 <h2>Review History</h2>
-<ul><li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> — 3 issues (0 significant). Expanded OTP query to explicitly check both MI and DQI (substantiating the claim that neither incline has data), updated METHODS.md question wording.</li></ul></div>
+<ul>
+<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> — 3 issues (0 significant). Expanded OTP query to explicitly check both MI and DQI (substantiating the claim that neither incline has data), updated METHODS.md question wording.</li>
+</ul>
+</div>
 </section>
 
 
+
+<section class="panel">
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/09_incline_investigation/incline_report.csv" target="_blank" rel="noopener noreferrer">incline_report.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/09_incline_investigation/incline_report.txt" target="_blank" rel="noopener noreferrer">incline_report.txt</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/09_incline_investigation/incline_route_stops.csv" target="_blank" rel="noopener noreferrer">incline_route_stops.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="assets/analyses/09_incline_investigation/incline_stop_reference.csv" target="_blank" rel="noopener noreferrer">incline_stop_reference.csv</a>
+          <p class="artifact-desc">Generated tabular or textual data artifact produced by this analysis.</p>
+        </figcaption>
+      </figure>
+    
+  </div>
+</section>
 
 
 
@@ -88,11 +174,56 @@
 <h2>Question</h2>
 <p>The Monongahela Incline may have zero or missing OTP data. Is this a data pipeline artifact, or was OTP never measured for the Incline?</p>
 <h2>Approach</h2>
-<ul><li>Query the <code>otp_monthly</code> table for both incline route_ids (&#x27;MI&#x27; and &#x27;DQI&#x27;) and examine all values.</li><li>Check if &#x27;MI&#x27; appears in <code>route_stops</code> and what stops are associated.</li><li>Check the <code>routes</code> table for mode and name (including all INCLINE-mode routes).</li><li>Cross-reference with the <code>stop_reference</code> table for historical Incline stops.</li><li>Summarize findings as a data quality report.</li></ul>
+<ul>
+<li>Query the <code>otp_monthly</code> table for both incline route_ids ('MI' and 'DQI') and examine all values.</li>
+<li>Check if 'MI' appears in <code>route_stops</code> and what stops are associated.</li>
+<li>Check the <code>routes</code> table for mode and name (including all INCLINE-mode routes).</li>
+<li>Cross-reference with the <code>stop_reference</code> table for historical Incline stops.</li>
+<li>Summarize findings as a data quality report.</li>
+</ul>
 <h2>Data</h2>
-<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Any MI records</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>MI metadata</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>MI stop associations</td><td><code>prt.db</code> table</td></tr><tr><td><code>stops</code></td><td>Physical Incline stops</td><td><code>prt.db</code> table</td></tr><tr><td><code>stop_reference</code></td><td>Historical Incline stops</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Any MI records</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>MI metadata</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>MI stop associations</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>Physical Incline stops</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stop_reference</code></td>
+  <td>Historical Incline stops</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
 <h2>Output</h2>
-<ul><li><code>output/incline_report.csv</code> -- all data found for MI across tables</li><li><code>output/incline_report.txt</code> -- plain-text summary of findings</li></ul></div>
+<ul>
+<li><code>output/incline_report.csv</code> -- all data found for MI across tables</li>
+<li><code>output/incline_report.txt</code> -- plain-text summary of findings</li>
+</ul>
+</div>
 </section>
 
 

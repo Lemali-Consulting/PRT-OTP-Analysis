@@ -1,0 +1,82 @@
+muni,county,avg_otp,n_stops,n_routes,total_trips
+"Castle Shannon borough (Allegheny, PA)","Allegheny County, PA",0.8403074618833783,15,3,1398
+"Bethel Park municipality (Allegheny, PA)","Allegheny County, PA",0.8341875847165966,44,4,2798
+"Dormont borough (Allegheny, PA)","Allegheny County, PA",0.7982028056688186,19,3,654
+"Versailles borough (Allegheny, PA)","Allegheny County, PA",0.7806905751818819,16,2,249
+"Ingram borough (Allegheny, PA)","Allegheny County, PA",0.7748137625537919,29,7,1182
+"Edgeworth borough (Allegheny, PA)","Allegheny County, PA",0.7563674698795182,13,1,312
+"Leetsdale borough (Allegheny, PA)","Allegheny County, PA",0.7563674698795181,20,1,480
+"Glen Osborne borough (Allegheny, PA)","Allegheny County, PA",0.7563674698795181,11,1,264
+"Ambridge borough (Beaver, PA)","Beaver County, PA",0.7563674698795181,15,1,360
+"Mount Lebanon township (Allegheny, PA)","Allegheny County, PA",0.7534660192606375,100,4,2329
+"Sewickley borough (Allegheny, PA)","Allegheny County, PA",0.751562889011878,27,2,566
+"Reserve township (Allegheny, PA)","Allegheny County, PA",0.7480923553154685,47,2,794
+"West View borough (Allegheny, PA)","Allegheny County, PA",0.7448210404856515,47,2,2459
+"Moon township (Allegheny, PA)","Allegheny County, PA",0.7365220668422134,23,2,306
+"Neville township (Allegheny, PA)","Allegheny County, PA",0.7360734939759036,40,1,1166
+"Coraopolis borough (Allegheny, PA)","Allegheny County, PA",0.7360734939759036,19,1,562
+"Bridgeville borough (Allegheny, PA)","Allegheny County, PA",0.734722300570997,29,3,726
+"Emsworth borough (Allegheny, PA)","Allegheny County, PA",0.7310597417804209,28,2,391
+"Scott township (Allegheny, PA)","Allegheny County, PA",0.7245106677751487,99,4,1986
+"Ben Avon borough (Allegheny, PA)","Allegheny County, PA",0.7223333189259279,18,2,223
+"Avalon borough (Allegheny, PA)","Allegheny County, PA",0.7196286935857124,29,3,1161
+"Baldwin borough (Allegheny, PA)","Allegheny County, PA",0.7195744118458567,48,2,1179
+"Stowe township (Allegheny, PA)","Allegheny County, PA",0.71882293415059,48,3,1379
+"McKees Rocks borough (Allegheny, PA)","Allegheny County, PA",0.7158871947396505,51,4,1585
+"Bellevue borough (Allegheny, PA)","Allegheny County, PA",0.7135864580223769,44,4,2018
+"Jefferson Hills borough (Allegheny, PA)","Allegheny County, PA",0.7121536585365854,20,1,350
+"Glassport borough (Allegheny, PA)","Allegheny County, PA",0.7121536585365854,28,1,490
+"Clairton city (Allegheny, PA)","Allegheny County, PA",0.7121536585365853,29,1,508
+"Pleasant Hills borough (Allegheny, PA)","Allegheny County, PA",0.7089140608001239,15,2,319
+"Carnegie borough (Allegheny, PA)","Allegheny County, PA",0.7053680337624926,26,5,760
+"Brentwood borough (Allegheny, PA)","Allegheny County, PA",0.7048256183476237,24,3,1304
+"Kennedy township (Allegheny, PA)","Allegheny County, PA",0.704668148354067,68,3,1784
+"North Versailles township (Allegheny, PA)","Allegheny County, PA",0.7025446645258647,62,3,989
+"Crafton borough (Allegheny, PA)","Allegheny County, PA",0.7021183392898037,32,7,960
+"Green Tree borough (Allegheny, PA)","Allegheny County, PA",0.7017043555254135,35,2,983
+"Mount Oliver borough (Allegheny, PA)","Allegheny County, PA",0.70048705962889,17,5,1122
+"Collier township (Allegheny, PA)","Allegheny County, PA",0.6929134754612133,20,3,897
+"McKeesport city (Allegheny, PA)","Allegheny County, PA",0.6862090349514167,117,7,4419
+"Heidelberg borough (Allegheny, PA)","Allegheny County, PA",0.6838560140702417,10,2,330
+"White Oak borough (Allegheny, PA)","Allegheny County, PA",0.683806825292381,11,2,118
+"Ross township (Allegheny, PA)","Allegheny County, PA",0.6813888024650991,158,10,3905
+"West Mifflin borough (Allegheny, PA)","Allegheny County, PA",0.678885928845276,167,9,5189
+"East Pittsburgh borough (Allegheny, PA)","Allegheny County, PA",0.677698565480911,24,5,723
+"Robinson township (Allegheny, PA)","Allegheny County, PA",0.674017841704176,63,4,2430
+"Pittsburgh city (Allegheny, PA)","Allegheny County, PA",0.672208217467148,2679,90,180514
+"Turtle Creek borough (Allegheny, PA)","Allegheny County, PA",0.6587418028254725,36,4,1326
+"McCandless township (Allegheny, PA)","Allegheny County, PA",0.6518619516792482,110,5,1419
+"North Fayette township (Allegheny, PA)","Allegheny County, PA",0.6510407407407408,19,1,408
+"Swissvale borough (Allegheny, PA)","Allegheny County, PA",0.6454631148395706,63,8,4576
+"O'Hara township (Allegheny, PA)","Allegheny County, PA",0.6450459024833907,46,3,2146
+"Braddock Hills borough (Allegheny, PA)","Allegheny County, PA",0.6443272829856009,25,4,1025
+"Harrison township (Allegheny, PA)","Allegheny County, PA",0.6431036144578314,43,1,215
+"Brackenridge borough (Allegheny, PA)","Allegheny County, PA",0.6431036144578314,17,1,85
+"Hampton township (Allegheny, PA)","Allegheny County, PA",0.6420162735369244,20,3,312
+"Wilkinsburg borough (Allegheny, PA)","Allegheny County, PA",0.6416628929904291,160,21,10270
+"Duquesne city (Allegheny, PA)","Allegheny County, PA",0.641241265060241,83,4,3752
+"Homestead borough (Allegheny, PA)","Allegheny County, PA",0.6400825082859581,36,8,2080
+"Forest Hills borough (Allegheny, PA)","Allegheny County, PA",0.6399144613582647,28,5,965
+"Munhall borough (Allegheny, PA)","Allegheny County, PA",0.63900118224104,53,5,1636
+"Whitaker borough (Allegheny, PA)","Allegheny County, PA",0.6382560525887333,17,4,592
+"Shaler township (Allegheny, PA)","Allegheny County, PA",0.6380315844443077,58,2,1191
+"Sharpsburg borough (Allegheny, PA)","Allegheny County, PA",0.6374019123472141,35,3,3654
+"Rankin borough (Allegheny, PA)","Allegheny County, PA",0.6331241931498771,21,5,1555
+"Etna borough (Allegheny, PA)","Allegheny County, PA",0.6309885557863382,28,4,880
+"Millvale borough (Allegheny, PA)","Allegheny County, PA",0.6299766550522647,11,2,231
+"Monroeville municipality (Allegheny, PA)","Allegheny County, PA",0.6244934886506531,125,7,3152
+"North Braddock borough (Allegheny, PA)","Allegheny County, PA",0.623441190032766,53,6,2449
+"Tarentum borough (Allegheny, PA)","Allegheny County, PA",0.6226737844173063,30,2,559
+"Springdale borough (Allegheny, PA)","Allegheny County, PA",0.6199856488856582,21,2,798
+"Cheswick borough (Allegheny, PA)","Allegheny County, PA",0.6199856488856582,12,2,456
+"East Deer township (Allegheny, PA)","Allegheny County, PA",0.6199856488856582,20,2,760
+"Churchill borough (Allegheny, PA)","Allegheny County, PA",0.6199585568495762,10,3,269
+"Penn Hills township (Allegheny, PA)","Allegheny County, PA",0.6168901389360059,264,5,5180
+"Blawnox borough (Allegheny, PA)","Allegheny County, PA",0.6164829268292682,13,1,429
+"Harmar township (Allegheny, PA)","Allegheny County, PA",0.614319286425894,29,4,1230
+"Edgewood borough (Allegheny, PA)","Allegheny County, PA",0.6128763900563494,27,6,1376
+"Wilkins township (Allegheny, PA)","Allegheny County, PA",0.6088822188760702,19,4,431
+"Braddock borough (Allegheny, PA)","Allegheny County, PA",0.6083457516429354,29,3,1760
+"Wilmerding borough (Allegheny, PA)","Allegheny County, PA",0.6068400583903292,24,2,655
+"Oakmont borough (Allegheny, PA)","Allegheny County, PA",0.5996400602409637,28,2,432
+"Plum borough (Allegheny, PA)","Allegheny County, PA",0.591290467327413,50,3,698
