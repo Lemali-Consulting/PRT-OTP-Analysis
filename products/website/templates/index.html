@@ -14,7 +14,6 @@
   <article class="card">
     <h3><a href="{{ p.path }}">{{ p.title }}</a></h3>
     <p>{{ p.description }}</p>
-    <span class="tag">Pipeline</span>
   </article>
 {% endfor %}
 </div>
@@ -22,14 +21,16 @@
 
 <section class="panel">
 <h2 id="analyses">Analyses</h2>
-<div class="card-grid">
-{% for a in analyses %}
-  <article class="card">
-    <h3><a href="{{ a.path }}">{{ a.title }}</a></h3>
-    <p>{{ a.description }}</p>
-    {% if a.group %}<span class="tag">{{ a.group }}</span>{% endif %}
-  </article>
+{% for grp in analyses|groupby("group") %}
+  <h3>{{ grp.grouper or "Ungrouped" }}</h3>
+  <div class="card-grid">
+  {% for a in grp.list %}
+    <article class="card">
+      <h3><a href="{{ a.path }}">{{ a.title }}</a></h3>
+      <p>{{ a.description }}</p>
+    </article>
+  {% endfor %}
+  </div>
 {% endfor %}
-</div>
 </section>
 {% endblock %}
