@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13: Cross-Route Correlation Clustering - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>13: Cross-Route Correlation Clustering</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Route and Service Drivers</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  13_correlation_clustering["13: Cross-Route Correlation Clustering"]
+  t_a["a"] --> 13_correlation_clustering
+  t_each["each"] --> 13_correlation_clustering
+  t_otp_monthly["otp_monthly"] --> 13_correlation_clustering
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 13_correlation_clustering
+  t_prt_otp_analysis["prt_otp_analysis"] --> 13_correlation_clustering
+  t_route_stops["route_stops"] --> 13_correlation_clustering
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_routes["routes"] --> 13_correlation_clustering
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 13_correlation_clustering</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Cross-Route Correlation Clustering</p><p>## Summary</p><p>After **detrending** (subtracting system-wide monthly mean OTP), hierarchical clustering on pairwise OTP correlations produced **6 clusters** (selected by silhouette score optimization). Detrending removes the dominant COVID/seasonal signal that otherwise causes all routes to appear positively correlated, revealing genuine differential behavior.</p><p>## Key Numbers</p><p>| Cluster | Routes | Avg OTP | Avg Stops | Character |
+|---------|--------|---------|-----------|-----------|
+| 1 | 23 | 66.8% | 118 | Lowest-performing cluster, high stop count |
+| 2 | 9 | 74.0% | 114 | Best-performing cluster |
+| 3 | 27 | 71.8% | 105 | Largest cluster, above-average performance |
+| 4 | 11 | 69.4% | 106 | Mid-performing |
+| 5 | 13 | 67.5% | 108 | Below-average |
+| 6 | 10 | 68.9% | 146 | Highest stop count |</p><p>- Silhouette scores ranged from 0.13 to 0.18 (k=6 was optimal at 0.178)
+- 0 route pairs excluded for insufficient overlap</p><p>## Methodology</p><p>- **Detrending**: System-wide monthly mean OTP is subtracted from each route&#x27;s OTP before computing correlations. This ensures clusters reflect differential route behavior rather than common system-wide trends (COVID, seasonal cycles).
+- **Linkage**: Average linkage (valid for non-Euclidean correlation distance), replacing the original Ward&#x27;s method.
+- **Cluster count**: Selected by silhouette score optimization over k=3..10, replacing the hardcoded k=6.
+- **Imputation**: Route pairs with insufficient overlap are imputed with median correlation rather than 0.0.</p><p>## Observations</p><p>- With detrending, the clusters are more evenly sized and differentiated by OTP level.
+- The highest stop-count cluster (Cluster 6, 146 avg stops) does not have the worst OTP (68.9%), suggesting that after removing system-wide trends, route complexity alone doesn&#x27;t determine co-movement.
+- Low silhouette scores (0.13-0.18) indicate moderate cluster separation -- routes don&#x27;t form tightly distinct groups. This is expected given that detrended OTP residuals have limited signal.
+- Without depot or corridor data, the clusters remain descriptive -- we can see which routes move together but cannot explain *why*.</p><p>## Caveats</p><p>- Silhouette scores below 0.25 indicate weak cluster structure. The 6-cluster solution is the best available, but route co-movement may be more continuous than discrete.
+- All modes are pooled. With only ~3 rail routes, stratification by mode is not feasible.</p><p>## Review History</p><p>- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 5 issues (2 significant). Detrended correlations, average linkage, silhouette-based k selection; cluster composition changed entirely.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Cross-Route Correlation Clustering</p><p>## Question
+Which routes&#x27; OTP values move together over time? Identifying co-moving clusters could reveal shared causal factors -- same corridor, same depot, same traffic bottleneck, or common external shocks.</p><p>## Approach
+- Build a route x month matrix of OTP values from `otp_monthly`.
+- Filter to routes with at least 36 months of data to ensure meaningful correlations.
+- Compute pairwise Pearson correlation between every pair of routes&#x27; monthly OTP series (using only overlapping months).
+- Convert correlation to distance (1 - r) and apply Ward&#x27;s hierarchical clustering via `scipy.cluster.hierarchy`.
+- Cut the dendrogram to produce a manageable number of clusters (target ~5-8).
+- Characterize each cluster by mode, average OTP, stop count, and geographic location.
+- Visualize with a dendrogram and a clustered correlation heatmap.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route (time series) | `prt.db` table |
+| `routes` | Mode and name for labeling | `prt.db` table |
+| `route_stops` | Stop count per route for cluster characterization | `prt.db` table |
+| `stops` | Geography for cluster characterization | `prt.db` table |</p><p>**Notes:** `route_stops` is joined to `stops` to derive stop count and geographic location per route.</p><p>## Output
+- `output/cluster_membership.csv` -- route-to-cluster assignment with cluster characteristics
+- `output/dendrogram.png` -- hierarchical clustering dendrogram
+- `output/correlation_heatmap.png` -- pairwise correlation matrix ordered by cluster</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>a</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>each</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

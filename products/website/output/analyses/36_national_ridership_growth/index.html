@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>36 - National Ridership Growth (2019 vs 2024) - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>36 - National Ridership Growth (2019 vs 2024)</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Equity and Strategic Planning</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  36_national_ridership_growth["36 - National Ridership Growth (2019 vs 2024)"]
+  t_agency["agency"] --> 36_national_ridership_growth
+  t_ntd_agency["ntd_agency"] --> 36_national_ridership_growth
+  t_ntd_ridership["ntd_ridership"] --> 36_national_ridership_growth
+  t_pathlib["pathlib"] --> 36_national_ridership_growth
+  t_prt_otp_analysis["prt_otp_analysis"] --> 36_national_ridership_growth</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: National Ridership Growth (2019 vs 2024)</p><p>## Summary
+Among the 150 largest US transit agencies, the median ridership change from 2019 to 2024 was −22.4%. Only 11 of 150 agencies (7%) recovered to pre-pandemic levels. PRT ranks 136th out of 150, with a −42.4% decline.</p><p>## Key Numbers
+- Median change: −22.4%
+- Mean change: −22.4%
+- IQR: −33.4% to −12.0%
+- Agencies recovered to 2019 levels: 11 / 150 (7%)
+- PRT rank: 136 / 150 (−42.4% change)
+- PRT 2019 UPT: 64.1 million → 2024 UPT: 36.9 million
+- Top recovery: City of Alexandria (+34.6%)
+- Bottom: Puerto Rico Highway and Transportation Authority (−85.8%)</p><p>## Observations
+- The transit industry as a whole has not recovered to 2019 ridership levels. The median agency is still down about one-fifth.
+- Only a handful of mostly smaller or mid-size agencies — Alexandria, Richmond, Tucson, Albany — have grown past their 2019 totals, often reflecting route restructures or fare-free programs.
+- Large legacy systems (BART −56%, Metrolink −60%) lag due to heavy reliance on commuter/office workers who shifted to remote work.
+- PRT&#x27;s −42.4% decline places it in the bottom quintile, substantially below the median. This is worse than most similarly-sized agencies.
+- The distribution is roughly normal around −22%, with a long left tail of commuter-heavy agencies.</p><p>## Discussion
+PRT&#x27;s below-median recovery suggests Pittsburgh-specific headwinds beyond the national pandemic trend. Possible factors include sustained remote-work adoption in major employers (UPMC, university sector), service cuts that may have dampened demand, and light rail losses that drag the overall figure below bus-only recovery.</p><p>## Caveats
+- &quot;Top 150&quot; is defined by 2019 UPT, which excludes agencies that have grown from a small base.
+- Requires at least 10 months of data per year to exclude partial-year artifacts; a few agencies near the cutoff may have slightly biased totals.
+- UPT counts all modes and TOS combined; agencies with large commuter rail components (which recovered less) appear worse than bus-only peers.
+- NTD data includes estimates and adjustments; some months may be revised after initial reporting.</p></div>
+</section>
+
+
+
+<section>
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure>
+        <img src="assets/analyses/36_national_ridership_growth/ridership_growth_distribution.png" alt="ridership_growth_distribution" loading="lazy">
+        <figcaption>ridership_growth_distribution.png</figcaption>
+      </figure>
+    
+      <figure>
+        <img src="assets/analyses/36_national_ridership_growth/ridership_growth_ranking.png" alt="ridership_growth_ranking" loading="lazy">
+        <figcaption>ridership_growth_ranking.png</figcaption>
+      </figure>
+    
+  </div>
+</section>
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: National Ridership Growth (2019 vs 2024)</p><p>## Question
+What is the average 2019-to-2024 ridership change across the 150 largest US transit agencies, and where does Pittsburgh Regional Transit rank?</p><p>## Approach
+- Sum unlinked passenger trips (UPT) by agency across all modes/TOS for calendar years 2019 and 2024.
+- Require at least 10 months of non-null data in both years to avoid partial-year artifacts.
+- Rank agencies by 2019 total to define the &quot;top 150&quot; (pre-pandemic baseline, not distorted by COVID).
+- Compute percent change ((2024 − 2019) / 2019 × 100) per agency.
+- Report median, mean, and IQR of the percent change distribution.
+- Count how many agencies have recovered to or exceeded 2019 levels.
+- Identify PRT&#x27;s rank in the distribution.</p><p>## Data
+- `ntd_ridership` — monthly UPT by agency/mode/TOS, filtered to 2019 and 2024.
+- `ntd_agency` — agency names for labeling.</p><p>## Output
+- `output/ridership_growth_distribution.png` — histogram of percent change with PRT highlighted.
+- `output/ridership_growth_ranking.png` — horizontal bar chart of all 150 agencies, PRT in distinct color.
+- `output/ridership_growth_data.csv` — per-agency data (ntd_id, agency_name, upt_2019, upt_2024, pct_change, rank).</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>agency</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>ntd_agency</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>ntd_ridership</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

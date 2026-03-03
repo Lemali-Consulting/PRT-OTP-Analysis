@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>18: Multivariate OTP Model - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>18: Multivariate OTP Model</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Route and Service Drivers</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  18_multivariate_model["18: Multivariate OTP Model"]
+  t_otp_monthly["otp_monthly"] --> 18_multivariate_model
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 18_multivariate_model
+  t_prt_otp_analysis["prt_otp_analysis"] --> 18_multivariate_model
+  t_route_stops["route_stops"] --> 18_multivariate_model
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_routes["routes"] --> 18_multivariate_model
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 18_multivariate_model
+  t_stops["stops"] --> 18_multivariate_model
+  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Multivariate OTP Model</p><p>## Summary</p><p>A six-feature OLS model explains **47.2% of OTP variance** (adjusted R² = 0.435) across 92 routes. Three features are significant: stop count, geographic span, and rail mode. The model confirms that structural route characteristics explain nearly half of all performance variation, with the remaining 53% attributable to unmeasured factors (traffic, staffing, weather, schedule design).</p><p>## Key Numbers</p><p>- **R² = 0.472**, **Adjusted R² = 0.435**
+- **n = 92 routes**, **k = 6 features**</p><p>| Feature | Coefficient | p-value | Beta Weight | Significant? |
+|---------|------------|---------|-------------|-------------|
+| stop_count | -0.0006 | &lt;0.001 | -0.49 | *** |
+| span_km | -0.0049 | &lt;0.001 | -0.47 | *** |
+| is_rail | +0.133 | &lt;0.001 | +0.34 | *** |
+| n_munis | +0.009 | 0.001 | +0.41 | ** |
+| is_premium_bus | +0.007 | 0.70 | +0.05 | |
+| weekend_ratio | -0.006 | 0.79 | -0.03 | |</p><p>## Observations</p><p>- **Stop count** (beta = -0.49) and **geographic span** (beta = -0.47) are the two strongest predictors, with nearly equal standardized effects. Each additional stop costs roughly -0.06 pp OTP; each additional km of span costs roughly -0.49 pp.
+- **Rail mode** (beta = +0.34) provides a +13.3 pp OTP advantage over bus after controlling for structural factors. This is partly inherent to rail (dedicated right-of-way) and not fully captured by other features.
+- **Number of municipalities** has a surprising positive coefficient (+0.009 per muni, beta = +0.41). This is likely a suppressor effect: after controlling for stop count and span, routes that serve more municipalities tend to be express/busway routes that skip stops, which perform better.
+- **Premium bus** (busway/flyer/express/limited) is not significant once stop count and span are controlled -- these routes&#x27; advantage is fully explained by having fewer stops and shorter spans, not by their service type per se.
+- **Weekend ratio** is not significant, confirming the null finding from Analysis 17.</p><p>## Model Interpretation</p><p>The 47% R² means that knowing just a route&#x27;s stop count, length, and mode gets you almost halfway to predicting its OTP. The unexplained 53% likely reflects:
+- Traffic conditions and road geometry
+- Schedule design (running time padding, layover adequacy)
+- Driver staffing and experience
+- Passenger volume and dwell time variation
+- Weather and construction effects</p><p>These factors would require operational data not present in this dataset.</p><p>## Caveats</p><p>- OLS assumes linear relationships and independent errors. Some non-linearity is visible in the residuals.
+- The n_munis coefficient is a suppressor and should not be interpreted as &quot;more municipalities = better OTP.&quot;
+- With only 92 observations and 6 predictors, the model is at the edge of stable estimation.</p><p>## Review History</p><p>- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 4 issues (3 significant). VIF check added; n_munis labeled as suppressor; numerical stability improved.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Multivariate OTP Model</p><p>## Question
+How much of OTP variation can we explain with available structural variables? Which factors matter most when all are considered simultaneously? Previous analyses found effects for stop count (Analysis 07), mode (Analysis 02), and geographic span (Analysis 12), but these were tested individually. A multivariate model quantifies relative importance and reveals how much variance remains unexplained.</p><p>## Approach
+- For each route with OTP data, assemble features: stop count, geographic span (km), mode (BUS/RAIL dummy), bus subtype (local/limited/express/busway/flyer dummies), weekend service ratio, and number of municipalities served.
+- Fit an OLS regression with average OTP as the dependent variable.
+- Report R-squared, adjusted R-squared, and per-feature coefficients with p-values.
+- Use standardized coefficients (beta weights) to compare relative importance across features with different scales.
+- Generate a coefficient plot and a predicted-vs-actual scatter plot.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route (averaged) | `prt.db` table |
+| `route_stops` | Stop count, trip counts per route | `prt.db` table |
+| `stops` | Lat/lon for span calculation, muni for jurisdiction count | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |</p><p>## Output
+- `output/model_coefficients.csv` -- feature, coefficient, std error, p-value, beta weight
+- `output/coefficient_plot.png` -- horizontal bar chart of standardized coefficients
+- `output/predicted_vs_actual.png` -- scatter plot with 1:1 line</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>24 - Weekday vs Weekend Ridership Trends - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>24 - Weekday vs Weekend Ridership Trends</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Ridership and External Factors</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  24_daytype_ridership_trends["24 - Weekday vs Weekend Ridership Trends"]
+  t_otp_monthly["otp_monthly"] --> 24_daytype_ridership_trends
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 24_daytype_ridership_trends
+  t_prt_otp_analysis["prt_otp_analysis"] --> 24_daytype_ridership_trends
+  t_ridership_monthly["ridership_monthly"] --> 24_daytype_ridership_trends
+  01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
+  t_scipy["scipy"] --> 24_daytype_ridership_trends</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Weekday vs Weekend Ridership Trends</p><p>## Summary
+Weekend ridership has recovered far more strongly than weekday ridership since COVID. As of October 2024, Saturday service is at 90.7% of its January 2019 level while weekday service is at just 64.5%. Weekend&#x27;s share of total ridership rose from 13.6% pre-COVID to 17.8% post-2023, a +4.2 pp structural shift. The weekend-to-weekday ridership ratio does **not** significantly correlate with route-level OTP (Pearson r = -0.20, p = 0.097).</p><p>## Key Numbers
+- **Weekday recovery** (Oct 2024 vs Jan 2019): 64.5% -- weekday ridership has not recovered
+- **Saturday recovery**: 90.7% -- nearly fully recovered
+- **Sunday recovery**: 83.9%
+- **Weekend share pre-COVID** (Jan 2019 -- Feb 2020): 13.6%
+- **Weekend share post-2023** (Jan 2023 -- Oct 2024): 17.8%
+- **Shift**: +4.2 pp toward weekend travel
+- 74 routes with 6+ months of all three day types for route-level analysis
+- 67 routes with both weekend ratio and OTP data for correlation</p><p>## Observations
+- The indexed ridership chart shows a dramatic divergence after COVID. All three day types crashed in spring 2020, but Saturday and Sunday rebounded much faster and more completely than weekday service.
+- The weekend share chart shows a step-change during COVID (weekend share spiked to ~25% when weekday commuting collapsed) followed by a partial return, stabilizing around 17-18% -- well above the pre-COVID 13-14% level.
+- Route-level weekend ratios vary widely: median 0.97 (roughly equal weekend and weekday ridership per day of service), but ranging from 0.29 (route BLSV, heavily weekday-oriented) to 1.85+ for some routes.
+- The correlation between weekend ratio and OTP is weakly negative (r = -0.20) but not statistically significant at alpha = 0.05. Routes with higher weekend share do not have meaningfully different OTP.</p><p>## Discussion
+The 26-percentage-point gap in recovery between weekday (64.5%) and Saturday (90.7%) service is the headline finding. This is consistent with national trends: remote and hybrid work has permanently reduced weekday commuting, while discretionary weekend travel has largely returned. For PRT, this means:</p><p>1. **Revenue and planning implications**: The traditional weekday-peak service model serves a shrinking share of total demand. Weekend service, historically treated as reduced-frequency filler, now carries a proportionally larger role.
+2. **OTP is not driving the gap**: Weekend-heavy routes do not have significantly different OTP, suggesting the weekday ridership collapse is driven by exogenous factors (remote work) rather than service quality differences between day types.
+3. **Seasonal patterns visible**: Both Saturday and Sunday series show strong seasonal swings (summer peaks, winter troughs) that are more pronounced than weekday patterns, consistent with discretionary travel being more weather-sensitive.</p><p>## Caveats
+- The `avg_riders` field is an average daily ridership for each month, not a total. Multiplying by `day_count` gives an estimate of total monthly riders, but this assumes uniform ridership across all days of a given type within a month.
+- The January 2019 baseline is a single month; seasonal effects mean the indexed values fluctuate even in the pre-COVID period. The recovery percentages should be interpreted as approximate.
+- Some routes have extreme weekend ratios (e.g., route 68 at 239x) likely due to very low weekday ridership rather than high weekend ridership. These outliers are excluded from the OTP correlation by the 6-month minimum and OTP data join.
+- OTP data is not available by day type -- the `otp_monthly` table contains a single OTP value per route per month, so we cannot directly compare weekday vs weekend OTP.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Weekday vs Weekend Ridership Trends</p><p>## Question
+How have weekday, Saturday, and Sunday ridership patterns changed over time, and does the weekend-to-weekday ridership ratio correlate with OTP?</p><p>## Approach
+- Compute system-wide total ridership by day_type (WEEKDAY, SAT., SUN.) per month using `avg_riders * day_count` to estimate total monthly riders.
+- Index each series to Jan 2019 = 100 to show relative recovery trends.
+- Compute per-route weekend-to-weekday ridership ratio (Saturday + Sunday avg_riders divided by weekday avg_riders, averaged over all months with all three day types present) and correlate with route-level average OTP.
+- Test whether routes with higher weekend ridership share have different OTP (Pearson, Spearman).
+- Plot the weekend share trend over time system-wide: weekend share = (SAT total riders + SUN total riders) / (WEEKDAY + SAT + SUN total riders).</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `ridership_monthly` | route_id, month, day_type, avg_riders, day_count; all day types used for ridership trends | `prt.db` table |
+| `otp_monthly` | route_id, month, otp; used for correlation with weekend share | `prt.db` table |</p><p>**Notes:** Overlap period (Jan 2019 -- Oct 2024) for OTP correlation.</p><p>## Output
+- `output/daytype_ridership_trend.png` -- indexed ridership by day type over time
+- `output/weekend_share_trend.png` -- weekend ridership share over time
+- `output/weekend_share_vs_otp.png` -- scatter of weekend share vs route OTP
+- `output/daytype_summary.csv` -- monthly ridership by day type</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>ridership_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

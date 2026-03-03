@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>34 - Ridership Concentration (Pareto) - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>34 - Ridership Concentration (Pareto)</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Equity and Strategic Planning</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  34_ridership_concentration["34 - Ridership Concentration (Pareto)"]
+  t_Gini["Gini"] --> 34_ridership_concentration
+  t_otp_monthly["otp_monthly"] --> 34_ridership_concentration
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 34_ridership_concentration
+  t_prt_otp_analysis["prt_otp_analysis"] --> 34_ridership_concentration
+  t_routes["routes"] --> 34_ridership_concentration
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 34_ridership_concentration
+  t_stop["stop"] --> 34_ridership_concentration
+  t_the["the"] --> 34_ridership_concentration</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Ridership Concentration (Pareto)</p><p>## Summary
+PRT ridership is extremely concentrated: just 2% of stops serve 50% of all weekday riders, and 14% of stops serve 80%. The system-wide Gini coefficient is 0.82, indicating very high inequality in stop-level usage. However, per-route ridership concentration (Gini) has essentially zero correlation with that route&#x27;s OTP (r = -0.016, p = 0.88), meaning whether a route&#x27;s riders are clustered at a few stops or spread evenly has no bearing on schedule reliability.</p><p>## Key Numbers
+- **2.2%** of stops serve **50%** of ridership
+- **13.9%** of stops serve **80%** of ridership
+- **27.9%** of stops serve **90%** of ridership
+- System-wide **Gini = 0.824**
+- Per-route Gini range: **0.338 - 0.890** (median 0.649)
+- **95** routes with &gt;= 3 stops analyzed
+- **90** routes matched to OTP data
+- Gini vs OTP (bus-only): **Pearson r = -0.016** (p = 0.879), **Spearman rho = 0.103** (p = 0.339)</p><p>## Observations
+- **The Pareto curve is steep**: the top ~150 stops (out of 6,700+) account for half of all weekday boardings and alightings. This is more extreme than a classic 80/20 rule -- it&#x27;s closer to a 2/50 pattern.
+- **Most stops see very little usage**: the median stop handles only ~7 riders/day, while the top stops see 2,000-5,800/day. The bottom 70% of stops collectively serve only 10% of ridership.
+- **Route-level concentration varies widely**: some routes have Gini as low as 0.34 (relatively even usage across stops) while others reach 0.89 (nearly all ridership at a few stops). Flyer/express routes tend to have higher Gini since ridership clusters at downtown endpoints.
+- **Concentration does not predict OTP.** The scatter plot shows no trend at all -- the regression line is essentially flat. Routes with highly concentrated ridership perform no better or worse than those with evenly distributed usage.</p><p>## Discussion
+The extreme system-wide concentration (Gini = 0.82) reinforces the stop consolidation finding from Analysis 31: most stops contribute very little ridership, and removing the lowest-usage ones would affect few riders while potentially improving OTP by reducing stop count.</p><p>The null result for Gini vs OTP is notable. One might hypothesize that routes with concentrated ridership would have better OTP (less dwell time at most stops), but this doesn&#x27;t hold. This suggests that dwell time at individual stops is not a dominant factor in OTP variance -- the time cost of *stopping* (deceleration, door opening, acceleration) matters more than the time cost of *boarding passengers*. This aligns with the Analysis 07 finding that raw stop count, not passenger volume, drives OTP.</p><p>The 2/50 concentration ratio has resource allocation implications: if PRT focused infrastructure investment (shelters, real-time signs, ADA upgrades) on just 150 stops, it would reach half of all riders. The current shelter coverage of 7% (Analysis 32) suggests significant room to target the highest-impact locations.</p><p>## Caveats
+- Stop-level usage data is from FY2019; current patterns may differ, especially post-pandemic.
+- Gini is computed from stop-route combinations, not physical stops. Routes sharing physical stops may inflate the apparent concentration.
+- The OTP data covers a longer time range (2019-2025) than the usage snapshot (2019), so the correlation compares static usage structure against time-averaged OTP.
+- Very short routes (&lt; 3 stops) are excluded from the Gini analysis, which drops a few incline and shuttle routes.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Ridership Concentration (Pareto)</p><p>## Question
+How concentrated is ridership across stops? What fraction of stops serves 80% of riders, and does ridership concentration on a route correlate with that route&#x27;s OTP?</p><p>## Approach
+- Aggregate pre-pandemic weekday stop-level ridership (datekeys 201909, 202001) to physical-stop level and per-route level.
+- **System-wide Pareto**: sort all stops by usage, compute cumulative share, and find the fraction of stops that serve 50%, 80%, and 90% of total ridership.
+- **Per-route Gini coefficient**: for each route, compute the Gini coefficient of stop-level usage as a concentration metric (0 = perfectly even, 1 = all ridership at one stop).
+- Join per-route Gini with route-level average OTP from the database and test for correlation (Pearson, Spearman).
+- Generate a system-wide Pareto curve and a scatter plot of Gini vs OTP by route.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `wprdc_stop_data.csv` | Stop-level boardings/alightings | Local CSV (`data/bus-stop-usage/`) |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Route name and mode | `prt.db` table |</p><p>## Output
+- `output/pareto_system.csv` -- cumulative ridership share by stop rank
+- `output/route_gini.csv` -- per-route Gini coefficient and OTP
+- `output/pareto_curve.png` -- system-wide Pareto curve
+- `output/gini_vs_otp.png` -- scatter plot of route Gini vs average OTP</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>Gini</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>stop</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>the</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

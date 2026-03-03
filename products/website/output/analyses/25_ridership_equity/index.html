@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25 - Ridership Concentration & Equity - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>25 - Ridership Concentration & Equity</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Ridership and External Factors</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  25_ridership_equity["25 - Ridership Concentration & Equity"]
+  t_otp_monthly["otp_monthly"] --> 25_ridership_equity
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 25_ridership_equity
+  t_prt_otp_analysis["prt_otp_analysis"] --> 25_ridership_equity
+  t_ridership_monthly["ridership_monthly"] --> 25_ridership_equity
+  01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
+  t_routes["routes"] --> 25_ridership_equity
+  01_data_ingestion["Data Ingestion"] --> t_routes</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Ridership Concentration &amp; Equity</p><p>## Summary
+Ridership is **moderately concentrated on low-OTP routes**. The bottom quintile of routes by OTP (Q1, avg 61.2%) carries **29.6% of all ridership** (32.7% bus-only), far more than its 20% &quot;fair share.&quot; Half of all bus ridership is carried by just 33 of 89 routes, all with OTP below 66.8%. The Gini concentration index is modest (0.068 all routes, 0.145 bus-only), indicating the inequity is real but not extreme.</p><p>## Key Numbers
+- **Gini concentration index**: 0.068 (all routes), 0.145 (bus-only)
+- **50% of ridership** carried by 39/93 routes with OTP &lt; 68.0% (all); 33/89 routes with OTP &lt; 66.8% (bus)
+- **Q1 (worst OTP quintile)**: 19 routes, avg OTP 61.4%, carries 29.6% of ridership
+- **Q5 (best OTP quintile)**: 18 routes, avg OTP 80.9%, carries 23.4% of ridership
+- **Q4 (second-best)**: 18 routes, avg OTP 72.5%, carries only 10.2% of ridership
+- 93 routes with 12+ months of paired OTP and ridership data</p><p>## Observations
+- The quintile distribution is U-shaped: Q1 (worst) and Q5 (best) carry the most ridership, while Q3-Q4 (middle) carry the least. This reflects two distinct high-ridership populations: heavily-used local bus routes with poor OTP (Q1) and rail/busway routes with good OTP and high ridership (Q5).
+- The bus-only analysis sharpens the inequity: removing rail from Q5 drops its ridership share from 23.4% to 17.6%, while Q1 rises from 29.6% to 32.7%. Nearly a third of bus riders are on the worst-performing quintile of routes.
+- The Gini index is low (0.068 all, 0.145 bus) because the concentration is moderate, not extreme. Ridership doesn&#x27;t pile onto a handful of terrible routes -- it&#x27;s spread across many poor-to-mediocre routes, with a few high-performing routes also carrying substantial ridership.
+- The Lorenz curve bows above the diagonal throughout, confirming that at every point along the OTP spectrum, cumulative ridership exceeds what equal distribution would predict. The departure is most visible in the first 20-40% of routes (worst OTP).</p><p>## Discussion
+The equity picture is mixed. On one hand, the worst-performing routes carry a disproportionate share of riders -- nearly 30% of ridership on the bottom 20% of routes. On the other hand, the best routes (Q5) also carry substantial ridership, so it is not the case that reliable service is reserved for lightly-used routes. The U-shape reflects PRT&#x27;s system structure: high-ridership corridors tend to be either long, many-stop local bus routes (which have poor OTP due to route complexity, per Analysis 07) or dedicated right-of-way routes (rail/busway, which have good OTP). Middle-performing routes tend to be lower-ridership suburban and express services.</p><p>The bus-only Gini (0.145) is more than double the all-mode Gini (0.068), confirming that rail&#x27;s presence in Q5 masks a more pronounced equity problem within bus service. If PRT seeks to improve the rider-weighted experience, targeting the Q1 bus routes (avg OTP 61.2%, 32.7% of bus ridership) offers the highest human impact per intervention.</p><p>## Caveats
+- The Gini index here measures concentration of ridership across OTP ranks, not income inequality. A positive value means riders disproportionately use low-OTP routes; it does not imply any particular policy threshold.
+- Ridership is averaged across all months, which weights the pre-COVID period (higher ridership) more heavily. Post-COVID ridership redistribution may have shifted the concentration pattern.
+- OTP is route-level, not trip-level. A rider&#x27;s actual experience depends on which trips they take, not just their route&#x27;s monthly average.
+- The quintile boundaries are sensitive to the number of routes. With 93 routes, each quintile contains 18-19 routes; small changes in route composition could shift the boundaries.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Ridership Concentration &amp; Equity</p><p>## Question
+What share of total system ridership is carried by the lowest-performing (worst OTP) routes? Is there a concentration of riders on unreliable service?</p><p>## Approach
+- Compute route-level average OTP and average weekday ridership over the overlap period.
+- Sort routes by OTP (worst to best) and compute cumulative ridership share.
+- Plot a Lorenz-style curve: x-axis = cumulative share of routes (by OTP rank), y-axis = cumulative share of ridership. The diagonal represents perfect equality (every route carries the same ridership regardless of OTP). If the curve bows above the diagonal, ridership is concentrated on low-OTP routes.
+- Compute a Gini-like concentration index: area between the Lorenz curve and the diagonal, scaled to [0, 1]. A value of 0 means ridership is uniformly distributed across OTP ranks; positive values mean riders are disproportionately on low-OTP routes.
+- Identify the OTP threshold below which 50% of ridership is carried.
+- Divide routes into OTP quintiles (Q1 = worst, Q5 = best) and compute each quintile&#x27;s share of total ridership plus average OTP.
+- Repeat all analyses for bus-only to control for mode effects.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, otp | `prt.db` table |
+| `ridership_monthly` | route_id, month, avg_riders; filtered to day_type=&#x27;WEEKDAY&#x27; | `prt.db` table |
+| `routes` | route_id, mode | `prt.db` table |</p><p>**Notes:** Overlap period (Jan 2019 -- Oct 2024); exclude routes with fewer than 12 months of paired data.</p><p>## Output
+- `output/ridership_lorenz.png` -- Lorenz curve of ridership vs OTP rank (all routes + bus-only)
+- `output/quintile_summary.png` -- bar chart of ridership share and average OTP by quintile
+- `output/equity_metrics.csv` -- Gini index, 50th-percentile OTP threshold, quintile breakdowns</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>ridership_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>19 - Ridership-Weighted OTP - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>19 - Ridership-Weighted OTP</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Route and Service Drivers</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  19_ridership_weighted_otp["19 - Ridership-Weighted OTP"]
+  t_otp_monthly["otp_monthly"] --> 19_ridership_weighted_otp
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 19_ridership_weighted_otp
+  t_prt_otp_analysis["prt_otp_analysis"] --> 19_ridership_weighted_otp
+  t_ridership_monthly["ridership_monthly"] --> 19_ridership_weighted_otp
+  01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
+  t_route_stops["route_stops"] --> 19_ridership_weighted_otp
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_scipy["scipy"] --> 19_ridership_weighted_otp
+  t_trip["trip"] --> 19_ridership_weighted_otp</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Ridership-Weighted OTP</p><p>## Summary
+Ridership-weighted system OTP (69.4%) runs **1.6 percentage points higher** than trip-weighted OTP (67.8%), and the difference is statistically significant (paired t = -18.1, p &lt; 0.001; Wilcoxon W = 1, p &lt; 0.001). This means the average PRT rider experiences slightly *better* on-time performance than the trip-weighted system average suggests.</p><p>## Key Numbers
+- **Unweighted OTP** (all routes equal): 69.9% mean, 70.3% median
+- **Trip-weighted OTP** (scheduled frequency): 67.8% mean, 67.8% median
+- **Ridership-weighted OTP** (avg daily riders): 69.4% mean, 69.2% median
+- **Ridership vs trip-weighted gap**: +1.6 pp (p &lt; 0.001, n = 70 months)
+- 93 routes with 12+ months of paired OTP + ridership data
+- Overlap period: Jan 2019 -- Oct 2024 (70 months)</p><p>## Interpretation
+Both weighted series fall *below* the unweighted average, meaning both scheduled trips and actual riders concentrate somewhat on worse-performing routes. However, **trip frequency overstates how much ridership is concentrated on the worst routes**. High-frequency routes tend to have many stops and poor OTP (Analysis 07), but riders don&#x27;t fill those trips proportionally -- some high-frequency routes carry fewer riders per trip than expected. The result is that the average rider&#x27;s experience is worse than the average route&#x27;s OTP, but not as bad as the trip-weighted number implies.</p><p>This does *not* mean high-ridership routes have better OTP. It means ridership is distributed more evenly across the OTP spectrum than trip frequency is.</p><p>## Observations
+- The gap between trip-weighted and ridership-weighted OTP is not constant: it was near zero during COVID (2020), widened to ~3 pp in late 2022, and has stabilized around 1--2 pp since 2023. This likely reflects post-COVID ridership redistribution.
+- All three series show the same overall trend: COVID spike, steady decline through late 2022, partial stabilization in 2023--2024.</p><p>## Caveats
+- Ridership data is weekday average only; the analysis does not capture weekend rider experience.
+- `route_stops.trips_7d` is a current snapshot, not a monthly time series -- trip-weighted OTP uses the same weights for all months.
+- Routes missing from the ridership dataset (RLSH, SWL) are excluded from all three series for comparability, so the unweighted series here may differ slightly from Analysis 01.
+- The ridership CSV ends Oct 2024 while OTP data extends to Nov 2025; the analysis is restricted to the overlap period.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Ridership-Weighted OTP</p><p>## Question
+How does the average rider&#x27;s on-time experience differ from the average route&#x27;s OTP? Does weighting by actual ridership instead of scheduled trip frequency change the system-wide OTP picture?</p><p>## Approach
+- Join monthly OTP data with monthly average weekday ridership by route and month.
+- Compute three monthly system OTP series:
+  1. **Unweighted**: simple mean of all route OTPs (all routes equal).
+  2. **Trip-weighted**: `sum(otp_i * trips_7d_i) / sum(trips_7d_i)` using static scheduled trip counts from `route_stops` (same weight every month).
+  3. **Ridership-weighted**: `sum(otp_i * avg_riders_i) / sum(avg_riders_i)` using that route&#x27;s average daily weekday ridership for the same month (weight varies month-to-month).
+- Plot all three series over time to visualize divergence.
+- Compute summary statistics (mean, spread) for each weighting scheme.
+- Test whether the ridership-weighted series is significantly different from the trip-weighted series (paired t-test or Wilcoxon).</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Route, month, OTP | `prt.db` table |
+| `average-ridership` | Route, month_start, day_type=&#x27;WEEKDAY&#x27;, avg_riders | Local CSV (`data/average-ridership/`) |
+| `route_stops` | For trip-weighted baseline (trips_wd) | `prt.db` table |</p><p>**Notes:** Join on route code and month; restrict to overlap period (Jan 2019 -- Oct 2024). Exclude routes with fewer than 12 months of data.</p><p>## Output
+- `output/ridership_weighted_otp_trend.png` -- three-series time plot
+- `output/weighting_comparison.csv` -- monthly values for all three series
+- `output/summary_stats.csv` -- mean, median, std for each weighting scheme</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>ridership_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>trip</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

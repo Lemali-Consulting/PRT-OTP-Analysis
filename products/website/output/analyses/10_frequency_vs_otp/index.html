@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10: Trip Frequency vs OTP - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>10: Trip Frequency vs OTP</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Route and Service Drivers</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  10_frequency_vs_otp["10: Trip Frequency vs OTP"]
+  t_otp_monthly["otp_monthly"] --> 10_frequency_vs_otp
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 10_frequency_vs_otp
+  t_prt_otp_analysis["prt_otp_analysis"] --> 10_frequency_vs_otp
+  t_route_stops["route_stops"] --> 10_frequency_vs_otp
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_routes["routes"] --> 10_frequency_vs_otp
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 10_frequency_vs_otp</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Trip Frequency vs OTP</p><p>## Summary</p><p>There is **no meaningful correlation** between peak weekday trip frequency and OTP. The previous finding (r = -0.39) was an artifact of using `SUM(trips_wd)` across stops, which conflated frequency with route length. After correcting to `MAX(trips_wd)` (peak frequency at any single stop), the correlation vanishes.</p><p>## Key Numbers</p><p>- **All routes: Pearson r = 0.03** (p = 0.81, n = 92) -- essentially zero
+- **Bus only: Pearson r = -0.06** (p = 0.55, n = 89)
+- **Bus only: Spearman r = -0.11** (p = 0.29)</p><p>## Methodology Note</p><p>The original analysis summed `trips_wd` across all stops on a route. Because `trips_wd` is recorded per stop, a route with 50 trips per day and 100 stops produces a sum of ~5,000, while a route with 50 trips per day and 20 stops produces ~1,000. This made the metric a proxy for `frequency x stop_count` rather than pure frequency. Using `MAX(trips_wd)` isolates the peak trip frequency at the busiest stop, which is a better measure of how often the route actually runs.</p><p>## Observations</p><p>- Running more trips per se does not degrade OTP. The previous apparent correlation was entirely driven by the confounding of frequency with route length (stop count).
+- This result is consistent with Analysis 07&#x27;s finding that stop count is the real structural predictor -- once route complexity is removed from the frequency metric, the effect disappears.
+- Some of the highest-frequency routes (P1 East Busway, RAIL lines) actually have excellent OTP, because they combine high frequency with few stops and dedicated right-of-way.</p><p>## Implication</p><p>PRT should not expect OTP penalties from increasing service frequency on existing routes. The capacity to run more trips does not inherently strain schedule adherence. The real lever for improving OTP is route design (stop count, right-of-way), not service volume.</p><p>## Caveats</p><p>- `trips_wd` in `route_stops` represents current weekday frequency, not historical. Frequency may have changed over the analysis period.
+- `MAX(trips_wd)` captures the peak stop, which for short-turn routes may overstate the frequency experienced by riders at outer stops.
+- Routes with fewer than 12 months of OTP data are excluded (1 route dropped vs prior version).
+- Three correlation tests were run (Pearson all-routes, Pearson bus-only, Spearman bus-only) without multiple-comparison correction. Since all three are non-significant (smallest p = 0.29), correction would not change any conclusion.</p><p>## Review History
+- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) -- 6 issues (1 significant). Updated METHODS.md to reflect MAX(trips_wd) instead of SUM; documented all three correlation tests; added minimum-month filter (HAVING COUNT &gt;= 12); added NULL filter for trips_wd; replaced manual regression with scipy.stats.linregress; noted multiple-test caveat.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Trip Frequency vs OTP</p><p>## Question
+Is there a correlation between how often a route runs (trip frequency) and its on-time performance? High-frequency routes may suffer from schedule adherence issues like bunching.</p><p>## Approach
+- Compute maximum weekday trips per route from `route_stops` (`MAX(trips_wd)` across all stops, used as a peak frequency proxy). Stops with `trips_wd IS NULL` are excluded.
+- Compute average OTP per route from `otp_monthly`, requiring at least 12 months of data (`HAVING COUNT(*) &gt;= 12`).
+- Scatter plot of trip frequency vs average OTP, colored by mode.
+- Compute Pearson correlation (all routes), Pearson correlation (bus-only), and Spearman rank correlation (bus-only).</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `route_stops` | Trip counts (`trips_wd`, `trips_7d`) | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |</p><p>## Output
+- `output/frequency_otp.csv` -- per-route frequency and OTP summary
+- `output/frequency_vs_otp.png` -- scatter plot with correlation</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>09: Incline Investigation - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>09: Incline Investigation</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Core OTP Patterns</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  09_incline_investigation["09: Incline Investigation"]
+  t_otp_monthly["otp_monthly"] --> 09_incline_investigation
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 09_incline_investigation
+  t_prt_otp_analysis["prt_otp_analysis"] --> 09_incline_investigation
+  t_route_stops["route_stops"] --> 09_incline_investigation
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_routes["routes"] --> 09_incline_investigation
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_stop_reference["stop_reference"] --> 09_incline_investigation
+  01_data_ingestion["Data Ingestion"] --> t_stop_reference
+  t_stops["stops"] --> 09_incline_investigation
+  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Incline Investigation</p><p>## Summary</p><p>The Monongahela Incline is a **data pipeline artifact**. It appears in the route catalog but has zero OTP measurements. OTP was never recorded for either of Pittsburgh&#x27;s two inclines.</p><p>## What the Data Shows</p><p>| Table | MI Records | Details |
+|-------|-----------|---------|
+| `routes` | 1 row | route_id=MI, mode=INCLINE |
+| `otp_monthly` | **0 rows** | No OTP data whatsoever |
+| `route_stops` | 2 rows | Upper Station, Lower Station (78 weekday trips, 549 weekly) |
+| `stops` | 2 Incline stops | W15307 (Upper, Mount Washington), W15308 (Lower, South Shore) |
+| `stop_reference` | 4 Incline stops | Both inclines present historically (first_served=1503, last_served=2510) |</p><p>## Observations</p><p>- Both the Monongahela Incline (MI) and the Duquesne Incline (DQI) exist in the `routes` table with mode=INCLINE, but neither has any OTP data.
+- The inclines are physically operational and appear in PRT&#x27;s GTFS feed with regular service (78 weekday trips).
+- The OTP measurement system (whatever generates `routes_by_month.csv`) simply does not cover incline routes. This is likely because inclines run on a fixed schedule with no traffic interference, making OTP measurement less meaningful.
+- The ANALYSIS-PROPOSAL.md described this as &quot;zero values&quot; -- in fact, there are no values at all, not even zeros.</p><p>## Conclusion</p><p>This is not a data quality issue to fix. The inclines were included in the route catalog because they&#x27;re part of PRT&#x27;s GTFS feed, but were excluded from OTP measurement, likely by design. No further action needed.</p><p>## Review History
+- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) — 3 issues (0 significant). Expanded OTP query to explicitly check both MI and DQI (substantiating the claim that neither incline has data), updated METHODS.md question wording.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Monongahela Incline Investigation</p><p>## Question
+The Monongahela Incline may have zero or missing OTP data. Is this a data pipeline artifact, or was OTP never measured for the Incline?</p><p>## Approach
+- Query the `otp_monthly` table for both incline route_ids (&#x27;MI&#x27; and &#x27;DQI&#x27;) and examine all values.
+- Check if &#x27;MI&#x27; appears in `route_stops` and what stops are associated.
+- Check the `routes` table for mode and name (including all INCLINE-mode routes).
+- Cross-reference with the `stop_reference` table for historical Incline stops.
+- Summarize findings as a data quality report.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Any MI records | `prt.db` table |
+| `routes` | MI metadata | `prt.db` table |
+| `route_stops` | MI stop associations | `prt.db` table |
+| `stops` | Physical Incline stops | `prt.db` table |
+| `stop_reference` | Historical Incline stops | `prt.db` table |</p><p>## Output
+- `output/incline_report.csv` -- all data found for MI across tables
+- `output/incline_report.txt` -- plain-text summary of findings</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>stop_reference</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

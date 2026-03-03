@@ -155,7 +155,8 @@ def collect_output_images(page: Page) -> list[dict[str, str]]:
     if not src_dir.exists():
         return []
     images = []
-    dest_dir = OUTPUT_DIR / "assets" / page.kind / page.slug
+    kind_path = "analyses" if page.kind == "analysis" else page.kind
+    dest_dir = OUTPUT_DIR / "assets" / kind_path / page.slug
     dest_dir.mkdir(parents=True, exist_ok=True)
     for path in sorted(src_dir.iterdir()):
         if path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".svg"}:
@@ -164,7 +165,7 @@ def collect_output_images(page: Page) -> list[dict[str, str]]:
         shutil.copy2(path, target)
         images.append(
             {
-                "src": f"assets/{page.kind}/{page.slug}/{path.name}",
+                "src": f"assets/{kind_path}/{page.slug}/{path.name}",
                 "alt": path.stem,
                 "label": path.name,
             }
@@ -202,7 +203,8 @@ def main() -> None:
     source_index: dict[tuple[str, str], dict] = {}
 
     for page in pages:
-        page_dir = OUTPUT_DIR / page.kind / page.slug
+        kind_path = "analyses" if page.kind == "analysis" else page.kind
+        page_dir = OUTPUT_DIR / kind_path / page.slug
         page_dir.mkdir(parents=True, exist_ok=True)
 
         findings_html = md_to_html(PROJECT_ROOT / page.rel_dir / "FINDINGS.md")
@@ -222,7 +224,6 @@ def main() -> None:
         )
         (page_dir / "index.html").write_text(html, encoding="utf-8")
 
-        kind_path = "analyses" if page.kind == "analysis" else page.kind
         rel_path = f"{kind_path}/{page.slug}/index.html"
         site_items.append({"title": page.title, "path": rel_path, "group": page.group})
 
