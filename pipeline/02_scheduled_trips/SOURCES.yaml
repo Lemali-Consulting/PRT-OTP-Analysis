@@ -1,0 +1,22 @@
+kind: pipeline
+title: Scheduled Trips ETL
+description: Loads monthly scheduled trip counts and schedule periods from WPRDC exports.
+files:
+  - path: data/wprdc-schedule/schedule_monthly_agg.csv
+    description: Monthly route/day-type schedule aggregates (cached copy when available).
+  - path: data/wprdc-schedule/paac_pick_lookup.csv
+    description: Pick period lookup metadata (cached copy when available).
+apis:
+  - name: WPRDC Schedule Monthly Aggregate
+    url: https://data.wprdc.org/dataset/d1eb0fcd-ba60-4407-9969-ceef464d0c00
+    description: Public dataset of route-level monthly schedule aggregates.
+  - name: WPRDC Pick Lookup
+    url: https://data.wprdc.org/dataset/b401859c-412b-4cb6-ad88-a4183b83183d
+    description: Public lookup for pick period date ranges.
+tables:
+  - routes
+tables_produced:
+  - name: scheduled_trips_monthly
+    description: Monthly route/day-type scheduled trip counts and distance metrics.
+  - name: schedule_periods
+    description: Pick period start/end dates keyed by pick ID.

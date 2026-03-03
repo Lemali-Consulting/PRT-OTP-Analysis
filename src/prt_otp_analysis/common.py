@@ -19,6 +19,9 @@ def get_db() -> sqlite3.Connection:
         )
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
+    # Some large GROUP BY queries spill to temp storage; force in-memory temp
+    # to avoid filesystem temp-db failures in constrained environments.
+    conn.execute("PRAGMA temp_store=MEMORY")
     return conn
 
 

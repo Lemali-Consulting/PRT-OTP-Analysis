@@ -1,0 +1,13 @@
+kind: pipeline
+title: NTD Ridership ETL
+description: Loads national monthly ridership benchmark data from the NTD workbook.
+files:
+  - path: data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx
+    description: NTD monthly ridership workbook containing agency metadata and UPT series.
+apis: []
+tables: []
+tables_produced:
+  - name: ntd_agency
+    description: Agency dimension table keyed by NTD ID, mode, and TOS.
+  - name: ntd_ridership
+    description: Monthly UPT facts by NTD ID, mode, and TOS.

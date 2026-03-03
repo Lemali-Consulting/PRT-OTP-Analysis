@@ -1,0 +1,14 @@
+kind: pipeline
+title: Weather ETL
+description: Fetches NOAA daily weather and aggregates monthly features for OTP modeling.
+files:
+  - path: data/noaa-weather/daily_raw.csv
+    description: Cached NOAA daily observations for Pittsburgh station.
+apis:
+  - name: NOAA NCEI Daily Summaries API
+    url: https://www.ncei.noaa.gov/access/services/data/v1
+    description: Daily weather observations for station USW00094823 (Pittsburgh).
+tables: []
+tables_produced:
+  - name: weather_monthly
+    description: Monthly precipitation, temperature, snowfall, and wind summary features.
