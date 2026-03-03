@@ -705,6 +705,26 @@ body {
   font: inherit;
   background: #fff;
 }
+.filters select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #5f4b3a 50%),
+    linear-gradient(135deg, #5f4b3a 50%, transparent 50%),
+    linear-gradient(to right, #ddc8af, #ddc8af);
+  background-position:
+    calc(100% - 15px) 50%,
+    calc(100% - 10px) 50%,
+    calc(100% - 2.1rem) 50%;
+  background-size:
+    6px 6px,
+    6px 6px,
+    1px 1.3rem;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
 h2, h3 {
   font-family: "Fraunces", "Georgia", serif;
   margin: 0.35rem 0 0.7rem;
