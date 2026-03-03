@@ -32,7 +32,17 @@
   t_ridership_monthly["ridership_monthly"] --> 24_daytype_ridership_trends
   01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
   d1_24_daytype_ridership_trends["polars (lib)"] --> 24_daytype_ridership_trends
-  d2_24_daytype_ridership_trends["scipy (lib)"] --> 24_daytype_ridership_trends</pre>
+  d2_24_daytype_ridership_trends["scipy (lib)"] --> 24_daytype_ridership_trends
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 24_daytype_ridership_trends page;
+  class t_otp_monthly,t_ridership_monthly table;
+  class d1_24_daytype_ridership_trends,d2_24_daytype_ridership_trends dep;
+  class 01_data_ingestion pipeline;</pre>
 </section>
 
 

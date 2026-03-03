@@ -34,7 +34,17 @@
   t_route_stops["route_stops"] --> 19_ridership_weighted_otp
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   d1_19_ridership_weighted_otp["polars (lib)"] --> 19_ridership_weighted_otp
-  d2_19_ridership_weighted_otp["scipy (lib)"] --> 19_ridership_weighted_otp</pre>
+  d2_19_ridership_weighted_otp["scipy (lib)"] --> 19_ridership_weighted_otp
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 19_ridership_weighted_otp page;
+  class t_otp_monthly,t_ridership_monthly,t_route_stops table;
+  class d1_19_ridership_weighted_otp,d2_19_ridership_weighted_otp dep;
+  class 01_data_ingestion pipeline;</pre>
 </section>
 
 

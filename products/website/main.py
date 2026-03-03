@@ -130,33 +130,63 @@ def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
     lines = ["flowchart LR"]
     node_self = page.slug.replace("-", "_")
     lines.append(f"  {node_self}[\"{page.title}\"]")
+    file_nodes: list[str] = []
+    api_nodes: list[str] = []
+    table_nodes: list[str] = []
+    dep_nodes: list[str] = []
+    pipeline_nodes: list[str] = []
 
     for idx, file_item in enumerate(page.manifest.get("files", []), start=1):
         node = f"f{idx}_{node_self}"
         label = file_item.get("path", "file")
         lines.append(f"  {node}[\"{label}\"] --> {node_self}")
+        file_nodes.append(node)
 
     for idx, api_item in enumerate(page.manifest.get("apis", []), start=1):
         node = f"a{idx}_{node_self}"
         label = api_item.get("name", "API")
         lines.append(f"  {node}[\"{label}\"] --> {node_self}")
+        api_nodes.append(node)
 
     for table in page.manifest.get("tables", []):
         producer = table_lookup.get(table)
         table_node = f"t_{table.replace('-', '_')}"
         lines.append(f"  {table_node}[\"{table}\"] --> {node_self}")
+        table_nodes.append(table_node)
         if producer:
             prod_node = producer.slug.replace("-", "_")
             lines.append(f"  {prod_node}[\"{producer.title}\"] --> {table_node}")
+            pipeline_nodes.append(prod_node)
 
     for idx, dep in enumerate(page.manifest.get("dependencies", []), start=1):
         node = f"d{idx}_{node_self}"
         lines.append(f"  {node}[\"{dep} (lib)\"] --> {node_self}")
+        dep_nodes.append(node)
 
     for table in page.manifest.get("tables_produced", []):
         table_name = table.get("name") if isinstance(table, dict) else str(table)
         table_node = f"tp_{table_name.replace('-', '_')}"
         lines.append(f"  {node_self} --> {table_node}[\"{table_name}\"]")
+        table_nodes.append(table_node)
+
+    lines.append("  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;")
+    lines.append("  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;")
+    lines.append("  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;")
+    lines.append("  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;")
+    lines.append("  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;")
+    lines.append("  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;")
+
+    lines.append(f"  class {node_self} page;")
+    if table_nodes:
+        lines.append(f"  class {','.join(sorted(set(table_nodes)))} table;")
+    if dep_nodes:
+        lines.append(f"  class {','.join(sorted(set(dep_nodes)))} dep;")
+    if file_nodes:
+        lines.append(f"  class {','.join(sorted(set(file_nodes)))} file;")
+    if api_nodes:
+        lines.append(f"  class {','.join(sorted(set(api_nodes)))} api;")
+    if pipeline_nodes:
+        lines.append(f"  class {','.join(sorted(set(pipeline_nodes)))} pipeline;")
 
     return "\n".join(lines)
 

@@ -34,7 +34,17 @@
   t_routes["routes"] --> 22_delay_burden
   01_data_ingestion["Data Ingestion"] --> t_routes
   d1_22_delay_burden["polars (lib)"] --> 22_delay_burden
-  d2_22_delay_burden["scipy (lib)"] --> 22_delay_burden</pre>
+  d2_22_delay_burden["scipy (lib)"] --> 22_delay_burden
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 22_delay_burden page;
+  class t_otp_monthly,t_ridership_monthly,t_routes table;
+  class d1_22_delay_burden,d2_22_delay_burden dep;
+  class 01_data_ingestion pipeline;</pre>
 </section>
 
 

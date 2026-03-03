@@ -28,7 +28,16 @@
   <pre class="mermaid">flowchart LR
   37_peer_city_ridership["37 - Peer City Ridership Comparison"]
   t_ntd_ridership["ntd_ridership"] --> 37_peer_city_ridership
-  d1_37_peer_city_ridership["polars (lib)"] --> 37_peer_city_ridership</pre>
+  d1_37_peer_city_ridership["polars (lib)"] --> 37_peer_city_ridership
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 37_peer_city_ridership page;
+  class t_ntd_ridership table;
+  class d1_37_peer_city_ridership dep;</pre>
 </section>
 
 
