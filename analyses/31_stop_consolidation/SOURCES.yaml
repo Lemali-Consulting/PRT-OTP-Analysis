@@ -5,7 +5,9 @@ tables:
 - otp_monthly
 - route_stops
 - routes
-files: []
+files:
+- path: data/bus-stop-usage/wprdc_stop_data.csv
+  description: Referenced via DATA_DIR path composition in analysis script.
 analyses: []
 description: Identify low-usage stops that could be consolidated to improve OTP, leveraging
   the finding that stop count is the strongest OTP predictor.

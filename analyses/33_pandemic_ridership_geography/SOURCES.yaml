@@ -2,7 +2,9 @@ kind: analysis
 title: 33 - Pandemic Ridership Geography
 group: Equity and Strategic Planning
 tables: []
-files: []
+files:
+- path: data/bus-stop-usage/wprdc_stop_data.csv
+  description: Referenced via DATA_DIR path composition in analysis script.
 analyses: []
 description: Map the spatial pattern of stop-level ridership loss and recovery between
   pre-pandemic and pandemic periods.

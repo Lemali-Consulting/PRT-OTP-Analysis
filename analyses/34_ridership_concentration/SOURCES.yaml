@@ -4,7 +4,9 @@ group: Equity and Strategic Planning
 tables:
 - otp_monthly
 - routes
-files: []
+files:
+- path: data/bus-stop-usage/wprdc_stop_data.csv
+  description: Referenced via DATA_DIR path composition in analysis script.
 analyses: []
 description: Quantify how concentrated ridership is across stops and test whether
   concentration correlates with route OTP.

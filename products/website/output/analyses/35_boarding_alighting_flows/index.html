@@ -38,6 +38,7 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   35_boarding_alighting_flows["35 - Boarding/Alighting Flow Analysis"]
+  f1_35_boarding_alighting_flows["data/bus-stop-usage/wprdc_stop_data.csv"] --> 35_boarding_alighting_flows
   d1_35_boarding_alighting_flows["numpy (lib)"] --> 35_boarding_alighting_flows
   d2_35_boarding_alighting_flows["polars (lib)"] --> 35_boarding_alighting_flows
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
@@ -47,7 +48,8 @@
   classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
   classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
   class 35_boarding_alighting_flows page;
-  class d1_35_boarding_alighting_flows,d2_35_boarding_alighting_flows dep;</pre>
+  class d1_35_boarding_alighting_flows,d2_35_boarding_alighting_flows dep;
+  class f1_35_boarding_alighting_flows file;</pre>
 </section>
 
 
@@ -113,6 +115,12 @@
   <table class="source-table">
     <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
+    
+      <tr>
+        <td>data/bus-stop-usage/wprdc_stop_data.csv</td>
+        <td><span class="tag">file</span></td>
+        <td>Referenced via DATA_DIR path composition in analysis script.</td>
+      </tr>
     
       <tr>
         <td>numpy</td>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>stop_reference - Source Detail</title>
+  <title>scheduled_trips_monthly - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,16 +29,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Table</p>
-  <h1>stop_reference</h1>
-  <p class="lede">Historical stop metadata and geography. Produced by Data Ingestion.</p>
+  <h1>scheduled_trips_monthly</h1>
+  <p class="lede">Database table consumed by one or more analyses.</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["stop_reference"]
-  src --> c1["09: Incline Investigation"]
+  src["scheduled_trips_monthly"]
+  src --> c1["01 - System-Wide OTP Trend"]
+  src --> c2["29 - Service Change Impact on OTP"]
+  src --> c3["30 - Service Level vs OTP Longitudinal"]
 </pre>
 </section>
 
@@ -48,7 +50,17 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a></h3>
+      <h3><a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

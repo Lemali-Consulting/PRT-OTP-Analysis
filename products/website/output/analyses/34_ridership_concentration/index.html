@@ -38,6 +38,7 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   34_ridership_concentration["34 - Ridership Concentration (Pareto)"]
+  f1_34_ridership_concentration["data/bus-stop-usage/wprdc_stop_data.csv"] --> 34_ridership_concentration
   t_otp_monthly["otp_monthly"] --> 34_ridership_concentration
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
   t_routes["routes"] --> 34_ridership_concentration
@@ -54,6 +55,7 @@
   class 34_ridership_concentration page;
   class t_otp_monthly,t_routes table;
   class d1_34_ridership_concentration,d2_34_ridership_concentration,d3_34_ridership_concentration dep;
+  class f1_34_ridership_concentration file;
   class 01_data_ingestion pipeline;</pre>
 </section>
 
@@ -100,6 +102,12 @@
   <table class="source-table">
     <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
+    
+      <tr>
+        <td>data/bus-stop-usage/wprdc_stop_data.csv</td>
+        <td><span class="tag">file</span></td>
+        <td>Referenced via DATA_DIR path composition in analysis script.</td>
+      </tr>
     
       <tr>
         <td>otp_monthly</td>

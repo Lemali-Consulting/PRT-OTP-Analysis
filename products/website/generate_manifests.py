@@ -83,10 +83,37 @@ def extract_tables(code: str, valid_tables: set[str]) -> list[str]:
 
 
 def extract_file_inputs(code: str) -> list[dict[str, str]]:
-    """Extract explicit data path references from script text."""
+    """Extract data file inputs from direct and composed path references."""
     files = []
+    # Direct literal paths like "data/foo/bar.csv"
     for match in re.findall(r"data/[\w\-./()]+", code):
         files.append({"path": match, "description": "Referenced directly in analysis script."})
+
+    # Composed paths like DATA_DIR / "foo" / "bar.csv"
+    for match in re.finditer(r"DATA_DIR(?P<parts>(?:\s*/\s*['\"][^'\"]+['\"])+)", code):
+        parts = re.findall(r"['\"]([^'\"]+)['\"]", match.group("parts"))
+        if parts:
+            files.append(
+                {
+                    "path": "data/" + "/".join(parts),
+                    "description": "Referenced via DATA_DIR path composition in analysis script.",
+                }
+            )
+
+    # Composed paths like PROJECT_ROOT / "data" / "foo" / "bar.csv"
+    for match in re.finditer(
+        r"PROJECT_ROOT\s*/\s*['\"]data['\"](?P<parts>(?:\s*/\s*['\"][^'\"]+['\"])+)",
+        code,
+    ):
+        parts = re.findall(r"['\"]([^'\"]+)['\"]", match.group("parts"))
+        if parts:
+            files.append(
+                {
+                    "path": "data/" + "/".join(parts),
+                    "description": "Referenced via PROJECT_ROOT/data path composition in analysis script.",
+                }
+            )
+
     unique = {(f["path"], f["description"]): f for f in files}
     return sorted(unique.values(), key=lambda x: x["path"])
 
@@ -163,6 +190,7 @@ def main() -> None:
                     existing[key] = auto_payload[key]
             existing["tables"] = auto_payload["tables"]
             existing["dependencies"] = auto_payload["dependencies"]
+            existing["files"] = auto_payload["files"]
             existing["description"] = auto_payload["description"]
             payload = existing
         else:

@@ -38,6 +38,7 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   31_stop_consolidation["31 - Stop Consolidation Candidates"]
+  f1_31_stop_consolidation["data/bus-stop-usage/wprdc_stop_data.csv"] --> 31_stop_consolidation
   t_otp_monthly["otp_monthly"] --> 31_stop_consolidation
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
   t_route_stops["route_stops"] --> 31_stop_consolidation
@@ -56,6 +57,7 @@
   class 31_stop_consolidation page;
   class t_otp_monthly,t_route_stops,t_routes table;
   class d1_31_stop_consolidation,d2_31_stop_consolidation,d3_31_stop_consolidation dep;
+  class f1_31_stop_consolidation file;
   class 01_data_ingestion pipeline;</pre>
 </section>
 
@@ -130,6 +132,12 @@
   <table class="source-table">
     <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
     <tbody>
+    
+      <tr>
+        <td>data/bus-stop-usage/wprdc_stop_data.csv</td>
+        <td><span class="tag">file</span></td>
+        <td>Referenced via DATA_DIR path composition in analysis script.</td>
+      </tr>
     
       <tr>
         <td>otp_monthly</td>
