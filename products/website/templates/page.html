@@ -50,6 +50,23 @@
 </section>
 {% endif %}
 
+{% if page.kind == "pipeline" and page_tables_produced %}
+<section class="panel">
+  <h2>Tables Produced</h2>
+  <table class="source-table">
+    <thead><tr><th>Table</th><th>Description</th></tr></thead>
+    <tbody>
+    {% for table in page_tables_produced %}
+      <tr>
+        <td><code>{{ table.name }}</code></td>
+        <td>{{ table.description }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
 {% if page_sources %}
 <section class="panel">
   <h2>Sources</h2>

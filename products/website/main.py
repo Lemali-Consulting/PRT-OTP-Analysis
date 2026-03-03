@@ -238,6 +238,50 @@ def sentence(text: str) -> str:
     return value
 
 
+def tables_produced_for_page(page: Page) -> list[dict[str, str]]:
+    """Normalize pipeline tables_produced entries for page rendering."""
+    out: list[dict[str, str]] = []
+    for item in page.manifest.get("tables_produced", []):
+        if isinstance(item, dict):
+            name = str(item.get("name", "")).strip()
+            desc = sentence(str(item.get("description", "")).strip())
+        else:
+            name = str(item).strip()
+            desc = ""
+        if not name:
+            continue
+        out.append(
+            {
+                "name": name,
+                "description": desc or "Database table produced by this pipeline step.",
+            }
+        )
+    return out
+
+
+def validate_pipeline_manifests(pages: list[Page]) -> list[str]:
+    """Validate pipeline manifests include descriptive tables_produced metadata."""
+    errors: list[str] = []
+    for page in pages:
+        if page.kind != "pipeline":
+            continue
+        entries = page.manifest.get("tables_produced", [])
+        if not entries:
+            errors.append(f"{page.rel_dir}: missing tables_produced entries")
+            continue
+        for idx, item in enumerate(entries, start=1):
+            if not isinstance(item, dict):
+                errors.append(f"{page.rel_dir}: tables_produced[{idx}] must be a mapping with name/description")
+                continue
+            name = str(item.get("name", "")).strip()
+            desc = str(item.get("description", "")).strip()
+            if not name:
+                errors.append(f"{page.rel_dir}: tables_produced[{idx}] missing non-empty name")
+            if not desc:
+                errors.append(f"{page.rel_dir}: tables_produced[{idx}] missing non-empty description")
+    return errors
+
+
 def dependency_description(name: str) -> str:
     """Return one-sentence description for a dependency name."""
     key = name.strip().lower()
@@ -645,6 +689,7 @@ def main() -> None:
     env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
     pages = discover_pages()
+    pipeline_manifest_errors = validate_pipeline_manifests(pages)
     table_lookup = build_table_lookup(pages)
     table_descriptions = build_table_descriptions(pages)
 
@@ -661,6 +706,7 @@ def main() -> None:
         methods_html = md_to_html(PROJECT_ROOT / page.rel_dir / "METHODS.md")
         output_artifacts, errors = collect_outputs(page)
         output_errors.extend(errors)
+        page_tables_produced = tables_produced_for_page(page)
         sources = page_sources(page, table_lookup, table_descriptions)
         mermaid = build_mermaid_page(page, table_lookup)
 
@@ -670,6 +716,7 @@ def main() -> None:
             findings_html=findings_html,
             methods_html=methods_html,
             output_artifacts=output_artifacts,
+            page_tables_produced=page_tables_produced,
             page_sources=sources,
             mermaid_diagram=mermaid,
         )
@@ -742,9 +789,10 @@ def main() -> None:
     )
     (OUTPUT_DIR / "glossary.html").write_text(glossary_html, encoding="utf-8")
 
-    if output_errors:
-        details = "\n".join(f"  - {msg}" for msg in output_errors)
-        raise RuntimeError(f"Website generation failed due to output validation errors:\n{details}")
+    all_errors = pipeline_manifest_errors + output_errors
+    if all_errors:
+        details = "\n".join(f"  - {msg}" for msg in all_errors)
+        raise RuntimeError(f"Website generation failed due to manifest/output validation errors:\n{details}")
 
     write_css()
     print(f"Generated website output at {OUTPUT_DIR}")
