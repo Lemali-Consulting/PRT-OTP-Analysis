@@ -23,6 +23,7 @@ except ModuleNotFoundError:  # pragma: no cover - fallback for minimal environme
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
+RED_TEAM_DIR = PROJECT_ROOT / "RED-TEAM-REPORTS"
 GENERIC_SOURCE_DESCRIPTIONS = {
     "file": "Project data file consumed by one or more analyses or pipeline steps.",
     "api": "External API consumed by one or more pipeline steps.",
@@ -877,6 +878,16 @@ pre.mermaid {
     (OUTPUT_DIR / "style.css").write_text(css.strip() + "\n", encoding="utf-8")
 
 
+def copy_red_team_reports() -> None:
+    """Copy red-team markdown reports into website output for direct linking."""
+    if not RED_TEAM_DIR.exists():
+        return
+    dest = OUTPUT_DIR / "RED-TEAM-REPORTS"
+    dest.mkdir(parents=True, exist_ok=True)
+    for path in RED_TEAM_DIR.glob("*.md"):
+        shutil.copy2(path, dest / path.name)
+
+
 def main() -> None:
     """Generate full static site output."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -1040,6 +1051,7 @@ def main() -> None:
         raise RuntimeError(f"Website generation failed due to manifest/output validation errors:\n{details}")
 
     write_css()
+    copy_red_team_reports()
     print(f"Generated website output at {OUTPUT_DIR}")
 
 
