@@ -27,15 +27,14 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   30_service_level_otp_longitudinal["30 - Service Level vs OTP Longitudinal"]
-  t_delta_otp["delta_otp"] --> 30_service_level_otp_longitudinal
   t_otp_monthly["otp_monthly"] --> 30_service_level_otp_longitudinal
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 30_service_level_otp_longitudinal
-  t_prt_otp_analysis["prt_otp_analysis"] --> 30_service_level_otp_longitudinal
   t_routes["routes"] --> 30_service_level_otp_longitudinal
   01_data_ingestion["Data Ingestion"] --> t_routes
   t_scheduled_trips_monthly["scheduled_trips_monthly"] --> 30_service_level_otp_longitudinal
-  t_scipy["scipy"] --> 30_service_level_otp_longitudinal</pre>
+  d1_30_service_level_otp_longitudinal["numpy (lib)"] --> 30_service_level_otp_longitudinal
+  d2_30_service_level_otp_longitudinal["polars (lib)"] --> 30_service_level_otp_longitudinal
+  d3_30_service_level_otp_longitudinal["scipy (lib)"] --> 30_service_level_otp_longitudinal</pre>
 </section>
 
 
@@ -89,27 +88,9 @@ Within the same route over time, does increasing or decreasing scheduled trip fr
     <tbody>
     
       <tr>
-        <td>delta_otp</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>otp_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
       </tr>
     
       <tr>
@@ -125,9 +106,21 @@ Within the same route over time, does increasing or decreasing scheduled trip fr
       </tr>
     
       <tr>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
         <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

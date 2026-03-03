@@ -28,8 +28,7 @@
   <pre class="mermaid">flowchart LR
   37_peer_city_ridership["37 - Peer City Ridership Comparison"]
   t_ntd_ridership["ntd_ridership"] --> 37_peer_city_ridership
-  t_pathlib["pathlib"] --> 37_peer_city_ridership
-  t_prt_otp_analysis["prt_otp_analysis"] --> 37_peer_city_ridership</pre>
+  d1_37_peer_city_ridership["polars (lib)"] --> 37_peer_city_ridership</pre>
 </section>
 
 
@@ -119,15 +118,9 @@ How does Pittsburgh&#x27;s ridership trajectory and post-pandemic recovery compa
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

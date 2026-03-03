@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>each - Source Detail</title>
+  <title>delta_otp - Source Detail</title>
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
@@ -18,7 +18,7 @@
   </nav>
   <main class="container">
     
-<h1>each</h1>
+<h1>delta_otp</h1>
 <p><strong>Type:</strong> table</p>
 <p>Consumed DB table.</p>
 
@@ -26,9 +26,8 @@
 <section>
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["each"]
-  src --> c1["13: Cross-Route Correlation Clustering"]
-  src --> c2["20 - OTP → Ridership Causality"]
+  src["delta_otp"]
+  src --> c1["30 - Service Level vs OTP Longitudinal"]
 </pre>
 </section>
 
@@ -36,9 +35,7 @@
 <h2>Consumed By</h2>
 <ul>
 
-  <li><a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a></li>
-
-  <li><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></li>
+  <li><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></li>
 
 </ul>
 

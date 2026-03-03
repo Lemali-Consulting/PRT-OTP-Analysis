@@ -2,15 +2,14 @@ kind: analysis
 title: 31 - Stop Consolidation Candidates
 group: Equity and Strategic Planning
 tables:
-- CSV
-- DB
-- Stop
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - route_stops
 - routes
-- scipy
-- the
 files: []
 analyses: []
+description: Identify low-usage stops that could be consolidated to improve OTP, leveraging
+  the finding that stop count is the strongest OTP predictor.
+dependencies:
+- numpy
+- polars
+- scipy

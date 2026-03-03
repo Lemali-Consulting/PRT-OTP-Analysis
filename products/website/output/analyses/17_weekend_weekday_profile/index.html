@@ -29,13 +29,12 @@
   17_weekend_weekday_profile["17: Weekend vs Weekday Service Profile"]
   t_otp_monthly["otp_monthly"] --> 17_weekend_weekday_profile
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 17_weekend_weekday_profile
-  t_prt_otp_analysis["prt_otp_analysis"] --> 17_weekend_weekday_profile
   t_route_stops["route_stops"] --> 17_weekend_weekday_profile
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 17_weekend_weekday_profile
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 17_weekend_weekday_profile</pre>
+  d1_17_weekend_weekday_profile["polars (lib)"] --> 17_weekend_weekday_profile
+  d2_17_weekend_weekday_profile["scipy (lib)"] --> 17_weekend_weekday_profile</pre>
 </section>
 
 
@@ -91,18 +90,6 @@ Do commuter-oriented routes (high weekday, low weekend service) perform differen
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -115,9 +102,15 @@ Do commuter-oriented routes (high weekday, low weekend service) perform differen
       </tr>
     
       <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
         <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

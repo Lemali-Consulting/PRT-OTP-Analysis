@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>pathlib - Source Detail</title>
+  <title>ntd_ridership - Source Detail</title>
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
@@ -18,7 +18,7 @@
   </nav>
   <main class="container">
     
-<h1>pathlib</h1>
+<h1>ntd_ridership</h1>
 <p><strong>Type:</strong> table</p>
 <p>Consumed DB table.</p>
 
@@ -26,120 +26,15 @@
 <section>
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["pathlib"]
-  src --> c1["01 - System-Wide OTP Trend"]
-  src --> c2["02 - Mode Comparison"]
-  src --> c3["03 - Route Ranking"]
-  src --> c4["04 - Neighborhood Equity"]
-  src --> c5["05 - Anomaly Investigation"]
-  src --> c6["06: Seasonal Patterns"]
-  src --> c7["07: Stop Count vs OTP"]
-  src --> c8["08: Hot-Spot Map"]
-  src --> c9["09: Incline Investigation"]
-  src --> c10["10: Trip Frequency vs OTP"]
-  src --> c11["11: Directional Asymmetry"]
-  src --> c12["12: Route Geographic Span vs OTP"]
-  src --> c13["13: Cross-Route Correlation Clustering"]
-  src --> c14["14: COVID Recovery Trajectories"]
-  src --> c15["15: Municipal/County Equity"]
-  src --> c16["16: Transfer Hub Performance"]
-  src --> c17["17: Weekend vs Weekday Service Profile"]
-  src --> c18["18: Multivariate OTP Model"]
-  src --> c19["19 - Ridership-Weighted OTP"]
-  src --> c20["20 - OTP → Ridership Causality"]
-  src --> c21["21 - COVID Ridership vs OTP Recovery"]
-  src --> c22["22 - Passenger-Weighted Delay Burden"]
-  src --> c23["23 - Garage-Level Performance"]
-  src --> c24["24 - Weekday vs Weekend Ridership Trends"]
-  src --> c25["25 - Ridership Concentration & Equity"]
-  src --> c26["26 - Ridership in Multivariate OTP Model"]
-  src --> c27["27 - Traffic Congestion and OTP"]
-  src --> c28["28 - Weather Impact"]
-  src --> c29["29 - Service Change Impact on OTP"]
-  src --> c30["30 - Service Level vs OTP Longitudinal"]
-  src --> c31["31 - Stop Consolidation Candidates"]
-  src --> c32["32 - Shelter Equity"]
-  src --> c33["33 - Pandemic Ridership Geography"]
-  src --> c34["34 - Ridership Concentration (Pareto)"]
-  src --> c35["35 - Boarding/Alighting Flow Analysis"]
-  src --> c36["36 - National Ridership Growth (2019 vs 2024)"]
-  src --> c37["37 - Peer City Ridership Comparison"]
+  src["ntd_ridership"]
+  src --> c1["36 - National Ridership Growth (2019 vs 2024)"]
+  src --> c2["37 - Peer City Ridership Comparison"]
 </pre>
 </section>
 
 
 <h2>Consumed By</h2>
 <ul>
-
-  <li><a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a></li>
-
-  <li><a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a></li>
-
-  <li><a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a></li>
-
-  <li><a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a></li>
-
-  <li><a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a></li>
-
-  <li><a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a></li>
-
-  <li><a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a></li>
-
-  <li><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></li>
-
-  <li><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a></li>
-
-  <li><a href="analyses/10_frequency_vs_otp/index.html">10: Trip Frequency vs OTP</a></li>
-
-  <li><a href="analyses/11_directional_asymmetry/index.html">11: Directional Asymmetry</a></li>
-
-  <li><a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a></li>
-
-  <li><a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a></li>
-
-  <li><a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a></li>
-
-  <li><a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a></li>
-
-  <li><a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a></li>
-
-  <li><a href="analyses/17_weekend_weekday_profile/index.html">17: Weekend vs Weekday Service Profile</a></li>
-
-  <li><a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a></li>
-
-  <li><a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a></li>
-
-  <li><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></li>
-
-  <li><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a></li>
-
-  <li><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a></li>
-
-  <li><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></li>
-
-  <li><a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a></li>
-
-  <li><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a></li>
-
-  <li><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a></li>
-
-  <li><a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a></li>
-
-  <li><a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a></li>
-
-  <li><a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a></li>
-
-  <li><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></li>
-
-  <li><a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a></li>
-
-  <li><a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a></li>
-
-  <li><a href="analyses/33_pandemic_ridership_geography/index.html">33 - Pandemic Ridership Geography</a></li>
-
-  <li><a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a></li>
-
-  <li><a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a></li>
 
   <li><a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a></li>
 

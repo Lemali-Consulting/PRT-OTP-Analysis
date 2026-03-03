@@ -2,15 +2,16 @@ kind: analysis
 title: '08: Hot-Spot Map'
 group: Core OTP Patterns
 tables:
-- branca
-- matplotlib
-- mode
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - route_stops
 - routes
 - stops
-- the
 files: []
 analyses: []
+description: Visualizes stop-level on-time performance on a geographic scatter plot
+  to identify corridor-level bottlenecks and clusters of poor performance.
+dependencies:
+- branca
+- folium
+- matplotlib
+- polars

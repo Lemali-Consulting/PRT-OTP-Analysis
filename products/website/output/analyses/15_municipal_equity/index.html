@@ -29,15 +29,14 @@
   15_municipal_equity["15: Municipal/County Equity"]
   t_otp_monthly["otp_monthly"] --> 15_municipal_equity
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 15_municipal_equity
-  t_prt_otp_analysis["prt_otp_analysis"] --> 15_municipal_equity
   t_route_stops["route_stops"] --> 15_municipal_equity
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 15_municipal_equity
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 15_municipal_equity
   t_stops["stops"] --> 15_municipal_equity
-  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+  01_data_ingestion["Data Ingestion"] --> t_stops
+  d1_15_municipal_equity["polars (lib)"] --> 15_municipal_equity
+  d2_15_municipal_equity["scipy (lib)"] --> 15_municipal_equity</pre>
 </section>
 
 
@@ -98,18 +97,6 @@ Analysis 04 examined neighborhood equity but lost 58% of stops due to missing `h
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -122,15 +109,21 @@ Analysis 04 examined neighborhood equity but lost 58% of stops due to missing `h
       </tr>
     
       <tr>
-        <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

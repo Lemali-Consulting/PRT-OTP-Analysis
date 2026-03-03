@@ -3,11 +3,15 @@ title: '18: Multivariate OTP Model'
 group: Route and Service Drivers
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - route_stops
 - routes
-- scipy
 - stops
 files: []
 analyses: []
+description: Combines stop count, mode, bus subtype, geographic span, and service
+  profile into a single OLS regression model to quantify relative importance and total
+  explained variance.
+dependencies:
+- numpy
+- polars
+- scipy

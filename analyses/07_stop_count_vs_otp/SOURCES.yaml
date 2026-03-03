@@ -3,10 +3,12 @@ title: '07: Stop Count vs OTP'
 group: Core OTP Patterns
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - route_stops
 - routes
-- scipy
 files: []
 analyses: []
+description: Tests whether routes with more stops have worse on-time performance,
+  using a scatter plot of stop count against average OTP with mode-based coloring.
+dependencies:
+- polars
+- scipy

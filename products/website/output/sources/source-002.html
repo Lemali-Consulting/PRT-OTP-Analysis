@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv - Source Detail</title>
+  <title>matplotlib - Source Detail</title>
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
@@ -18,16 +18,17 @@
   </nav>
   <main class="container">
     
-<h1>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</h1>
-<p><strong>Type:</strong> file</p>
-<p>Current stop-to-route coverage and trip counts.</p>
+<h1>matplotlib</h1>
+<p><strong>Type:</strong> dependency</p>
+<p>Python library dependency used by this analysis/pipeline step.</p>
 
 
 <section>
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"]
-  src --> c1["Data Ingestion"]
+  src["matplotlib"]
+  src --> c1["03 - Route Ranking"]
+  src --> c2["08: Hot-Spot Map"]
 </pre>
 </section>
 
@@ -35,7 +36,9 @@
 <h2>Consumed By</h2>
 <ul>
 
-  <li><a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a></li>
+  <li><a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a></li>
+
+  <li><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></li>
 
 </ul>
 

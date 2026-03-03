@@ -27,17 +27,16 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   03_route_ranking["03 - Route Ranking"]
-  t_matplotlib["matplotlib"] --> 03_route_ranking
   t_otp_monthly["otp_monthly"] --> 03_route_ranking
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 03_route_ranking
-  t_prt_otp_analysis["prt_otp_analysis"] --> 03_route_ranking
   t_route_stops["route_stops"] --> 03_route_ranking
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 03_route_ranking
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 03_route_ranking
-  t_stop["stop"] --> 03_route_ranking</pre>
+  d1_03_route_ranking["matplotlib (lib)"] --> 03_route_ranking
+  d2_03_route_ranking["numpy (lib)"] --> 03_route_ranking
+  d3_03_route_ranking["polars (lib)"] --> 03_route_ranking
+  d4_03_route_ranking["scipy (lib)"] --> 03_route_ranking</pre>
 </section>
 
 
@@ -116,27 +115,9 @@ Which routes are the best and worst performers? Which are improving or declining
     <tbody>
     
       <tr>
-        <td>matplotlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>otp_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
       </tr>
     
       <tr>
@@ -152,15 +133,27 @@ Which routes are the best and worst performers? Which are improving or declining
       </tr>
     
       <tr>
-        <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>matplotlib</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
       <tr>
-        <td>stop</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

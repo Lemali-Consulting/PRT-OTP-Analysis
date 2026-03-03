@@ -27,21 +27,19 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   26_ridership_multivariate["26 - Ridership in Multivariate OTP Model"]
-  t_Analysis["Analysis"] --> 26_ridership_multivariate
   t_otp_monthly["otp_monthly"] --> 26_ridership_multivariate
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_paired["paired"] --> 26_ridership_multivariate
-  t_pathlib["pathlib"] --> 26_ridership_multivariate
-  t_prt_otp_analysis["prt_otp_analysis"] --> 26_ridership_multivariate
   t_ridership_monthly["ridership_monthly"] --> 26_ridership_multivariate
   01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
   t_route_stops["route_stops"] --> 26_ridership_multivariate
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 26_ridership_multivariate
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 26_ridership_multivariate
   t_stops["stops"] --> 26_ridership_multivariate
-  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+  01_data_ingestion["Data Ingestion"] --> t_stops
+  d1_26_ridership_multivariate["numpy (lib)"] --> 26_ridership_multivariate
+  d2_26_ridership_multivariate["polars (lib)"] --> 26_ridership_multivariate
+  d3_26_ridership_multivariate["scipy (lib)"] --> 26_ridership_multivariate</pre>
 </section>
 
 
@@ -116,33 +114,9 @@ Does average ridership add explanatory power to the Analysis 18 OLS model (stop 
     <tbody>
     
       <tr>
-        <td>Analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>otp_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>paired</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
       </tr>
     
       <tr>
@@ -164,15 +138,27 @@ Does average ridership add explanatory power to the Analysis 18 OLS model (stop 
       </tr>
     
       <tr>
-        <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

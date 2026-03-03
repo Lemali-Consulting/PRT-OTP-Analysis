@@ -29,8 +29,6 @@
   09_incline_investigation["09: Incline Investigation"]
   t_otp_monthly["otp_monthly"] --> 09_incline_investigation
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 09_incline_investigation
-  t_prt_otp_analysis["prt_otp_analysis"] --> 09_incline_investigation
   t_route_stops["route_stops"] --> 09_incline_investigation
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 09_incline_investigation
@@ -38,7 +36,8 @@
   t_stop_reference["stop_reference"] --> 09_incline_investigation
   01_data_ingestion["Data Ingestion"] --> t_stop_reference
   t_stops["stops"] --> 09_incline_investigation
-  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+  01_data_ingestion["Data Ingestion"] --> t_stops
+  d1_09_incline_investigation["polars (lib)"] --> 09_incline_investigation</pre>
 </section>
 
 
@@ -96,18 +95,6 @@ The Monongahela Incline may have zero or missing OTP data. Is this a data pipeli
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -129,6 +116,12 @@ The Monongahela Incline may have zero or missing OTP data. Is this a data pipeli
         <td>stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

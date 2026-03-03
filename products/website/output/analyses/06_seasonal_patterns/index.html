@@ -27,17 +27,14 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   06_seasonal_patterns["06: Seasonal Patterns"]
-  t_Trend["Trend"] --> 06_seasonal_patterns
-  t_detrended["detrended"] --> 06_seasonal_patterns
   t_otp_monthly["otp_monthly"] --> 06_seasonal_patterns
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_partial["partial"] --> 06_seasonal_patterns
-  t_pathlib["pathlib"] --> 06_seasonal_patterns
-  t_prt_otp_analysis["prt_otp_analysis"] --> 06_seasonal_patterns
   t_route_stops["route_stops"] --> 06_seasonal_patterns
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 06_seasonal_patterns
-  01_data_ingestion["Data Ingestion"] --> t_routes</pre>
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  d1_06_seasonal_patterns["numpy (lib)"] --> 06_seasonal_patterns
+  d2_06_seasonal_patterns["polars (lib)"] --> 06_seasonal_patterns</pre>
 </section>
 
 
@@ -107,39 +104,9 @@ Do PRT routes exhibit consistent seasonal OTP patterns? Are summer or winter mon
     <tbody>
     
       <tr>
-        <td>Trend</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>detrended</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>otp_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>partial</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
       </tr>
     
       <tr>
@@ -152,6 +119,18 @@ Do PRT routes exhibit consistent seasonal OTP patterns? Are summer or winter mon
         <td>routes</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

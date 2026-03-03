@@ -24,86 +24,237 @@
 <h2 id="pipeline">Pipeline</h2>
 <ul>
 
-  <li><a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a></li>
+  <li>
+    <a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a>
+     - Builds the normalized SQLite database from canonical local CSV sources.
+  </li>
 
 </ul>
 
 <h2 id="analyses">Analyses</h2>
 <ul>
 
-  <li><a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a>
+     - Tracks the overall PRT on-time performance trend from 2019 through 2025, including COVID impact and recovery.
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>
+     - Compares on-time performance across service modes (BUS, RAIL, INCLINE) and route types (local, limited, express, busway).
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>
+     - Ranks routes by average OTP, trend direction, and volatility to identify best/worst performers and most (in)consistent routes.
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a>
+     - Investigates whether on-time performance varies systematically by neighborhood and municipality.
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a>
+     - Identifies and investigates sharp OTP drops that may indicate route restructuring, detours, or data quality issues.
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a>
+     - Decomposes route-level OTP into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance.
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a>
+     - Tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average OTP with mode-based coloring.
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a>
+     - Visualizes stop-level on-time performance on a geographic scatter plot to identify corridor-level bottlenecks and clusters of poor performance.
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a> - Core OTP Patterns</li>
+  <li>
+    <a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a>
+     - Audits the Monongahela Incline data across all database tables to determine why it appears in OTP data with zero/null values.
+     (Core OTP Patterns)
+  </li>
 
-  <li><a href="analyses/10_frequency_vs_otp/index.html">10: Trip Frequency vs OTP</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/10_frequency_vs_otp/index.html">10: Trip Frequency vs OTP</a>
+     - Tests whether high-frequency routes have worse on-time performance, using weekday trip counts as a proxy for service frequency.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/11_directional_asymmetry/index.html">11: Directional Asymmetry</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/11_directional_asymmetry/index.html">11: Directional Asymmetry</a>
+     - Investigates whether routes with a structural imbalance between inbound and outbound trip frequency have worse on-time performance.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a>
+     - Computes the geographic span (max distance between any two stops) for each route and tests whether longer routes have worse on-time performance, disentangling route length from stop count.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>
+     - Computes pairwise OTP time-series correlations between all routes and uses hierarchical clustering to identify groups of routes whose performance rises and falls together.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a>
+     - Measures how far each route's OTP has recovered relative to its pre-COVID baseline and identifies route characteristics that predict faster or slower recovery.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a>
+     - Aggregates on-time performance by municipality and county to assess service reliability equity at a broader geographic level than neighborhood analysis (Analysis 04).
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a>
+     - Identifies high-connectivity stops (served by many routes) and tests whether passengers at transfer hubs experience worse OTP than those at low-connectivity stops.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/17_weekend_weekday_profile/index.html">17: Weekend vs Weekday Service Profile</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/17_weekend_weekday_profile/index.html">17: Weekend vs Weekday Service Profile</a>
+     - Tests whether routes with different weekend-to-weekday service ratios show different OTP patterns, distinguishing commuter-oriented routes from all-day service routes.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>
+     - Combines stop count, mode, bus subtype, geographic span, and service profile into a single OLS regression model to quantify relative importance and total explained variance.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a> - Route and Service Drivers</li>
+  <li>
+    <a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a>
+     - Compute system OTP weighted by actual average daily ridership instead of scheduled trip frequency, to measure the average rider's experience.
+     (Route and Service Drivers)
+  </li>
 
-  <li><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>
+     - Test whether OTP declines predict subsequent ridership losses using lagged correlation and Granger causality tests.
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a>
+     - Compare ridership recovery trajectories with OTP recovery trajectories post-COVID to identify whether ridership recovery degrades OTP.
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a>
+     - Estimate late rider-trips per route per month by combining ridership with OTP to identify where the most total human impact occurs.
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a>
+     - Compare OTP and ridership trends across PRT garages (Ross, Collier, East Liberty, West Mifflin) to surface operational differences.
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a>
+     - Track how weekday, Saturday, and Sunday ridership patterns shifted post-COVID and whether weekend ridership share correlates with OTP.
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a>
+     - Measure what share of total system ridership is carried by the lowest-OTP routes using Lorenz curves and Gini coefficients.
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a>
+     - Add ridership as a predictor to the Analysis 18 OLS model to test whether it adds explanatory power beyond stop count, span, and mode.
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a>
+     - Tests whether PennDOT AADT traffic volume explains OTP variance beyond structural features
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a>
+     - Tests whether weather (precipitation, snow, temperature) explains OTP variance or the counterintuitive seasonal pattern from Analysis 06.
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a> - Ridership and External Factors</li>
+  <li>
+    <a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a>
+     - Do schedule changes (pick period transitions) correlate with OTP shifts?
+     (Ridership and External Factors)
+  </li>
 
-  <li><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a> - Equity and Strategic Planning</li>
+  <li>
+    <a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a>
+     - Within-route panel: does changing trip frequency improve or degrade OTP?
+     (Equity and Strategic Planning)
+  </li>
 
-  <li><a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a> - Equity and Strategic Planning</li>
+  <li>
+    <a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a>
+     - Identify low-usage stops that could be consolidated to improve OTP, leveraging the finding that stop count is the strongest OTP predictor.
+     (Equity and Strategic Planning)
+  </li>
 
-  <li><a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a> - Equity and Strategic Planning</li>
+  <li>
+    <a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a>
+     - Assess whether bus shelters are equitably placed relative to stop-level ridership volume and demographics.
+     (Equity and Strategic Planning)
+  </li>
 
-  <li><a href="analyses/33_pandemic_ridership_geography/index.html">33 - Pandemic Ridership Geography</a> - Equity and Strategic Planning</li>
+  <li>
+    <a href="analyses/33_pandemic_ridership_geography/index.html">33 - Pandemic Ridership Geography</a>
+     - Map the spatial pattern of stop-level ridership loss and recovery between pre-pandemic and pandemic periods.
+     (Equity and Strategic Planning)
+  </li>
 
-  <li><a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a> - Equity and Strategic Planning</li>
+  <li>
+    <a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a>
+     - Quantify how concentrated ridership is across stops and test whether concentration correlates with route OTP.
+     (Equity and Strategic Planning)
+  </li>
 
-  <li><a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a> - Equity and Strategic Planning</li>
+  <li>
+    <a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a>
+     - Analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors.
+     (Equity and Strategic Planning)
+  </li>
 
-  <li><a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a> - Equity and Strategic Planning</li>
+  <li>
+    <a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a>
+     - Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies using NTD data; rank PRT nationally.
+     (Equity and Strategic Planning)
+  </li>
 
-  <li><a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a> - Equity and Strategic Planning</li>
+  <li>
+    <a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a>
+     - Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits.
+     (Equity and Strategic Planning)
+  </li>
 
 </ul>
 

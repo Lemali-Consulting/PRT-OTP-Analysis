@@ -114,6 +114,14 @@ def page_sources(page: Page, table_lookup: dict[str, Page]) -> list[dict[str, st
         producer = table_lookup.get(table)
         desc = f"Consumed DB table. Produced by {producer.slug}." if producer else "Consumed DB table."
         out.append({"name": table, "kind": "table", "description": desc})
+    for dep in page.manifest.get("dependencies", []):
+        out.append(
+            {
+                "name": dep,
+                "kind": "dependency",
+                "description": "Python library dependency used by this analysis/pipeline step.",
+            }
+        )
     return out
 
 
@@ -140,6 +148,10 @@ def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
         if producer:
             prod_node = producer.slug.replace("-", "_")
             lines.append(f"  {prod_node}[\"{producer.title}\"] --> {table_node}")
+
+    for idx, dep in enumerate(page.manifest.get("dependencies", []), start=1):
+        node = f"d{idx}_{node_self}"
+        lines.append(f"  {node}[\"{dep} (lib)\"] --> {node_self}")
 
     for table in page.manifest.get("tables_produced", []):
         table_name = table.get("name") if isinstance(table, dict) else str(table)
@@ -225,7 +237,14 @@ def main() -> None:
         (page_dir / "index.html").write_text(html, encoding="utf-8")
 
         rel_path = f"{kind_path}/{page.slug}/index.html"
-        site_items.append({"title": page.title, "path": rel_path, "group": page.group})
+        site_items.append(
+            {
+                "title": page.title,
+                "path": rel_path,
+                "group": page.group,
+                "description": page.manifest.get("description", ""),
+            }
+        )
 
         for src in sources:
             key = (src["kind"], src["name"])

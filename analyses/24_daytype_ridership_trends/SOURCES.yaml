@@ -3,9 +3,11 @@ title: 24 - Weekday vs Weekend Ridership Trends
 group: Ridership and External Factors
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - ridership_monthly
-- scipy
 files: []
 analyses: []
+description: Track how weekday, Saturday, and Sunday ridership patterns shifted post-COVID
+  and whether weekend ridership share correlates with OTP.
+dependencies:
+- polars
+- scipy

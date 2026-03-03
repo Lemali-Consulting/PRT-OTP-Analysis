@@ -29,15 +29,14 @@
   16_transfer_hub_performance["16: Transfer Hub Performance"]
   t_otp_monthly["otp_monthly"] --> 16_transfer_hub_performance
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 16_transfer_hub_performance
-  t_prt_otp_analysis["prt_otp_analysis"] --> 16_transfer_hub_performance
   t_route_stops["route_stops"] --> 16_transfer_hub_performance
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 16_transfer_hub_performance
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 16_transfer_hub_performance
   t_stops["stops"] --> 16_transfer_hub_performance
-  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+  01_data_ingestion["Data Ingestion"] --> t_stops
+  d1_16_transfer_hub_performance["polars (lib)"] --> 16_transfer_hub_performance
+  d2_16_transfer_hub_performance["scipy (lib)"] --> 16_transfer_hub_performance</pre>
 </section>
 
 
@@ -98,18 +97,6 @@ Do passengers at major transfer hubs -- stops served by many routes -- experienc
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -122,15 +109,21 @@ Do passengers at major transfer hubs -- stops served by many routes -- experienc
       </tr>
     
       <tr>
-        <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

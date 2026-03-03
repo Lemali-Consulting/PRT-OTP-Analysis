@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>a - Source Detail</title>
+  <title>ntd_ridership - Source Detail</title>
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
@@ -18,7 +18,7 @@
   </nav>
   <main class="container">
     
-<h1>a</h1>
+<h1>ntd_ridership</h1>
 <p><strong>Type:</strong> table</p>
 <p>Consumed DB table.</p>
 
@@ -26,8 +26,9 @@
 <section>
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["a"]
-  src --> c1["13: Cross-Route Correlation Clustering"]
+  src["ntd_ridership"]
+  src --> c1["36 - National Ridership Growth (2019 vs 2024)"]
+  src --> c2["37 - Peer City Ridership Comparison"]
 </pre>
 </section>
 
@@ -35,7 +36,9 @@
 <h2>Consumed By</h2>
 <ul>
 
-  <li><a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a></li>
+  <li><a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a></li>
+
+  <li><a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a></li>
 
 </ul>
 

@@ -3,11 +3,12 @@ title: 01 - System-Wide OTP Trend
 group: Core OTP Patterns
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - route_stops
 - routes
 - scheduled_trips_monthly
-- weighted
 files: []
 analyses: []
+description: Tracks the overall PRT on-time performance trend from 2019 through 2025,
+  including COVID impact and recovery.
+dependencies:
+- polars

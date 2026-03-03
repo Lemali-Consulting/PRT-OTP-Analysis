@@ -29,11 +29,10 @@
   24_daytype_ridership_trends["24 - Weekday vs Weekend Ridership Trends"]
   t_otp_monthly["otp_monthly"] --> 24_daytype_ridership_trends
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 24_daytype_ridership_trends
-  t_prt_otp_analysis["prt_otp_analysis"] --> 24_daytype_ridership_trends
   t_ridership_monthly["ridership_monthly"] --> 24_daytype_ridership_trends
   01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
-  t_scipy["scipy"] --> 24_daytype_ridership_trends</pre>
+  d1_24_daytype_ridership_trends["polars (lib)"] --> 24_daytype_ridership_trends
+  d2_24_daytype_ridership_trends["scipy (lib)"] --> 24_daytype_ridership_trends</pre>
 </section>
 
 
@@ -100,27 +99,21 @@ How have weekday, Saturday, and Sunday ridership patterns changed over time, and
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>ridership_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
       </tr>
     
       <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
         <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

@@ -29,13 +29,13 @@
   02_mode_comparison["02 - Mode Comparison"]
   t_otp_monthly["otp_monthly"] --> 02_mode_comparison
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 02_mode_comparison
-  t_prt_otp_analysis["prt_otp_analysis"] --> 02_mode_comparison
   t_route_stops["route_stops"] --> 02_mode_comparison
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 02_mode_comparison
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 02_mode_comparison</pre>
+  d1_02_mode_comparison["numpy (lib)"] --> 02_mode_comparison
+  d2_02_mode_comparison["polars (lib)"] --> 02_mode_comparison
+  d3_02_mode_comparison["scipy (lib)"] --> 02_mode_comparison</pre>
 </section>
 
 
@@ -106,18 +106,6 @@ Does light rail (dedicated right-of-way) consistently outperform bus? Do limited
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -130,9 +118,21 @@ Does light rail (dedicated right-of-way) consistently outperform bus? Do limited
       </tr>
     
       <tr>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
         <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

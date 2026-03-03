@@ -29,13 +29,12 @@
   10_frequency_vs_otp["10: Trip Frequency vs OTP"]
   t_otp_monthly["otp_monthly"] --> 10_frequency_vs_otp
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 10_frequency_vs_otp
-  t_prt_otp_analysis["prt_otp_analysis"] --> 10_frequency_vs_otp
   t_route_stops["route_stops"] --> 10_frequency_vs_otp
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 10_frequency_vs_otp
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 10_frequency_vs_otp</pre>
+  d1_10_frequency_vs_otp["polars (lib)"] --> 10_frequency_vs_otp
+  d2_10_frequency_vs_otp["scipy (lib)"] --> 10_frequency_vs_otp</pre>
 </section>
 
 
@@ -88,18 +87,6 @@ Is there a correlation between how often a route runs (trip frequency) and its o
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -112,9 +99,15 @@ Is there a correlation between how often a route runs (trip frequency) and its o
       </tr>
     
       <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
         <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

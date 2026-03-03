@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>stop_reference - Source Detail</title>
+  <title>scheduled_trips_monthly - Source Detail</title>
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
@@ -18,16 +18,18 @@
   </nav>
   <main class="container">
     
-<h1>stop_reference</h1>
+<h1>scheduled_trips_monthly</h1>
 <p><strong>Type:</strong> table</p>
-<p>Consumed DB table. Produced by 01_data_ingestion.</p>
+<p>Consumed DB table.</p>
 
 
 <section>
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["stop_reference"]
-  src --> c1["09: Incline Investigation"]
+  src["scheduled_trips_monthly"]
+  src --> c1["01 - System-Wide OTP Trend"]
+  src --> c2["29 - Service Change Impact on OTP"]
+  src --> c3["30 - Service Level vs OTP Longitudinal"]
 </pre>
 </section>
 
@@ -35,7 +37,11 @@
 <h2>Consumed By</h2>
 <ul>
 
-  <li><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a></li>
+  <li><a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a></li>
+
+  <li><a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a></li>
+
+  <li><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></li>
 
 </ul>
 

@@ -27,14 +27,11 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   05_anomaly_investigation["05 - Anomaly Investigation"]
-  t_anomaly["anomaly"] --> 05_anomaly_investigation
-  t_baseline["baseline"] --> 05_anomaly_investigation
   t_otp_monthly["otp_monthly"] --> 05_anomaly_investigation
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 05_anomaly_investigation
-  t_prt_otp_analysis["prt_otp_analysis"] --> 05_anomaly_investigation
   t_routes["routes"] --> 05_anomaly_investigation
-  01_data_ingestion["Data Ingestion"] --> t_routes</pre>
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  d1_05_anomaly_investigation["polars (lib)"] --> 05_anomaly_investigation</pre>
 </section>
 
 
@@ -98,39 +95,21 @@ What explains sharp OTP deviations (both drops and spikes) for routes across the
     <tbody>
     
       <tr>
-        <td>anomaly</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>baseline</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>otp_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>routes</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

@@ -3,10 +3,12 @@ title: 22 - Passenger-Weighted Delay Burden
 group: Ridership and External Factors
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - ridership_monthly
 - routes
-- scipy
 files: []
 analyses: []
+description: Estimate late rider-trips per route per month by combining ridership
+  with OTP to identify where the most total human impact occurs.
+dependencies:
+- polars
+- scipy

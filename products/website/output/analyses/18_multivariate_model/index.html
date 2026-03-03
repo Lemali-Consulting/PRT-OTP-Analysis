@@ -29,15 +29,15 @@
   18_multivariate_model["18: Multivariate OTP Model"]
   t_otp_monthly["otp_monthly"] --> 18_multivariate_model
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 18_multivariate_model
-  t_prt_otp_analysis["prt_otp_analysis"] --> 18_multivariate_model
   t_route_stops["route_stops"] --> 18_multivariate_model
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 18_multivariate_model
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 18_multivariate_model
   t_stops["stops"] --> 18_multivariate_model
-  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+  01_data_ingestion["Data Ingestion"] --> t_stops
+  d1_18_multivariate_model["numpy (lib)"] --> 18_multivariate_model
+  d2_18_multivariate_model["polars (lib)"] --> 18_multivariate_model
+  d3_18_multivariate_model["scipy (lib)"] --> 18_multivariate_model</pre>
 </section>
 
 
@@ -104,18 +104,6 @@ How much of OTP variation can we explain with available structural variables? Wh
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -128,15 +116,27 @@ How much of OTP variation can we explain with available structural variables? Wh
       </tr>
     
       <tr>
-        <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

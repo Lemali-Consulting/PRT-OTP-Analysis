@@ -27,11 +27,9 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   36_national_ridership_growth["36 - National Ridership Growth (2019 vs 2024)"]
-  t_agency["agency"] --> 36_national_ridership_growth
   t_ntd_agency["ntd_agency"] --> 36_national_ridership_growth
   t_ntd_ridership["ntd_ridership"] --> 36_national_ridership_growth
-  t_pathlib["pathlib"] --> 36_national_ridership_growth
-  t_prt_otp_analysis["prt_otp_analysis"] --> 36_national_ridership_growth</pre>
+  d1_36_national_ridership_growth["polars (lib)"] --> 36_national_ridership_growth</pre>
 </section>
 
 
@@ -108,12 +106,6 @@ What is the average 2019-to-2024 ridership change across the 150 largest US tran
     <tbody>
     
       <tr>
-        <td>agency</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>ntd_agency</td>
         <td>table</td>
         <td>Consumed DB table.</td>
@@ -126,15 +118,9 @@ What is the average 2019-to-2024 ridership change across the 150 largest US tran
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

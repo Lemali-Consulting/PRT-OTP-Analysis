@@ -3,11 +3,12 @@ title: 19 - Ridership-Weighted OTP
 group: Route and Service Drivers
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - ridership_monthly
 - route_stops
-- scipy
-- trip
 files: []
 analyses: []
+description: Compute system OTP weighted by actual average daily ridership instead
+  of scheduled trip frequency, to measure the average rider's experience.
+dependencies:
+- polars
+- scipy

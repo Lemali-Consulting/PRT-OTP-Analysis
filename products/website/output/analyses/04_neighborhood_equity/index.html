@@ -27,22 +27,15 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   04_neighborhood_equity["04 - Neighborhood Equity"]
-  t_bus["bus"] --> 04_neighborhood_equity
-  t_monthly["monthly"] --> 04_neighborhood_equity
   t_otp_monthly["otp_monthly"] --> 04_neighborhood_equity
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 04_neighborhood_equity
-  t_pattern["pattern"] --> 04_neighborhood_equity
-  t_prt_otp_analysis["prt_otp_analysis"] --> 04_neighborhood_equity
-  t_route["route"] --> 04_neighborhood_equity
-  t_route_avg["route_avg"] --> 04_neighborhood_equity
-  t_route_month_count["route_month_count"] --> 04_neighborhood_equity
   t_route_stops["route_stops"] --> 04_neighborhood_equity
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 04_neighborhood_equity
   01_data_ingestion["Data Ingestion"] --> t_routes
   t_stops["stops"] --> 04_neighborhood_equity
-  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+  01_data_ingestion["Data Ingestion"] --> t_stops
+  d1_04_neighborhood_equity["polars (lib)"] --> 04_neighborhood_equity</pre>
 </section>
 
 
@@ -121,57 +114,9 @@ Are certain neighborhoods or municipalities systematically underserved by on-tim
     <tbody>
     
       <tr>
-        <td>bus</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>monthly</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>otp_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>pattern</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>route</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>route_avg</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>route_month_count</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
       </tr>
     
       <tr>
@@ -190,6 +135,12 @@ Are certain neighborhoods or municipalities systematically underserved by on-tim
         <td>stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

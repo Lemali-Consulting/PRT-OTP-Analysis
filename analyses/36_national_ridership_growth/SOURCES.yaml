@@ -2,10 +2,11 @@ kind: analysis
 title: 36 - National Ridership Growth (2019 vs 2024)
 group: Equity and Strategic Planning
 tables:
-- agency
 - ntd_agency
 - ntd_ridership
-- pathlib
-- prt_otp_analysis
 files: []
 analyses: []
+description: Compare 2019-to-2024 ridership recovery across the 150 largest US transit
+  agencies using NTD data; rank PRT nationally.
+dependencies:
+- polars

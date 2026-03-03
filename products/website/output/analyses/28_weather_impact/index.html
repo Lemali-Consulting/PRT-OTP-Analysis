@@ -29,16 +29,14 @@
   28_weather_impact["28 - Weather Impact"]
   t_otp_monthly["otp_monthly"] --> 28_weather_impact
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 28_weather_impact
-  t_prt_otp_analysis["prt_otp_analysis"] --> 28_weather_impact
   t_route_stops["route_stops"] --> 28_weather_impact
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 28_weather_impact
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 28_weather_impact
-  t_system["system"] --> 28_weather_impact
-  t_weather["weather"] --> 28_weather_impact
-  t_weather_monthly["weather_monthly"] --> 28_weather_impact</pre>
+  t_weather_monthly["weather_monthly"] --> 28_weather_impact
+  d1_28_weather_impact["numpy (lib)"] --> 28_weather_impact
+  d2_28_weather_impact["polars (lib)"] --> 28_weather_impact
+  d3_28_weather_impact["scipy (lib)"] --> 28_weather_impact</pre>
 </section>
 
 
@@ -111,18 +109,6 @@
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -135,27 +121,27 @@
       </tr>
     
       <tr>
-        <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>system</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>weather</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>weather_monthly</td>
         <td>table</td>
         <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

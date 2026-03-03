@@ -1,8 +1,11 @@
 kind: analysis
 title: 35 - Boarding/Alighting Flow Analysis
 group: Equity and Strategic Planning
-tables:
-- pathlib
-- prt_otp_analysis
+tables: []
 files: []
 analyses: []
+description: Analyze net boarding-alighting flows by stop and direction to identify
+  major trip generators and attractors.
+dependencies:
+- numpy
+- polars

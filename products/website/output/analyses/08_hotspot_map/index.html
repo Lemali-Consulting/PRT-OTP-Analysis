@@ -27,20 +27,18 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   08_hotspot_map["08: Hot-Spot Map"]
-  t_branca["branca"] --> 08_hotspot_map
-  t_matplotlib["matplotlib"] --> 08_hotspot_map
-  t_mode["mode"] --> 08_hotspot_map
   t_otp_monthly["otp_monthly"] --> 08_hotspot_map
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 08_hotspot_map
-  t_prt_otp_analysis["prt_otp_analysis"] --> 08_hotspot_map
   t_route_stops["route_stops"] --> 08_hotspot_map
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 08_hotspot_map
   01_data_ingestion["Data Ingestion"] --> t_routes
   t_stops["stops"] --> 08_hotspot_map
   01_data_ingestion["Data Ingestion"] --> t_stops
-  t_the["the"] --> 08_hotspot_map</pre>
+  d1_08_hotspot_map["branca (lib)"] --> 08_hotspot_map
+  d2_08_hotspot_map["folium (lib)"] --> 08_hotspot_map
+  d3_08_hotspot_map["matplotlib (lib)"] --> 08_hotspot_map
+  d4_08_hotspot_map["polars (lib)"] --> 08_hotspot_map</pre>
 </section>
 
 
@@ -97,39 +95,9 @@ Where do poor-performing routes cluster geographically? Are there corridor-level
     <tbody>
     
       <tr>
-        <td>branca</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>matplotlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>mode</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>otp_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
       </tr>
     
       <tr>
@@ -151,9 +119,27 @@ Where do poor-performing routes cluster geographically? Are there corridor-level
       </tr>
     
       <tr>
-        <td>the</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>branca</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>folium</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>matplotlib</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

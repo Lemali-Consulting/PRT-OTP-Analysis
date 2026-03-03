@@ -2,15 +2,16 @@ kind: analysis
 title: 26 - Ridership in Multivariate OTP Model
 group: Ridership and External Factors
 tables:
-- Analysis
 - otp_monthly
-- paired
-- pathlib
-- prt_otp_analysis
 - ridership_monthly
 - route_stops
 - routes
-- scipy
 - stops
 files: []
 analyses: []
+description: Add ridership as a predictor to the Analysis 18 OLS model to test whether
+  it adds explanatory power beyond stop count, span, and mode.
+dependencies:
+- numpy
+- polars
+- scipy

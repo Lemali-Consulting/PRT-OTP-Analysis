@@ -1,11 +1,12 @@
 kind: analysis
 title: 33 - Pandemic Ridership Geography
 group: Equity and Strategic Planning
-tables:
-- Downtown
-- downtown
-- pathlib
-- prt_otp_analysis
-- scipy
+tables: []
 files: []
 analyses: []
+description: Map the spatial pattern of stop-level ridership loss and recovery between
+  pre-pandemic and pandemic periods.
+dependencies:
+- numpy
+- polars
+- scipy

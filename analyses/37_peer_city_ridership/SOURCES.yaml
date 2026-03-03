@@ -3,7 +3,9 @@ title: 37 - Peer City Ridership Comparison
 group: Equity and Strategic Planning
 tables:
 - ntd_ridership
-- pathlib
-- prt_otp_analysis
 files: []
 analyses: []
+description: Track indexed monthly ridership for Pittsburgh and 7 peer cities from
+  2019-2025 using NTD data; compare recovery trajectories and mode splits.
+dependencies:
+- polars

@@ -3,9 +3,12 @@ title: 25 - Ridership Concentration & Equity
 group: Ridership and External Factors
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - ridership_monthly
 - routes
 files: []
 analyses: []
+description: Measure what share of total system ridership is carried by the lowest-OTP
+  routes using Lorenz curves and Gini coefficients.
+dependencies:
+- numpy
+- polars

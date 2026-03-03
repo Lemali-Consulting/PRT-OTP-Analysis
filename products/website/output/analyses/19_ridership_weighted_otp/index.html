@@ -29,14 +29,12 @@
   19_ridership_weighted_otp["19 - Ridership-Weighted OTP"]
   t_otp_monthly["otp_monthly"] --> 19_ridership_weighted_otp
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 19_ridership_weighted_otp
-  t_prt_otp_analysis["prt_otp_analysis"] --> 19_ridership_weighted_otp
   t_ridership_monthly["ridership_monthly"] --> 19_ridership_weighted_otp
   01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
   t_route_stops["route_stops"] --> 19_ridership_weighted_otp
   01_data_ingestion["Data Ingestion"] --> t_route_stops
-  t_scipy["scipy"] --> 19_ridership_weighted_otp
-  t_trip["trip"] --> 19_ridership_weighted_otp</pre>
+  d1_19_ridership_weighted_otp["polars (lib)"] --> 19_ridership_weighted_otp
+  d2_19_ridership_weighted_otp["scipy (lib)"] --> 19_ridership_weighted_otp</pre>
 </section>
 
 
@@ -100,18 +98,6 @@ How does the average rider&#x27;s on-time experience differ from the average rou
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>ridership_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -124,15 +110,15 @@ How does the average rider&#x27;s on-time experience differ from the average rou
       </tr>
     
       <tr>
-        <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
       <tr>
-        <td>trip</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>scipy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

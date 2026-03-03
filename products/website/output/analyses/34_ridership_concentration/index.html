@@ -27,16 +27,13 @@
   <h2>Data Provenance</h2>
   <pre class="mermaid">flowchart LR
   34_ridership_concentration["34 - Ridership Concentration (Pareto)"]
-  t_Gini["Gini"] --> 34_ridership_concentration
   t_otp_monthly["otp_monthly"] --> 34_ridership_concentration
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 34_ridership_concentration
-  t_prt_otp_analysis["prt_otp_analysis"] --> 34_ridership_concentration
   t_routes["routes"] --> 34_ridership_concentration
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 34_ridership_concentration
-  t_stop["stop"] --> 34_ridership_concentration
-  t_the["the"] --> 34_ridership_concentration</pre>
+  d1_34_ridership_concentration["numpy (lib)"] --> 34_ridership_concentration
+  d2_34_ridership_concentration["polars (lib)"] --> 34_ridership_concentration
+  d3_34_ridership_concentration["scipy (lib)"] --> 34_ridership_concentration</pre>
 </section>
 
 
@@ -96,27 +93,9 @@ How concentrated is ridership across stops? What fraction of stops serves 80% of
     <tbody>
     
       <tr>
-        <td>Gini</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>otp_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
       </tr>
     
       <tr>
@@ -126,21 +105,21 @@ How concentrated is ridership across stops? What fraction of stops serves 80% of
       </tr>
     
       <tr>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
         <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>stop</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>the</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

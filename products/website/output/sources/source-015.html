@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>all - Source Detail</title>
+  <title>ridership_monthly - Source Detail</title>
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
@@ -18,16 +18,23 @@
   </nav>
   <main class="container">
     
-<h1>all</h1>
+<h1>ridership_monthly</h1>
 <p><strong>Type:</strong> table</p>
-<p>Consumed DB table.</p>
+<p>Consumed DB table. Produced by 01_data_ingestion.</p>
 
 
 <section>
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["all"]
-  src --> c1["23 - Garage-Level Performance"]
+  src["ridership_monthly"]
+  src --> c1["19 - Ridership-Weighted OTP"]
+  src --> c2["20 - OTP → Ridership Causality"]
+  src --> c3["21 - COVID Ridership vs OTP Recovery"]
+  src --> c4["22 - Passenger-Weighted Delay Burden"]
+  src --> c5["23 - Garage-Level Performance"]
+  src --> c6["24 - Weekday vs Weekend Ridership Trends"]
+  src --> c7["25 - Ridership Concentration & Equity"]
+  src --> c8["26 - Ridership in Multivariate OTP Model"]
 </pre>
 </section>
 
@@ -35,7 +42,21 @@
 <h2>Consumed By</h2>
 <ul>
 
+  <li><a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a></li>
+
+  <li><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></li>
+
+  <li><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a></li>
+
+  <li><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a></li>
+
   <li><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></li>
+
+  <li><a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a></li>
+
+  <li><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a></li>
+
+  <li><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a></li>
 
 </ul>
 

@@ -3,11 +3,13 @@ title: '09: Incline Investigation'
 group: Core OTP Patterns
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - route_stops
 - routes
 - stop_reference
 - stops
 files: []
 analyses: []
+description: Audits the Monongahela Incline data across all database tables to determine
+  why it appears in OTP data with zero/null values.
+dependencies:
+- polars

@@ -29,14 +29,12 @@
   01_system_trend["01 - System-Wide OTP Trend"]
   t_otp_monthly["otp_monthly"] --> 01_system_trend
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 01_system_trend
-  t_prt_otp_analysis["prt_otp_analysis"] --> 01_system_trend
   t_route_stops["route_stops"] --> 01_system_trend
   01_data_ingestion["Data Ingestion"] --> t_route_stops
   t_routes["routes"] --> 01_system_trend
   01_data_ingestion["Data Ingestion"] --> t_routes
   t_scheduled_trips_monthly["scheduled_trips_monthly"] --> 01_system_trend
-  t_weighted["weighted"] --> 01_system_trend</pre>
+  d1_01_system_trend["polars (lib)"] --> 01_system_trend</pre>
 </section>
 
 
@@ -97,18 +95,6 @@ Is PRT on-time performance improving, declining, or stable over the 2019--2025 p
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>route_stops</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -127,9 +113,9 @@ Is PRT on-time performance improving, declining, or stable over the 2019--2025 p
       </tr>
     
       <tr>
-        <td>weighted</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

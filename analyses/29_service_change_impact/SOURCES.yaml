@@ -3,10 +3,11 @@ title: 29 - Service Change Impact on OTP
 group: Ridership and External Factors
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - scheduled_trips_monthly
-- scipy
-- the
 files: []
 analyses: []
+description: Do schedule changes (pick period transitions) correlate with OTP shifts?
+dependencies:
+- numpy
+- polars
+- scipy

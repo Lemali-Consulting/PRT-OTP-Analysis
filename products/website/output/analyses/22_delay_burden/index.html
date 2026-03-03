@@ -29,13 +29,12 @@
   22_delay_burden["22 - Passenger-Weighted Delay Burden"]
   t_otp_monthly["otp_monthly"] --> 22_delay_burden
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 22_delay_burden
-  t_prt_otp_analysis["prt_otp_analysis"] --> 22_delay_burden
   t_ridership_monthly["ridership_monthly"] --> 22_delay_burden
   01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
   t_routes["routes"] --> 22_delay_burden
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 22_delay_burden</pre>
+  d1_22_delay_burden["polars (lib)"] --> 22_delay_burden
+  d2_22_delay_burden["scipy (lib)"] --> 22_delay_burden</pre>
 </section>
 
 
@@ -106,18 +105,6 @@ Which routes impose the largest total delay burden on riders, accounting for bot
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>ridership_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -130,9 +117,15 @@ Which routes impose the largest total delay burden on riders, accounting for bot
       </tr>
     
       <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
         <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>

@@ -3,11 +3,15 @@ title: '12: Route Geographic Span vs OTP'
 group: Route and Service Drivers
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - route_stops
 - routes
-- scipy
 - stops
 files: []
 analyses: []
+description: Computes the geographic span (max distance between any two stops) for
+  each route and tests whether longer routes have worse on-time performance, disentangling
+  route length from stop count.
+dependencies:
+- numpy
+- polars
+- scipy

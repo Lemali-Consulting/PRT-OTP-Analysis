@@ -7,14 +7,21 @@
 <h2 id="pipeline">Pipeline</h2>
 <ul>
 {% for p in pipeline %}
-  <li><a href="{{ p.path }}">{{ p.title }}</a></li>
+  <li>
+    <a href="{{ p.path }}">{{ p.title }}</a>
+    {% if p.description %} - {{ p.description }}{% endif %}
+  </li>
 {% endfor %}
 </ul>
 
 <h2 id="analyses">Analyses</h2>
 <ul>
 {% for a in analyses %}
-  <li><a href="{{ a.path }}">{{ a.title }}</a>{% if a.group %} - {{ a.group }}{% endif %}</li>
+  <li>
+    <a href="{{ a.path }}">{{ a.title }}</a>
+    {% if a.description %} - {{ a.description }}{% endif %}
+    {% if a.group %} ({{ a.group }}){% endif %}
+  </li>
 {% endfor %}
 </ul>
 {% endblock %}

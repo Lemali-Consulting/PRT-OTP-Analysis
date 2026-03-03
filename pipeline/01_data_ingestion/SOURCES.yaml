@@ -1,5 +1,6 @@
 kind: pipeline
 title: Data Ingestion
+description: Builds the normalized SQLite database from canonical local CSV sources.
 files:
   - path: data/routes_by_month.csv
     description: Monthly route OTP source table in wide format.

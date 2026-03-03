@@ -3,13 +3,14 @@ title: 28 - Weather Impact
 group: Ridership and External Factors
 tables:
 - otp_monthly
-- pathlib
-- prt_otp_analysis
 - route_stops
 - routes
-- scipy
-- system
-- weather
 - weather_monthly
 files: []
 analyses: []
+description: Tests whether weather (precipitation, snow, temperature) explains OTP
+  variance or the counterintuitive seasonal pattern from Analysis 06.
+dependencies:
+- numpy
+- polars
+- scipy

@@ -29,13 +29,13 @@
   21_covid_ridership_recovery["21 - COVID Ridership vs OTP Recovery"]
   t_otp_monthly["otp_monthly"] --> 21_covid_ridership_recovery
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_pathlib["pathlib"] --> 21_covid_ridership_recovery
-  t_prt_otp_analysis["prt_otp_analysis"] --> 21_covid_ridership_recovery
   t_ridership_monthly["ridership_monthly"] --> 21_covid_ridership_recovery
   01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
   t_routes["routes"] --> 21_covid_ridership_recovery
   01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scipy["scipy"] --> 21_covid_ridership_recovery</pre>
+  d1_21_covid_ridership_recovery["numpy (lib)"] --> 21_covid_ridership_recovery
+  d2_21_covid_ridership_recovery["polars (lib)"] --> 21_covid_ridership_recovery
+  d3_21_covid_ridership_recovery["scipy (lib)"] --> 21_covid_ridership_recovery</pre>
 </section>
 
 
@@ -120,18 +120,6 @@ Did routes that recovered ridership fastest also recover OTP? Or does ridership 
       </tr>
     
       <tr>
-        <td>pathlib</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
-        <td>prt_otp_analysis</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
-      </tr>
-    
-      <tr>
         <td>ridership_monthly</td>
         <td>table</td>
         <td>Consumed DB table. Produced by 01_data_ingestion.</td>
@@ -144,9 +132,21 @@ Did routes that recovered ridership fastest also recover OTP? Or does ridership 
       </tr>
     
       <tr>
+        <td>numpy</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
+        <td>polars</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
+      </tr>
+    
+      <tr>
         <td>scipy</td>
-        <td>table</td>
-        <td>Consumed DB table.</td>
+        <td>dependency</td>
+        <td>Python library dependency used by this analysis/pipeline step.</td>
       </tr>
     
     </tbody>
