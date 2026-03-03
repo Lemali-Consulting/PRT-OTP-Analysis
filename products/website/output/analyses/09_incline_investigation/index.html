@@ -54,17 +54,17 @@
 
 <section>
   <h2>Findings</h2>
-  <div class="markdown"><p># Findings: Incline Investigation</p><p>## Summary</p><p>The Monongahela Incline is a **data pipeline artifact**. It appears in the route catalog but has zero OTP measurements. OTP was never recorded for either of Pittsburgh&#x27;s two inclines.</p><p>## What the Data Shows</p><p>| Table | MI Records | Details |
-|-------|-----------|---------|
-| `routes` | 1 row | route_id=MI, mode=INCLINE |
-| `otp_monthly` | **0 rows** | No OTP data whatsoever |
-| `route_stops` | 2 rows | Upper Station, Lower Station (78 weekday trips, 549 weekly) |
-| `stops` | 2 Incline stops | W15307 (Upper, Mount Washington), W15308 (Lower, South Shore) |
-| `stop_reference` | 4 Incline stops | Both inclines present historically (first_served=1503, last_served=2510) |</p><p>## Observations</p><p>- Both the Monongahela Incline (MI) and the Duquesne Incline (DQI) exist in the `routes` table with mode=INCLINE, but neither has any OTP data.
-- The inclines are physically operational and appear in PRT&#x27;s GTFS feed with regular service (78 weekday trips).
-- The OTP measurement system (whatever generates `routes_by_month.csv`) simply does not cover incline routes. This is likely because inclines run on a fixed schedule with no traffic interference, making OTP measurement less meaningful.
-- The ANALYSIS-PROPOSAL.md described this as &quot;zero values&quot; -- in fact, there are no values at all, not even zeros.</p><p>## Conclusion</p><p>This is not a data quality issue to fix. The inclines were included in the route catalog because they&#x27;re part of PRT&#x27;s GTFS feed, but were excluded from OTP measurement, likely by design. No further action needed.</p><p>## Review History
-- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) — 3 issues (0 significant). Expanded OTP query to explicitly check both MI and DQI (substantiating the claim that neither incline has data), updated METHODS.md question wording.</p></div>
+  <div class="markdown"><h1>Findings: Incline Investigation</h1>
+<h2>Summary</h2>
+<p>The Monongahela Incline is a <strong>data pipeline artifact</strong>. It appears in the route catalog but has zero OTP measurements. OTP was never recorded for either of Pittsburgh&#x27;s two inclines.</p>
+<h2>What the Data Shows</h2>
+<table><thead><tr><th>Table</th><th>MI Records</th><th>Details</th></tr></thead><tbody><tr><td><code>routes</code></td><td>1 row</td><td>route_id=MI, mode=INCLINE</td></tr><tr><td><code>otp_monthly</code></td><td><strong>0 rows</strong></td><td>No OTP data whatsoever</td></tr><tr><td><code>route_stops</code></td><td>2 rows</td><td>Upper Station, Lower Station (78 weekday trips, 549 weekly)</td></tr><tr><td><code>stops</code></td><td>2 Incline stops</td><td>W15307 (Upper, Mount Washington), W15308 (Lower, South Shore)</td></tr><tr><td><code>stop_reference</code></td><td>4 Incline stops</td><td>Both inclines present historically (first_served=1503, last_served=2510)</td></tr></tbody></table>
+<h2>Observations</h2>
+<ul><li>Both the Monongahela Incline (MI) and the Duquesne Incline (DQI) exist in the <code>routes</code> table with mode=INCLINE, but neither has any OTP data.</li><li>The inclines are physically operational and appear in PRT&#x27;s GTFS feed with regular service (78 weekday trips).</li><li>The OTP measurement system (whatever generates <code>routes_by_month.csv</code>) simply does not cover incline routes. This is likely because inclines run on a fixed schedule with no traffic interference, making OTP measurement less meaningful.</li><li>The ANALYSIS-PROPOSAL.md described this as &quot;zero values&quot; -- in fact, there are no values at all, not even zeros.</li></ul>
+<h2>Conclusion</h2>
+<p>This is not a data quality issue to fix. The inclines were included in the route catalog because they&#x27;re part of PRT&#x27;s GTFS feed, but were excluded from OTP measurement, likely by design. No further action needed.</p>
+<h2>Review History</h2>
+<ul><li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> — 3 issues (0 significant). Expanded OTP query to explicitly check both MI and DQI (substantiating the claim that neither incline has data), updated METHODS.md question wording.</li></ul></div>
 </section>
 
 
@@ -73,21 +73,15 @@
 
 <section>
   <h2>Methods</h2>
-  <div class="markdown"><p># Methods: Monongahela Incline Investigation</p><p>## Question
-The Monongahela Incline may have zero or missing OTP data. Is this a data pipeline artifact, or was OTP never measured for the Incline?</p><p>## Approach
-- Query the `otp_monthly` table for both incline route_ids (&#x27;MI&#x27; and &#x27;DQI&#x27;) and examine all values.
-- Check if &#x27;MI&#x27; appears in `route_stops` and what stops are associated.
-- Check the `routes` table for mode and name (including all INCLINE-mode routes).
-- Cross-reference with the `stop_reference` table for historical Incline stops.
-- Summarize findings as a data quality report.</p><p>## Data</p><p>| Name | Description | Source |
-|------|-------------|--------|
-| `otp_monthly` | Any MI records | `prt.db` table |
-| `routes` | MI metadata | `prt.db` table |
-| `route_stops` | MI stop associations | `prt.db` table |
-| `stops` | Physical Incline stops | `prt.db` table |
-| `stop_reference` | Historical Incline stops | `prt.db` table |</p><p>## Output
-- `output/incline_report.csv` -- all data found for MI across tables
-- `output/incline_report.txt` -- plain-text summary of findings</p></div>
+  <div class="markdown"><h1>Methods: Monongahela Incline Investigation</h1>
+<h2>Question</h2>
+<p>The Monongahela Incline may have zero or missing OTP data. Is this a data pipeline artifact, or was OTP never measured for the Incline?</p>
+<h2>Approach</h2>
+<ul><li>Query the <code>otp_monthly</code> table for both incline route_ids (&#x27;MI&#x27; and &#x27;DQI&#x27;) and examine all values.</li><li>Check if &#x27;MI&#x27; appears in <code>route_stops</code> and what stops are associated.</li><li>Check the <code>routes</code> table for mode and name (including all INCLINE-mode routes).</li><li>Cross-reference with the <code>stop_reference</code> table for historical Incline stops.</li><li>Summarize findings as a data quality report.</li></ul>
+<h2>Data</h2>
+<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Any MI records</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>MI metadata</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>MI stop associations</td><td><code>prt.db</code> table</td></tr><tr><td><code>stops</code></td><td>Physical Incline stops</td><td><code>prt.db</code> table</td></tr><tr><td><code>stop_reference</code></td><td>Historical Incline stops</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<h2>Output</h2>
+<ul><li><code>output/incline_report.csv</code> -- all data found for MI across tables</li><li><code>output/incline_report.txt</code> -- plain-text summary of findings</li></ul></div>
 </section>
 
 

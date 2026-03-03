@@ -51,21 +51,18 @@
 
 <section>
   <h2>Findings</h2>
-  <div class="markdown"><p># Findings: Ridership-Weighted OTP</p><p>## Summary
-Ridership-weighted system OTP (69.4%) runs **1.6 percentage points higher** than trip-weighted OTP (67.8%), and the difference is statistically significant (paired t = -18.1, p &lt; 0.001; Wilcoxon W = 1, p &lt; 0.001). This means the average PRT rider experiences slightly *better* on-time performance than the trip-weighted system average suggests.</p><p>## Key Numbers
-- **Unweighted OTP** (all routes equal): 69.9% mean, 70.3% median
-- **Trip-weighted OTP** (scheduled frequency): 67.8% mean, 67.8% median
-- **Ridership-weighted OTP** (avg daily riders): 69.4% mean, 69.2% median
-- **Ridership vs trip-weighted gap**: +1.6 pp (p &lt; 0.001, n = 70 months)
-- 93 routes with 12+ months of paired OTP + ridership data
-- Overlap period: Jan 2019 -- Oct 2024 (70 months)</p><p>## Interpretation
-Both weighted series fall *below* the unweighted average, meaning both scheduled trips and actual riders concentrate somewhat on worse-performing routes. However, **trip frequency overstates how much ridership is concentrated on the worst routes**. High-frequency routes tend to have many stops and poor OTP (Analysis 07), but riders don&#x27;t fill those trips proportionally -- some high-frequency routes carry fewer riders per trip than expected. The result is that the average rider&#x27;s experience is worse than the average route&#x27;s OTP, but not as bad as the trip-weighted number implies.</p><p>This does *not* mean high-ridership routes have better OTP. It means ridership is distributed more evenly across the OTP spectrum than trip frequency is.</p><p>## Observations
-- The gap between trip-weighted and ridership-weighted OTP is not constant: it was near zero during COVID (2020), widened to ~3 pp in late 2022, and has stabilized around 1--2 pp since 2023. This likely reflects post-COVID ridership redistribution.
-- All three series show the same overall trend: COVID spike, steady decline through late 2022, partial stabilization in 2023--2024.</p><p>## Caveats
-- Ridership data is weekday average only; the analysis does not capture weekend rider experience.
-- `route_stops.trips_7d` is a current snapshot, not a monthly time series -- trip-weighted OTP uses the same weights for all months.
-- Routes missing from the ridership dataset (RLSH, SWL) are excluded from all three series for comparability, so the unweighted series here may differ slightly from Analysis 01.
-- The ridership CSV ends Oct 2024 while OTP data extends to Nov 2025; the analysis is restricted to the overlap period.</p></div>
+  <div class="markdown"><h1>Findings: Ridership-Weighted OTP</h1>
+<h2>Summary</h2>
+<p>Ridership-weighted system OTP (69.4%) runs <strong>1.6 percentage points higher</strong> than trip-weighted OTP (67.8%), and the difference is statistically significant (paired t = -18.1, p &lt; 0.001; Wilcoxon W = 1, p &lt; 0.001). This means the average PRT rider experiences slightly <em>better</em> on-time performance than the trip-weighted system average suggests.</p>
+<h2>Key Numbers</h2>
+<ul><li><strong>Unweighted OTP</strong> (all routes equal): 69.9% mean, 70.3% median</li><li><strong>Trip-weighted OTP</strong> (scheduled frequency): 67.8% mean, 67.8% median</li><li><strong>Ridership-weighted OTP</strong> (avg daily riders): 69.4% mean, 69.2% median</li><li><strong>Ridership vs trip-weighted gap</strong>: +1.6 pp (p &lt; 0.001, n = 70 months)</li><li>93 routes with 12+ months of paired OTP + ridership data</li><li>Overlap period: Jan 2019 -- Oct 2024 (70 months)</li></ul>
+<h2>Interpretation</h2>
+<p>Both weighted series fall <em>below</em> the unweighted average, meaning both scheduled trips and actual riders concentrate somewhat on worse-performing routes. However, <strong>trip frequency overstates how much ridership is concentrated on the worst routes</strong>. High-frequency routes tend to have many stops and poor OTP (Analysis 07), but riders don&#x27;t fill those trips proportionally -- some high-frequency routes carry fewer riders per trip than expected. The result is that the average rider&#x27;s experience is worse than the average route&#x27;s OTP, but not as bad as the trip-weighted number implies.</p>
+<p>This does <em>not</em> mean high-ridership routes have better OTP. It means ridership is distributed more evenly across the OTP spectrum than trip frequency is.</p>
+<h2>Observations</h2>
+<ul><li>The gap between trip-weighted and ridership-weighted OTP is not constant: it was near zero during COVID (2020), widened to ~3 pp in late 2022, and has stabilized around 1--2 pp since 2023. This likely reflects post-COVID ridership redistribution.</li><li>All three series show the same overall trend: COVID spike, steady decline through late 2022, partial stabilization in 2023--2024.</li></ul>
+<h2>Caveats</h2>
+<ul><li>Ridership data is weekday average only; the analysis does not capture weekend rider experience.</li><li><code>route_stops.trips_7d</code> is a current snapshot, not a monthly time series -- trip-weighted OTP uses the same weights for all months.</li><li>Routes missing from the ridership dataset (RLSH, SWL) are excluded from all three series for comparability, so the unweighted series here may differ slightly from Analysis 01.</li><li>The ridership CSV ends Oct 2024 while OTP data extends to Nov 2025; the analysis is restricted to the overlap period.</li></ul></div>
 </section>
 
 
@@ -74,23 +71,18 @@ Both weighted series fall *below* the unweighted average, meaning both scheduled
 
 <section>
   <h2>Methods</h2>
-  <div class="markdown"><p># Methods: Ridership-Weighted OTP</p><p>## Question
-How does the average rider&#x27;s on-time experience differ from the average route&#x27;s OTP? Does weighting by actual ridership instead of scheduled trip frequency change the system-wide OTP picture?</p><p>## Approach
-- Join monthly OTP data with monthly average weekday ridership by route and month.
-- Compute three monthly system OTP series:
-  1. **Unweighted**: simple mean of all route OTPs (all routes equal).
-  2. **Trip-weighted**: `sum(otp_i * trips_7d_i) / sum(trips_7d_i)` using static scheduled trip counts from `route_stops` (same weight every month).
-  3. **Ridership-weighted**: `sum(otp_i * avg_riders_i) / sum(avg_riders_i)` using that route&#x27;s average daily weekday ridership for the same month (weight varies month-to-month).
-- Plot all three series over time to visualize divergence.
-- Compute summary statistics (mean, spread) for each weighting scheme.
-- Test whether the ridership-weighted series is significantly different from the trip-weighted series (paired t-test or Wilcoxon).</p><p>## Data</p><p>| Name | Description | Source |
-|------|-------------|--------|
-| `otp_monthly` | Route, month, OTP | `prt.db` table |
-| `average-ridership` | Route, month_start, day_type=&#x27;WEEKDAY&#x27;, avg_riders | Local CSV (`data/average-ridership/`) |
-| `route_stops` | For trip-weighted baseline (trips_wd) | `prt.db` table |</p><p>**Notes:** Join on route code and month; restrict to overlap period (Jan 2019 -- Oct 2024). Exclude routes with fewer than 12 months of data.</p><p>## Output
-- `output/ridership_weighted_otp_trend.png` -- three-series time plot
-- `output/weighting_comparison.csv` -- monthly values for all three series
-- `output/summary_stats.csv` -- mean, median, std for each weighting scheme</p></div>
+  <div class="markdown"><h1>Methods: Ridership-Weighted OTP</h1>
+<h2>Question</h2>
+<p>How does the average rider&#x27;s on-time experience differ from the average route&#x27;s OTP? Does weighting by actual ridership instead of scheduled trip frequency change the system-wide OTP picture?</p>
+<h2>Approach</h2>
+<ul><li>Join monthly OTP data with monthly average weekday ridership by route and month.</li><li>Compute three monthly system OTP series:</li></ul>
+<p>  1. <strong>Unweighted</strong>: simple mean of all route OTPs (all routes equal).   2. <strong>Trip-weighted</strong>: <code>sum(otp_i <em> trips_7d_i) / sum(trips_7d_i)</code> using static scheduled trip counts from <code>route_stops</code> (same weight every month).   3. <strong>Ridership-weighted</strong>: <code>sum(otp_i </em> avg_riders_i) / sum(avg_riders_i)</code> using that route&#x27;s average daily weekday ridership for the same month (weight varies month-to-month).</p>
+<ul><li>Plot all three series over time to visualize divergence.</li><li>Compute summary statistics (mean, spread) for each weighting scheme.</li><li>Test whether the ridership-weighted series is significantly different from the trip-weighted series (paired t-test or Wilcoxon).</li></ul>
+<h2>Data</h2>
+<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Route, month, OTP</td><td><code>prt.db</code> table</td></tr><tr><td><code>average-ridership</code></td><td>Route, month_start, day_type=&#x27;WEEKDAY&#x27;, avg_riders</td><td>Local CSV (<code>data/average-ridership/</code>)</td></tr><tr><td><code>route_stops</code></td><td>For trip-weighted baseline (trips_wd)</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<p><strong>Notes:</strong> Join on route code and month; restrict to overlap period (Jan 2019 -- Oct 2024). Exclude routes with fewer than 12 months of data.</p>
+<h2>Output</h2>
+<ul><li><code>output/ridership_weighted_otp_trend.png</code> -- three-series time plot</li><li><code>output/weighting_comparison.csv</code> -- monthly values for all three series</li><li><code>output/summary_stats.csv</code> -- mean, median, std for each weighting scheme</li></ul></div>
 </section>
 
 

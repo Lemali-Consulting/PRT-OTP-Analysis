@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 from html import escape
 from dataclasses import dataclass
@@ -85,10 +86,107 @@ def md_to_html(path: Path) -> str:
         return ""
     text = path.read_text(encoding="utf-8")
     if mistune is not None:
-        md = mistune.create_markdown()
+        md = mistune.create_markdown(plugins=["table"])
         return md(text)
-    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
-    return "".join(f"<p>{escape(p)}</p>" for p in paragraphs)
+    return _md_fallback_to_html(text)
+
+
+def _md_fallback_to_html(text: str) -> str:
+    """Fallback markdown renderer with table/list/heading support."""
+    lines = text.strip().split("\n")
+    html_parts: list[str] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip():
+            i += 1
+            continue
+
+        if re.match(r"^---+\s*$", line):
+            html_parts.append("<hr>")
+            i += 1
+            continue
+
+        m = re.match(r"^(#{1,6})\s+(.+)$", line)
+        if m:
+            level = len(m.group(1))
+            html_parts.append(f"<h{level}>{_inline_md(m.group(2))}</h{level}>")
+            i += 1
+            continue
+
+        if line.strip().startswith("|"):
+            table_lines = []
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                table_lines.append(lines[i])
+                i += 1
+            html_parts.append(_md_table_to_html(table_lines))
+            continue
+
+        if re.match(r"^[-*]\s+", line):
+            items = []
+            while i < len(lines) and re.match(r"^[-*]\s+", lines[i]):
+                items.append(re.sub(r"^[-*]\s+", "", lines[i]))
+                i += 1
+            html_parts.append("<ul>" + "".join(f"<li>{_inline_md(it)}</li>" for it in items) + "</ul>")
+            continue
+
+        if re.match(r"^\d+\.\s+", line):
+            items = []
+            while i < len(lines) and re.match(r"^\d+\.\s+", lines[i]):
+                items.append(re.sub(r"^\d+\.\s+", "", lines[i]))
+                i += 1
+            html_parts.append("<ol>" + "".join(f"<li>{_inline_md(it)}</li>" for it in items) + "</ol>")
+            continue
+
+        para_lines = []
+        while i < len(lines) and lines[i].strip() and not _is_md_block_start(lines[i]):
+            para_lines.append(lines[i])
+            i += 1
+        if para_lines:
+            html_parts.append(f"<p>{_inline_md(' '.join(para_lines))}</p>")
+
+    return "\n".join(html_parts)
+
+
+def _is_md_block_start(line: str) -> bool:
+    """Return True if the line begins a block node."""
+    return bool(
+        re.match(r"^#{1,6}\s+", line)
+        or line.strip().startswith("|")
+        or re.match(r"^[-*]\s+", line)
+        or re.match(r"^\d+\.\s+", line)
+        or re.match(r"^---+\s*$", line)
+    )
+
+
+def _inline_md(text: str) -> str:
+    """Render inline markdown with HTML escaping."""
+    text = escape(text)
+    text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+    text = re.sub(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)", r"<em>\1</em>", text)
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', text)
+    return text
+
+
+def _md_table_to_html(lines: list[str]) -> str:
+    """Render GFM-style markdown table block to HTML."""
+    rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in lines]
+    if len(rows) < 2:
+        return f"<p>{_inline_md(' '.join(lines))}</p>"
+    header = rows[0]
+    data_rows = rows[2:]
+    html = "<table><thead><tr>"
+    for cell in header:
+        html += f"<th>{_inline_md(cell)}</th>"
+    html += "</tr></thead><tbody>"
+    for row in data_rows:
+        html += "<tr>"
+        for cell in row:
+            html += f"<td>{_inline_md(cell)}</td>"
+        html += "</tr>"
+    html += "</tbody></table>"
+    return html
 
 
 def page_sources(page: Page, table_lookup: dict[str, Page]) -> list[dict[str, str]]:

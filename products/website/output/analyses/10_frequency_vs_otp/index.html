@@ -51,15 +51,21 @@
 
 <section>
   <h2>Findings</h2>
-  <div class="markdown"><p># Findings: Trip Frequency vs OTP</p><p>## Summary</p><p>There is **no meaningful correlation** between peak weekday trip frequency and OTP. The previous finding (r = -0.39) was an artifact of using `SUM(trips_wd)` across stops, which conflated frequency with route length. After correcting to `MAX(trips_wd)` (peak frequency at any single stop), the correlation vanishes.</p><p>## Key Numbers</p><p>- **All routes: Pearson r = 0.03** (p = 0.81, n = 92) -- essentially zero
-- **Bus only: Pearson r = -0.06** (p = 0.55, n = 89)
-- **Bus only: Spearman r = -0.11** (p = 0.29)</p><p>## Methodology Note</p><p>The original analysis summed `trips_wd` across all stops on a route. Because `trips_wd` is recorded per stop, a route with 50 trips per day and 100 stops produces a sum of ~5,000, while a route with 50 trips per day and 20 stops produces ~1,000. This made the metric a proxy for `frequency x stop_count` rather than pure frequency. Using `MAX(trips_wd)` isolates the peak trip frequency at the busiest stop, which is a better measure of how often the route actually runs.</p><p>## Observations</p><p>- Running more trips per se does not degrade OTP. The previous apparent correlation was entirely driven by the confounding of frequency with route length (stop count).
-- This result is consistent with Analysis 07&#x27;s finding that stop count is the real structural predictor -- once route complexity is removed from the frequency metric, the effect disappears.
-- Some of the highest-frequency routes (P1 East Busway, RAIL lines) actually have excellent OTP, because they combine high frequency with few stops and dedicated right-of-way.</p><p>## Implication</p><p>PRT should not expect OTP penalties from increasing service frequency on existing routes. The capacity to run more trips does not inherently strain schedule adherence. The real lever for improving OTP is route design (stop count, right-of-way), not service volume.</p><p>## Caveats</p><p>- `trips_wd` in `route_stops` represents current weekday frequency, not historical. Frequency may have changed over the analysis period.
-- `MAX(trips_wd)` captures the peak stop, which for short-turn routes may overstate the frequency experienced by riders at outer stops.
-- Routes with fewer than 12 months of OTP data are excluded (1 route dropped vs prior version).
-- Three correlation tests were run (Pearson all-routes, Pearson bus-only, Spearman bus-only) without multiple-comparison correction. Since all three are non-significant (smallest p = 0.29), correction would not change any conclusion.</p><p>## Review History
-- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) -- 6 issues (1 significant). Updated METHODS.md to reflect MAX(trips_wd) instead of SUM; documented all three correlation tests; added minimum-month filter (HAVING COUNT &gt;= 12); added NULL filter for trips_wd; replaced manual regression with scipy.stats.linregress; noted multiple-test caveat.</p></div>
+  <div class="markdown"><h1>Findings: Trip Frequency vs OTP</h1>
+<h2>Summary</h2>
+<p>There is <strong>no meaningful correlation</strong> between peak weekday trip frequency and OTP. The previous finding (r = -0.39) was an artifact of using <code>SUM(trips_wd)</code> across stops, which conflated frequency with route length. After correcting to <code>MAX(trips_wd)</code> (peak frequency at any single stop), the correlation vanishes.</p>
+<h2>Key Numbers</h2>
+<ul><li><strong>All routes: Pearson r = 0.03</strong> (p = 0.81, n = 92) -- essentially zero</li><li><strong>Bus only: Pearson r = -0.06</strong> (p = 0.55, n = 89)</li><li><strong>Bus only: Spearman r = -0.11</strong> (p = 0.29)</li></ul>
+<h2>Methodology Note</h2>
+<p>The original analysis summed <code>trips_wd</code> across all stops on a route. Because <code>trips_wd</code> is recorded per stop, a route with 50 trips per day and 100 stops produces a sum of ~5,000, while a route with 50 trips per day and 20 stops produces ~1,000. This made the metric a proxy for <code>frequency x stop_count</code> rather than pure frequency. Using <code>MAX(trips_wd)</code> isolates the peak trip frequency at the busiest stop, which is a better measure of how often the route actually runs.</p>
+<h2>Observations</h2>
+<ul><li>Running more trips per se does not degrade OTP. The previous apparent correlation was entirely driven by the confounding of frequency with route length (stop count).</li><li>This result is consistent with Analysis 07&#x27;s finding that stop count is the real structural predictor -- once route complexity is removed from the frequency metric, the effect disappears.</li><li>Some of the highest-frequency routes (P1 East Busway, RAIL lines) actually have excellent OTP, because they combine high frequency with few stops and dedicated right-of-way.</li></ul>
+<h2>Implication</h2>
+<p>PRT should not expect OTP penalties from increasing service frequency on existing routes. The capacity to run more trips does not inherently strain schedule adherence. The real lever for improving OTP is route design (stop count, right-of-way), not service volume.</p>
+<h2>Caveats</h2>
+<ul><li><code>trips_wd</code> in <code>route_stops</code> represents current weekday frequency, not historical. Frequency may have changed over the analysis period.</li><li><code>MAX(trips_wd)</code> captures the peak stop, which for short-turn routes may overstate the frequency experienced by riders at outer stops.</li><li>Routes with fewer than 12 months of OTP data are excluded (1 route dropped vs prior version).</li><li>Three correlation tests were run (Pearson all-routes, Pearson bus-only, Spearman bus-only) without multiple-comparison correction. Since all three are non-significant (smallest p = 0.29), correction would not change any conclusion.</li></ul>
+<h2>Review History</h2>
+<ul><li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 6 issues (1 significant). Updated METHODS.md to reflect MAX(trips_wd) instead of SUM; documented all three correlation tests; added minimum-month filter (HAVING COUNT &gt;= 12); added NULL filter for trips_wd; replaced manual regression with scipy.stats.linregress; noted multiple-test caveat.</li></ul></div>
 </section>
 
 
@@ -68,18 +74,15 @@
 
 <section>
   <h2>Methods</h2>
-  <div class="markdown"><p># Methods: Trip Frequency vs OTP</p><p>## Question
-Is there a correlation between how often a route runs (trip frequency) and its on-time performance? High-frequency routes may suffer from schedule adherence issues like bunching.</p><p>## Approach
-- Compute maximum weekday trips per route from `route_stops` (`MAX(trips_wd)` across all stops, used as a peak frequency proxy). Stops with `trips_wd IS NULL` are excluded.
-- Compute average OTP per route from `otp_monthly`, requiring at least 12 months of data (`HAVING COUNT(*) &gt;= 12`).
-- Scatter plot of trip frequency vs average OTP, colored by mode.
-- Compute Pearson correlation (all routes), Pearson correlation (bus-only), and Spearman rank correlation (bus-only).</p><p>## Data</p><p>| Name | Description | Source |
-|------|-------------|--------|
-| `otp_monthly` | Monthly OTP per route | `prt.db` table |
-| `route_stops` | Trip counts (`trips_wd`, `trips_7d`) | `prt.db` table |
-| `routes` | Mode classification | `prt.db` table |</p><p>## Output
-- `output/frequency_otp.csv` -- per-route frequency and OTP summary
-- `output/frequency_vs_otp.png` -- scatter plot with correlation</p></div>
+  <div class="markdown"><h1>Methods: Trip Frequency vs OTP</h1>
+<h2>Question</h2>
+<p>Is there a correlation between how often a route runs (trip frequency) and its on-time performance? High-frequency routes may suffer from schedule adherence issues like bunching.</p>
+<h2>Approach</h2>
+<ul><li>Compute maximum weekday trips per route from <code>route_stops</code> (<code>MAX(trips_wd)</code> across all stops, used as a peak frequency proxy). Stops with <code>trips_wd IS NULL</code> are excluded.</li><li>Compute average OTP per route from <code>otp_monthly</code>, requiring at least 12 months of data (<code>HAVING COUNT(*) &gt;= 12</code>).</li><li>Scatter plot of trip frequency vs average OTP, colored by mode.</li><li>Compute Pearson correlation (all routes), Pearson correlation (bus-only), and Spearman rank correlation (bus-only).</li></ul>
+<h2>Data</h2>
+<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>Trip counts (<code>trips_wd</code>, <code>trips_7d</code>)</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Mode classification</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<h2>Output</h2>
+<ul><li><code>output/frequency_otp.csv</code> -- per-route frequency and OTP summary</li><li><code>output/frequency_vs_otp.png</code> -- scatter plot with correlation</li></ul></div>
 </section>
 
 

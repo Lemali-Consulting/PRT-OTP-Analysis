@@ -54,17 +54,19 @@
 
 <section>
   <h2>Findings</h2>
-  <div class="markdown"><p># Findings: Route Geographic Span vs OTP</p><p>## Summary</p><p>Geographic span (the maximum distance between any two stops on a route) is a **moderate negative predictor** of OTP within bus routes (r = -0.38, p &lt; 0.001), but stop count remains the stronger predictor after controlling for the other. Partial correlation analysis disentangles the two: stop count predicts OTP even after controlling for span (partial r = -0.41, p &lt; 0.001), while span&#x27;s independent contribution is smaller (partial r = -0.23, p = 0.03).</p><p>## Key Numbers</p><p>- **Span vs OTP (bus only, primary):** Pearson r = -0.38 (p &lt; 0.001, n = 89), Spearman rho = -0.37 (p &lt; 0.001)
-- **Span vs OTP (all routes, secondary):** r = -0.32 (p = 0.002, n = 92) -- includes Simpson&#x27;s paradox risk
-- **Stop density vs OTP (bus only):** r = 0.04 (p = 0.71) -- not significant
-- **Span vs OTP | stop count (bus, partial):** r = -0.23 (p = 0.03)
-- **Stop count vs OTP | span (bus, partial):** r = -0.41 (p &lt; 0.001)
-- **Span-stop count collinearity:** r = 0.41</p><p>## Observations</p><p>- The bus-only correlation (r = -0.38) is actually *stronger* than the all-mode correlation (r = -0.32). The pooled-mode result was muted by Simpson&#x27;s paradox -- rail routes have moderate span but high OTP, pulling the all-mode trend line toward zero.
-- Span and stop count are moderately correlated (r = 0.41), but not so strongly as to make partial correlation unreliable.
-- After controlling for stop count, span still has a small but significant independent effect -- longer routes face additional challenges beyond just having more stops (longer exposure to traffic, more variance in conditions).
-- However, stop count&#x27;s partial correlation (-0.41) is nearly twice span&#x27;s (-0.23), confirming that the **number of stops matters more than the distance covered**.
-- Stop density (stops per km) shows no correlation with OTP at all (r = 0.04), meaning that tightly-packed stops are no worse than widely-spaced stops once total count and distance are accounted for.</p><p>## Implication</p><p>Both stop count and route distance independently degrade OTP, but stop consolidation is the higher-leverage intervention. Shortening routes would help modestly, but eliminating stops on existing routes would have roughly twice the impact per unit of change.</p><p>## Caveats</p><p>- Geographic span (max pairwise distance) is a crude proxy for actual route length. GTFS shape data would provide a more accurate route-length measurement.
-- Routes with fewer than 12 months of data are excluded to reduce noise.</p><p>## Review History</p><p>- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 4 issues (1 significant). Bus-only correlations now primary; Spearman added.</p></div>
+  <div class="markdown"><h1>Findings: Route Geographic Span vs OTP</h1>
+<h2>Summary</h2>
+<p>Geographic span (the maximum distance between any two stops on a route) is a <strong>moderate negative predictor</strong> of OTP within bus routes (r = -0.38, p &lt; 0.001), but stop count remains the stronger predictor after controlling for the other. Partial correlation analysis disentangles the two: stop count predicts OTP even after controlling for span (partial r = -0.41, p &lt; 0.001), while span&#x27;s independent contribution is smaller (partial r = -0.23, p = 0.03).</p>
+<h2>Key Numbers</h2>
+<ul><li><strong>Span vs OTP (bus only, primary):</strong> Pearson r = -0.38 (p &lt; 0.001, n = 89), Spearman rho = -0.37 (p &lt; 0.001)</li><li><strong>Span vs OTP (all routes, secondary):</strong> r = -0.32 (p = 0.002, n = 92) -- includes Simpson&#x27;s paradox risk</li><li><strong>Stop density vs OTP (bus only):</strong> r = 0.04 (p = 0.71) -- not significant</li><li><strong>Span vs OTP | stop count (bus, partial):</strong> r = -0.23 (p = 0.03)</li><li><strong>Stop count vs OTP | span (bus, partial):</strong> r = -0.41 (p &lt; 0.001)</li><li><strong>Span-stop count collinearity:</strong> r = 0.41</li></ul>
+<h2>Observations</h2>
+<ul><li>The bus-only correlation (r = -0.38) is actually <em>stronger</em> than the all-mode correlation (r = -0.32). The pooled-mode result was muted by Simpson&#x27;s paradox -- rail routes have moderate span but high OTP, pulling the all-mode trend line toward zero.</li><li>Span and stop count are moderately correlated (r = 0.41), but not so strongly as to make partial correlation unreliable.</li><li>After controlling for stop count, span still has a small but significant independent effect -- longer routes face additional challenges beyond just having more stops (longer exposure to traffic, more variance in conditions).</li><li>However, stop count&#x27;s partial correlation (-0.41) is nearly twice span&#x27;s (-0.23), confirming that the <strong>number of stops matters more than the distance covered</strong>.</li><li>Stop density (stops per km) shows no correlation with OTP at all (r = 0.04), meaning that tightly-packed stops are no worse than widely-spaced stops once total count and distance are accounted for.</li></ul>
+<h2>Implication</h2>
+<p>Both stop count and route distance independently degrade OTP, but stop consolidation is the higher-leverage intervention. Shortening routes would help modestly, but eliminating stops on existing routes would have roughly twice the impact per unit of change.</p>
+<h2>Caveats</h2>
+<ul><li>Geographic span (max pairwise distance) is a crude proxy for actual route length. GTFS shape data would provide a more accurate route-length measurement.</li><li>Routes with fewer than 12 months of data are excluded to reduce noise.</li></ul>
+<h2>Review History</h2>
+<ul><li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 4 issues (1 significant). Bus-only correlations now primary; Spearman added.</li></ul></div>
 </section>
 
 
@@ -73,22 +75,15 @@
 
 <section>
   <h2>Methods</h2>
-  <div class="markdown"><p># Methods: Route Geographic Span vs OTP</p><p>## Question
-Does the geographic extent of a route predict on-time performance independently of stop count? Analysis 07 found stop count is the strongest OTP predictor (r = -0.53), but routes with many stops also tend to cover more distance. Disentangling the two could clarify whether the problem is &quot;too many stops&quot; or &quot;too long a route.&quot;</p><p>## Approach
-- For each route, collect all stop coordinates from `route_stops` joined to `stops`.
-- Compute **geographic span** as the maximum haversine distance between any pair of stops on the route (the diameter of the stop set in km).
-- Compute **stop density** as stops per km of span, to capture how tightly packed stops are.
-- Correlate span, stop density, and stop count separately with average OTP (Pearson and Spearman).
-- Use partial correlation to test whether span predicts OTP after controlling for stop count, and vice versa.
-- Scatter plots for span vs OTP and stop density vs OTP.</p><p>## Data</p><p>| Name | Description | Source |
-|------|-------------|--------|
-| `route_stops` | Links routes to stops | `prt.db` table |
-| `stops` | Lat/lon coordinates | `prt.db` table |
-| `otp_monthly` | Monthly OTP per route | `prt.db` table |
-| `routes` | Mode classification | `prt.db` table |</p><p>## Output
-- `output/geographic_span.csv` -- per-route span, stop density, stop count, avg OTP
-- `output/span_vs_otp.png` -- scatter plot of geographic span vs OTP
-- `output/density_vs_otp.png` -- scatter plot of stop density vs OTP</p></div>
+  <div class="markdown"><h1>Methods: Route Geographic Span vs OTP</h1>
+<h2>Question</h2>
+<p>Does the geographic extent of a route predict on-time performance independently of stop count? Analysis 07 found stop count is the strongest OTP predictor (r = -0.53), but routes with many stops also tend to cover more distance. Disentangling the two could clarify whether the problem is &quot;too many stops&quot; or &quot;too long a route.&quot;</p>
+<h2>Approach</h2>
+<ul><li>For each route, collect all stop coordinates from <code>route_stops</code> joined to <code>stops</code>.</li><li>Compute <strong>geographic span</strong> as the maximum haversine distance between any pair of stops on the route (the diameter of the stop set in km).</li><li>Compute <strong>stop density</strong> as stops per km of span, to capture how tightly packed stops are.</li><li>Correlate span, stop density, and stop count separately with average OTP (Pearson and Spearman).</li><li>Use partial correlation to test whether span predicts OTP after controlling for stop count, and vice versa.</li><li>Scatter plots for span vs OTP and stop density vs OTP.</li></ul>
+<h2>Data</h2>
+<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>route_stops</code></td><td>Links routes to stops</td><td><code>prt.db</code> table</td></tr><tr><td><code>stops</code></td><td>Lat/lon coordinates</td><td><code>prt.db</code> table</td></tr><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Mode classification</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<h2>Output</h2>
+<ul><li><code>output/geographic_span.csv</code> -- per-route span, stop density, stop count, avg OTP</li><li><code>output/span_vs_otp.png</code> -- scatter plot of geographic span vs OTP</li><li><code>output/density_vs_otp.png</code> -- scatter plot of stop density vs OTP</li></ul></div>
 </section>
 
 

@@ -52,25 +52,19 @@
 
 <section>
   <h2>Findings</h2>
-  <div class="markdown"><p># Findings: Mode Comparison</p><p>## Summary</p><p>Light rail consistently outperforms bus by a wide margin, and the difference is **statistically significant** (Mann-Whitney U = 6,563, p &lt; 0.001). Among bus routes, dedicated right-of-way (busway) routes perform nearly as well as rail, and limited-stop variants beat their local counterparts.</p><p>## Key Numbers</p><p>| Mode / Type | Avg OTP (unweighted) | Avg OTP (trip-weighted) | Route Count |
-|-------------|---------------------|------------------------|-------------|
-| RAIL | 84% | 84% | 3 |
-| Busway (P1, P3, G2) | 71--76% | -- | 3 |
-| Flyer (P/G/O prefix) | ~70% | -- | ~16 |
-| Limited (L suffix) | ~72% | -- | varies |
-| Express (X suffix) | ~70% | -- | varies |
-| Local bus | 63--69% | -- | ~60 |</p><p>### Statistical Tests</p><p>- **Mann-Whitney U test (RAIL vs BUS monthly OTP):** U = 6,563, p &lt; 0.001 (n = 83 months each). Rail median monthly OTP = 86.1%, bus median = 69.2%. The difference is highly significant.
-- **Paired route comparison (2 pairs: 51/51L, 53/53L):** Limited variants average **+3.5 percentage points** over their local counterparts (paired t-test: t = 7.37, p &lt; 0.001, 95% CI: [+2.5, +4.4 pp], n = 85 paired monthly observations across 2 pairs). While the test is significant, the sample of only 2 route pairs limits the generalizability of this finding.
-- **Trip-weighted mode average:** Bus trip-weighted OTP (66.8%) is about 2 pp below the unweighted average (68.9%), confirming that high-frequency bus routes tend to perform worse. Rail is nearly the same weighted (83.8%) vs unweighted (84.1%).</p><p>## Observations</p><p>- Busway routes (P1, P3, G2) perform nearly as well as rail, consistent with the dedicated-right-of-way hypothesis.
-- The previous classification grouped all P/G-prefix routes as &quot;busway,&quot; which incorrectly included flyer routes like P17 (Lincoln Park Flyer), P78 (Oakmont Flyer), G3 (Moon Flyer), and G31 (Bridgeville Flyer). The corrected classification identifies only P1, P2, P3, and G2 as true busway routes.
-- Only 2 local/limited pairs were found in the data (routes with matching base IDs). More pairs would strengthen the comparison.
-- The RAIL--BUS gap has been roughly stable over time -- both modes declined in parallel, suggesting system-wide factors rather than mode-specific ones.
-- The INCLINE mode has no OTP data and was excluded.</p><p>## Caveats</p><p>- Five UNKNOWN-mode routes (37, 42, P2, RLSH, SWL) were excluded from the analysis. P2 (East Busway Short) is plausibly a BUS/busway route, but its mode is listed as UNKNOWN in the database and it also lacks `route_stops` data.
-- Bus route classification uses route ID naming conventions. True busway routes are identified as P1, P2, P3, G2; all other P/G/O-prefix routes are classified as flyers. Some routes may still be misclassified if their ID doesn&#x27;t follow the standard pattern.
-- Rail has only 3 routes (RED, BLUE, SLVR), so its average is sensitive to any single route&#x27;s performance. The Mann-Whitney test has adequate statistical power due to 83 months of observations, but the underlying data comes from only 3 routes.
-- The mode-level unweighted average treats each route equally regardless of trip volume. The trip-weighted version provides a ridership-adjusted perspective.
-- Route composition varies across months (68--96 routes reporting). No balanced-panel filter is applied, so the set of routes contributing to each month&#x27;s average is not fixed.</p><p>## Review History
-- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) -- 6 issues (1 significant). Replaced &quot;significantly outperforms&quot; with formal Mann-Whitney U test, added paired t-test with 95% CI, excluded UNKNOWN-mode routes, fixed classify_bus_route to correctly distinguish busway from flyer routes, added trip-weighted mode comparison, and documented composition variability.</p></div>
+  <div class="markdown"><h1>Findings: Mode Comparison</h1>
+<h2>Summary</h2>
+<p>Light rail consistently outperforms bus by a wide margin, and the difference is <strong>statistically significant</strong> (Mann-Whitney U = 6,563, p &lt; 0.001). Among bus routes, dedicated right-of-way (busway) routes perform nearly as well as rail, and limited-stop variants beat their local counterparts.</p>
+<h2>Key Numbers</h2>
+<table><thead><tr><th>Mode / Type</th><th>Avg OTP (unweighted)</th><th>Avg OTP (trip-weighted)</th><th>Route Count</th></tr></thead><tbody><tr><td>RAIL</td><td>84%</td><td>84%</td><td>3</td></tr><tr><td>Busway (P1, P3, G2)</td><td>71--76%</td><td>--</td><td>3</td></tr><tr><td>Flyer (P/G/O prefix)</td><td>~70%</td><td>--</td><td>~16</td></tr><tr><td>Limited (L suffix)</td><td>~72%</td><td>--</td><td>varies</td></tr><tr><td>Express (X suffix)</td><td>~70%</td><td>--</td><td>varies</td></tr><tr><td>Local bus</td><td>63--69%</td><td>--</td><td>~60</td></tr></tbody></table>
+<h3>Statistical Tests</h3>
+<ul><li><strong>Mann-Whitney U test (RAIL vs BUS monthly OTP):</strong> U = 6,563, p &lt; 0.001 (n = 83 months each). Rail median monthly OTP = 86.1%, bus median = 69.2%. The difference is highly significant.</li><li><strong>Paired route comparison (2 pairs: 51/51L, 53/53L):</strong> Limited variants average <strong>+3.5 percentage points</strong> over their local counterparts (paired t-test: t = 7.37, p &lt; 0.001, 95% CI: [+2.5, +4.4 pp], n = 85 paired monthly observations across 2 pairs). While the test is significant, the sample of only 2 route pairs limits the generalizability of this finding.</li><li><strong>Trip-weighted mode average:</strong> Bus trip-weighted OTP (66.8%) is about 2 pp below the unweighted average (68.9%), confirming that high-frequency bus routes tend to perform worse. Rail is nearly the same weighted (83.8%) vs unweighted (84.1%).</li></ul>
+<h2>Observations</h2>
+<ul><li>Busway routes (P1, P3, G2) perform nearly as well as rail, consistent with the dedicated-right-of-way hypothesis.</li><li>The previous classification grouped all P/G-prefix routes as &quot;busway,&quot; which incorrectly included flyer routes like P17 (Lincoln Park Flyer), P78 (Oakmont Flyer), G3 (Moon Flyer), and G31 (Bridgeville Flyer). The corrected classification identifies only P1, P2, P3, and G2 as true busway routes.</li><li>Only 2 local/limited pairs were found in the data (routes with matching base IDs). More pairs would strengthen the comparison.</li><li>The RAIL--BUS gap has been roughly stable over time -- both modes declined in parallel, suggesting system-wide factors rather than mode-specific ones.</li><li>The INCLINE mode has no OTP data and was excluded.</li></ul>
+<h2>Caveats</h2>
+<ul><li>Five UNKNOWN-mode routes (37, 42, P2, RLSH, SWL) were excluded from the analysis. P2 (East Busway Short) is plausibly a BUS/busway route, but its mode is listed as UNKNOWN in the database and it also lacks <code>route_stops</code> data.</li><li>Bus route classification uses route ID naming conventions. True busway routes are identified as P1, P2, P3, G2; all other P/G/O-prefix routes are classified as flyers. Some routes may still be misclassified if their ID doesn&#x27;t follow the standard pattern.</li><li>Rail has only 3 routes (RED, BLUE, SLVR), so its average is sensitive to any single route&#x27;s performance. The Mann-Whitney test has adequate statistical power due to 83 months of observations, but the underlying data comes from only 3 routes.</li><li>The mode-level unweighted average treats each route equally regardless of trip volume. The trip-weighted version provides a ridership-adjusted perspective.</li><li>Route composition varies across months (68--96 routes reporting). No balanced-panel filter is applied, so the set of routes contributing to each month&#x27;s average is not fixed.</li></ul>
+<h2>Review History</h2>
+<ul><li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 6 issues (1 significant). Replaced &quot;significantly outperforms&quot; with formal Mann-Whitney U test, added paired t-test with 95% CI, excluded UNKNOWN-mode routes, fixed classify_bus_route to correctly distinguish busway from flyer routes, added trip-weighted mode comparison, and documented composition variability.</li></ul></div>
 </section>
 
 
@@ -79,26 +73,17 @@
 
 <section>
   <h2>Methods</h2>
-  <div class="markdown"><p># Methods: Mode Comparison</p><p>## Question
-Does light rail (dedicated right-of-way) consistently outperform bus? Do limited/express routes beat their local counterparts?</p><p>## Approach
-- Exclude UNKNOWN-mode routes (37, 42, P2, RLSH, SWL) from the analysis to avoid ambiguous classifications.
-- Group routes by mode (BUS, RAIL) and compute average OTP per mode per month, both unweighted and trip-weighted (using `trips_7d` from `route_stops`).
-- Perform a Mann-Whitney U test on the monthly mode-level OTP distributions to formally test whether the RAIL--BUS difference is statistically significant.
-- Classify bus routes by type using route ID patterns:
-  - **Busway:** P1, P2, P3, G2 (dedicated right-of-way)
-  - **Flyer:** Other P/G-prefix routes (e.g., P17, P78, G3, G31) and O-prefix routes (park-and-ride express services)
-  - **Limited:** L-suffix routes (e.g., 51L, 53L)
-  - **Express:** X-suffix routes
-  - **Local:** All other bus routes
-- Compare paired routes sharing the same corridor (e.g. 51 vs 51L) as natural experiments. Perform a paired t-test on monthly OTP differences and report the mean difference with a 95% confidence interval.
-- Test whether the mode gap changes over time.</p><p>## Data</p><p>| Name | Description | Source |
-|------|-------------|--------|
-| `otp_monthly` | Monthly OTP per route | `prt.db` table |
-| `routes` | Mode classification (filter out UNKNOWN) | `prt.db` table |
-| `route_stops` | Trip counts for trip-weighted mode averages | `prt.db` table |</p><p>## Output
-- `output/mode_comparison.csv` -- monthly OTP by mode/type (unweighted)
-- `output/mode_comparison_weighted.csv` -- monthly OTP by mode (trip-weighted)
-- `output/mode_comparison.png` -- comparison chart</p></div>
+  <div class="markdown"><h1>Methods: Mode Comparison</h1>
+<h2>Question</h2>
+<p>Does light rail (dedicated right-of-way) consistently outperform bus? Do limited/express routes beat their local counterparts?</p>
+<h2>Approach</h2>
+<ul><li>Exclude UNKNOWN-mode routes (37, 42, P2, RLSH, SWL) from the analysis to avoid ambiguous classifications.</li><li>Group routes by mode (BUS, RAIL) and compute average OTP per mode per month, both unweighted and trip-weighted (using <code>trips_7d</code> from <code>route_stops</code>).</li><li>Perform a Mann-Whitney U test on the monthly mode-level OTP distributions to formally test whether the RAIL--BUS difference is statistically significant.</li><li>Classify bus routes by type using route ID patterns:</li></ul>
+<p>  - <strong>Busway:</strong> P1, P2, P3, G2 (dedicated right-of-way)   - <strong>Flyer:</strong> Other P/G-prefix routes (e.g., P17, P78, G3, G31) and O-prefix routes (park-and-ride express services)   - <strong>Limited:</strong> L-suffix routes (e.g., 51L, 53L)   - <strong>Express:</strong> X-suffix routes   - <strong>Local:</strong> All other bus routes</p>
+<ul><li>Compare paired routes sharing the same corridor (e.g. 51 vs 51L) as natural experiments. Perform a paired t-test on monthly OTP differences and report the mean difference with a 95% confidence interval.</li><li>Test whether the mode gap changes over time.</li></ul>
+<h2>Data</h2>
+<table><thead><tr><th>Name</th><th>Description</th><th>Source</th></tr></thead><tbody><tr><td><code>otp_monthly</code></td><td>Monthly OTP per route</td><td><code>prt.db</code> table</td></tr><tr><td><code>routes</code></td><td>Mode classification (filter out UNKNOWN)</td><td><code>prt.db</code> table</td></tr><tr><td><code>route_stops</code></td><td>Trip counts for trip-weighted mode averages</td><td><code>prt.db</code> table</td></tr></tbody></table>
+<h2>Output</h2>
+<ul><li><code>output/mode_comparison.csv</code> -- monthly OTP by mode/type (unweighted)</li><li><code>output/mode_comparison_weighted.csv</code> -- monthly OTP by mode (trip-weighted)</li><li><code>output/mode_comparison.png</code> -- comparison chart</li></ul></div>
 </section>
 
 
