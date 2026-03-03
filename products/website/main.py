@@ -705,7 +705,7 @@ body {
   font: inherit;
   background: #fff;
 }
-.filters select {
+select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -815,13 +815,28 @@ a:hover { color: var(--accent); }
 .csv-preview { margin-top: 0.45rem; }
 .csv-preview summary { cursor: pointer; font-weight: 600; }
 .csv-preview-body { margin-top: 0.45rem; }
-.fold > summary {
+details > summary {
   list-style: none;
   cursor: pointer;
   display: flex;
   align-items: center;
+  gap: 0.45rem;
 }
-.fold > summary::-webkit-details-marker { display: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid #5f4b3a;
+  border-bottom: 2px solid #5f4b3a;
+  transform: rotate(-45deg);
+  transition: transform 140ms ease;
+  margin-top: -0.08rem;
+  flex: 0 0 auto;
+}
+details[open] > summary::before {
+  transform: rotate(45deg);
+}
 img { max-width: 100%; height: auto; display: block; }
 figcaption {
   padding: 0.55rem 0.65rem;
