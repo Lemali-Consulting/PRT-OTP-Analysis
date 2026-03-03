@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }} - PRT OTP Analysis{% endblock %}
+{% block content %}
+<h1>{{ page.title }}</h1>
+<p><strong>Type:</strong> {{ page.kind }}</p>
+{% if page.group %}<p><strong>Group:</strong> {{ page.group }}</p>{% endif %}
+
+{% if mermaid_diagram %}
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">{{ mermaid_diagram }}</pre>
+</section>
+{% endif %}
+
+{% if findings_html %}
+<section>
+  <h2>Findings</h2>
+  <div class="markdown">{{ findings_html | safe }}</div>
+</section>
+{% endif %}
+
+{% if output_images %}
+<section>
+  <h2>Output</h2>
+  <div class="gallery">
+    {% for img in output_images %}
+      <figure>
+        <img src="{{ img.src }}" alt="{{ img.alt }}" loading="lazy">
+        <figcaption>{{ img.label }}</figcaption>
+      </figure>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if methods_html %}
+<section>
+  <h2>Methods</h2>
+  <div class="markdown">{{ methods_html | safe }}</div>
+</section>
+{% endif %}
+
+{% if page_sources %}
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    {% for src in page_sources %}
+      <tr>
+        <td>{{ src.name }}</td>
+        <td>{{ src.kind }}</td>
+        <td>{{ src.description }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>scheduled_trips_monthly - Source Detail</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../index.html#pipeline">Pipeline</a>
+    <a href="../index.html#analyses">Analyses</a>
+    <a href="../sources.html">Sources</a>
+    <a href="../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>scheduled_trips_monthly</h1>
+<p><strong>Type:</strong> table</p>
+<p>Consumed DB table.</p>
+
+
+<section>
+  <h2>Lineage</h2>
+  <pre class="mermaid">flowchart LR
+  src["scheduled_trips_monthly"]
+  src --> c1["01 - System-Wide OTP Trend"]
+  src --> c2["29 - Service Change Impact on OTP"]
+  src --> c3["30 - Service Level vs OTP Longitudinal"]
+</pre>
+</section>
+
+
+<h2>Consumed By</h2>
+<ul>
+
+  <li><a href="analysis/01_system_trend/index.html">01 - System-Wide OTP Trend</a></li>
+
+  <li><a href="analysis/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a></li>
+
+  <li><a href="analysis/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></li>
+
+</ul>
+
+  </main>
+</body>
+</html>

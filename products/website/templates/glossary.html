@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Glossary - PRT OTP Analysis{% endblock %}
+{% block content %}
+<h1>Glossary</h1>
+{% for category in categories %}
+  <h2>{{ category.name }}</h2>
+  <ul>
+  {% for term in category.terms %}
+    <li><strong>{{ term.term }}</strong>{% if term.abbreviation %} ({{ term.abbreviation }}){% endif %}: {{ term.definition }}</li>
+  {% endfor %}
+  </ul>
+{% endfor %}
+{% endblock %}

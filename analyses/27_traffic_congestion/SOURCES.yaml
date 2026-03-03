@@ -1,0 +1,15 @@
+kind: analysis
+title: 27 - Traffic Congestion and OTP
+group: Ridership and External Factors
+tables:
+- Analysis
+- otp_monthly
+- pathlib
+- prt_otp_analysis
+- route_stops
+- route_traffic
+- routes
+- scipy
+- stops
+files: []
+analyses: []

@@ -1,0 +1,13 @@
+kind: analysis
+title: 30 - Service Level vs OTP Longitudinal
+group: Equity and Strategic Planning
+tables:
+- delta_otp
+- otp_monthly
+- pathlib
+- prt_otp_analysis
+- routes
+- scheduled_trips_monthly
+- scipy
+files: []
+analyses: []

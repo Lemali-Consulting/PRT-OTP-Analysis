@@ -1,0 +1,28 @@
+kind: pipeline
+title: Data Ingestion
+files:
+  - path: data/routes_by_month.csv
+    description: Monthly route OTP source table in wide format.
+  - path: data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv
+    description: Current route metadata and mode classifications.
+  - path: data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv
+    description: Current stop-to-route coverage and trip counts.
+  - path: data/PRT_Stop_Reference_Lookup_Table.csv
+    description: Historical stop reference file with geography attributes.
+  - path: data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv
+    description: Average ridership by route and month.
+apis: []
+tables: []
+tables_produced:
+  - name: routes
+    description: Route dimension table.
+  - name: stops
+    description: Physical stop dimension table.
+  - name: route_stops
+    description: Route-stop bridge with service frequency metrics.
+  - name: stop_reference
+    description: Historical stop metadata and geography.
+  - name: otp_monthly
+    description: Monthly OTP values by route.
+  - name: ridership_monthly
+    description: Monthly ridership by route and day type.

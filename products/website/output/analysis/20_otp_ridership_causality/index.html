@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>20 - OTP → Ridership Causality - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>20 - OTP → Ridership Causality</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Ridership and External Factors</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  20_otp_ridership_causality["20 - OTP → Ridership Causality"]
+  t_each["each"] --> 20_otp_ridership_causality
+  t_otp_monthly["otp_monthly"] --> 20_otp_ridership_causality
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 20_otp_ridership_causality
+  t_prt_otp_analysis["prt_otp_analysis"] --> 20_otp_ridership_causality
+  t_ridership_monthly["ridership_monthly"] --> 20_otp_ridership_causality
+  01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
+  t_scipy["scipy"] --> 20_otp_ridership_causality
+  t_statsmodels["statsmodels"] --> 20_otp_ridership_causality</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: OTP -&gt; Ridership Causality</p><p>## Summary
+There is **no evidence that OTP declines predict subsequent ridership losses**. After detrending and Bonferroni correction, zero of 93 routes show statistically significant Granger causality from OTP to ridership. The raw cross-correlations are weakly *negative*, suggesting the opposite direction: months with lower ridership tend to have better OTP.</p><p>## Key Numbers
+- **Granger causality**: 8/93 routes significant at p &lt; 0.05 uncorrected; **0/93 after Bonferroni correction**
+- **Median cross-correlation at lag 0**: r = -0.18 (IQR: [-0.41, +0.10])
+- **Median cross-correlation at lag 1**: r = -0.15 (IQR: [-0.38, +0.09])
+- Cross-correlations are flat across lags 0--6 -- no dominant lag emerges
+- 93 routes with 36+ months of paired OTP + ridership data (57--70 months each)
+- Both series detrended by subtracting system-wide monthly mean before testing
+- ADF stationarity test applied per route; routes with non-stationary detrended series are first-differenced before Granger testing to avoid spurious regression</p><p>## Observations
+- The p-value histogram is roughly uniform (with a small pile-up near zero), consistent with the null hypothesis being true for most routes.
+- Of the 8 nominally significant routes, 3 have best lag = 1 month and the rest are scattered across lags 2--6. No consistent lag structure emerges.
+- The weakly negative contemporaneous correlation (median r = -0.18) is consistent with **reverse causality**: months when fewer people ride (summer, holidays) see better OTP because of reduced dwell times and less crowding, not because good OTP attracts riders.</p><p>## Discussion
+The hypothesis that poor OTP drives riders away is intuitive, but this data cannot confirm it. Several factors may explain the null result:
+- **Temporal resolution is too coarse**: monthly data may be too slow to capture rider responses, which could operate at the trip or week level.
+- **Riders have limited alternatives**: in a single-provider transit system, riders may tolerate poor OTP because they have no substitute, especially for commute trips.
+- **Confounders dominate**: ridership is driven primarily by employment, gas prices, weather, and COVID -- factors far larger than OTP fluctuations. The detrending removes system-wide trends but not route-specific confounders.
+- **Reverse causality may mask the effect**: if high ridership causes poor OTP (crowding, dwell times) while poor OTP also causes ridership loss, the two effects partially cancel.</p><p>## Caveats
+- Granger causality tests linear predictive ability, not true causation. A null result does not prove OTP has no effect on ridership.
+- The 70-month overlap period with monthly granularity gives limited statistical power for 6-lag models (effective sample ~60 per route).
+- Detrending removes system-wide trends but not route-specific shocks (e.g., service changes, construction).
+- Bonferroni correction is conservative; a less strict correction (e.g., Benjamini-Hochberg) might yield a few significant routes, but the overall pattern would remain weak.</p><p>## Review History</p><p>- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md) — 1 significant issue. Added ADF stationarity tests; non-stationary routes are first-differenced before Granger testing. Null result confirmed as robust.</p></div>
+</section>
+
+
+
+<section>
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure>
+        <img src="assets/analysis/20_otp_ridership_causality/granger_summary.png" alt="granger_summary" loading="lazy">
+        <figcaption>granger_summary.png</figcaption>
+      </figure>
+    
+      <figure>
+        <img src="assets/analysis/20_otp_ridership_causality/lagged_crosscorr.png" alt="lagged_crosscorr" loading="lazy">
+        <figcaption>lagged_crosscorr.png</figcaption>
+      </figure>
+    
+  </div>
+</section>
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: OTP → Ridership Causality</p><p>## Question
+Does a decline in on-time performance predict subsequent ridership losses? If so, at what lag and magnitude?</p><p>## Approach
+- Join monthly OTP with monthly weekday ridership by route and month over the overlap period.
+- For each route, compute lagged cross-correlations between OTP and ridership at lags of 1--6 months (OTP leading ridership).
+- Aggregate cross-correlations across routes (median and IQR) to identify the dominant lag.
+- Run Granger causality tests (statsmodels) on routes with sufficient data (36+ months), testing whether lagged OTP improves ridership prediction beyond ridership&#x27;s own autoregressive trend.
+- Control for system-wide trends by detrending both series (subtract system monthly mean) before testing.
+- Check stationarity of each route&#x27;s detrended series using the Augmented Dickey-Fuller (ADF) test. For routes where either series is non-stationary (ADF p &gt;= 0.05), first-difference both series before Granger testing to avoid spurious regression.
+- Report the share of routes where Granger causality is significant at p &lt; 0.05, with Bonferroni correction.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, OTP | `prt.db` table |
+| `ridership_monthly` | route_id, month, day_type=&#x27;WEEKDAY&#x27;, avg_riders | `prt.db` table |</p><p>**Notes:** Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024). Exclude routes with fewer than 36 months of paired data.</p><p>## Output
+- `output/lagged_crosscorr.png` -- median cross-correlation by lag with IQR band
+- `output/granger_results.csv` -- per-route Granger test results (F-stat, p-value, optimal lag)
+- `output/granger_summary.png` -- histogram of p-values across routes</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>each</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>ridership_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>statsmodels</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

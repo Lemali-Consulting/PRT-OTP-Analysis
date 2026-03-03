@@ -1,0 +1,13 @@
+kind: analysis
+title: '16: Transfer Hub Performance'
+group: Route and Service Drivers
+tables:
+- otp_monthly
+- pathlib
+- prt_otp_analysis
+- route_stops
+- routes
+- scipy
+- stops
+files: []
+analyses: []

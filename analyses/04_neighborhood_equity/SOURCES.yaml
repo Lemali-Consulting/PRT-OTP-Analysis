@@ -1,0 +1,18 @@
+kind: analysis
+title: 04 - Neighborhood Equity
+group: Core OTP Patterns
+tables:
+- bus
+- monthly
+- otp_monthly
+- pathlib
+- pattern
+- prt_otp_analysis
+- route
+- route_avg
+- route_month_count
+- route_stops
+- routes
+- stops
+files: []
+analyses: []

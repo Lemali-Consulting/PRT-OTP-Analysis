@@ -1,0 +1,11 @@
+kind: analysis
+title: 33 - Pandemic Ridership Geography
+group: Equity and Strategic Planning
+tables:
+- Downtown
+- downtown
+- pathlib
+- prt_otp_analysis
+- scipy
+files: []
+analyses: []

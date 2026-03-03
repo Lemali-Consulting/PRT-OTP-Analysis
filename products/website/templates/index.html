@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Index - PRT OTP Analysis{% endblock %}
+{% block content %}
+<h1>PRT OTP Analysis</h1>
+<p>Generated documentation site for pipeline and analyses.</p>
+
+<h2 id="pipeline">Pipeline</h2>
+<ul>
+{% for p in pipeline %}
+  <li><a href="{{ p.path }}">{{ p.title }}</a></li>
+{% endfor %}
+</ul>
+
+<h2 id="analyses">Analyses</h2>
+<ul>
+{% for a in analyses %}
+  <li><a href="{{ a.path }}">{{ a.title }}</a>{% if a.group %} - {{ a.group }}{% endif %}</li>
+{% endfor %}
+</ul>
+{% endblock %}

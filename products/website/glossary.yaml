@@ -1,0 +1,14 @@
+categories:
+  - name: Transit Metrics
+    terms:
+      - term: OTP
+        abbreviation: OTP
+        definition: On-time performance, represented as a fraction between 0 and 1.
+      - term: Ridership-Weighted OTP
+        definition: OTP averaged using passenger counts as weights.
+  - name: Statistical Methods
+    terms:
+      - term: Pearson Correlation
+        definition: Linear association statistic ranging from -1 to 1.
+      - term: Spearman Correlation
+        definition: Rank-based monotonic association statistic.

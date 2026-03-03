@@ -1,0 +1,9 @@
+kind: analysis
+title: 32 - Shelter Equity
+group: Equity and Strategic Planning
+tables:
+- pathlib
+- prt_otp_analysis
+- scipy
+files: []
+analyses: []

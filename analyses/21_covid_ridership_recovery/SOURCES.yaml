@@ -1,0 +1,12 @@
+kind: analysis
+title: 21 - COVID Ridership vs OTP Recovery
+group: Ridership and External Factors
+tables:
+- otp_monthly
+- pathlib
+- prt_otp_analysis
+- ridership_monthly
+- routes
+- scipy
+files: []
+analyses: []

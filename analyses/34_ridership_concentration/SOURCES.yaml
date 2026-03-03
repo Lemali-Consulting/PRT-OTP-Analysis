@@ -1,0 +1,14 @@
+kind: analysis
+title: 34 - Ridership Concentration (Pareto)
+group: Equity and Strategic Planning
+tables:
+- Gini
+- otp_monthly
+- pathlib
+- prt_otp_analysis
+- routes
+- scipy
+- stop
+- the
+files: []
+analyses: []

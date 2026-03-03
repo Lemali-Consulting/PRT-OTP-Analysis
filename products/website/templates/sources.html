@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Sources - PRT OTP Analysis{% endblock %}
+{% block content %}
+<h1>Sources Inventory</h1>
+<ul>
+{% for src in sources %}
+  <li><a href="{{ src.path }}">{{ src.name }}</a> ({{ src.kind }})</li>
+{% endfor %}
+</ul>
+{% endblock %}

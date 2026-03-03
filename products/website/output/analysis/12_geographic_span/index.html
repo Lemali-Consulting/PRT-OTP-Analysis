@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12: Route Geographic Span vs OTP - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>12: Route Geographic Span vs OTP</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Route and Service Drivers</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  12_geographic_span["12: Route Geographic Span vs OTP"]
+  t_otp_monthly["otp_monthly"] --> 12_geographic_span
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 12_geographic_span
+  t_prt_otp_analysis["prt_otp_analysis"] --> 12_geographic_span
+  t_route_stops["route_stops"] --> 12_geographic_span
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_routes["routes"] --> 12_geographic_span
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 12_geographic_span
+  t_stops["stops"] --> 12_geographic_span
+  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Route Geographic Span vs OTP</p><p>## Summary</p><p>Geographic span (the maximum distance between any two stops on a route) is a **moderate negative predictor** of OTP within bus routes (r = -0.38, p &lt; 0.001), but stop count remains the stronger predictor after controlling for the other. Partial correlation analysis disentangles the two: stop count predicts OTP even after controlling for span (partial r = -0.41, p &lt; 0.001), while span&#x27;s independent contribution is smaller (partial r = -0.23, p = 0.03).</p><p>## Key Numbers</p><p>- **Span vs OTP (bus only, primary):** Pearson r = -0.38 (p &lt; 0.001, n = 89), Spearman rho = -0.37 (p &lt; 0.001)
+- **Span vs OTP (all routes, secondary):** r = -0.32 (p = 0.002, n = 92) -- includes Simpson&#x27;s paradox risk
+- **Stop density vs OTP (bus only):** r = 0.04 (p = 0.71) -- not significant
+- **Span vs OTP | stop count (bus, partial):** r = -0.23 (p = 0.03)
+- **Stop count vs OTP | span (bus, partial):** r = -0.41 (p &lt; 0.001)
+- **Span-stop count collinearity:** r = 0.41</p><p>## Observations</p><p>- The bus-only correlation (r = -0.38) is actually *stronger* than the all-mode correlation (r = -0.32). The pooled-mode result was muted by Simpson&#x27;s paradox -- rail routes have moderate span but high OTP, pulling the all-mode trend line toward zero.
+- Span and stop count are moderately correlated (r = 0.41), but not so strongly as to make partial correlation unreliable.
+- After controlling for stop count, span still has a small but significant independent effect -- longer routes face additional challenges beyond just having more stops (longer exposure to traffic, more variance in conditions).
+- However, stop count&#x27;s partial correlation (-0.41) is nearly twice span&#x27;s (-0.23), confirming that the **number of stops matters more than the distance covered**.
+- Stop density (stops per km) shows no correlation with OTP at all (r = 0.04), meaning that tightly-packed stops are no worse than widely-spaced stops once total count and distance are accounted for.</p><p>## Implication</p><p>Both stop count and route distance independently degrade OTP, but stop consolidation is the higher-leverage intervention. Shortening routes would help modestly, but eliminating stops on existing routes would have roughly twice the impact per unit of change.</p><p>## Caveats</p><p>- Geographic span (max pairwise distance) is a crude proxy for actual route length. GTFS shape data would provide a more accurate route-length measurement.
+- Routes with fewer than 12 months of data are excluded to reduce noise.</p><p>## Review History</p><p>- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 4 issues (1 significant). Bus-only correlations now primary; Spearman added.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Route Geographic Span vs OTP</p><p>## Question
+Does the geographic extent of a route predict on-time performance independently of stop count? Analysis 07 found stop count is the strongest OTP predictor (r = -0.53), but routes with many stops also tend to cover more distance. Disentangling the two could clarify whether the problem is &quot;too many stops&quot; or &quot;too long a route.&quot;</p><p>## Approach
+- For each route, collect all stop coordinates from `route_stops` joined to `stops`.
+- Compute **geographic span** as the maximum haversine distance between any pair of stops on the route (the diameter of the stop set in km).
+- Compute **stop density** as stops per km of span, to capture how tightly packed stops are.
+- Correlate span, stop density, and stop count separately with average OTP (Pearson and Spearman).
+- Use partial correlation to test whether span predicts OTP after controlling for stop count, and vice versa.
+- Scatter plots for span vs OTP and stop density vs OTP.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `route_stops` | Links routes to stops | `prt.db` table |
+| `stops` | Lat/lon coordinates | `prt.db` table |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |</p><p>## Output
+- `output/geographic_span.csv` -- per-route span, stop density, stop count, avg OTP
+- `output/span_vs_otp.png` -- scatter plot of geographic span vs OTP
+- `output/density_vs_otp.png` -- scatter plot of stop density vs OTP</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

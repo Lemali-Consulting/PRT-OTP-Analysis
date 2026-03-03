@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PRT OTP Analysis{% endblock %}</title>
+  <link rel="stylesheet" href="{{ root }}style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="{{ root }}index.html" class="brand">PRT OTP Analysis</a>
+    <a href="{{ root }}index.html#pipeline">Pipeline</a>
+    <a href="{{ root }}index.html#analyses">Analyses</a>
+    <a href="{{ root }}sources.html">Sources</a>
+    <a href="{{ root }}glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

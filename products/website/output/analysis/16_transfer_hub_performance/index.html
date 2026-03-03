@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>16: Transfer Hub Performance - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>16: Transfer Hub Performance</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Route and Service Drivers</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  16_transfer_hub_performance["16: Transfer Hub Performance"]
+  t_otp_monthly["otp_monthly"] --> 16_transfer_hub_performance
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 16_transfer_hub_performance
+  t_prt_otp_analysis["prt_otp_analysis"] --> 16_transfer_hub_performance
+  t_route_stops["route_stops"] --> 16_transfer_hub_performance
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_routes["routes"] --> 16_transfer_hub_performance
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 16_transfer_hub_performance
+  t_stops["stops"] --> 16_transfer_hub_performance
+  01_data_ingestion["Data Ingestion"] --> t_stops</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Transfer Hub Performance</p><p>## Summary</p><p>Higher-connectivity stops appear to have modestly worse OTP in stop-level data, but this finding **does not survive correction for non-independence**. At the route level (independent observations), the correlation between stop connectivity and OTP is not significant (r = -0.15, p = 0.16). The apparent &quot;hub penalty&quot; is a composition effect driven by inflated sample size at the stop level.</p><p>## Key Numbers</p><p>| Tier | Stops | Mean OTP | Median OTP |
+|------|-------|----------|------------|
+| Simple (1 route) | 3,875 | 69.5% | 69.2% |
+| Medium (2-4 routes) | 2,138 | 66.0% | 65.0% |
+| Hub (5+ routes) | 196 | 66.4% | 65.2% |</p><p>**Stop-level (n=6,209 -- non-independent, inflated power):**
+- Pearson r = -0.17 (p &lt; 0.001)
+- Spearman rho = -0.32 (p &lt; 0.001)</p><p>**Route-level (n=93 -- independent observations):**
+- Pearson r = -0.15 (p = 0.16)</p><p>**Route-level, bus only (n=90):**
+- Pearson r = -0.09 (p = 0.39)</p><p>## Observations</p><p>- The stop-level correlations (r = -0.17, rho = -0.32) are statistically significant but **misleading**: the 6,209 &quot;stops&quot; are not independent observations. Stops on the same route share the same underlying OTP, so the effective sample size is closer to ~90 (the number of distinct routes). With n_eff ~ 90, a correlation of r = -0.15 yields p = 0.16, which is not significant.
+- The route-level analysis confirms this: average stop connectivity per route has no significant relationship with route OTP (r = -0.15, p = 0.16). Within bus routes only, the relationship is even weaker (r = -0.09, p = 0.39).
+- The 3.5 pp tier gap (simple 69.5% vs hub 66.4%) is real in the raw data but reflects a **composition effect**: hubs are served by many routes including poor-performing local bus routes, which drag down the average. The hub location itself is not causing worse OTP.
+- The busiest hub (East Busway Penn Station, 27 routes) actually outperforms the system average (72.1%) because it sits on dedicated right-of-way.</p><p>## Implication</p><p>Being a transfer hub does not independently predict worse OTP. The apparent hub penalty is driven by which routes converge there. Policy should focus on improving the poorly-performing routes themselves, not on the hub locations.</p><p>## Caveats</p><p>- This analysis uses route-level OTP projected onto stops (ecological fallacy). We don&#x27;t have stop-level OTP data; a route&#x27;s on-time performance may vary along its length.
+- The route-level analysis uses &quot;average stop connectivity per route,&quot; which is itself an approximation. A more direct test would require stop-level arrival data.</p><p>## Review History</p><p>- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 3 issues (2 significant). &quot;Hub penalty&quot; finding retracted; route-level analysis now primary.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Transfer Hub Performance</p><p>## Question
+Do passengers at major transfer hubs -- stops served by many routes -- experience worse reliability than passengers at simpler stops? This matters because transfer hub passengers are disproportionately transit-dependent and a missed connection at a hub cascades into longer wait times.</p><p>## Approach
+- Count distinct routes per stop from `route_stops` to measure **connectivity** (number of routes serving each stop).
+- For each stop, compute a trip-weighted average OTP across all routes serving it.
+- Classify stops as **hubs** (5+ routes), **medium** (2-4 routes), or **simple** (1 route).
+- Compare OTP distributions across these tiers.
+- Identify the busiest hubs and their OTP.
+- Scatter plot of connectivity vs stop-level OTP.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `route_stops` | Which routes serve which stops, with trip counts | `prt.db` table |
+| `stops` | Stop names and coordinates | `prt.db` table |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode for context | `prt.db` table |</p><p>## Output
+- `output/hub_performance.csv` -- per-stop connectivity, OTP, and classification
+- `output/connectivity_vs_otp.png` -- scatter plot of routes-per-stop vs OTP
+- `output/hub_tier_comparison.png` -- box plot of OTP by hub tier</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

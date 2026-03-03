@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>21 - COVID Ridership vs OTP Recovery - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>21 - COVID Ridership vs OTP Recovery</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Ridership and External Factors</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  21_covid_ridership_recovery["21 - COVID Ridership vs OTP Recovery"]
+  t_otp_monthly["otp_monthly"] --> 21_covid_ridership_recovery
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 21_covid_ridership_recovery
+  t_prt_otp_analysis["prt_otp_analysis"] --> 21_covid_ridership_recovery
+  t_ridership_monthly["ridership_monthly"] --> 21_covid_ridership_recovery
+  01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
+  t_routes["routes"] --> 21_covid_ridership_recovery
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 21_covid_ridership_recovery</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: COVID Ridership vs OTP Recovery</p><p>## Summary
+**Zero of 93 routes** have recovered to pre-COVID ridership levels (median -43%, all negative). Routes that lost *more* ridership tended to see *better* OTP recovery (r = -0.21, p = 0.047), weakly supporting the hypothesis that ridership recovery degrades OTP through crowding and longer dwell times.</p><p>## Key Numbers
+- **Ridership recovery**: median -43.4%, mean -44.5%; 0/93 routes at or above pre-COVID
+- **OTP recovery**: 35/93 routes improved, 58/93 declined vs pre-COVID
+- **Correlation (ridership change vs OTP change)**: Pearson r = -0.21, p = 0.047; Spearman r = -0.29, p = 0.005
+- **Kruskal-Wallis (OTP delta by subtype)**: H = 2.89, p = 0.58 (not significant)
+- Pre-COVID baseline: Jan 2019 -- Feb 2020; recovery period: Jan 2023 -- Oct 2024
+- 93 routes with 6+ months in both periods</p><p>## Observations
+- The scatter plot falls entirely in the left half (all ridership declines). The two populated quadrants are &quot;both declined&quot; (58 routes) and &quot;riders down, OTP up&quot; (35 routes). There are zero routes in the &quot;both improved&quot; or &quot;riders up, OTP down&quot; quadrants.
+- **Flyers lost the most ridership** (median -68%), consistent with the collapse of peak-hour commute demand. Despite this, flyers show the widest spread in OTP recovery (some improved substantially, others declined).
+- **Busway routes** had the best OTP recovery (median +3.3 pp), likely because their dedicated right-of-way insulates them from the traffic impacts that affect other routes.
+- **Local bus routes** (n=64) show the widest spread on both axes, reflecting the diversity of the category. Some locals improved OTP by 10 pp while others declined by 19 pp.
+- The routes that improved OTP the most (P7 +18 pp, P69 +10 pp, 41 +10 pp) all lost substantial ridership (-32% to -61%), consistent with the idea that fewer riders means shorter dwell times and better schedule adherence.</p><p>## Discussion
+The weak negative correlation between ridership recovery and OTP recovery is consistent with a **crowding mechanism**: routes that regained more riders saw their OTP degrade (or fail to improve), while routes that stayed emptier ran closer to schedule. However, the effect is weak (r = -0.21) and the correlation is borderline significant (p = 0.047), so it should be interpreted cautiously.</p><p>The most policy-relevant finding is the **universal ridership collapse**: every single route is still below pre-COVID levels, with a median loss of 43%. This dwarfs any OTP effects. The system is running fewer riders on roughly the same infrastructure, and OTP has *still* declined for most routes -- suggesting that the OTP decline is driven by operational factors (staffing, vehicle maintenance, traffic congestion) rather than demand-side crowding alone.</p><p>The absence of subtype differences (Kruskal-Wallis p = 0.58) confirms Analysis 14&#x27;s finding: no route type has recovered OTP systematically better or worse than others.</p><p>## Caveats
+- **Regression to the mean**: baseline OTP is negatively correlated with OTP delta (as found in Analysis 14 for the same OTP data), meaning routes with extreme pre-COVID OTP tend to regress toward the mean regardless of ridership changes. The headline correlation (r = -0.21, p = 0.047) may be partly artifactual due to RTM. The Spearman result (r = -0.29, p = 0.005) is more robust but the RTM caveat still applies.
+- The ridership data ends Oct 2024; more recent ridership trends are not captured.
+- &quot;Recovery&quot; is defined as a simple average comparison between two periods, not a trajectory analysis. A route could be on an upward trend that the period average does not fully reflect.
+- The correlation between ridership change and OTP change does not establish causation; both could be driven by a third factor (e.g., service cuts, schedule changes).
+- Flyer and busway subtypes have small sample sizes (n=17 and n=3), limiting subtype-level conclusions.
+- Ridership data is weekday only; weekend recovery patterns may differ.</p><p>## Review History</p><p>- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-19-25.md) — 1 significant issue. Added RTM test (baseline OTP vs OTP delta: r=-0.18, p=0.08). Borderline RTM; caveat added.</p></div>
+</section>
+
+
+
+<section>
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure>
+        <img src="assets/analysis/21_covid_ridership_recovery/recovery_by_subtype.png" alt="recovery_by_subtype" loading="lazy">
+        <figcaption>recovery_by_subtype.png</figcaption>
+      </figure>
+    
+      <figure>
+        <img src="assets/analysis/21_covid_ridership_recovery/recovery_scatter.png" alt="recovery_scatter" loading="lazy">
+        <figcaption>recovery_scatter.png</figcaption>
+      </figure>
+    
+  </div>
+</section>
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: COVID Ridership vs OTP Recovery</p><p>## Question
+Did routes that recovered ridership fastest also recover OTP? Or does ridership recovery degrade OTP (e.g., through crowding and longer dwell times)?</p><p>## Approach
+- Define pre-COVID baseline as Jan 2019 -- Feb 2020 for both ridership and OTP.
+- Define recovery period as Jan 2023 -- Oct 2024 (post-stabilization).
+- For each route, compute ridership recovery ratio (recovery avg / baseline avg) and OTP recovery delta (recovery avg - baseline avg).
+- Scatter plot ridership recovery vs OTP recovery, colored by mode/subtype.
+- Test correlation (Pearson and Spearman) between ridership recovery and OTP recovery.
+- Test for regression to the mean: compute correlation between baseline OTP and OTP delta. A significant negative correlation indicates RTM, which would bias the recovery correlation.
+- Stratify by route subtype (local, express, premium, rail) and test for group differences.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | route_id, month, OTP | `prt.db` table |
+| `ridership_monthly` | route_id, month, day_type=&#x27;WEEKDAY&#x27;, avg_riders | `prt.db` table |
+| `routes` | route_id, mode for subtype classification | `prt.db` table |</p><p>**Notes:** Join on route_id and month; restrict to overlap period. Exclude routes missing from either dataset or with fewer than 6 months in either period.</p><p>## Output
+- `output/recovery_scatter.png` -- ridership recovery ratio vs OTP delta
+- `output/recovery_by_subtype.png` -- box plots by route subtype
+- `output/recovery_data.csv` -- per-route recovery metrics</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>ridership_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

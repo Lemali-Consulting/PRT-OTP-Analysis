@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>17: Weekend vs Weekday Service Profile - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>17: Weekend vs Weekday Service Profile</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Route and Service Drivers</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  17_weekend_weekday_profile["17: Weekend vs Weekday Service Profile"]
+  t_otp_monthly["otp_monthly"] --> 17_weekend_weekday_profile
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 17_weekend_weekday_profile
+  t_prt_otp_analysis["prt_otp_analysis"] --> 17_weekend_weekday_profile
+  t_route_stops["route_stops"] --> 17_weekend_weekday_profile
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_routes["routes"] --> 17_weekend_weekday_profile
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 17_weekend_weekday_profile</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Weekend vs Weekday Service Profile</p><p>## Summary</p><p>There is **no meaningful correlation** between a route&#x27;s weekend-to-weekday service ratio and its OTP. Routes that run heavy weekend service perform identically to commuter-oriented weekday-heavy routes.</p><p>## Key Numbers</p><p>- **Pearson r = -0.03** (p = 0.79, n = 93)
+- **Spearman rho = -0.02** (p = 0.84)</p><p>| Service Tier | Routes | Mean OTP |
+|-------------|--------|----------|
+| Weekday-heavy (&lt;0.3) | 27 | 69.8% |
+| Balanced (0.3-0.7) | 45 | 68.8% |
+| Weekend-heavy (&gt;0.7) | 21 | 70.3% |</p><p>## Observations</p><p>- The three service tiers are virtually indistinguishable in OTP (69.8%, 68.8%, 70.3%).
+- Neither Pearson nor Spearman correlations approach significance.
+- This null result makes sense: the weekend service ratio reflects demand patterns and scheduling choices, not route structure. A route with high weekend service isn&#x27;t inherently harder to run on time.
+- Since OTP is reported monthly (not by day-of-week), it aggregates weekday and weekend performance, which may mask day-specific patterns.
+- Bus-only correlation (r = -0.06, p = 0.56) confirms the null result holds within the dominant mode.</p><p>## Implication</p><p>Weekend vs weekday service intensity is not a useful predictor of OTP. The structural factors identified in other analyses (stop count, mode, route length) dominate.</p><p>## Review History</p><p>- 2026-02-10: [RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md](../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md) — 2 issues (both moderate). Bus-only correlation added; caveats strengthened. Null finding unchanged.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Weekend vs Weekday Service Profile</p><p>## Question
+Do commuter-oriented routes (high weekday, low weekend service) perform differently than all-day routes (similar weekday and weekend service)? The ratio of weekend to weekday trips signals route purpose, and since OTP is reported monthly, it likely reflects weekday-dominant measurement.</p><p>## Approach
+- For each route, compute peak weekday trips (MAX trips_wd), peak Saturday trips (MAX trips_sa), and peak Sunday trips (MAX trips_su) from `route_stops`.
+- Compute **weekend ratio** = (max_sa + max_su) / (2 * max_wd), representing the proportion of weekday service provided on weekends (1.0 = identical, 0 = weekday-only).
+- Correlate weekend ratio with average OTP.
+- Classify routes as **weekday-heavy** (ratio &lt; 0.3), **balanced** (0.3-0.7), or **weekend-heavy** (&gt; 0.7) and compare OTP distributions.
+- Scatter plot and box plot.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `route_stops` | Weekday, Saturday, Sunday trip counts per stop | `prt.db` table |
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `routes` | Mode and name | `prt.db` table |</p><p>## Output
+- `output/service_profile.csv` -- per-route trip counts, weekend ratio, and OTP
+- `output/weekend_ratio_vs_otp.png` -- scatter plot
+- `output/service_tier_comparison.png` -- box plot by service profile tier</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

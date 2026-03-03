@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>07: Stop Count vs OTP - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>07: Stop Count vs OTP</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Core OTP Patterns</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  07_stop_count_vs_otp["07: Stop Count vs OTP"]
+  t_otp_monthly["otp_monthly"] --> 07_stop_count_vs_otp
+  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
+  t_pathlib["pathlib"] --> 07_stop_count_vs_otp
+  t_prt_otp_analysis["prt_otp_analysis"] --> 07_stop_count_vs_otp
+  t_route_stops["route_stops"] --> 07_stop_count_vs_otp
+  01_data_ingestion["Data Ingestion"] --> t_route_stops
+  t_routes["routes"] --> 07_stop_count_vs_otp
+  01_data_ingestion["Data Ingestion"] --> t_routes
+  t_scipy["scipy"] --> 07_stop_count_vs_otp</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Stop Count vs OTP</p><p>## Summary</p><p>There is a **moderately strong negative correlation** between the number of stops on a route and its average OTP. This finding holds for both all routes and bus-only analysis, ruling out Simpson&#x27;s paradox as a confounder.</p><p>## Key Numbers</p><p>- **All routes: Pearson r = -0.53** (p &lt; 0.001, n = 92)
+- **Bus only: Pearson r = -0.50** (p &lt; 0.001, n = 89)
+- **Bus only: Spearman r = -0.49** (p &lt; 0.001)
+- Routes with &lt; 50 stops: typically 80%+ OTP
+- Routes with 150+ stops: typically below 60% OTP</p><p>Routes with fewer than 12 months of OTP data are excluded to avoid noisy averages from sparse observations.</p><p>## Observations</p><p>- The bus-only correlation (r = -0.50) is nearly as strong as the all-routes correlation (r = -0.53), confirming that the effect is not driven by the BUS/RAIL mode split (Simpson&#x27;s paradox). Stop count predicts OTP within the bus mode alone.
+- The Spearman rank correlation (r = -0.49) is consistent with the Pearson, indicating the relationship is approximately monotonic without being driven by outliers or non-linearity.
+- Every stop adds dwell time (boarding/alighting), traffic signal delay, and schedule recovery risk. The cumulative effect is substantial.
+- Busway and rail routes tend to have fewer stops and dedicated right-of-way, giving them a double advantage.
+- Route 77 (Penn Hills) is an extreme case: 258 stops and among the worst OTP in the system.</p><p>## Implication</p><p>Stop consolidation -- reducing the number of stops on long routes -- is a common transit strategy for improving schedule adherence. This data strongly supports that approach for PRT&#x27;s worst-performing routes.</p><p>## Caveats</p><p>- Correlation is not causation. Routes with many stops also tend to serve congested corridors, cover longer distances, and carry more passengers -- all of which independently affect OTP.
+- **Temporal mismatch:** Stop counts come from the current `route_stops` snapshot while OTP is averaged across all historical months (2019--2025). Routes that changed stop configurations during this period have a mismatch between their current stop count and earlier OTP observations. This is inherent to the available data and cannot be corrected without historical stop-count snapshots.</p><p>## Review History
+- 2026-02-11: [RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md](../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md) — 6 issues (0 significant). Added 12-month minimum filter, temporal mismatch note in METHODS.md, `all_n` tracking, replaced manual regression with `linregress`, added min-n guard, updated METHODS.md for Pearson+Spearman.</p></div>
+</section>
+
+
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Stop Count vs OTP</p><p>## Question
+Do routes with more stops have worse on-time performance? Each stop is another opportunity to fall behind schedule.</p><p>## Approach
+- Count distinct stops per route from `route_stops`.
+- Compute average OTP per route from `otp_monthly`, requiring at least 12 months of data (`HAVING COUNT(*) &gt;= 12`) to exclude routes with sparse observations.
+- Create a scatter plot of stop count vs average OTP, colored by mode.
+- Compute Pearson and Spearman correlation coefficients, both for all routes and for bus-only (to check for Simpson&#x27;s paradox from mixing modes).
+- Fit a simple linear regression line (bus-only, via `scipy.stats.linregress`).</p><p>**Note:** Stop counts come from the current `route_stops` snapshot, while OTP is averaged across all historical months. Routes that changed stop configurations over time will have a mismatch between their current stop count and the OTP values from earlier periods.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `otp_monthly` | Monthly OTP per route | `prt.db` table |
+| `route_stops` | Stop count per route | `prt.db` table |
+| `routes` | Mode classification | `prt.db` table |</p><p>## Output
+- `output/stop_count_otp.csv` -- per-route stop count and average OTP
+- `output/stop_count_vs_otp.png` -- scatter plot with regression line</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>otp_monthly</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>route_stops</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>routes</td>
+        <td>table</td>
+        <td>Consumed DB table. Produced by 01_data_ingestion.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

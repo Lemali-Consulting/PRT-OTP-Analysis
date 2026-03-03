@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ source.name }} - Source Detail{% endblock %}
+{% block content %}
+<h1>{{ source.name }}</h1>
+<p><strong>Type:</strong> {{ source.kind }}</p>
+<p>{{ source.description }}</p>
+
+{% if mermaid_diagram %}
+<section>
+  <h2>Lineage</h2>
+  <pre class="mermaid">{{ mermaid_diagram }}</pre>
+</section>
+{% endif %}
+
+<h2>Consumed By</h2>
+<ul>
+{% for page in consumers %}
+  <li><a href="{{ page.path }}">{{ page.title }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

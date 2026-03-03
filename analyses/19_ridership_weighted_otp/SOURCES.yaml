@@ -1,0 +1,13 @@
+kind: analysis
+title: 19 - Ridership-Weighted OTP
+group: Route and Service Drivers
+tables:
+- otp_monthly
+- pathlib
+- prt_otp_analysis
+- ridership_monthly
+- route_stops
+- scipy
+- trip
+files: []
+analyses: []

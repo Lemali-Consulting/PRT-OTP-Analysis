@@ -51,7 +51,8 @@
       "Bash(curl:*)",
       "Bash(xxd:*)",
       "Bash(xargs:*)",
-      "Bash(PYTHONIOENCODING=utf-8 uv run python:*)"
+      "Bash(PYTHONIOENCODING=utf-8 uv run python:*)",
+      "Bash(git lfs:*)"
     ]
   }
 }

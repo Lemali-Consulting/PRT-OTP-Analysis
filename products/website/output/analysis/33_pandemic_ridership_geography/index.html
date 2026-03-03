@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>33 - Pandemic Ridership Geography - PRT OTP Analysis</title>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <nav class="site-nav">
+    <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+    <a href="../../index.html#pipeline">Pipeline</a>
+    <a href="../../index.html#analyses">Analyses</a>
+    <a href="../../sources.html">Sources</a>
+    <a href="../../glossary.html">Glossary</a>
+  </nav>
+  <main class="container">
+    
+<h1>33 - Pandemic Ridership Geography</h1>
+<p><strong>Type:</strong> analysis</p>
+<p><strong>Group:</strong> Equity and Strategic Planning</p>
+
+
+<section>
+  <h2>Data Provenance</h2>
+  <pre class="mermaid">flowchart LR
+  33_pandemic_ridership_geography["33 - Pandemic Ridership Geography"]
+  t_Downtown["Downtown"] --> 33_pandemic_ridership_geography
+  t_downtown["downtown"] --> 33_pandemic_ridership_geography
+  t_pathlib["pathlib"] --> 33_pandemic_ridership_geography
+  t_prt_otp_analysis["prt_otp_analysis"] --> 33_pandemic_ridership_geography
+  t_scipy["scipy"] --> 33_pandemic_ridership_geography</pre>
+</section>
+
+
+
+<section>
+  <h2>Findings</h2>
+  <div class="markdown"><p># Findings: Pandemic Ridership Geography</p><p>## Summary
+System-wide weekday ridership fell 63% between the pre-pandemic baseline (Sep 2019/Jan 2020) and the pandemic period (Sep 2020/Apr 2021). The loss was remarkably uniform geographically: the median stop lost ~60% regardless of whether it was in downtown, the inner ring, or the outer suburbs. The largest absolute losses were concentrated at high-volume downtown and university-area stops, while outer suburban stops showed slightly better retention in aggregate.</p><p>## Key Numbers
+- **6,719** stops with matched pre/post data; **6,556** with pre-pandemic usage &gt; 0
+- System total weekday usage: **259,783 -&gt; 95,798** (-63.1%)
+- Median stop-level change: **-60.2%**; Mean: **-50.7%**
+- **Downtown (&lt; 2 km)**: median -60%, aggregate -64.1% (n=369)
+- **Inner ring (2-8 km)**: median -62%, aggregate -65.7% (n=2,658)
+- **Outer ring (&gt; 8 km)**: median -59%, aggregate -55.7% (n=3,529)
+- **Kruskal-Wallis (zones)**: H=13.40, p=0.001 -- zones differ significantly
+  - Pairwise (Bonferroni): inner ring vs outer ring p=0.001; downtown vs either ring p&gt;0.8
+- By mode: Bus -60%, Busway -58%, Light Rail -56% (Kruskal-Wallis H=0.48, p=0.49 -- not significant)
+- Largest single-stop loss: **Liberty Ave at Market St** (-2,329 riders/day, -73%)</p><p>## Observations
+- **The pandemic hit uniformly across geography.** All three zones saw median declines of 59-62%. The hypothesis that downtown would lose disproportionately more (due to remote work) is only weakly supported: downtown&#x27;s aggregate loss (-64%) is slightly above average but well within the range of the inner ring (-66%).
+- **The inner ring actually lost the most in aggregate** (-65.7%), likely because it contains high-volume university (Oakland) and hospital-adjacent stops that saw steep declines.
+- **Outer suburbs retained ridership slightly better** (-55.7% aggregate), consistent with more essential/transit-dependent riders in these areas.
+- **The biggest absolute losses are clustered in two corridors**: downtown (Liberty Ave, Smithfield St) and Oakland/university area (5th Ave at Thackeray, Forbes Ave at Morewood). These are commuter and student-heavy stops.
+- **The distribution is unimodal with a long right tail**: most stops lost 40-80%, but a small number gained riders, likely reflecting route restructuring or localized demand shifts.
+- **Mode differences are not statistically significant** (Kruskal-Wallis p=0.49): busway and light rail fared marginally better than bus, but only by 2-4 percentage points.
+- **Zone differences are statistically significant** (Kruskal-Wallis p=0.001): pairwise tests show the inner ring lost significantly more than the outer ring (Bonferroni-corrected p=0.001), while downtown does not differ significantly from either ring.</p><p>## Discussion
+The geographic uniformity of ridership loss challenges the narrative that the pandemic disproportionately affected downtown transit. While downtown and Oakland stops did lose the most riders in absolute terms (because they started highest), the *rate* of loss was nearly identical everywhere. This suggests the pandemic&#x27;s impact was driven more by system-wide behavioral shifts (remote work, fear of shared spaces) than by location-specific factors.</p><p>The slightly better retention in outer suburbs aligns with the &quot;essential worker&quot; hypothesis: riders who depend on transit for non-office jobs continued riding at higher rates. This has implications for service planning -- if remote work persists, the ridership center of gravity may permanently shift outward, favoring suburban route investment.</p><p>The Oakland/university corridor stands out as a potential recovery target: these stops lost 70-87% of riders, largely due to remote instruction. As universities have returned to in-person operations, these stops may have recovered more than this pandemic-era snapshot shows.</p><p>## Caveats
+- The pandemic period averages Sep 2020 and Apr 2021, which represent different stages of the pandemic; conditions changed rapidly.
+- The data captures only weekday usage. Weekend patterns may show different geographic signatures.
+- Some stops may have been temporarily closed or rerouted during the pandemic, inflating apparent losses.
+- The zone classification uses simple distance rings; a neighborhood-level analysis might reveal more nuance.</p><p>## Review History</p><p>- 2026-02-27: [RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md](../../RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md) — 1 significant issue. Added Kruskal-Wallis + pairwise Mann-Whitney tests for zone and mode differences. Zones significant (p=0.001, inner vs outer); modes not significant (p=0.49).</p></div>
+</section>
+
+
+
+<section>
+  <h2>Output</h2>
+  <div class="gallery">
+    
+      <figure>
+        <img src="assets/analysis/33_pandemic_ridership_geography/change_by_zone.png" alt="change_by_zone" loading="lazy">
+        <figcaption>change_by_zone.png</figcaption>
+      </figure>
+    
+      <figure>
+        <img src="assets/analysis/33_pandemic_ridership_geography/ridership_change_map.png" alt="ridership_change_map" loading="lazy">
+        <figcaption>ridership_change_map.png</figcaption>
+      </figure>
+    
+  </div>
+</section>
+
+
+
+<section>
+  <h2>Methods</h2>
+  <div class="markdown"><p># Methods: Pandemic Ridership Geography</p><p>## Question
+Where did ridership fall the most during the pandemic, and does the geographic pattern differ by mode or stop type?</p><p>## Approach
+- Compute average weekday usage per physical stop in two periods: pre-pandemic (mean of datekeys 201909, 202001) and pandemic (mean of 202009, 202104).
+- Calculate the absolute change and percentage change in usage per stop.
+- Classify stops into geographic zones using distance from downtown Pittsburgh centroid (40.4406, -79.9959): downtown core (&lt; 2 km), inner ring (2-8 km), outer ring (&gt; 8 km).
+- Compare ridership loss by zone and mode. Test zone differences with Kruskal-Wallis; if significant, follow up with pairwise Mann-Whitney tests (Bonferroni-corrected). Test mode differences with Kruskal-Wallis.
+- Generate a geographic scatter map of stops colored by percentage change.
+- Produce summary bar chart by zone and a histogram of change distributions.</p><p>## Data</p><p>| Name | Description | Source |
+|------|-------------|--------|
+| `wprdc_stop_data.csv` | Stop-level boardings/alightings across 4 time periods | Local CSV (`data/bus-stop-usage/`) |</p><p>## Output
+- `output/pandemic_change_by_stop.csv` -- per-stop pre/post usage and change metrics
+- `output/ridership_change_map.png` -- geographic scatter plot colored by % change
+- `output/change_by_zone.png` -- bar chart of median % change by zone and histogram of changes</p></div>
+</section>
+
+
+
+<section>
+  <h2>Sources</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>Downtown</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>downtown</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>pathlib</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>prt_otp_analysis</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+      <tr>
+        <td>scipy</td>
+        <td>table</td>
+        <td>Consumed DB table.</td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+
+  </main>
+</body>
+</html>

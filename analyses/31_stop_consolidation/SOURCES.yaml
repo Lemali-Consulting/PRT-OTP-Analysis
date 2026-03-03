@@ -1,0 +1,16 @@
+kind: analysis
+title: 31 - Stop Consolidation Candidates
+group: Equity and Strategic Planning
+tables:
+- CSV
+- DB
+- Stop
+- otp_monthly
+- pathlib
+- prt_otp_analysis
+- route_stops
+- routes
+- scipy
+- the
+files: []
+analyses: []

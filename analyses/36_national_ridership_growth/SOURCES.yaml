@@ -1,0 +1,11 @@
+kind: analysis
+title: 36 - National Ridership Growth (2019 vs 2024)
+group: Equity and Strategic Planning
+tables:
+- agency
+- ntd_agency
+- ntd_ridership
+- pathlib
+- prt_otp_analysis
+files: []
+analyses: []

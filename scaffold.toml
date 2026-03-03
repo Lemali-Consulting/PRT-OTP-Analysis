@@ -1,10 +1,20 @@
 [project]
-name = "my-research-project"
-package = "my_research_project"
-description = "Description of your research project"
+name = "prt-otp-analysis"
+package = "prt_otp_analysis"
+description = "PRT OTP (On-Time Performance) Analysis"
 python_requires = ">=3.14"
-db_filename = "data.db"
-dependencies = ["polars>=1.38.1", "matplotlib>=3.10", "scipy>=1.14"]
+db_filename = "prt.db"
+dependencies = [
+    "polars>=1.38.1",
+    "matplotlib>=3.10",
+    "folium>=0.20.0",
+    "scipy>=1.14",
+    "statsmodels>=0.14.6",
+    "fastexcel>=0.12",
+    "jinja2>=3.1",
+    "mistune>=3.0",
+    "pyyaml>=6.0",
+]
 
 [env]
 DB_PATH = "Optional override for the database path"

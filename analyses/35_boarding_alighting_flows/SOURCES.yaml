@@ -1,0 +1,8 @@
+kind: analysis
+title: 35 - Boarding/Alighting Flow Analysis
+group: Equity and Strategic Planning
+tables:
+- pathlib
+- prt_otp_analysis
+files: []
+analyses: []

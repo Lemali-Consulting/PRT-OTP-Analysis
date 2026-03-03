@@ -17,7 +17,7 @@ Raw CSVs live in `data/` and are normalized into a SQLite database at `data/prt.
 To rebuild the database from source CSVs:
 
 ```bash
-uv run python src/prt_otp_analysis/build_db.py
+uv run python pipeline/01_data_ingestion/main.py
 ```
 
 ### Database tables
@@ -51,6 +51,42 @@ uv run python analyses/01_system_trend/main.py
 | 05 | Anomaly Investigation | What explains sharp OTP drops? |
 
 Each directory contains a `METHODS.md` describing the approach. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for conventions on adding new analyses.
+
+## Pipeline
+
+Ingestion steps are tracked under `pipeline/` and run before analyses:
+
+```bash
+uv run python pipeline/01_data_ingestion/main.py
+```
+
+To run the full stack in sequence:
+
+```bash
+uv run python scaffold.py run-all
+```
+
+## Website
+
+Scaffold-aligned documentation site is generated to `products/website/output/`:
+
+```bash
+uv run python products/website/generate_manifests.py
+uv run python products/website/main.py
+```
+
+Legacy single-file report generation remains in `report/` for stakeholder exports.
+
+## Validation
+
+Use this sequence to validate scaffold alignment locally:
+
+```bash
+python3 scaffold.py run-all --dry-run
+python3 products/website/generate_manifests.py
+python3 products/website/main.py
+python3 -m pytest -q tests/test_smoke.py
+```
 
 ## Project structure
 

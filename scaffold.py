@@ -3,7 +3,7 @@
 Documents and generates the analysis framework. Subcommands:
   scaffold <dir>           Create a new project with all framework elements
   add <name>               Add a new analysis directory (auto-numbers if no prefix)
-  run-all                  Discover and run all analyses/*/main.py in order
+  run-all                  Discover and run pipeline/* then analyses/* in order
   index                    Auto-generate an analysis index in FINDINGS.md
 """
 
@@ -1089,21 +1089,24 @@ def cmd_add(args):
 
 
 def cmd_run_all(args):
-    """Discover and run all analyses/*/main.py in numerical order."""
+    """Discover and run pipeline then analyses in numerical order."""
     root = Path.cwd()
+    pipeline_dir = root / "pipeline"
     analyses_dir = root / "analyses"
     use_json = getattr(args, "json", False)
     dry_run = getattr(args, "dry_run", False)
 
-    if not analyses_dir.is_dir():
-        msg = f"ERROR: No analyses/ directory found in {root}."
+    if not analyses_dir.is_dir() and not pipeline_dir.is_dir():
+        msg = f"ERROR: No pipeline/ or analyses/ directory found in {root}."
         if use_json:
             print(json.dumps({"command": "run-all", "error": msg}))
         else:
             print(msg)
         sys.exit(1)
 
-    main_files = sorted(analyses_dir.glob("*/main.py"))
+    pipeline_files = sorted(pipeline_dir.glob("*/main.py")) if pipeline_dir.is_dir() else []
+    analysis_files = sorted(analyses_dir.glob("*/main.py")) if analyses_dir.is_dir() else []
+    main_files = pipeline_files + analysis_files
     if not main_files:
         result = {"command": "run-all", "results": [], "passed": 0, "total": 0}
         if use_json:
@@ -1113,27 +1116,30 @@ def cmd_run_all(args):
         return result
 
     if dry_run:
-        names = [mf.parent.name for mf in main_files]
+        names = [str(mf.parent.relative_to(root)) for mf in main_files]
         result = {
             "command": "run-all",
             "dry_run": True,
-            "analyses": names,
+            "steps": names,
             "total": len(names),
         }
         if use_json:
             print(json.dumps(result, indent=2))
         else:
-            print(f"Dry run: would run {len(names)} analyses:")
+            print(f"Dry run: would run {len(names)} steps:")
             for n in names:
                 print(f"  {n}")
         return result
 
     if not use_json:
-        print(f"Found {len(main_files)} analyses.\n")
+        print(
+            f"Found {len(pipeline_files)} pipeline steps and "
+            f"{len(analysis_files)} analyses.\n"
+        )
 
     results = []
     for main_py in main_files:
-        name = main_py.parent.name
+        name = str(main_py.parent.relative_to(root))
         if not use_json:
             print(f"{'=' * 60}")
             print(f"Running {name}...")

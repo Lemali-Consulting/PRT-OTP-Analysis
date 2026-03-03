@@ -1,0 +1,16 @@
+kind: analysis
+title: 23 - Garage-Level Performance
+group: Ridership and External Factors
+tables:
+- all
+- dummies
+- otp_monthly
+- pathlib
+- prt_otp_analysis
+- ridership_monthly
+- route_stops
+- routes
+- scipy
+- stops
+files: []
+analyses: []
