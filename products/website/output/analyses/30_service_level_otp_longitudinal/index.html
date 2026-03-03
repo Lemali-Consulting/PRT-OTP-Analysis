@@ -32,7 +32,7 @@
   <h1>30 - Service Level vs OTP Longitudinal</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2016-11 to 2025-11 (from otp_monthly, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:22 UTC · Commit 416f8c4</p>
+  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
 </section>
 
 <section class="panel toc-panel">
@@ -62,16 +62,16 @@
   <details class="fold" open>
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
-  30_service_level_otp_longitudinal["30 - Service Level vs OTP Longitudinal"]
-  t_otp_monthly["otp_monthly"] --> 30_service_level_otp_longitudinal
-  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_routes["routes"] --> 30_service_level_otp_longitudinal
-  01_data_ingestion["Data Ingestion"] --> t_routes
-  t_scheduled_trips_monthly["scheduled_trips_monthly"] --> 30_service_level_otp_longitudinal
-  02_scheduled_trips["Scheduled Trips ETL"] --> t_scheduled_trips_monthly
-  d1_30_service_level_otp_longitudinal["numpy (lib)"] --> 30_service_level_otp_longitudinal
-  d2_30_service_level_otp_longitudinal["polars (lib)"] --> 30_service_level_otp_longitudinal
-  d3_30_service_level_otp_longitudinal["scipy (lib)"] --> 30_service_level_otp_longitudinal
+  30_service_level_otp_longitudinal(["30 - Service Level vs OTP Longitudinal"])
+  t_otp_monthly[("otp_monthly")] --> 30_service_level_otp_longitudinal
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  t_routes[("routes")] --> 30_service_level_otp_longitudinal
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  t_scheduled_trips_monthly[("scheduled_trips_monthly")] --> 30_service_level_otp_longitudinal
+  02_scheduled_trips[["Scheduled Trips ETL"]] --> t_scheduled_trips_monthly
+  d1_30_service_level_otp_longitudinal(("numpy (lib)")) --> 30_service_level_otp_longitudinal
+  d2_30_service_level_otp_longitudinal(("polars (lib)")) --> 30_service_level_otp_longitudinal
+  d3_30_service_level_otp_longitudinal(("scipy (lib)")) --> 30_service_level_otp_longitudinal
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;

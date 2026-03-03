@@ -32,7 +32,7 @@
   <h1>Scheduled Trips ETL</h1>
   
   <p class="lede">Coverage: 2012-03 to 2026-02 (from schedule_periods, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:22 UTC · Commit 416f8c4</p>
+  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
 </section>
 
 <section class="panel toc-panel">
@@ -54,15 +54,15 @@
   <details class="fold" open>
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
-  02_scheduled_trips["Scheduled Trips ETL"]
-  f1_02_scheduled_trips["data/wprdc-schedule/schedule_monthly_agg.csv"] --> 02_scheduled_trips
-  f2_02_scheduled_trips["data/wprdc-schedule/paac_pick_lookup.csv"] --> 02_scheduled_trips
-  a1_02_scheduled_trips["WPRDC Schedule Monthly Aggregate"] --> 02_scheduled_trips
-  a2_02_scheduled_trips["WPRDC Pick Lookup"] --> 02_scheduled_trips
-  t_routes["routes"] --> 02_scheduled_trips
-  01_data_ingestion["Data Ingestion"] --> t_routes
-  02_scheduled_trips --> tp_scheduled_trips_monthly["scheduled_trips_monthly"]
-  02_scheduled_trips --> tp_schedule_periods["schedule_periods"]
+  02_scheduled_trips(["Scheduled Trips ETL"])
+  f1_02_scheduled_trips[/"data/wprdc-schedule/schedule_monthly_agg.csv"/] --> 02_scheduled_trips
+  f2_02_scheduled_trips[/"data/wprdc-schedule/paac_pick_lookup.csv"/] --> 02_scheduled_trips
+  a1_02_scheduled_trips{"WPRDC Schedule Monthly Aggregate"} --> 02_scheduled_trips
+  a2_02_scheduled_trips{"WPRDC Pick Lookup"} --> 02_scheduled_trips
+  t_routes[("routes")] --> 02_scheduled_trips
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  02_scheduled_trips --> tp_scheduled_trips_monthly[("scheduled_trips_monthly")]
+  02_scheduled_trips --> tp_schedule_periods[("schedule_periods")]
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;

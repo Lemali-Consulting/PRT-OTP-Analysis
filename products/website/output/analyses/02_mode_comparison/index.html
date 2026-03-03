@@ -32,7 +32,7 @@
   <h1>02 - Mode Comparison</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:22 UTC · Commit 416f8c4</p>
+  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
 </section>
 
 <section class="panel toc-panel">
@@ -62,16 +62,16 @@
   <details class="fold" open>
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
-  02_mode_comparison["02 - Mode Comparison"]
-  t_otp_monthly["otp_monthly"] --> 02_mode_comparison
-  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_route_stops["route_stops"] --> 02_mode_comparison
-  01_data_ingestion["Data Ingestion"] --> t_route_stops
-  t_routes["routes"] --> 02_mode_comparison
-  01_data_ingestion["Data Ingestion"] --> t_routes
-  d1_02_mode_comparison["numpy (lib)"] --> 02_mode_comparison
-  d2_02_mode_comparison["polars (lib)"] --> 02_mode_comparison
-  d3_02_mode_comparison["scipy (lib)"] --> 02_mode_comparison
+  02_mode_comparison(["02 - Mode Comparison"])
+  t_otp_monthly[("otp_monthly")] --> 02_mode_comparison
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  t_route_stops[("route_stops")] --> 02_mode_comparison
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_routes[("routes")] --> 02_mode_comparison
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  d1_02_mode_comparison(("numpy (lib)")) --> 02_mode_comparison
+  d2_02_mode_comparison(("polars (lib)")) --> 02_mode_comparison
+  d3_02_mode_comparison(("scipy (lib)")) --> 02_mode_comparison
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;

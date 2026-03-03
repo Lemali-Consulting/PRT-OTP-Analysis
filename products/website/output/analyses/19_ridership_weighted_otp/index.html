@@ -32,7 +32,7 @@
   <h1>19 - Ridership-Weighted OTP</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:22 UTC · Commit 416f8c4</p>
+  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
 </section>
 
 <section class="panel toc-panel">
@@ -62,15 +62,15 @@
   <details class="fold" open>
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
-  19_ridership_weighted_otp["19 - Ridership-Weighted OTP"]
-  t_otp_monthly["otp_monthly"] --> 19_ridership_weighted_otp
-  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_ridership_monthly["ridership_monthly"] --> 19_ridership_weighted_otp
-  01_data_ingestion["Data Ingestion"] --> t_ridership_monthly
-  t_route_stops["route_stops"] --> 19_ridership_weighted_otp
-  01_data_ingestion["Data Ingestion"] --> t_route_stops
-  d1_19_ridership_weighted_otp["polars (lib)"] --> 19_ridership_weighted_otp
-  d2_19_ridership_weighted_otp["scipy (lib)"] --> 19_ridership_weighted_otp
+  19_ridership_weighted_otp(["19 - Ridership-Weighted OTP"])
+  t_otp_monthly[("otp_monthly")] --> 19_ridership_weighted_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  t_ridership_monthly[("ridership_monthly")] --> 19_ridership_weighted_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_ridership_monthly
+  t_route_stops[("route_stops")] --> 19_ridership_weighted_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  d1_19_ridership_weighted_otp(("polars (lib)")) --> 19_ridership_weighted_otp
+  d2_19_ridership_weighted_otp(("scipy (lib)")) --> 19_ridership_weighted_otp
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;

@@ -468,9 +468,26 @@ def coverage_text_for_page(page: Page, table_coverage: dict[str, tuple[str, str]
 
 def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
     """Build a simple data-lineage diagram for one page."""
+    def node_expr(node_id: str, label: str, shape: str) -> str:
+        safe = label.replace('"', "'")
+        if shape == "table":
+            # Cylindrical database-style node.
+            return f'{node_id}[("{safe}")]'
+        if shape == "api":
+            return f'{node_id}{{"{safe}"}}'
+        if shape == "file":
+            return f'{node_id}[/"{safe}"/]'
+        if shape == "dependency":
+            return f'{node_id}(("{safe}"))'
+        if shape == "pipeline":
+            return f'{node_id}[["{safe}"]]'
+        if shape == "page":
+            return f'{node_id}(["{safe}"])'
+        return f'{node_id}["{safe}"]'
+
     lines = ["flowchart LR"]
     node_self = page.slug.replace("-", "_")
-    lines.append(f"  {node_self}[\"{page.title}\"]")
+    lines.append(f"  {node_expr(node_self, page.title, 'page')}")
     file_nodes: list[str] = []
     api_nodes: list[str] = []
     table_nodes: list[str] = []
@@ -480,34 +497,34 @@ def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
     for idx, file_item in enumerate(page.manifest.get("files", []), start=1):
         node = f"f{idx}_{node_self}"
         label = file_item.get("path", "file")
-        lines.append(f"  {node}[\"{label}\"] --> {node_self}")
+        lines.append(f"  {node_expr(node, label, 'file')} --> {node_self}")
         file_nodes.append(node)
 
     for idx, api_item in enumerate(page.manifest.get("apis", []), start=1):
         node = f"a{idx}_{node_self}"
         label = api_item.get("name", "API")
-        lines.append(f"  {node}[\"{label}\"] --> {node_self}")
+        lines.append(f"  {node_expr(node, label, 'api')} --> {node_self}")
         api_nodes.append(node)
 
     for table in page.manifest.get("tables", []):
         producer = table_lookup.get(table)
         table_node = f"t_{table.replace('-', '_')}"
-        lines.append(f"  {table_node}[\"{table}\"] --> {node_self}")
+        lines.append(f"  {node_expr(table_node, table, 'table')} --> {node_self}")
         table_nodes.append(table_node)
         if producer:
             prod_node = producer.slug.replace("-", "_")
-            lines.append(f"  {prod_node}[\"{producer.title}\"] --> {table_node}")
+            lines.append(f"  {node_expr(prod_node, producer.title, 'pipeline')} --> {table_node}")
             pipeline_nodes.append(prod_node)
 
     for idx, dep in enumerate(page.manifest.get("dependencies", []), start=1):
         node = f"d{idx}_{node_self}"
-        lines.append(f"  {node}[\"{dep} (lib)\"] --> {node_self}")
+        lines.append(f"  {node_expr(node, f'{dep} (lib)', 'dependency')} --> {node_self}")
         dep_nodes.append(node)
 
     for table in page.manifest.get("tables_produced", []):
         table_name = table.get("name") if isinstance(table, dict) else str(table)
         table_node = f"tp_{table_name.replace('-', '_')}"
-        lines.append(f"  {node_self} --> {table_node}[\"{table_name}\"]")
+        lines.append(f"  {node_self} --> {node_expr(table_node, table_name, 'table')}")
         table_nodes.append(table_node)
 
     lines.append("  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;")

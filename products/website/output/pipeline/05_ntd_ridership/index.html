@@ -32,7 +32,7 @@
   <h1>NTD Ridership ETL</h1>
   
   <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
-  <p class="lede">Built 2026-03-03 02:22 UTC · Commit 416f8c4</p>
+  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
 </section>
 
 <section class="panel toc-panel">
@@ -54,10 +54,10 @@
   <details class="fold" open>
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
-  05_ntd_ridership["NTD Ridership ETL"]
-  f1_05_ntd_ridership["data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx"] --> 05_ntd_ridership
-  05_ntd_ridership --> tp_ntd_agency["ntd_agency"]
-  05_ntd_ridership --> tp_ntd_ridership["ntd_ridership"]
+  05_ntd_ridership(["NTD Ridership ETL"])
+  f1_05_ntd_ridership[/"data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx"/] --> 05_ntd_ridership
+  05_ntd_ridership --> tp_ntd_agency[("ntd_agency")]
+  05_ntd_ridership --> tp_ntd_ridership[("ntd_ridership")]
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;

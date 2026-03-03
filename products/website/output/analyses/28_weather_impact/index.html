@@ -32,7 +32,7 @@
   <h1>28 - Weather Impact</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2019-01 to 2025-12 (from otp_monthly, weather_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:22 UTC · Commit 416f8c4</p>
+  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
 </section>
 
 <section class="panel toc-panel">
@@ -62,18 +62,18 @@
   <details class="fold" open>
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
-  28_weather_impact["28 - Weather Impact"]
-  t_otp_monthly["otp_monthly"] --> 28_weather_impact
-  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_route_stops["route_stops"] --> 28_weather_impact
-  01_data_ingestion["Data Ingestion"] --> t_route_stops
-  t_routes["routes"] --> 28_weather_impact
-  01_data_ingestion["Data Ingestion"] --> t_routes
-  t_weather_monthly["weather_monthly"] --> 28_weather_impact
-  03_weather["Weather ETL"] --> t_weather_monthly
-  d1_28_weather_impact["numpy (lib)"] --> 28_weather_impact
-  d2_28_weather_impact["polars (lib)"] --> 28_weather_impact
-  d3_28_weather_impact["scipy (lib)"] --> 28_weather_impact
+  28_weather_impact(["28 - Weather Impact"])
+  t_otp_monthly[("otp_monthly")] --> 28_weather_impact
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  t_route_stops[("route_stops")] --> 28_weather_impact
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_routes[("routes")] --> 28_weather_impact
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  t_weather_monthly[("weather_monthly")] --> 28_weather_impact
+  03_weather[["Weather ETL"]] --> t_weather_monthly
+  d1_28_weather_impact(("numpy (lib)")) --> 28_weather_impact
+  d2_28_weather_impact(("polars (lib)")) --> 28_weather_impact
+  d3_28_weather_impact(("scipy (lib)")) --> 28_weather_impact
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;

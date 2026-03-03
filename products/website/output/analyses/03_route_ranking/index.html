@@ -32,7 +32,7 @@
   <h1>03 - Route Ranking</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:22 UTC · Commit 416f8c4</p>
+  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
 </section>
 
 <section class="panel toc-panel">
@@ -62,17 +62,17 @@
   <details class="fold" open>
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
-  03_route_ranking["03 - Route Ranking"]
-  t_otp_monthly["otp_monthly"] --> 03_route_ranking
-  01_data_ingestion["Data Ingestion"] --> t_otp_monthly
-  t_route_stops["route_stops"] --> 03_route_ranking
-  01_data_ingestion["Data Ingestion"] --> t_route_stops
-  t_routes["routes"] --> 03_route_ranking
-  01_data_ingestion["Data Ingestion"] --> t_routes
-  d1_03_route_ranking["matplotlib (lib)"] --> 03_route_ranking
-  d2_03_route_ranking["numpy (lib)"] --> 03_route_ranking
-  d3_03_route_ranking["polars (lib)"] --> 03_route_ranking
-  d4_03_route_ranking["scipy (lib)"] --> 03_route_ranking
+  03_route_ranking(["03 - Route Ranking"])
+  t_otp_monthly[("otp_monthly")] --> 03_route_ranking
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  t_route_stops[("route_stops")] --> 03_route_ranking
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_routes[("routes")] --> 03_route_ranking
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  d1_03_route_ranking(("matplotlib (lib)")) --> 03_route_ranking
+  d2_03_route_ranking(("numpy (lib)")) --> 03_route_ranking
+  d3_03_route_ranking(("polars (lib)")) --> 03_route_ranking
+  d4_03_route_ranking(("scipy (lib)")) --> 03_route_ranking
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
