@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import sqlite3
+import subprocess
 import re
 import shutil
+from datetime import datetime, timezone
 from html import escape
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
@@ -320,16 +324,25 @@ def page_sources(
                 "name": name,
                 "kind": "file",
                 "description": desc or GENERIC_SOURCE_DESCRIPTIONS["file"],
+                "owner": sentence(item.get("owner", "")) or "Local project data owner not specified.",
+                "freshness": sentence(item.get("freshness", "")) or "Snapshot file; refresh by rerunning its pipeline step.",
+                "caveat": sentence(item.get("caveat", "")) or "May lag upstream source updates.",
+                "relevance": desc or "Input file directly consumed by this page.",
             }
         )
     for item in page.manifest.get("apis", []):
         name = item.get("name", item.get("url", "api"))
         desc = sentence(item.get("description", ""))
+        host = urlparse(item.get("url", "")).netloc
         out.append(
             {
                 "name": name,
                 "kind": "api",
                 "description": desc or GENERIC_SOURCE_DESCRIPTIONS["api"],
+                "owner": sentence(item.get("owner", "")) or (f"Hosted by {host}." if host else "External API owner not specified."),
+                "freshness": sentence(item.get("freshness", "")) or "Queried during pipeline execution; freshness depends on upstream updates.",
+                "caveat": sentence(item.get("caveat", "")) or "Availability and schema can change without notice.",
+                "relevance": desc or "API endpoint provides upstream inputs for this page.",
             }
         )
     for table in page.manifest.get("tables", []):
@@ -343,16 +356,113 @@ def page_sources(
             desc = f"Database table consumed by this page and produced by {producer.title}."
         else:
             desc = GENERIC_SOURCE_DESCRIPTIONS["table"]
-        out.append({"name": table, "kind": "table", "description": desc})
+        out.append(
+            {
+                "name": table,
+                "kind": "table",
+                "description": desc,
+                "owner": f"Produced by {producer.title}." if producer else "Project pipeline owner not linked.",
+                "freshness": "Updated when the producing pipeline step is rerun." if producer else "Refresh cadence unknown.",
+                "caveat": "Coverage depends on upstream source availability and ETL assumptions.",
+                "relevance": "Primary analytical table used in this page's computations.",
+            }
+        )
     for dep in page.manifest.get("dependencies", []):
         out.append(
             {
                 "name": dep,
                 "kind": "dependency",
                 "description": dependency_description(dep),
+                "owner": "Open-source Python ecosystem maintainers.",
+                "freshness": "Version pinned by project environment until dependency updates are applied.",
+                "caveat": "Library updates may change behavior or defaults.",
+                "relevance": "Runtime dependency required for this page's pipeline or analysis code.",
             }
         )
     return out
+
+
+def group_output_artifacts(artifacts: list[dict[str, str]]) -> dict[str, list[dict[str, str]]]:
+    """Group output artifacts by presentation bucket."""
+    return {
+        "charts": [a for a in artifacts if a.get("kind") == "image"],
+        "interactive": [a for a in artifacts if a.get("kind") == "html"],
+        "data": [a for a in artifacts if a.get("kind") not in {"image", "html"}],
+    }
+
+
+def get_git_revision() -> str:
+    """Return short git commit hash if available."""
+    try:
+        return (
+            subprocess.check_output(
+                ["git", "rev-parse", "--short", "HEAD"],
+                cwd=PROJECT_ROOT,
+                text=True,
+            )
+            .strip()
+        )
+    except Exception:
+        return "unknown"
+
+
+def get_table_month_coverage() -> dict[str, tuple[str, str]]:
+    """Return min/max month coverage for database tables that include month keys."""
+    db_path = PROJECT_ROOT / "data" / "prt.db"
+    if not db_path.exists():
+        return {}
+    coverage: dict[str, tuple[str, str]] = {}
+    conn = sqlite3.connect(db_path)
+    try:
+        tables = {
+            row[0]
+            for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        }
+        for table in tables:
+            cols = {
+                row[1]
+                for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
+            }
+            month_col = "month" if "month" in cols else None
+            if table == "schedule_periods" and {"start_date", "end_date"} <= cols:
+                row = conn.execute(
+                    "SELECT MIN(SUBSTR(start_date,1,7)), MAX(SUBSTR(end_date,1,7)) FROM schedule_periods"
+                ).fetchone()
+                if row and row[0] and row[1]:
+                    coverage[table] = (row[0], row[1])
+                continue
+            if not month_col:
+                continue
+            row = conn.execute(
+                f"SELECT MIN({month_col}), MAX({month_col}) FROM {table} WHERE {month_col} IS NOT NULL"
+            ).fetchone()
+            if row and row[0] and row[1]:
+                coverage[table] = (str(row[0]), str(row[1]))
+    finally:
+        conn.close()
+    return coverage
+
+
+def coverage_text_for_page(page: Page, table_coverage: dict[str, tuple[str, str]]) -> str:
+    """Build concise coverage-window text for a page from referenced tables."""
+    table_names: list[str] = list(page.manifest.get("tables", []))
+    for item in page.manifest.get("tables_produced", []):
+        if isinstance(item, dict):
+            t = str(item.get("name", "")).strip()
+        else:
+            t = str(item).strip()
+        if t:
+            table_names.append(t)
+    windows = [(t, table_coverage[t]) for t in table_names if t in table_coverage]
+    if not windows:
+        return "Coverage window unavailable for this page."
+    starts = sorted(w[1][0] for w in windows)
+    ends = sorted(w[1][1] for w in windows)
+    tables = ", ".join(sorted({w[0] for w in windows})[:4])
+    suffix = "" if len(windows) <= 4 else ", ..."
+    return f"{starts[0]} to {ends[-1]} (from {tables}{suffix})."
 
 
 def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
@@ -571,6 +681,30 @@ body {
   padding: 1.05rem 1.1rem;
   box-shadow: var(--shadow);
 }
+.toc-panel { position: sticky; top: 74px; z-index: 5; }
+.toc-links { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.toc-links a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  text-decoration: none;
+  background: #fffaf4;
+}
+.pager { display: flex; justify-content: space-between; gap: 0.75rem; }
+.pager a { font-weight: 600; }
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+.filters label { display: grid; gap: 0.25rem; font-weight: 600; color: var(--ink-muted); }
+.filters input, .filters select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  background: #fff;
+}
 h2, h3 {
   font-family: "Fraunces", "Georgia", serif;
   margin: 0.35rem 0 0.7rem;
@@ -645,6 +779,29 @@ a:hover { color: var(--accent); }
   color: var(--ink-muted);
   font-size: 0.9rem;
 }
+.tab-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.7rem; }
+.tab-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  padding: 0.34rem 0.66rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tab-btn.active { background: var(--accent-soft); border-color: #d8b79a; }
+.output-pane { display: none; }
+.output-pane.active { display: block; }
+.csv-preview { margin-top: 0.45rem; }
+.csv-preview summary { cursor: pointer; font-weight: 600; }
+.csv-preview-body { margin-top: 0.45rem; }
+.fold > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.fold > summary::-webkit-details-marker { display: none; }
 img { max-width: 100%; height: auto; display: block; }
 figcaption {
   padding: 0.55rem 0.65rem;
@@ -676,6 +833,8 @@ pre.mermaid {
   .nav-links { gap: 0.65rem; }
   .container { padding: 0.85rem; }
   .hero { padding: 1.2rem 0.95rem; }
+  .toc-panel { position: static; }
+  .pager { flex-direction: column; }
   .panel { padding: 0.85rem; }
   th, td { font-size: 0.9rem; }
 }
@@ -692,6 +851,20 @@ def main() -> None:
     pipeline_manifest_errors = validate_pipeline_manifests(pages)
     table_lookup = build_table_lookup(pages)
     table_descriptions = build_table_descriptions(pages)
+    table_coverage = get_table_month_coverage()
+    run_metadata = {
+        "generated_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "git_revision": get_git_revision(),
+    }
+
+    analysis_pages = [p for p in pages if p.kind == "analysis"]
+    analysis_slugs = [p.slug for p in sorted(analysis_pages, key=lambda p: p.slug)]
+    prev_next: dict[str, dict[str, Page | None]] = {}
+    by_slug = {p.slug: p for p in analysis_pages}
+    for idx, slug in enumerate(analysis_slugs):
+        prev_page = by_slug[analysis_slugs[idx - 1]] if idx > 0 else None
+        next_page = by_slug[analysis_slugs[idx + 1]] if idx + 1 < len(analysis_slugs) else None
+        prev_next[slug] = {"prev": prev_page, "next": next_page}
 
     site_items = []
     source_index: dict[tuple[str, str], dict] = {}
@@ -706,19 +879,27 @@ def main() -> None:
         methods_html = md_to_html(PROJECT_ROOT / page.rel_dir / "METHODS.md")
         output_artifacts, errors = collect_outputs(page)
         output_errors.extend(errors)
+        output_groups = group_output_artifacts(output_artifacts)
         page_tables_produced = tables_produced_for_page(page)
         sources = page_sources(page, table_lookup, table_descriptions)
         mermaid = build_mermaid_page(page, table_lookup)
+        coverage_text = coverage_text_for_page(page, table_coverage)
+        neighbors = prev_next.get(page.slug, {"prev": None, "next": None})
 
         html = env.get_template("page.html").render(
             root="../../",
             page=page,
+            run_metadata=run_metadata,
+            coverage_text=coverage_text,
             findings_html=findings_html,
             methods_html=methods_html,
             output_artifacts=output_artifacts,
+            output_groups=output_groups,
             page_tables_produced=page_tables_produced,
             page_sources=sources,
             mermaid_diagram=mermaid,
+            prev_page=neighbors["prev"],
+            next_page=neighbors["next"],
         )
         (page_dir / "index.html").write_text(html, encoding="utf-8")
 
@@ -729,6 +910,8 @@ def main() -> None:
                 "path": rel_path,
                 "group": page.group,
                 "description": page.manifest.get("description", ""),
+                "kind": page.kind,
+                "output_kinds": sorted({str(o.get("kind", "file")) for o in page.manifest.get("outputs", [])}),
             }
         )
 
@@ -740,18 +923,39 @@ def main() -> None:
                     "kind": src["kind"],
                     "name": src["name"],
                     "description": src["description"],
+                    "owner": src.get("owner", ""),
+                    "freshness": src.get("freshness", ""),
+                    "caveat": src.get("caveat", ""),
+                    "relevance": src.get("relevance", ""),
                     "consumers": [],
                 },
             )
             entry["description"] = _prefer_description(
                 entry.get("description", ""), src.get("description", ""), src["kind"]
             )
+            if not entry.get("owner"):
+                entry["owner"] = src.get("owner", "")
+            if not entry.get("freshness"):
+                entry["freshness"] = src.get("freshness", "")
+            if not entry.get("caveat"):
+                entry["caveat"] = src.get("caveat", "")
+            if not entry.get("relevance"):
+                entry["relevance"] = src.get("relevance", "")
             entry["consumers"].append({"title": page.title, "path": rel_path})
 
     pipeline_items = sorted([i for i in site_items if i["path"].startswith("pipeline/")], key=lambda x: x["path"])
     analysis_items = sorted([i for i in site_items if i["path"].startswith("analyses/")], key=lambda x: x["path"])
+    analysis_groups = sorted({i.get("group") for i in analysis_items if i.get("group")})
+    output_kind_options = sorted({k for i in analysis_items for k in i.get("output_kinds", [])})
 
-    index_html = env.get_template("index.html").render(root="", pipeline=pipeline_items, analyses=analysis_items)
+    index_html = env.get_template("index.html").render(
+        root="",
+        pipeline=pipeline_items,
+        analyses=analysis_items,
+        analysis_groups=analysis_groups,
+        output_kind_options=output_kind_options,
+        run_metadata=run_metadata,
+    )
     (OUTPUT_DIR / "index.html").write_text(index_html, encoding="utf-8")
 
     source_list = []
@@ -776,16 +980,22 @@ def main() -> None:
             source=source,
             consumers=source["consumers"],
             mermaid_diagram=mermaid,
+            run_metadata=run_metadata,
         )
         (OUTPUT_DIR / source["path"]).write_text(html, encoding="utf-8")
 
-    sources_html = env.get_template("sources.html").render(root="", sources=source_list)
+    sources_html = env.get_template("sources.html").render(
+        root="",
+        sources=source_list,
+        run_metadata=run_metadata,
+    )
     (OUTPUT_DIR / "sources.html").write_text(sources_html, encoding="utf-8")
 
     glossary_data = read_yaml(Path(__file__).resolve().parent / "glossary.yaml")
     glossary_html = env.get_template("glossary.html").render(
         root="",
         categories=glossary_data.get("categories", []),
+        run_metadata=run_metadata,
     )
     (OUTPUT_DIR / "glossary.html").write_text(glossary_html, encoding="utf-8")
 

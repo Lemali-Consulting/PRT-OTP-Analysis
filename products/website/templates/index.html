@@ -5,13 +5,33 @@
   <p class="kicker">Transit Performance Knowledge Base</p>
   <h1>PRT OTP Analysis</h1>
   <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
+  <p class="lede">Built {{ run_metadata.generated_at_utc }} · Commit {{ run_metadata.git_revision }}</p>
 </section>
 
 <section class="panel">
+<h2>Explore</h2>
+<div class="filters" id="card-filters">
+  <label><span>Search</span><input id="filter-search" type="search" placeholder="Search title or description"></label>
+  <label><span>Group</span>
+    <select id="filter-group">
+      <option value="">All groups</option>
+      {% for g in analysis_groups %}<option value="{{ g }}">{{ g }}</option>{% endfor %}
+    </select>
+  </label>
+  <label><span>Output</span>
+    <select id="filter-output-kind">
+      <option value="">All output kinds</option>
+      {% for k in output_kind_options %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+    </select>
+  </label>
+</div>
+</section>
+
+<section class="panel" id="pipeline-panel">
 <h2 id="pipeline">Pipeline</h2>
 <div class="card-grid">
 {% for p in pipeline %}
-  <article class="card">
+  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="{{ (p.title ~ ' ' ~ p.description)|lower }}">
     <h3><a href="{{ p.path }}">{{ p.title }}</a></h3>
     <p>{{ p.description }}</p>
   </article>
@@ -22,14 +42,16 @@
 <section class="panel">
 <h2 id="analyses">Analyses</h2>
 {% for grp in analyses|groupby("group") %}
+  <div class="analysis-group" data-group="{{ grp.grouper or 'Ungrouped' }}">
   <h3>{{ grp.grouper or "Ungrouped" }}</h3>
   <div class="card-grid">
   {% for a in grp.list %}
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="{{ a.group or 'Ungrouped' }}" data-output-kinds="{{ a.output_kinds|join(',') }}" data-text="{{ (a.title ~ ' ' ~ a.description)|lower }}">
       <h3><a href="{{ a.path }}">{{ a.title }}</a></h3>
       <p>{{ a.description }}</p>
     </article>
   {% endfor %}
+  </div>
   </div>
 {% endfor %}
 </section>

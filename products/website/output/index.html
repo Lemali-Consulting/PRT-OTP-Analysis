@@ -31,33 +31,53 @@
   <p class="kicker">Transit Performance Knowledge Base</p>
   <h1>PRT OTP Analysis</h1>
   <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
+  <p class="lede">Built 2026-03-03 02:13 UTC · Commit 58eebab</p>
 </section>
 
 <section class="panel">
+<h2>Explore</h2>
+<div class="filters" id="card-filters">
+  <label><span>Search</span><input id="filter-search" type="search" placeholder="Search title or description"></label>
+  <label><span>Group</span>
+    <select id="filter-group">
+      <option value="">All groups</option>
+      <option value="Core OTP Patterns">Core OTP Patterns</option><option value="Equity and Strategic Planning">Equity and Strategic Planning</option><option value="Ridership and External Factors">Ridership and External Factors</option><option value="Route and Service Drivers">Route and Service Drivers</option>
+    </select>
+  </label>
+  <label><span>Output</span>
+    <select id="filter-output-kind">
+      <option value="">All output kinds</option>
+      <option value="data">data</option><option value="html">html</option><option value="image">image</option>
+    </select>
+  </label>
+</div>
+</section>
+
+<section class="panel" id="pipeline-panel">
 <h2 id="pipeline">Pipeline</h2>
 <div class="card-grid">
 
-  <article class="card">
+  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="data ingestion builds the normalized sqlite database from canonical local csv sources.">
     <h3><a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a></h3>
     <p>Builds the normalized SQLite database from canonical local CSV sources.</p>
   </article>
 
-  <article class="card">
+  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="scheduled trips etl loads monthly scheduled trip counts and schedule periods from wprdc exports.">
     <h3><a href="pipeline/02_scheduled_trips/index.html">Scheduled Trips ETL</a></h3>
     <p>Loads monthly scheduled trip counts and schedule periods from WPRDC exports.</p>
   </article>
 
-  <article class="card">
+  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="weather etl fetches noaa daily weather and aggregates monthly features for otp modeling.">
     <h3><a href="pipeline/03_weather/index.html">Weather ETL</a></h3>
     <p>Fetches NOAA daily weather and aggregates monthly features for OTP modeling.</p>
   </article>
 
-  <article class="card">
+  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="traffic overlay etl computes route-level traffic exposure metrics by spatially joining gtfs and penndot aadt data.">
     <h3><a href="pipeline/04_traffic_overlay/index.html">Traffic Overlay ETL</a></h3>
     <p>Computes route-level traffic exposure metrics by spatially joining GTFS and PennDOT AADT data.</p>
   </article>
 
-  <article class="card">
+  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="ntd ridership etl loads national monthly ridership benchmark data from the ntd workbook.">
     <h3><a href="pipeline/05_ntd_ridership/index.html">NTD Ridership ETL</a></h3>
     <p>Loads national monthly ridership benchmark data from the NTD workbook.</p>
   </article>
@@ -68,213 +88,302 @@
 <section class="panel">
 <h2 id="analyses">Analyses</h2>
 
+  <div class="analysis-group" data-group="Core OTP Patterns">
   <h3>Core OTP Patterns</h3>
   <div class="card-grid">
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="01 - system-wide otp trend tracks the overall prt on-time performance trend from 2019 through 2025, including covid impact and recovery.">
       <h3><a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a></h3>
       <p>Tracks the overall PRT on-time performance trend from 2019 through 2025, including COVID impact and recovery.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="02 - mode comparison compares on-time performance across service modes (bus, rail, incline) and route types (local, limited, express, busway).">
       <h3><a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a></h3>
       <p>Compares on-time performance across service modes (BUS, RAIL, INCLINE) and route types (local, limited, express, busway).</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="03 - route ranking ranks routes by average otp, trend direction, and volatility to identify best/worst performers and most (in)consistent routes.">
       <h3><a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a></h3>
       <p>Ranks routes by average OTP, trend direction, and volatility to identify best/worst performers and most (in)consistent routes.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="04 - neighborhood equity investigates whether on-time performance varies systematically by neighborhood and municipality.">
       <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a></h3>
       <p>Investigates whether on-time performance varies systematically by neighborhood and municipality.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="05 - anomaly investigation identifies and investigates sharp otp drops that may indicate route restructuring, detours, or data quality issues.">
       <h3><a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a></h3>
       <p>Identifies and investigates sharp OTP drops that may indicate route restructuring, detours, or data quality issues.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="06: seasonal patterns decomposes route-level otp into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance.">
       <h3><a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a></h3>
       <p>Decomposes route-level OTP into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="07: stop count vs otp tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average otp with mode-based coloring.">
       <h3><a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a></h3>
       <p>Tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average OTP with mode-based coloring.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,html,image" data-text="08: hot-spot map visualizes stop-level on-time performance on a geographic scatter plot to identify corridor-level bottlenecks and clusters of poor performance.">
       <h3><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></h3>
       <p>Visualizes stop-level on-time performance on a geographic scatter plot to identify corridor-level bottlenecks and clusters of poor performance.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data" data-text="09: incline investigation audits the monongahela incline data across all database tables to determine why it appears in otp data with zero/null values.">
       <h3><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a></h3>
       <p>Audits the Monongahela Incline data across all database tables to determine why it appears in OTP data with zero/null values.</p>
     </article>
   
   </div>
+  </div>
 
+  <div class="analysis-group" data-group="Equity and Strategic Planning">
   <h3>Equity and Strategic Planning</h3>
   <div class="card-grid">
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="30 - service level vs otp longitudinal within-route panel: does changing trip frequency improve or degrade otp?">
       <h3><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></h3>
       <p>Within-route panel: does changing trip frequency improve or degrade OTP?</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="31 - stop consolidation candidates identify low-usage stops that could be consolidated to improve otp, leveraging the finding that stop count is the strongest otp predictor.">
       <h3><a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a></h3>
       <p>Identify low-usage stops that could be consolidated to improve OTP, leveraging the finding that stop count is the strongest OTP predictor.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="32 - shelter equity assess whether bus shelters are equitably placed relative to stop-level ridership volume and demographics.">
       <h3><a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a></h3>
       <p>Assess whether bus shelters are equitably placed relative to stop-level ridership volume and demographics.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="33 - pandemic ridership geography map the spatial pattern of stop-level ridership loss and recovery between pre-pandemic and pandemic periods.">
       <h3><a href="analyses/33_pandemic_ridership_geography/index.html">33 - Pandemic Ridership Geography</a></h3>
       <p>Map the spatial pattern of stop-level ridership loss and recovery between pre-pandemic and pandemic periods.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="34 - ridership concentration (pareto) quantify how concentrated ridership is across stops and test whether concentration correlates with route otp.">
       <h3><a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a></h3>
       <p>Quantify how concentrated ridership is across stops and test whether concentration correlates with route OTP.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="35 - boarding/alighting flow analysis analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors.">
       <h3><a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a></h3>
       <p>Analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="36 - national ridership growth (2019 vs 2024) compare 2019-to-2024 ridership recovery across the 150 largest us transit agencies using ntd data; rank prt nationally.">
       <h3><a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a></h3>
       <p>Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies using NTD data; rank PRT nationally.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="37 - peer city ridership comparison track indexed monthly ridership for pittsburgh and 7 peer cities from 2019-2025 using ntd data; compare recovery trajectories and mode splits.">
       <h3><a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a></h3>
       <p>Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits.</p>
     </article>
   
   </div>
+  </div>
 
+  <div class="analysis-group" data-group="Ridership and External Factors">
   <h3>Ridership and External Factors</h3>
   <div class="card-grid">
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="20 - otp → ridership causality test whether otp declines predict subsequent ridership losses using lagged correlation and granger causality tests.">
       <h3><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></h3>
       <p>Test whether OTP declines predict subsequent ridership losses using lagged correlation and Granger causality tests.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="21 - covid ridership vs otp recovery compare ridership recovery trajectories with otp recovery trajectories post-covid to identify whether ridership recovery degrades otp.">
       <h3><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a></h3>
       <p>Compare ridership recovery trajectories with OTP recovery trajectories post-COVID to identify whether ridership recovery degrades OTP.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="22 - passenger-weighted delay burden estimate late rider-trips per route per month by combining ridership with otp to identify where the most total human impact occurs.">
       <h3><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a></h3>
       <p>Estimate late rider-trips per route per month by combining ridership with OTP to identify where the most total human impact occurs.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="23 - garage-level performance compare otp and ridership trends across prt garages (ross, collier, east liberty, west mifflin) to surface operational differences.">
       <h3><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></h3>
       <p>Compare OTP and ridership trends across PRT garages (Ross, Collier, East Liberty, West Mifflin) to surface operational differences.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="24 - weekday vs weekend ridership trends track how weekday, saturday, and sunday ridership patterns shifted post-covid and whether weekend ridership share correlates with otp.">
       <h3><a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a></h3>
       <p>Track how weekday, Saturday, and Sunday ridership patterns shifted post-COVID and whether weekend ridership share correlates with OTP.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="25 - ridership concentration & equity measure what share of total system ridership is carried by the lowest-otp routes using lorenz curves and gini coefficients.">
       <h3><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a></h3>
       <p>Measure what share of total system ridership is carried by the lowest-OTP routes using Lorenz curves and Gini coefficients.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="26 - ridership in multivariate otp model add ridership as a predictor to the analysis 18 ols model to test whether it adds explanatory power beyond stop count, span, and mode.">
       <h3><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a></h3>
       <p>Add ridership as a predictor to the Analysis 18 OLS model to test whether it adds explanatory power beyond stop count, span, and mode.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="27 - traffic congestion and otp tests whether penndot aadt traffic volume explains otp variance beyond structural features">
       <h3><a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a></h3>
       <p>Tests whether PennDOT AADT traffic volume explains OTP variance beyond structural features</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="28 - weather impact tests whether weather (precipitation, snow, temperature) explains otp variance or the counterintuitive seasonal pattern from analysis 06.">
       <h3><a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a></h3>
       <p>Tests whether weather (precipitation, snow, temperature) explains OTP variance or the counterintuitive seasonal pattern from Analysis 06.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="29 - service change impact on otp do schedule changes (pick period transitions) correlate with otp shifts?">
       <h3><a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a></h3>
       <p>Do schedule changes (pick period transitions) correlate with OTP shifts?</p>
     </article>
   
   </div>
+  </div>
 
+  <div class="analysis-group" data-group="Route and Service Drivers">
   <h3>Route and Service Drivers</h3>
   <div class="card-grid">
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="10: trip frequency vs otp tests whether high-frequency routes have worse on-time performance, using weekday trip counts as a proxy for service frequency.">
       <h3><a href="analyses/10_frequency_vs_otp/index.html">10: Trip Frequency vs OTP</a></h3>
       <p>Tests whether high-frequency routes have worse on-time performance, using weekday trip counts as a proxy for service frequency.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="11: directional asymmetry investigates whether routes with a structural imbalance between inbound and outbound trip frequency have worse on-time performance.">
       <h3><a href="analyses/11_directional_asymmetry/index.html">11: Directional Asymmetry</a></h3>
       <p>Investigates whether routes with a structural imbalance between inbound and outbound trip frequency have worse on-time performance.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="12: route geographic span vs otp computes the geographic span (max distance between any two stops) for each route and tests whether longer routes have worse on-time performance, disentangling route length from stop count.">
       <h3><a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a></h3>
       <p>Computes the geographic span (max distance between any two stops) for each route and tests whether longer routes have worse on-time performance, disentangling route length from stop count.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="13: cross-route correlation clustering computes pairwise otp time-series correlations between all routes and uses hierarchical clustering to identify groups of routes whose performance rises and falls together.">
       <h3><a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a></h3>
       <p>Computes pairwise OTP time-series correlations between all routes and uses hierarchical clustering to identify groups of routes whose performance rises and falls together.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="14: covid recovery trajectories measures how far each route's otp has recovered relative to its pre-covid baseline and identifies route characteristics that predict faster or slower recovery.">
       <h3><a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a></h3>
       <p>Measures how far each route's OTP has recovered relative to its pre-COVID baseline and identifies route characteristics that predict faster or slower recovery.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="15: municipal/county equity aggregates on-time performance by municipality and county to assess service reliability equity at a broader geographic level than neighborhood analysis (analysis 04).">
       <h3><a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a></h3>
       <p>Aggregates on-time performance by municipality and county to assess service reliability equity at a broader geographic level than neighborhood analysis (Analysis 04).</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="16: transfer hub performance identifies high-connectivity stops (served by many routes) and tests whether passengers at transfer hubs experience worse otp than those at low-connectivity stops.">
       <h3><a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a></h3>
       <p>Identifies high-connectivity stops (served by many routes) and tests whether passengers at transfer hubs experience worse OTP than those at low-connectivity stops.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="17: weekend vs weekday service profile tests whether routes with different weekend-to-weekday service ratios show different otp patterns, distinguishing commuter-oriented routes from all-day service routes.">
       <h3><a href="analyses/17_weekend_weekday_profile/index.html">17: Weekend vs Weekday Service Profile</a></h3>
       <p>Tests whether routes with different weekend-to-weekday service ratios show different OTP patterns, distinguishing commuter-oriented routes from all-day service routes.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="18: multivariate otp model combines stop count, mode, bus subtype, geographic span, and service profile into a single ols regression model to quantify relative importance and total explained variance.">
       <h3><a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a></h3>
       <p>Combines stop count, mode, bus subtype, geographic span, and service profile into a single OLS regression model to quantify relative importance and total explained variance.</p>
     </article>
   
-    <article class="card">
+    <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="19 - ridership-weighted otp compute system otp weighted by actual average daily ridership instead of scheduled trip frequency, to measure the average rider's experience.">
       <h3><a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a></h3>
       <p>Compute system OTP weighted by actual average daily ridership instead of scheduled trip frequency, to measure the average rider's experience.</p>
     </article>
   
   </div>
+  </div>
 
 </section>
 
   </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

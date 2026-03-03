@@ -31,12 +31,29 @@
   <p class="kicker">Pipeline</p>
   <h1>Data Ingestion</h1>
   
+  <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
+  <p class="lede">Built 2026-03-03 02:13 UTC · Commit 58eebab</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    
+    <a href="#methods">Methods</a>
+    <a href="#tables-produced">Tables Produced</a>
+    <a href="#sources">Sources</a>
+  </nav>
 </section>
 
 
-<section class="panel">
-  <h2>Data Provenance</h2>
-  <pre class="mermaid">flowchart LR
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
   01_data_ingestion["Data Ingestion"]
   f1_01_data_ingestion["data/routes_by_month.csv"] --> 01_data_ingestion
   f2_01_data_ingestion["data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"] --> 01_data_ingestion
@@ -58,13 +75,15 @@
   class 01_data_ingestion page;
   class tp_otp_monthly,tp_ridership_monthly,tp_route_stops,tp_routes,tp_stop_reference,tp_stops table;
   class f1_01_data_ingestion,f2_01_data_ingestion,f3_01_data_ingestion,f4_01_data_ingestion,f5_01_data_ingestion file;</pre>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Findings</h2>
-  <div class="markdown"><h1>Findings: Data Ingestion</h1>
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Data Ingestion</h1>
 <h2>Summary</h2>
 <p>The ingestion step rebuilds <code>data/prt.db</code> from source CSV inputs and validates expected core tables.</p>
 <h2>Notes</h2>
@@ -73,15 +92,17 @@
 <li>Analyses assume this database exists and is readable.</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
 
 
-<section class="panel">
-  <h2>Methods</h2>
-  <div class="markdown"><h1>Methods: Data Ingestion</h1>
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Data Ingestion</h1>
 <h2>Question</h2>
 <p>How do we reproducibly build a normalized SQLite database used by all analyses?</p>
 <h2>Approach</h2>
@@ -105,93 +126,194 @@
 <li>Console verification logs (table counts and sample diagnostics).</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Tables Produced</h2>
-  <table class="source-table">
-    <thead><tr><th>Table</th><th>Description</th></tr></thead>
-    <tbody>
-    
-      <tr>
-        <td><code>routes</code></td>
-        <td>Route dimension table.</td>
-      </tr>
-    
-      <tr>
-        <td><code>stops</code></td>
-        <td>Physical stop dimension table.</td>
-      </tr>
-    
-      <tr>
-        <td><code>route_stops</code></td>
-        <td>Route-stop bridge with service frequency metrics.</td>
-      </tr>
-    
-      <tr>
-        <td><code>stop_reference</code></td>
-        <td>Historical stop metadata and geography.</td>
-      </tr>
-    
-      <tr>
-        <td><code>otp_monthly</code></td>
-        <td>Monthly OTP values by route.</td>
-      </tr>
-    
-      <tr>
-        <td><code>ridership_monthly</code></td>
-        <td>Monthly ridership by route and day type.</td>
-      </tr>
-    
-    </tbody>
-  </table>
+<section class="panel" id="tables-produced">
+  <details class="fold" open>
+    <summary><h2>Tables Produced</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Table</th><th>Description</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td><code>routes</code></td>
+          <td>Route dimension table.</td>
+        </tr>
+      
+        <tr>
+          <td><code>stops</code></td>
+          <td>Physical stop dimension table.</td>
+        </tr>
+      
+        <tr>
+          <td><code>route_stops</code></td>
+          <td>Route-stop bridge with service frequency metrics.</td>
+        </tr>
+      
+        <tr>
+          <td><code>stop_reference</code></td>
+          <td>Historical stop metadata and geography.</td>
+        </tr>
+      
+        <tr>
+          <td><code>otp_monthly</code></td>
+          <td>Monthly OTP values by route.</td>
+        </tr>
+      
+        <tr>
+          <td><code>ridership_monthly</code></td>
+          <td>Monthly ridership by route and day type.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Sources</h2>
-  <table class="source-table">
-    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
-    <tbody>
-    
-      <tr>
-        <td>data/routes_by_month.csv</td>
-        <td><span class="tag">file</span></td>
-        <td>Monthly route OTP source table in wide format.</td>
-      </tr>
-    
-      <tr>
-        <td>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</td>
-        <td><span class="tag">file</span></td>
-        <td>Current route metadata and mode classifications.</td>
-      </tr>
-    
-      <tr>
-        <td>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</td>
-        <td><span class="tag">file</span></td>
-        <td>Current stop-to-route coverage and trip counts.</td>
-      </tr>
-    
-      <tr>
-        <td>data/PRT_Stop_Reference_Lookup_Table.csv</td>
-        <td><span class="tag">file</span></td>
-        <td>Historical stop reference file with geography attributes.</td>
-      </tr>
-    
-      <tr>
-        <td>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</td>
-        <td><span class="tag">file</span></td>
-        <td>Average ridership by route and month.</td>
-      </tr>
-    
-    </tbody>
-  </table>
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>data/routes_by_month.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Monthly route OTP source table in wide format.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+      
+        <tr>
+          <td>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Current route metadata and mode classifications.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+      
+        <tr>
+          <td>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Current stop-to-route coverage and trip counts.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+      
+        <tr>
+          <td>data/PRT_Stop_Reference_Lookup_Table.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Historical stop reference file with geography attributes.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+      
+        <tr>
+          <td>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Average ridership by route and month.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </details>
 </section>
 
 
   </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

@@ -5,33 +5,64 @@
   <p class="kicker">{{ page.kind | title }}</p>
   <h1>{{ page.title }}</h1>
   {% if page.group %}<p class="lede">{{ page.group }}</p>{% endif %}
+  <p class="lede">Coverage: {{ coverage_text }}</p>
+  <p class="lede">Built {{ run_metadata.generated_at_utc }} · Commit {{ run_metadata.git_revision }}</p>
 </section>
 
-{% if mermaid_diagram %}
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    {% if mermaid_diagram %}<a href="#data-provenance">Data Provenance</a>{% endif %}
+    {% if findings_html %}<a href="#findings">Findings</a>{% endif %}
+    {% if output_artifacts %}<a href="#outputs">Output</a>{% endif %}
+    {% if methods_html %}<a href="#methods">Methods</a>{% endif %}
+    {% if page.kind == "pipeline" and page_tables_produced %}<a href="#tables-produced">Tables Produced</a>{% endif %}
+    {% if page_sources %}<a href="#sources">Sources</a>{% endif %}
+  </nav>
+</section>
+
+{% if page.kind == "analysis" and (prev_page or next_page) %}
 <section class="panel">
-  <h2>Data Provenance</h2>
-  <pre class="mermaid">{{ mermaid_diagram }}</pre>
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    {% if prev_page %}<a href="../{{ prev_page.slug }}/index.html">← {{ prev_page.title }}</a>{% endif %}
+    {% if next_page %}<a href="../{{ next_page.slug }}/index.html">{{ next_page.title }} →</a>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if mermaid_diagram %}
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">{{ mermaid_diagram }}</pre>
+  </details>
 </section>
 {% endif %}
 
 {% if findings_html %}
-<section class="panel">
-  <h2>Findings</h2>
-  <div class="markdown">{{ findings_html | safe }}</div>
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown">{{ findings_html | safe }}</div>
+  </details>
 </section>
 {% endif %}
 
 {% if output_artifacts %}
-<section class="panel">
+<section class="panel" id="outputs">
   <h2>Output</h2>
-  <div class="gallery">
-    {% for artifact in output_artifacts %}
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts ({{ output_groups.charts | length }})</button>
+    <button class="tab-btn" data-target="interactive">Interactive ({{ output_groups.interactive | length }})</button>
+    <button class="tab-btn" data-target="data">Data ({{ output_groups.data | length }})</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    {% for artifact in output_groups.charts %}
       <figure class="shot-card">
-        {% if artifact.kind == "image" %}
-          <img src="{{ root }}{{ artifact.src }}" alt="{{ artifact.alt }}" loading="lazy">
-        {% elif artifact.kind == "html" %}
-          <iframe class="artifact-frame" src="{{ root }}{{ artifact.src }}" title="{{ artifact.label }}" loading="lazy"></iframe>
-        {% endif %}
+        <img src="{{ root }}{{ artifact.src }}" alt="{{ artifact.alt }}" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">{{ artifact.kind }}</span>
           <a class="artifact-link" href="{{ root }}{{ artifact.src }}" target="_blank" rel="noopener noreferrer">{{ artifact.label }}</a>
@@ -39,49 +70,97 @@
         </figcaption>
       </figure>
     {% endfor %}
+    {% if not output_groups.charts %}<p class="artifact-desc">No chart outputs declared.</p>{% endif %}
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    {% for artifact in output_groups.interactive %}
+      <figure class="shot-card">
+        <iframe class="artifact-frame" src="{{ root }}{{ artifact.src }}" title="{{ artifact.label }}" loading="lazy"></iframe>
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">{{ artifact.kind }}</span>
+          <a class="artifact-link" href="{{ root }}{{ artifact.src }}" target="_blank" rel="noopener noreferrer">{{ artifact.label }}</a>
+          <p class="artifact-desc">{{ artifact.description }}</p>
+        </figcaption>
+      </figure>
+    {% endfor %}
+    {% if not output_groups.interactive %}<p class="artifact-desc">No interactive outputs declared.</p>{% endif %}
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    {% for artifact in output_groups.data %}
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">{{ artifact.kind }}</span>
+          <a class="artifact-link" href="{{ root }}{{ artifact.src }}" target="_blank" rel="noopener noreferrer">{{ artifact.label }}</a>
+          <p class="artifact-desc">{{ artifact.description }}</p>
+          {% if artifact.label.endswith('.csv') %}
+          <details class="csv-preview" data-csv-url="{{ root }}{{ artifact.src }}">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        {% endif %}
+        </figcaption>
+      </figure>
+    {% endfor %}
+    {% if not output_groups.data %}<p class="artifact-desc">No data outputs declared.</p>{% endif %}
+    </div>
   </div>
 </section>
 {% endif %}
 
 {% if methods_html %}
-<section class="panel">
-  <h2>Methods</h2>
-  <div class="markdown">{{ methods_html | safe }}</div>
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown">{{ methods_html | safe }}</div>
+  </details>
 </section>
 {% endif %}
 
 {% if page.kind == "pipeline" and page_tables_produced %}
-<section class="panel">
-  <h2>Tables Produced</h2>
-  <table class="source-table">
-    <thead><tr><th>Table</th><th>Description</th></tr></thead>
-    <tbody>
-    {% for table in page_tables_produced %}
-      <tr>
-        <td><code>{{ table.name }}</code></td>
-        <td>{{ table.description }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<section class="panel" id="tables-produced">
+  <details class="fold" open>
+    <summary><h2>Tables Produced</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Table</th><th>Description</th></tr></thead>
+      <tbody>
+      {% for table in page_tables_produced %}
+        <tr>
+          <td><code>{{ table.name }}</code></td>
+          <td>{{ table.description }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
 </section>
 {% endif %}
 
 {% if page_sources %}
-<section class="panel">
-  <h2>Sources</h2>
-  <table class="source-table">
-    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
-    <tbody>
-    {% for src in page_sources %}
-      <tr>
-        <td>{{ src.name }}</td>
-        <td><span class="tag">{{ src.kind }}</span></td>
-        <td>{{ src.description }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      {% for src in page_sources %}
+        <tr>
+          <td>{{ src.name }}</td>
+          <td><span class="tag">{{ src.kind }}</span></td>
+          <td>{{ src.relevance }}</td>
+          <td>{{ src.owner }}</td>
+          <td>{{ src.freshness }}</td>
+          <td>{{ src.caveat }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
 </section>
 {% endif %}
 {% endblock %}

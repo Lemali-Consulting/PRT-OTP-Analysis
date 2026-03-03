@@ -31,12 +31,37 @@
   <p class="kicker">Analysis</p>
   <h1>17: Weekend vs Weekday Service Profile</h1>
   <p class="lede">Route and Service Drivers</p>
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-03-03 02:13 UTC · Commit 58eebab</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+  </nav>
 </section>
 
 
 <section class="panel">
-  <h2>Data Provenance</h2>
-  <pre class="mermaid">flowchart LR
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../16_transfer_hub_performance/index.html">← 16: Transfer Hub Performance</a>
+    <a href="../18_multivariate_model/index.html">18: Multivariate OTP Model →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
   17_weekend_weekday_profile["17: Weekend vs Weekday Service Profile"]
   t_otp_monthly["otp_monthly"] --> 17_weekend_weekday_profile
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
@@ -56,13 +81,15 @@
   class t_otp_monthly,t_route_stops,t_routes table;
   class d1_17_weekend_weekday_profile,d2_17_weekend_weekday_profile dep;
   class 01_data_ingestion pipeline;</pre>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Findings</h2>
-  <div class="markdown"><h1>Findings: Weekend vs Weekday Service Profile</h1>
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Weekend vs Weekday Service Profile</h1>
 <h2>Summary</h2>
 <p>There is <strong>no meaningful correlation</strong> between a route's weekend-to-weekday service ratio and its OTP. Routes that run heavy weekend service perform identically to commuter-oriented weekday-heavy routes.</p>
 <h2>Key Numbers</h2>
@@ -111,27 +138,24 @@
 <li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 2 issues (both moderate). Bus-only correlation added; caveats strengthened. Null finding unchanged.</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
-<section class="panel">
+<section class="panel" id="outputs">
   <h2>Output</h2>
-  <div class="gallery">
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (1)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
     
       <figure class="shot-card">
-        
-        <figcaption class="artifact-body">
-          <span class="artifact-kind">data</span>
-          <a class="artifact-link" href="../../assets/analyses/17_weekend_weekday_profile/service_profile.csv" target="_blank" rel="noopener noreferrer">service_profile.csv</a>
-          <p class="artifact-desc">per-route trip counts, weekend ratio, and OTP.</p>
-        </figcaption>
-      </figure>
-    
-      <figure class="shot-card">
-        
-          <img src="../../assets/analyses/17_weekend_weekday_profile/service_tier_comparison.png" alt="service_tier_comparison" loading="lazy">
-        
+        <img src="../../assets/analyses/17_weekend_weekday_profile/service_tier_comparison.png" alt="service_tier_comparison" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/17_weekend_weekday_profile/service_tier_comparison.png" target="_blank" rel="noopener noreferrer">service_tier_comparison.png</a>
@@ -140,9 +164,7 @@
       </figure>
     
       <figure class="shot-card">
-        
-          <img src="../../assets/analyses/17_weekend_weekday_profile/weekend_ratio_vs_otp.png" alt="weekend_ratio_vs_otp" loading="lazy">
-        
+        <img src="../../assets/analyses/17_weekend_weekday_profile/weekend_ratio_vs_otp.png" alt="weekend_ratio_vs_otp" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/17_weekend_weekday_profile/weekend_ratio_vs_otp.png" target="_blank" rel="noopener noreferrer">weekend_ratio_vs_otp.png</a>
@@ -150,14 +172,45 @@
         </figcaption>
       </figure>
     
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/17_weekend_weekday_profile/service_profile.csv" target="_blank" rel="noopener noreferrer">service_profile.csv</a>
+          <p class="artifact-desc">per-route trip counts, weekend ratio, and OTP.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/17_weekend_weekday_profile/service_profile.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
   </div>
 </section>
 
 
 
-<section class="panel">
-  <h2>Methods</h2>
-  <div class="markdown"><h1>Methods: Weekend vs Weekday Service Profile</h1>
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Weekend vs Weekday Service Profile</h1>
 <h2>Question</h2>
 <p>Do commuter-oriented routes (high weekday, low weekend service) perform differently than all-day routes (similar weekday and weekend service)? The ratio of weekend to weekday trips signals route purpose, and since OTP is reported monthly, it likely reflects weekday-dominant measurement.</p>
 <h2>Approach</h2>
@@ -202,53 +255,152 @@
 <li><code>output/service_tier_comparison.png</code> -- box plot by service profile tier</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
 
 
-<section class="panel">
-  <h2>Sources</h2>
-  <table class="source-table">
-    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
-    <tbody>
-    
-      <tr>
-        <td>otp_monthly</td>
-        <td><span class="tag">table</span></td>
-        <td>Monthly OTP values by route. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>route_stops</td>
-        <td><span class="tag">table</span></td>
-        <td>Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>routes</td>
-        <td><span class="tag">table</span></td>
-        <td>Route dimension table. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>polars</td>
-        <td><span class="tag">dependency</span></td>
-        <td>Dataframe library used for fast tabular data transformations and aggregation.</td>
-      </tr>
-    
-      <tr>
-        <td>scipy</td>
-        <td><span class="tag">dependency</span></td>
-        <td>Scientific computing library used for statistical tests and numerical routines.</td>
-      </tr>
-    
-    </tbody>
-  </table>
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </details>
 </section>
 
 
   </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

@@ -5,6 +5,8 @@
   <p class="kicker">{{ source.kind | title }}</p>
   <h1>{{ source.name }}</h1>
   <p class="lede">{{ source.description }}</p>
+  <p class="lede">Owner: {{ source.owner }} · Freshness: {{ source.freshness }}</p>
+  <p class="lede">Built {{ run_metadata.generated_at_utc }} · Commit {{ run_metadata.git_revision }}</p>
 </section>
 
 {% if mermaid_diagram %}
@@ -13,6 +15,19 @@
   <pre class="mermaid">{{ mermaid_diagram }}</pre>
 </section>
 {% endif %}
+
+<section class="panel">
+  <h2>Context</h2>
+  <table class="source-table">
+    <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>{{ source.relevance }}</td>
+        <td>{{ source.caveat }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 
 <section class="panel">
   <h2>Consumed By</h2>

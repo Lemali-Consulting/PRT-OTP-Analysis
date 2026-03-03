@@ -31,12 +31,37 @@
   <p class="kicker">Analysis</p>
   <h1>28 - Weather Impact</h1>
   <p class="lede">Ridership and External Factors</p>
+  <p class="lede">Coverage: 2019-01 to 2025-12 (from otp_monthly, weather_monthly).</p>
+  <p class="lede">Built 2026-03-03 02:13 UTC · Commit 58eebab</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+  </nav>
 </section>
 
 
 <section class="panel">
-  <h2>Data Provenance</h2>
-  <pre class="mermaid">flowchart LR
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../27_traffic_congestion/index.html">← 27 - Traffic Congestion and OTP</a>
+    <a href="../29_service_change_impact/index.html">29 - Service Change Impact on OTP →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
   28_weather_impact["28 - Weather Impact"]
   t_otp_monthly["otp_monthly"] --> 28_weather_impact
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
@@ -59,13 +84,15 @@
   class t_otp_monthly,t_route_stops,t_routes,t_weather_monthly table;
   class d1_28_weather_impact,d2_28_weather_impact,d3_28_weather_impact dep;
   class 01_data_ingestion,03_weather pipeline;</pre>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Findings</h2>
-  <div class="markdown"><h1>Findings: Weather Impact on OTP</h1>
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Weather Impact on OTP</h1>
 <h2>Summary</h2>
 <p>Weather variables show <strong>moderate raw correlations</strong> with system OTP (freeze_days r=+0.44, mean_tmin r=-0.40, snow_days r=+0.40) that <strong>strengthen after detrending</strong> (freeze_days r=+0.57, mean_tmin r=-0.57), but these correlations are <strong>counterintuitive</strong> -- colder, snowier months have <em>better</em> OTP. Weather jointly adds 15pp of R2 beyond a linear trend (F=3.44, p=0.008) but does <strong>not</strong> significantly improve on month dummies (F=0.92, p=0.48). The seasonal pattern from Analysis 06 is partially explained by weather -- weather adjustment flattens the winter peak by ~2.4pp and lifts the September trough by ~1.3pp -- but month dummies add no significant additional explanatory power beyond weather either (F=1.09, p=0.39). At the route-month level with cluster-robust standard errors, <strong>no weather variable is significant</strong> (all p&gt;0.12), indicating weather effects are too small relative to route-level noise to detect in the panel.</p>
 <h2>Key Numbers</h2>
@@ -103,27 +130,24 @@
 <li><strong>Counterintuitive cold = better OTP</strong> may reflect omitted variables (construction, school, ridership) rather than a direct cold-weather benefit.</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
-<section class="panel">
+<section class="panel" id="outputs">
   <h2>Output</h2>
-  <div class="gallery">
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (2)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
     
       <figure class="shot-card">
-        
-        <figcaption class="artifact-body">
-          <span class="artifact-kind">data</span>
-          <a class="artifact-link" href="../../assets/analyses/28_weather_impact/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
-          <p class="artifact-desc">regression results for all models.</p>
-        </figcaption>
-      </figure>
-    
-      <figure class="shot-card">
-        
-          <img src="../../assets/analyses/28_weather_impact/seasonal_weather_adjusted.png" alt="seasonal_weather_adjusted" loading="lazy">
-        
+        <img src="../../assets/analyses/28_weather_impact/seasonal_weather_adjusted.png" alt="seasonal_weather_adjusted" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/28_weather_impact/seasonal_weather_adjusted.png" target="_blank" rel="noopener noreferrer">seasonal_weather_adjusted.png</a>
@@ -132,9 +156,7 @@
       </figure>
     
       <figure class="shot-card">
-        
-          <img src="../../assets/analyses/28_weather_impact/weather_correlation_heatmap.png" alt="weather_correlation_heatmap" loading="lazy">
-        
+        <img src="../../assets/analyses/28_weather_impact/weather_correlation_heatmap.png" alt="weather_correlation_heatmap" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/28_weather_impact/weather_correlation_heatmap.png" target="_blank" rel="noopener noreferrer">weather_correlation_heatmap.png</a>
@@ -143,18 +165,7 @@
       </figure>
     
       <figure class="shot-card">
-        
-        <figcaption class="artifact-body">
-          <span class="artifact-kind">data</span>
-          <a class="artifact-link" href="../../assets/analyses/28_weather_impact/weather_otp_correlation.csv" target="_blank" rel="noopener noreferrer">weather_otp_correlation.csv</a>
-          <p class="artifact-desc">correlation matrix of weather variables vs system OTP.</p>
-        </figcaption>
-      </figure>
-    
-      <figure class="shot-card">
-        
-          <img src="../../assets/analyses/28_weather_impact/weather_otp_timeseries.png" alt="weather_otp_timeseries" loading="lazy">
-        
+        <img src="../../assets/analyses/28_weather_impact/weather_otp_timeseries.png" alt="weather_otp_timeseries" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/28_weather_impact/weather_otp_timeseries.png" target="_blank" rel="noopener noreferrer">weather_otp_timeseries.png</a>
@@ -163,9 +174,7 @@
       </figure>
     
       <figure class="shot-card">
-        
-          <img src="../../assets/analyses/28_weather_impact/weather_scatter_matrix.png" alt="weather_scatter_matrix" loading="lazy">
-        
+        <img src="../../assets/analyses/28_weather_impact/weather_scatter_matrix.png" alt="weather_scatter_matrix" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/28_weather_impact/weather_scatter_matrix.png" target="_blank" rel="noopener noreferrer">weather_scatter_matrix.png</a>
@@ -173,14 +182,59 @@
         </figcaption>
       </figure>
     
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/28_weather_impact/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
+          <p class="artifact-desc">regression results for all models.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/28_weather_impact/model_comparison.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/28_weather_impact/weather_otp_correlation.csv" target="_blank" rel="noopener noreferrer">weather_otp_correlation.csv</a>
+          <p class="artifact-desc">correlation matrix of weather variables vs system OTP.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/28_weather_impact/weather_otp_correlation.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
   </div>
 </section>
 
 
 
-<section class="panel">
-  <h2>Methods</h2>
-  <div class="markdown"><h1>Methods: Weather Impact on OTP</h1>
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Weather Impact on OTP</h1>
 <h2>Question</h2>
 <p>Does weather (precipitation, snow, temperature) explain OTP variance or the counterintuitive seasonal pattern found in Analysis 06 (winter months outperform fall)?</p>
 <h2>Approach</h2>
@@ -247,65 +301,170 @@
 <li><code>weather_correlation_heatmap.png</code> -- heatmap of weather variable inter-correlations</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
 
 
-<section class="panel">
-  <h2>Sources</h2>
-  <table class="source-table">
-    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
-    <tbody>
-    
-      <tr>
-        <td>otp_monthly</td>
-        <td><span class="tag">table</span></td>
-        <td>Monthly OTP values by route. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>route_stops</td>
-        <td><span class="tag">table</span></td>
-        <td>Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>routes</td>
-        <td><span class="tag">table</span></td>
-        <td>Route dimension table. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>weather_monthly</td>
-        <td><span class="tag">table</span></td>
-        <td>Monthly precipitation, temperature, snowfall, and wind summary features. Produced by Weather ETL.</td>
-      </tr>
-    
-      <tr>
-        <td>numpy</td>
-        <td><span class="tag">dependency</span></td>
-        <td>Numerical computing library for vectorized arrays and matrix operations.</td>
-      </tr>
-    
-      <tr>
-        <td>polars</td>
-        <td><span class="tag">dependency</span></td>
-        <td>Dataframe library used for fast tabular data transformations and aggregation.</td>
-      </tr>
-    
-      <tr>
-        <td>scipy</td>
-        <td><span class="tag">dependency</span></td>
-        <td>Scientific computing library used for statistical tests and numerical routines.</td>
-      </tr>
-    
-    </tbody>
-  </table>
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>weather_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Weather ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </details>
 </section>
 
 
   </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

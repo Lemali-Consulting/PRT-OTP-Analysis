@@ -31,12 +31,37 @@
   <p class="kicker">Analysis</p>
   <h1>27 - Traffic Congestion and OTP</h1>
   <p class="lede">Ridership and External Factors</p>
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-03-03 02:13 UTC · Commit 58eebab</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+  </nav>
 </section>
 
 
 <section class="panel">
-  <h2>Data Provenance</h2>
-  <pre class="mermaid">flowchart LR
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../26_ridership_multivariate/index.html">← 26 - Ridership in Multivariate OTP Model</a>
+    <a href="../28_weather_impact/index.html">28 - Weather Impact →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
   27_traffic_congestion["27 - Traffic Congestion and OTP"]
   t_otp_monthly["otp_monthly"] --> 27_traffic_congestion
   01_data_ingestion["Data Ingestion"] --> t_otp_monthly
@@ -61,13 +86,15 @@
   class t_otp_monthly,t_route_stops,t_route_traffic,t_routes,t_stops table;
   class d1_27_traffic_congestion,d2_27_traffic_congestion,d3_27_traffic_congestion dep;
   class 01_data_ingestion,04_traffic_overlay pipeline;</pre>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Findings</h2>
-  <div class="markdown"><h1>Findings: Traffic Congestion and OTP</h1>
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Traffic Congestion and OTP</h1>
 <h2>Summary</h2>
 <p>Total traffic volume (AADT) does <strong>not</strong> explain OTP variance after controlling for structural features (F=0.011, p=0.92). However, <strong>truck percentage</strong> is a significant predictor (p=0.006), jointly boosting R2 from 0.40 to 0.45. Routes with higher truck traffic perform better on-time, likely because truck-heavy corridors tend to be wider arterials with fewer stops and more predictable traffic flow.</p>
 <h2>Key Numbers</h2>
@@ -103,18 +130,24 @@
 <li>The spatial matching uses a 30m buffer, which may associate routes with adjacent parallel roads in dense urban areas.</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
-<section class="panel">
+<section class="panel" id="outputs">
   <h2>Output</h2>
-  <div class="gallery">
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (3)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
     
       <figure class="shot-card">
-        
-          <img src="../../assets/analyses/27_traffic_congestion/aadt_vs_otp_scatter.png" alt="aadt_vs_otp_scatter" loading="lazy">
-        
+        <img src="../../assets/analyses/27_traffic_congestion/aadt_vs_otp_scatter.png" alt="aadt_vs_otp_scatter" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/27_traffic_congestion/aadt_vs_otp_scatter.png" target="_blank" rel="noopener noreferrer">aadt_vs_otp_scatter.png</a>
@@ -123,9 +156,7 @@
       </figure>
     
       <figure class="shot-card">
-        
-          <img src="../../assets/analyses/27_traffic_congestion/coefficient_comparison.png" alt="coefficient_comparison" loading="lazy">
-        
+        <img src="../../assets/analyses/27_traffic_congestion/coefficient_comparison.png" alt="coefficient_comparison" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/27_traffic_congestion/coefficient_comparison.png" target="_blank" rel="noopener noreferrer">coefficient_comparison.png</a>
@@ -134,18 +165,7 @@
       </figure>
     
       <figure class="shot-card">
-        
-        <figcaption class="artifact-body">
-          <span class="artifact-kind">data</span>
-          <a class="artifact-link" href="../../assets/analyses/27_traffic_congestion/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
-          <p class="artifact-desc">regression results for all models.</p>
-        </figcaption>
-      </figure>
-    
-      <figure class="shot-card">
-        
-          <img src="../../assets/analyses/27_traffic_congestion/partial_residual.png" alt="partial_residual" loading="lazy">
-        
+        <img src="../../assets/analyses/27_traffic_congestion/partial_residual.png" alt="partial_residual" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/27_traffic_congestion/partial_residual.png" target="_blank" rel="noopener noreferrer">partial_residual.png</a>
@@ -153,32 +173,73 @@
         </figcaption>
       </figure>
     
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
       <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/27_traffic_congestion/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
+          <p class="artifact-desc">regression results for all models.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/27_traffic_congestion/model_comparison.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
         
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/27_traffic_congestion/route_traffic_summary.csv" target="_blank" rel="noopener noreferrer">route_traffic_summary.csv</a>
           <p class="artifact-desc">per-route traffic data with OTP.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/27_traffic_congestion/route_traffic_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
         </figcaption>
       </figure>
     
       <figure class="shot-card">
-        
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/27_traffic_congestion/vif_table.csv" target="_blank" rel="noopener noreferrer">vif_table.csv</a>
           <p class="artifact-desc">VIF values for expanded model.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/27_traffic_congestion/vif_table.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
         </figcaption>
       </figure>
     
+    
+    </div>
   </div>
 </section>
 
 
 
-<section class="panel">
-  <h2>Methods</h2>
-  <div class="markdown"><h1>Methods: Traffic Congestion and OTP</h1>
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Traffic Congestion and OTP</h1>
 <h2>Question</h2>
 <p>Does traffic volume (AADT) explain OTP variance beyond stop count, geographic span, and other structural features from the Analysis 18 model?</p>
 <h2>Approach</h2>
@@ -239,71 +300,179 @@
 <li><code>output/partial_residual.png</code> -- partial residual plot for log_aadt</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
 
 
-<section class="panel">
-  <h2>Sources</h2>
-  <table class="source-table">
-    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
-    <tbody>
-    
-      <tr>
-        <td>otp_monthly</td>
-        <td><span class="tag">table</span></td>
-        <td>Monthly OTP values by route. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>route_stops</td>
-        <td><span class="tag">table</span></td>
-        <td>Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>route_traffic</td>
-        <td><span class="tag">table</span></td>
-        <td>Route-level traffic exposure metrics including weighted AADT and match quality. Produced by Traffic Overlay ETL.</td>
-      </tr>
-    
-      <tr>
-        <td>routes</td>
-        <td><span class="tag">table</span></td>
-        <td>Route dimension table. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>stops</td>
-        <td><span class="tag">table</span></td>
-        <td>Physical stop dimension table. Produced by Data Ingestion.</td>
-      </tr>
-    
-      <tr>
-        <td>numpy</td>
-        <td><span class="tag">dependency</span></td>
-        <td>Numerical computing library for vectorized arrays and matrix operations.</td>
-      </tr>
-    
-      <tr>
-        <td>polars</td>
-        <td><span class="tag">dependency</span></td>
-        <td>Dataframe library used for fast tabular data transformations and aggregation.</td>
-      </tr>
-    
-      <tr>
-        <td>scipy</td>
-        <td><span class="tag">dependency</span></td>
-        <td>Scientific computing library used for statistical tests and numerical routines.</td>
-      </tr>
-    
-    </tbody>
-  </table>
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>route_traffic</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Traffic Overlay ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </details>
 </section>
 
 
   </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

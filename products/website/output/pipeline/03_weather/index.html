@@ -31,12 +31,29 @@
   <p class="kicker">Pipeline</p>
   <h1>Weather ETL</h1>
   
+  <p class="lede">Coverage: 2019-01 to 2025-12 (from weather_monthly).</p>
+  <p class="lede">Built 2026-03-03 02:13 UTC · Commit 58eebab</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    
+    <a href="#methods">Methods</a>
+    <a href="#tables-produced">Tables Produced</a>
+    <a href="#sources">Sources</a>
+  </nav>
 </section>
 
 
-<section class="panel">
-  <h2>Data Provenance</h2>
-  <pre class="mermaid">flowchart LR
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
   03_weather["Weather ETL"]
   f1_03_weather["data/noaa-weather/daily_raw.csv"] --> 03_weather
   a1_03_weather["NOAA NCEI Daily Summaries API"] --> 03_weather
@@ -51,13 +68,15 @@
   class tp_weather_monthly table;
   class f1_03_weather file;
   class a1_03_weather api;</pre>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Findings</h2>
-  <div class="markdown"><h1>Findings: Weather ETL</h1>
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Weather ETL</h1>
 <h2>Summary</h2>
 <p>Monthly weather features are loaded into <code>prt.db</code> and validated for overlap with OTP months.</p>
 <h2>Notes</h2>
@@ -66,15 +85,17 @@
 <li>Emits seasonality sanity checks and null-rate diagnostics.</li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
 
 
-<section class="panel">
-  <h2>Methods</h2>
-  <div class="markdown"><h1>Methods: Weather ETL</h1>
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Weather ETL</h1>
 <h2>Question</h2>
 <p>How do we produce a monthly weather feature table aligned to OTP months?</p>
 <h2>Approach</h2>
@@ -94,50 +115,142 @@
 <li><code>weather_monthly</code> table in <code>data/prt.db</code></li>
 </ul>
 </div>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Tables Produced</h2>
-  <table class="source-table">
-    <thead><tr><th>Table</th><th>Description</th></tr></thead>
-    <tbody>
-    
-      <tr>
-        <td><code>weather_monthly</code></td>
-        <td>Monthly precipitation, temperature, snowfall, and wind summary features.</td>
-      </tr>
-    
-    </tbody>
-  </table>
+<section class="panel" id="tables-produced">
+  <details class="fold" open>
+    <summary><h2>Tables Produced</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Table</th><th>Description</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td><code>weather_monthly</code></td>
+          <td>Monthly precipitation, temperature, snowfall, and wind summary features.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </details>
 </section>
 
 
 
-<section class="panel">
-  <h2>Sources</h2>
-  <table class="source-table">
-    <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
-    <tbody>
-    
-      <tr>
-        <td>data/noaa-weather/daily_raw.csv</td>
-        <td><span class="tag">file</span></td>
-        <td>Cached NOAA daily observations for Pittsburgh station.</td>
-      </tr>
-    
-      <tr>
-        <td>NOAA NCEI Daily Summaries API</td>
-        <td><span class="tag">api</span></td>
-        <td>Daily weather observations for station USW00094823 (Pittsburgh).</td>
-      </tr>
-    
-    </tbody>
-  </table>
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>data/noaa-weather/daily_raw.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Cached NOAA daily observations for Pittsburgh station.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+      
+        <tr>
+          <td>NOAA NCEI Daily Summaries API</td>
+          <td><span class="tag">api</span></td>
+          <td>Daily weather observations for station USW00094823 (Pittsburgh).</td>
+          <td>Hosted by www.ncei.noaa.gov.</td>
+          <td>Queried during pipeline execution; freshness depends on upstream updates.</td>
+          <td>Availability and schema can change without notice.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </details>
 </section>
 
 
   </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
 </body>
 </html>
