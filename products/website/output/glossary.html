@@ -34,34 +34,294 @@
 </section>
 
   <section class="panel">
-    <h2>Transit Metrics</h2>
+    <h2>Transit Operations</h2>
     <div class="card-grid">
     
       <article class="card">
-        <h3>OTP (OTP)</h3>
-        <p>On-time performance, represented as a fraction between 0 and 1.</p>
+        <h3>On-Time Performance (OTP)</h3>
+        <p>Share of trips that meet the agency's on-time threshold, usually expressed from 0 to 1.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Trip-Weighted OTP</h3>
+        <p>OTP average where each route is weighted by its scheduled trip volume.</p>
       </article>
     
       <article class="card">
         <h3>Ridership-Weighted OTP</h3>
-        <p>OTP averaged using passenger counts as weights.</p>
+        <p>OTP average where each route is weighted by passenger volume rather than trip count.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Day Type</h3>
+        <p>Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Route Span</h3>
+        <p>Maximum geographic distance covered by a route across its served stops.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Busway Route</h3>
+        <p>Route operating on dedicated right-of-way for part of its alignment.</p>
       </article>
     
     </div>
   </section>
 
   <section class="panel">
-    <h2>Statistical Methods</h2>
+    <h2>Descriptive Statistics</h2>
+    <div class="card-grid">
+    
+      <article class="card">
+        <h3>Mean</h3>
+        <p>Arithmetic average of values, computed as sum divided by count.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Median</h3>
+        <p>Middle value of an ordered distribution, robust to extreme outliers.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Standard Deviation (SD)</h3>
+        <p>Dispersion measure showing how far values tend to deviate from the mean.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Variance</h3>
+        <p>Squared standard deviation used in many statistical formulas.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Percentile</h3>
+        <p>Value below which a given percentage of observations falls.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Interquartile Range (IQR)</h3>
+        <p>Difference between the 75th and 25th percentiles, capturing the middle half of data.</p>
+      </article>
+    
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Correlation and Regression</h2>
     <div class="card-grid">
     
       <article class="card">
         <h3>Pearson Correlation</h3>
-        <p>Linear association statistic ranging from -1 to 1.</p>
+        <p>Linear association metric ranging from -1 to 1.</p>
       </article>
     
       <article class="card">
         <h3>Spearman Correlation</h3>
-        <p>Rank-based monotonic association statistic.</p>
+        <p>Rank-based monotonic association metric less sensitive to nonlinearity and outliers.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Partial Correlation</h3>
+        <p>Correlation between two variables after controlling for one or more covariates.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Ordinary Least Squares (OLS)</h3>
+        <p>Regression method that estimates coefficients by minimizing squared residuals.</p>
+      </article>
+    
+      <article class="card">
+        <h3>R-squared (R2)</h3>
+        <p>Fraction of outcome variance explained by a regression model.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Adjusted R-squared</h3>
+        <p>R2 variant that penalizes unnecessary predictors.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Standardized Coefficient (Beta)</h3>
+        <p>Regression coefficient scaled in standard deviation units for cross-predictor comparison.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Variance Inflation Factor (VIF)</h3>
+        <p>Diagnostic for multicollinearity among predictors.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Nested Model F-Test</h3>
+        <p>Test comparing a restricted model to an expanded model to assess added explanatory value.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Degrees of Freedom (df)</h3>
+        <p>Number of independent pieces of information remaining after estimating model parameters.</p>
+      </article>
+    
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Hypothesis Testing</h2>
+    <div class="card-grid">
+    
+      <article class="card">
+        <h3>P-Value</h3>
+        <p>Probability of observing results at least this extreme under the null hypothesis.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Confidence Interval (CI)</h3>
+        <p>Interval estimate that captures plausible parameter values at a chosen confidence level.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Paired t-Test</h3>
+        <p>Mean-difference test for matched observations measured on the same units.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Welch t-Test</h3>
+        <p>Two-sample t-test variant that does not assume equal variances.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Mann-Whitney U Test</h3>
+        <p>Non-parametric two-group comparison based on rank ordering.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Kruskal-Wallis Test</h3>
+        <p>Non-parametric multi-group comparison using ranked observations.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Wilcoxon Signed-Rank Test</h3>
+        <p>Non-parametric paired comparison based on signed ranks of differences.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Bonferroni Correction</h3>
+        <p>Multiple-testing adjustment that scales p-value thresholds by the number of tests.</p>
+      </article>
+    
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Time Series and Forecasting Concepts</h2>
+    <div class="card-grid">
+    
+      <article class="card">
+        <h3>Rolling Mean</h3>
+        <p>Moving-window average used to smooth short-term volatility.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Rolling Z-Score</h3>
+        <p>Standardized deviation from a rolling mean used to detect anomalies.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Seasonal Decomposition</h3>
+        <p>Separation of a time series into trend, seasonal, and residual components.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Detrending</h3>
+        <p>Removal of long-run trend to isolate short-run or relative variation.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Lagged Cross-Correlation</h3>
+        <p>Correlation of two series at offset time lags.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Granger Causality</h3>
+        <p>Test of whether past values of one series improve prediction of another series.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Baseline Indexing</h3>
+        <p>Rescaling series to a reference period equal to 100 for comparability.</p>
+      </article>
+    
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Clustering and Concentration</h2>
+    <div class="card-grid">
+    
+      <article class="card">
+        <h3>Hierarchical Clustering</h3>
+        <p>Iterative grouping method that forms a nested tree of clusters.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Dendrogram</h3>
+        <p>Tree visualization showing hierarchical cluster merges and distances.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Silhouette Score</h3>
+        <p>Cluster-quality metric measuring cohesion within clusters and separation between clusters.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Gini Coefficient</h3>
+        <p>Inequality metric on a 0 to 1 scale used for concentration analysis.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Lorenz Curve</h3>
+        <p>Cumulative-share plot used to visualize distributional inequality.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Pareto Concentration</h3>
+        <p>Pattern where a small share of units accounts for a large share of outcomes.</p>
+      </article>
+    
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Data Quality and Causal Caveats</h2>
+    <div class="card-grid">
+    
+      <article class="card">
+        <h3>Simpson's Paradox</h3>
+        <p>Aggregated trends that reverse or change direction after stratification.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Regression to the Mean</h3>
+        <p>Tendency of extreme observations to move closer to average on repeated measurement.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Ecological Fallacy</h3>
+        <p>Error of inferring individual-level behavior from group-level aggregates.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Selection Bias</h3>
+        <p>Distortion caused by non-random inclusion of observations or intervention targets.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Statistical Power</h3>
+        <p>Probability of detecting a true effect when it exists.</p>
+      </article>
+    
+      <article class="card">
+        <h3>Survivorship Bias</h3>
+        <p>Bias introduced by observing only units that remain after attrition or filtering.</p>
       </article>
     
     </div>

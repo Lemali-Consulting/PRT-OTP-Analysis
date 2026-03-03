@@ -1,14 +1,128 @@
 categories:
-  - name: Transit Metrics
+  - name: Transit Operations
     terms:
-      - term: OTP
+      - term: On-Time Performance
         abbreviation: OTP
-        definition: On-time performance, represented as a fraction between 0 and 1.
+        definition: Share of trips that meet the agency's on-time threshold, usually expressed from 0 to 1.
+      - term: Trip-Weighted OTP
+        definition: OTP average where each route is weighted by its scheduled trip volume.
       - term: Ridership-Weighted OTP
-        definition: OTP averaged using passenger counts as weights.
-  - name: Statistical Methods
+        definition: OTP average where each route is weighted by passenger volume rather than trip count.
+      - term: Day Type
+        definition: Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.
+      - term: Route Span
+        definition: Maximum geographic distance covered by a route across its served stops.
+      - term: Busway Route
+        definition: Route operating on dedicated right-of-way for part of its alignment.
+
+  - name: Descriptive Statistics
+    terms:
+      - term: Mean
+        definition: Arithmetic average of values, computed as sum divided by count.
+      - term: Median
+        definition: Middle value of an ordered distribution, robust to extreme outliers.
+      - term: Standard Deviation
+        abbreviation: SD
+        definition: Dispersion measure showing how far values tend to deviate from the mean.
+      - term: Variance
+        definition: Squared standard deviation used in many statistical formulas.
+      - term: Percentile
+        definition: Value below which a given percentage of observations falls.
+      - term: Interquartile Range
+        abbreviation: IQR
+        definition: Difference between the 75th and 25th percentiles, capturing the middle half of data.
+
+  - name: Correlation and Regression
     terms:
       - term: Pearson Correlation
-        definition: Linear association statistic ranging from -1 to 1.
+        definition: Linear association metric ranging from -1 to 1.
       - term: Spearman Correlation
-        definition: Rank-based monotonic association statistic.
+        definition: Rank-based monotonic association metric less sensitive to nonlinearity and outliers.
+      - term: Partial Correlation
+        definition: Correlation between two variables after controlling for one or more covariates.
+      - term: Ordinary Least Squares
+        abbreviation: OLS
+        definition: Regression method that estimates coefficients by minimizing squared residuals.
+      - term: R-squared
+        abbreviation: R2
+        definition: Fraction of outcome variance explained by a regression model.
+      - term: Adjusted R-squared
+        definition: R2 variant that penalizes unnecessary predictors.
+      - term: Standardized Coefficient
+        abbreviation: Beta
+        definition: Regression coefficient scaled in standard deviation units for cross-predictor comparison.
+      - term: Variance Inflation Factor
+        abbreviation: VIF
+        definition: Diagnostic for multicollinearity among predictors.
+      - term: Nested Model F-Test
+        definition: Test comparing a restricted model to an expanded model to assess added explanatory value.
+      - term: Degrees of Freedom
+        abbreviation: df
+        definition: Number of independent pieces of information remaining after estimating model parameters.
+
+  - name: Hypothesis Testing
+    terms:
+      - term: P-Value
+        definition: Probability of observing results at least this extreme under the null hypothesis.
+      - term: Confidence Interval
+        abbreviation: CI
+        definition: Interval estimate that captures plausible parameter values at a chosen confidence level.
+      - term: Paired t-Test
+        definition: Mean-difference test for matched observations measured on the same units.
+      - term: Welch t-Test
+        definition: Two-sample t-test variant that does not assume equal variances.
+      - term: Mann-Whitney U Test
+        definition: Non-parametric two-group comparison based on rank ordering.
+      - term: Kruskal-Wallis Test
+        definition: Non-parametric multi-group comparison using ranked observations.
+      - term: Wilcoxon Signed-Rank Test
+        definition: Non-parametric paired comparison based on signed ranks of differences.
+      - term: Bonferroni Correction
+        definition: Multiple-testing adjustment that scales p-value thresholds by the number of tests.
+
+  - name: Time Series and Forecasting Concepts
+    terms:
+      - term: Rolling Mean
+        definition: Moving-window average used to smooth short-term volatility.
+      - term: Rolling Z-Score
+        definition: Standardized deviation from a rolling mean used to detect anomalies.
+      - term: Seasonal Decomposition
+        definition: Separation of a time series into trend, seasonal, and residual components.
+      - term: Detrending
+        definition: Removal of long-run trend to isolate short-run or relative variation.
+      - term: Lagged Cross-Correlation
+        definition: Correlation of two series at offset time lags.
+      - term: Granger Causality
+        definition: Test of whether past values of one series improve prediction of another series.
+      - term: Baseline Indexing
+        definition: Rescaling series to a reference period equal to 100 for comparability.
+
+  - name: Clustering and Concentration
+    terms:
+      - term: Hierarchical Clustering
+        definition: Iterative grouping method that forms a nested tree of clusters.
+      - term: Dendrogram
+        definition: Tree visualization showing hierarchical cluster merges and distances.
+      - term: Silhouette Score
+        definition: Cluster-quality metric measuring cohesion within clusters and separation between clusters.
+      - term: Gini Coefficient
+        definition: Inequality metric on a 0 to 1 scale used for concentration analysis.
+      - term: Lorenz Curve
+        definition: Cumulative-share plot used to visualize distributional inequality.
+      - term: Pareto Concentration
+        definition: Pattern where a small share of units accounts for a large share of outcomes.
+
+  - name: Data Quality and Causal Caveats
+    terms:
+      - term: Simpson's Paradox
+        definition: Aggregated trends that reverse or change direction after stratification.
+      - term: Regression to the Mean
+        definition: Tendency of extreme observations to move closer to average on repeated measurement.
+      - term: Ecological Fallacy
+        definition: Error of inferring individual-level behavior from group-level aggregates.
+      - term: Selection Bias
+        definition: Distortion caused by non-random inclusion of observations or intervention targets.
+      - term: Statistical Power
+        definition: Probability of detecting a true effect when it exists.
+      - term: Survivorship Bias
+        definition: Bias introduced by observing only units that remain after attrition or filtering.
