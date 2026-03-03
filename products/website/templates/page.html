@@ -28,13 +28,13 @@
     {% for artifact in output_artifacts %}
       <figure class="shot-card">
         {% if artifact.kind == "image" %}
-          <img src="{{ artifact.src }}" alt="{{ artifact.alt }}" loading="lazy">
+          <img src="{{ root }}{{ artifact.src }}" alt="{{ artifact.alt }}" loading="lazy">
         {% elif artifact.kind == "html" %}
-          <iframe class="artifact-frame" src="{{ artifact.src }}" title="{{ artifact.label }}" loading="lazy"></iframe>
+          <iframe class="artifact-frame" src="{{ root }}{{ artifact.src }}" title="{{ artifact.label }}" loading="lazy"></iframe>
         {% endif %}
         <figcaption class="artifact-body">
           <span class="artifact-kind">{{ artifact.kind }}</span>
-          <a class="artifact-link" href="{{ artifact.src }}" target="_blank" rel="noopener noreferrer">{{ artifact.label }}</a>
+          <a class="artifact-link" href="{{ root }}{{ artifact.src }}" target="_blank" rel="noopener noreferrer">{{ artifact.label }}</a>
           <p class="artifact-desc">{{ artifact.description }}</p>
         </figcaption>
       </figure>
