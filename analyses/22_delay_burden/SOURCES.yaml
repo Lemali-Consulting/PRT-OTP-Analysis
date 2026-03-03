@@ -15,16 +15,16 @@ dependencies:
 outputs:
 - path: delay_burden_monthly.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: Monthly system and route-level late rider-trip totals over the analysis period.
 - path: delay_burden_ranking.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: routes ranked by total late rider-trips.
 - path: delay_burden_trend.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: system-wide monthly late rider-trips.
 - path: rate_vs_burden.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter comparing OTP rank with delay burden rank.
 - path: top10_burden.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: bar chart of top 10 routes by late rider-trips.

@@ -17,10 +17,10 @@ dependencies:
 outputs:
 - path: connectivity_vs_otp.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter plot of routes-per-stop vs OTP.
 - path: hub_performance.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-stop connectivity, OTP, and classification.
 - path: hub_tier_comparison.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: box plot of OTP by hub tier.

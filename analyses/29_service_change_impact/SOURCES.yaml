@@ -14,10 +14,10 @@ dependencies:
 outputs:
 - path: service_change_events.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: all detected schedule change events with OTP and trip deltas.
 - path: service_change_impact.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter plot of trip change vs OTP change.
 - path: service_change_summary.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: summary statistics by event type.

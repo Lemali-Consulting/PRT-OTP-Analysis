@@ -18,10 +18,10 @@ dependencies:
 outputs:
 - path: density_vs_otp.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter plot of stop density vs OTP.
 - path: geographic_span.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-route span, stop density, stop count, avg OTP.
 - path: span_vs_otp.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter plot of geographic span vs OTP.

@@ -16,13 +16,13 @@ dependencies:
 outputs:
 - path: covid_recovery.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-route baseline, current, delta, and characteristics.
 - path: recovery_by_mode.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: box plot of recovery delta by mode/subtype.
 - path: recovery_distribution.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: histogram of recovery deltas.
 - path: regression_to_mean.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: Scatter plot testing baseline OTP versus recovery delta to assess regression-to-the-mean effects.

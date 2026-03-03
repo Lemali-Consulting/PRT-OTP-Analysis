@@ -16,10 +16,10 @@ dependencies:
 outputs:
 - path: mode_comparison.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: monthly OTP by mode/type (unweighted).
 - path: mode_comparison.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: comparison chart.
 - path: mode_comparison_weighted.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: monthly OTP by mode (trip-weighted).

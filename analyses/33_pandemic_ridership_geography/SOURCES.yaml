@@ -15,10 +15,10 @@ dependencies:
 outputs:
 - path: change_by_zone.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: bar chart of median % change by zone and histogram of changes.
 - path: pandemic_change_by_stop.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-stop pre/post usage and change metrics.
 - path: ridership_change_map.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: geographic scatter plot colored by % change.

@@ -16,13 +16,13 @@ dependencies:
 outputs:
 - path: granger_results.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-route Granger test results (F-stat, p-value, optimal lag).
 - path: granger_summary.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: histogram of p-values across routes.
 - path: lagged_crosscorr.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: Per-route lagged OTP-to-ridership cross-correlation values across tested lags.
 - path: lagged_crosscorr.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: median cross-correlation by lag with IQR band.

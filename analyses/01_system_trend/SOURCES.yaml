@@ -15,10 +15,12 @@ dependencies:
 outputs:
 - path: system_trend.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: monthly weighted and unweighted OTP (all modes), with pct_time_varying
+    column.
 - path: system_trend.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: time series chart with all-mode and bus-only overlays; shaded region
+    marks time-varying weight period.
 - path: system_trend_bus_only.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: monthly weighted and unweighted OTP (bus only).

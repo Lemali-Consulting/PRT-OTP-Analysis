@@ -15,7 +15,7 @@ dependencies:
 outputs:
 - path: seasonal_patterns.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: month-of-year seasonal profile per route.
 - path: seasonal_patterns.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: seasonal decomposition charts.

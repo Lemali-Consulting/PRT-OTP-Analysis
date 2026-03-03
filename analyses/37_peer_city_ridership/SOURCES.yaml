@@ -12,16 +12,16 @@ dependencies:
 outputs:
 - path: peer_mode_breakdown.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: bus vs rail recovery by peer city.
 - path: peer_recovery_bar.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: bar chart of 2024 vs 2019 recovery %, PRT highlighted.
 - path: peer_recovery_summary.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-peer recovery metrics.
 - path: peer_ridership_data.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: monthly indexed data for all peers.
 - path: peer_ridership_indexed.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: time-series line chart of indexed ridership for all 8 peers.

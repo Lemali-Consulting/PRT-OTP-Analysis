@@ -15,13 +15,13 @@ dependencies:
 outputs:
 - path: equity_metrics.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: Gini index, 50th-percentile OTP threshold, quintile breakdowns.
 - path: quintile_detail.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: Route-level OTP quintile assignments with ridership shares used in equity summaries.
 - path: quintile_summary.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: bar chart of ridership share and average OTP by quintile.
 - path: ridership_lorenz.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: Lorenz curve of ridership vs OTP rank (all routes + bus-only).

@@ -18,10 +18,10 @@ dependencies:
 outputs:
 - path: coefficient_plot.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: horizontal bar chart of standardized coefficients.
 - path: model_coefficients.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: feature, coefficient, std error, p-value, beta weight.
 - path: predicted_vs_actual.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter plot with 1:1 line.

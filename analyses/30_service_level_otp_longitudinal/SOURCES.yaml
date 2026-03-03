@@ -16,10 +16,10 @@ dependencies:
 outputs:
 - path: service_level_panel.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: route-month panel with delta_trips, delta_otp, detrended delta_otp.
 - path: service_level_scatter.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter of delta_trips vs detrended delta_otp with regression line.
 - path: service_level_summary.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: regression and correlation results.

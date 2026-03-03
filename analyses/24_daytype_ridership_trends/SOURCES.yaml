@@ -14,13 +14,13 @@ dependencies:
 outputs:
 - path: daytype_ridership_trend.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: indexed ridership by day type over time.
 - path: daytype_summary.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: monthly ridership by day type.
 - path: weekend_share_trend.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: weekend ridership share over time.
 - path: weekend_share_vs_otp.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter of weekend share vs route OTP.

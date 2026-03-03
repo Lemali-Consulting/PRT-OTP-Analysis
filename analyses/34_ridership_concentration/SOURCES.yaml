@@ -17,13 +17,13 @@ dependencies:
 outputs:
 - path: gini_vs_otp.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter plot of route Gini vs average OTP.
 - path: pareto_curve.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: system-wide Pareto curve.
 - path: pareto_system.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: cumulative ridership share by stop rank.
 - path: route_gini.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-route Gini coefficient and OTP.

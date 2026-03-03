@@ -14,10 +14,11 @@ dependencies:
 outputs:
 - path: net_flow_map.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: geographic scatter plot colored by net flow (blue = generator, red
+    = attractor).
 - path: stop_net_flow.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-stop boardings, alightings, net flow, and classification.
 - path: top_generators_attractors.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: horizontal bar chart of top 15 generators and attractors.

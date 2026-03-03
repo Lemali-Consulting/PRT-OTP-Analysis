@@ -13,7 +13,7 @@ dependencies:
 outputs:
 - path: anomalies.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: all flagged anomaly months.
 - path: anomaly_profiles.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: time series for routes with most anomalies.

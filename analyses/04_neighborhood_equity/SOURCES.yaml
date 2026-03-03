@@ -15,13 +15,15 @@ dependencies:
 outputs:
 - path: neighborhood_equity.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: top/bottom neighborhoods bar chart and quintile time series.
 - path: neighborhood_otp.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: OTP aggregated by neighborhood (weighted, unweighted, gap, and bus-only
+    weighted).
 - path: neighborhood_otp_bus_only.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: bus-only OTP by neighborhood.
 - path: weighted_vs_unweighted_otp.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter plot comparing the two OTP measures and bar chart of the frequency-weighting
+    effect per neighborhood.

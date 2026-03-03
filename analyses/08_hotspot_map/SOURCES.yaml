@@ -18,10 +18,10 @@ dependencies:
 outputs:
 - path: hotspot_map.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-stop route-weighted OTP with coordinates.
 - path: hotspot_map.html
   kind: html
-  description: Generated interactive HTML artifact produced by this analysis.
+  description: interactive folium map over OpenStreetMap tiles with per-stop popups.
 - path: hotspot_map.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: geographic scatter plot.

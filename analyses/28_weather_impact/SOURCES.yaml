@@ -17,19 +17,19 @@ dependencies:
 outputs:
 - path: model_comparison.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: regression results for all models.
 - path: seasonal_weather_adjusted.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: 'monthly seasonal profile: actual vs weather-adjusted.'
 - path: weather_correlation_heatmap.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: heatmap of weather variable inter-correlations.
 - path: weather_otp_correlation.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: correlation matrix of weather variables vs system OTP.
 - path: weather_otp_timeseries.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: weather time series overlaid with system OTP (dual-axis).
 - path: weather_scatter_matrix.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter matrix of key weather variables vs detrended system OTP.

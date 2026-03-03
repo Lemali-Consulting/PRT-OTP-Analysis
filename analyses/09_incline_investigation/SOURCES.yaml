@@ -16,13 +16,13 @@ dependencies:
 outputs:
 - path: incline_report.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: all data found for MI across tables.
 - path: incline_report.txt
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: plain-text summary of findings.
 - path: incline_route_stops.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: Stop-level route associations for incline routes extracted from route_stops.
 - path: incline_stop_reference.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: Historical incline stop records extracted from stop_reference for data lineage checks.

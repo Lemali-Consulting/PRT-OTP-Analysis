@@ -13,10 +13,11 @@ dependencies:
 outputs:
 - path: ridership_growth_data.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-agency data (ntd_id, agency_name, upt_2019, upt_2024, pct_change,
+    rank).
 - path: ridership_growth_distribution.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: histogram of percent change with PRT highlighted.
 - path: ridership_growth_ranking.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: horizontal bar chart of all 150 agencies, PRT in distinct color.

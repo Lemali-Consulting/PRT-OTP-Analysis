@@ -18,13 +18,15 @@ dependencies:
 outputs:
 - path: candidate_map.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter map of candidate stops colored by usage.
 - path: consolidation_candidates.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: 'per-stop detail: stop, route, usage, nearest neighbor distance, candidate
+    flag.'
 - path: otp_gain_by_route.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: bar chart of estimated OTP improvement per route.
 - path: route_consolidation_summary.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: 'per-route summary: current stops, candidates, projected new stop count,
+    estimated OTP gain.'

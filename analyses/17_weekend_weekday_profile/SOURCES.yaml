@@ -16,10 +16,10 @@ dependencies:
 outputs:
 - path: service_profile.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-route trip counts, weekend ratio, and OTP.
 - path: service_tier_comparison.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: box plot by service profile tier.
 - path: weekend_ratio_vs_otp.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: scatter plot.

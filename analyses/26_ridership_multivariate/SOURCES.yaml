@@ -18,13 +18,13 @@ dependencies:
 outputs:
 - path: coefficient_comparison.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: beta weight comparison between base and expanded models.
 - path: model_comparison.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: side-by-side regression results (base vs expanded vs bus-only).
 - path: partial_residual.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: partial residual plot for log_ridership.
 - path: vif_table.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: VIF values for expanded model.

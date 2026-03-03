@@ -17,7 +17,8 @@ dependencies:
 outputs:
 - path: route_ranking.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-route summary stats, slopes with SEs/CIs, overall and within-mode
+    rankings.
 - path: top_bottom_routes.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: best/worst performers chart.

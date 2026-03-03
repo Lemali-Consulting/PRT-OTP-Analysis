@@ -18,16 +18,16 @@ dependencies:
 outputs:
 - path: garage_boxplot.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: OTP distribution by garage.
 - path: garage_monthly.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: Monthly OTP and ridership aggregates by operating garage.
 - path: garage_otp_trend.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: monthly OTP by garage.
 - path: garage_route_detail.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: Route-level OTP, ridership, and feature records used in garage comparison models.
 - path: garage_summary.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: garage-level summary statistics.

@@ -17,10 +17,10 @@ dependencies:
 outputs:
 - path: cluster_membership.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: route-to-cluster assignment with cluster characteristics.
 - path: correlation_heatmap.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: pairwise correlation matrix ordered by cluster.
 - path: dendrogram.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: hierarchical clustering dendrogram.

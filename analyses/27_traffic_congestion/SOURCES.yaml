@@ -18,19 +18,19 @@ dependencies:
 outputs:
 - path: aadt_vs_otp_scatter.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: bivariate scatter of AADT vs OTP.
 - path: coefficient_comparison.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: beta weight comparison between base and expanded models.
 - path: model_comparison.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: regression results for all models.
 - path: partial_residual.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: partial residual plot for log_aadt.
 - path: route_traffic_summary.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-route traffic data with OTP.
 - path: vif_table.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: VIF values for expanded model.

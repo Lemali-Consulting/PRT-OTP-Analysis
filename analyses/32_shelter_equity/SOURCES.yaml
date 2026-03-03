@@ -15,13 +15,13 @@ dependencies:
 outputs:
 - path: ridership_by_shelter.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: box/violin plot comparing usage distributions.
 - path: shelter_coverage_by_mode.png
   kind: image
-  description: Generated chart image produced by this analysis.
+  description: bar chart of shelter coverage rates by mode.
 - path: shelter_equity_summary.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: per-stop summary with usage and shelter status.
 - path: unsheltered_priority.csv
   kind: data
-  description: Generated tabular or textual data artifact produced by this analysis.
+  description: top unsheltered stops ranked by usage.
