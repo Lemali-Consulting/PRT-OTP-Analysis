@@ -26,6 +26,7 @@
 - **Run all analyses:** `uv run python scaffold.py run-all --json`
 
 ## Commit discipline
-- Always git commit all changes at the end of an action, right before returning control to the user.
+- Always git commit and push all changes at the end of an action, right before returning control to the user.
 - Use a concise, descriptive commit message summarizing what was done.
 - Stage only the files you changed; do not use `git add -A` or `git add .`.
+- After committing, push to the remote.
