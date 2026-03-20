@@ -10,21 +10,32 @@
 {% for category in categories %}
   <section class="panel">
     <h2>{{ category.name }}</h2>
-    <div class="card-grid">
-    {% for term in category.terms %}
-      <article class="card" id="{{ term.anchor }}">
-        <h3>{{ term.term }}{% if term.abbreviation %} ({{ term.abbreviation }}){% endif %}</h3>
-        <p>{{ term.definition }}</p>
-        {% if term.used_in %}
-        <p class="glossary-usage">Used in:
-          {% for page in term.used_in %}
-            <a href="{{ page.url }}">{{ page.title }}</a>{% if not loop.last %}, {% endif %}
-          {% endfor %}
-        </p>
-        {% endif %}
-      </article>
-    {% endfor %}
-    </div>
+    <table class="glossary-table">
+      <thead>
+        <tr>
+          <th>Term</th>
+          <th>Definition</th>
+          <th>Used in</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for term in category.terms %}
+        <tr id="{{ term.anchor }}">
+          <td class="glossary-term-cell">{{ term.term }}{% if term.abbreviation %} <span class="glossary-abbr">({{ term.abbreviation }})</span>{% endif %}</td>
+          <td>{{ term.definition }}</td>
+          <td class="glossary-usage-cell">
+            {% if term.used_in %}
+              {% for page in term.used_in %}
+                <a href="{{ page.url }}">{{ page.title }}</a>{% if not loop.last %}, {% endif %}
+              {% endfor %}
+            {% else %}
+              <span class="glossary-unused">&mdash;</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
   </section>
 {% endfor %}
 {% endblock %}

@@ -310,9 +310,41 @@ pre.mermaid {
   z-index: 51;
   pointer-events: none;
 }
-.glossary-usage {
-  font-size: 0.82rem;
-  color: var(--ink-muted);
-  margin: 0.3rem 0 0;
+.glossary-table {
+  width: 100%;
+  border-collapse: collapse;
 }
-.glossary-usage a { font-weight: 600; }
+.glossary-table th {
+  background: #f4e5d2;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+.glossary-table th,
+.glossary-table td {
+  border: 1px solid var(--line);
+  padding: 0.55rem 0.7rem;
+  vertical-align: top;
+  font-size: 0.92rem;
+}
+.glossary-term-cell {
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: "Fraunces", "Georgia", serif;
+}
+.glossary-abbr {
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+.glossary-usage-cell {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+.glossary-usage-cell a { font-weight: 600; }
+.glossary-unused { color: var(--line); }
+@media (max-width: 760px) {
+  .glossary-table th:nth-child(3),
+  .glossary-table td:nth-child(3) { display: none; }
+  .glossary-term-cell { white-space: normal; }
+}
