@@ -1253,6 +1253,18 @@ def main() -> None:
         )
         (OUTPUT_DIR / source["path"]).write_text(html, encoding="utf-8")
 
+    # --- Data Dictionary page ---
+    dictionary_md_path = PROJECT_ROOT / "data" / "DATA_DICTIONARY.md"
+    dictionary_body = re.sub(
+        r"<h1[^>]*>.*?</h1>", "", md_to_html(dictionary_md_path), count=1,
+    )
+    dictionary_html = env.get_template("data_dictionary.html").render(
+        root="",
+        dictionary_html=dictionary_body,
+        run_metadata=run_metadata,
+    )
+    (OUTPUT_DIR / "data_dictionary.html").write_text(dictionary_html, encoding="utf-8")
+
     sources_html = env.get_template("sources.html").render(
         root="",
         sources=source_list,

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Dictionary - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="index.html#pipeline">Pipeline</a>
+        <a href="index.html#analyses">Analyses</a>
+        <a href="sources.html">Sources</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Reference</p>
+  <h1>Data Dictionary</h1>
+  <p class="lede">Database tables, columns, types, and known data quality notes for the PRT OTP dataset.</p>
+  <p class="lede">Built 2026-03-20 19:26 UTC · Commit 174c909</p>
+</section>
+<section class="panel">
+  <div class="markdown-body">
+    
+<h2>Overview</h2>
+<p>Pittsburgh Regional Transit (PRT) on-time performance and system data, normalized into a SQLite database.</p>
+<table>
+<thead>
+<tr>
+  <th>Property</th>
+  <th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Database</td>
+  <td><code>data/prt.db</code> (SQLite)</td>
+</tr>
+<tr>
+  <td>Built by</td>
+  <td><code>src/prt_otp_analysis/build_db.py</code></td>
+</tr>
+<tr>
+  <td>Rebuild</td>
+  <td><code>uv run python src/prt_otp_analysis/build_db.py</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Database Schema</h2>
+<table>
+<thead>
+<tr>
+  <th>Table</th>
+  <th>Rows</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>routes</code></td>
+  <td>105</td>
+  <td>Dimension: one row per route</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>6,466</td>
+  <td>Dimension: one row per physical stop</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>11,078</td>
+  <td>Bridge: which stops serve which routes</td>
+</tr>
+<tr>
+  <td><code>stop_reference</code></td>
+  <td>7,554</td>
+  <td>Dimension: historical stop reference</td>
+</tr>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>7,651</td>
+  <td>Fact: monthly on-time performance</td>
+</tr>
+<tr>
+  <td><code>ntd_agency</code></td>
+  <td>2,340</td>
+  <td>Dimension: NTD agency-mode-TOS combos</td>
+</tr>
+<tr>
+  <td><code>ntd_ridership</code></td>
+  <td>673,920</td>
+  <td>Fact: monthly UPT by agency/mode/TOS</td>
+</tr>
+</tbody>
+</table>
+<h3><code>routes</code></h3>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>route_id</code></td>
+  <td>TEXT PK</td>
+  <td>Route code (<code>&quot;1&quot;</code>, <code>&quot;P1&quot;</code>, <code>&quot;BLUE&quot;</code>)</td>
+</tr>
+<tr>
+  <td><code>route_name</code></td>
+  <td>TEXT</td>
+  <td>Human-readable name</td>
+</tr>
+<tr>
+  <td><code>mode</code></td>
+  <td>TEXT</td>
+  <td><code>BUS</code>, <code>RAIL</code>, <code>INCLINE</code>, or <code>UNKNOWN</code> (for historical routes)</td>
+</tr>
+</tbody>
+</table>
+<h3><code>stops</code></h3>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>stop_id</code></td>
+  <td>TEXT PK</td>
+  <td>PRT stop identifier</td>
+</tr>
+<tr>
+  <td><code>stop_code</code></td>
+  <td>INTEGER</td>
+  <td>Numeric stop code</td>
+</tr>
+<tr>
+  <td><code>stop_name</code></td>
+  <td>TEXT</td>
+  <td>Stop name</td>
+</tr>
+<tr>
+  <td><code>lat</code></td>
+  <td>REAL</td>
+  <td>Latitude</td>
+</tr>
+<tr>
+  <td><code>lon</code></td>
+  <td>REAL</td>
+  <td>Longitude</td>
+</tr>
+<tr>
+  <td><code>county</code></td>
+  <td>TEXT</td>
+  <td>County</td>
+</tr>
+<tr>
+  <td><code>muni</code></td>
+  <td>TEXT</td>
+  <td>Municipality</td>
+</tr>
+<tr>
+  <td><code>hood</code></td>
+  <td>TEXT</td>
+  <td>Neighborhood (nullable)</td>
+</tr>
+</tbody>
+</table>
+<h3><code>route_stops</code></h3>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>route_id</code></td>
+  <td>TEXT FK</td>
+  <td>References <code>routes.route_id</code></td>
+</tr>
+<tr>
+  <td><code>stop_id</code></td>
+  <td>TEXT FK</td>
+  <td>References <code>stops.stop_id</code></td>
+</tr>
+<tr>
+  <td><code>direction</code></td>
+  <td>TEXT</td>
+  <td><code>&quot;IB&quot;</code>, <code>&quot;OB&quot;</code>, or <code>&quot;IB,OB&quot;</code></td>
+</tr>
+<tr>
+  <td><code>trips_wd</code></td>
+  <td>INTEGER</td>
+  <td>Weekday trips</td>
+</tr>
+<tr>
+  <td><code>trips_sa</code></td>
+  <td>INTEGER</td>
+  <td>Saturday trips</td>
+</tr>
+<tr>
+  <td><code>trips_su</code></td>
+  <td>INTEGER</td>
+  <td>Sunday trips</td>
+</tr>
+<tr>
+  <td><code>trips_7d</code></td>
+  <td>INTEGER</td>
+  <td>Total weekly trips</td>
+</tr>
+<tr>
+  <td><code>svc_days</code></td>
+  <td>TEXT</td>
+  <td>Service days (e.g. <code>&quot;WD,SA,SU&quot;</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Primary key: <code>(route_id, stop_id, direction)</code></p>
+<h3><code>stop_reference</code></h3>
+<p>Historical stop lookup table -- all stops ever in the PRT system.</p>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>stop_id</code></td>
+  <td>TEXT PK</td>
+  <td>PRT stop identifier</td>
+</tr>
+<tr>
+  <td><code>stop_code</code></td>
+  <td>INTEGER</td>
+  <td>Numeric stop code</td>
+</tr>
+<tr>
+  <td><code>stop_name</code></td>
+  <td>TEXT</td>
+  <td>Stop name</td>
+</tr>
+<tr>
+  <td><code>stop_source</code></td>
+  <td>TEXT</td>
+  <td>GTFS feed that introduced it</td>
+</tr>
+<tr>
+  <td><code>public_stop</code></td>
+  <td>TEXT</td>
+  <td><code>&quot;yes&quot;</code> / <code>&quot;no&quot;</code></td>
+</tr>
+<tr>
+  <td><code>lat</code></td>
+  <td>REAL</td>
+  <td>Latitude</td>
+</tr>
+<tr>
+  <td><code>lon</code></td>
+  <td>REAL</td>
+  <td>Longitude</td>
+</tr>
+<tr>
+  <td><code>mode</code></td>
+  <td>TEXT</td>
+  <td>BUS, INCLINE, etc.</td>
+</tr>
+<tr>
+  <td><code>first_served</code></td>
+  <td>TEXT</td>
+  <td>First GTFS feed version code</td>
+</tr>
+<tr>
+  <td><code>last_served</code></td>
+  <td>TEXT</td>
+  <td>Last GTFS feed version code</td>
+</tr>
+<tr>
+  <td><code>county</code></td>
+  <td>TEXT</td>
+  <td>County</td>
+</tr>
+<tr>
+  <td><code>muni</code></td>
+  <td>TEXT</td>
+  <td>Municipality</td>
+</tr>
+<tr>
+  <td><code>hood</code></td>
+  <td>TEXT</td>
+  <td>Neighborhood (nullable)</td>
+</tr>
+</tbody>
+</table>
+<h3><code>otp_monthly</code></h3>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>route_id</code></td>
+  <td>TEXT FK</td>
+  <td>References <code>routes.route_id</code></td>
+</tr>
+<tr>
+  <td><code>month</code></td>
+  <td>TEXT</td>
+  <td><code>&quot;2019-01&quot;</code> through <code>&quot;2025-12&quot;</code></td>
+</tr>
+<tr>
+  <td><code>otp</code></td>
+  <td>REAL</td>
+  <td>On-time percentage, 0.0 -- 1.0</td>
+</tr>
+</tbody>
+</table>
+<p>Primary key: <code>(route_id, month)</code>. Rows with NULL OTP in the source CSV are excluded.</p>
+<h3><code>ntd_agency</code></h3>
+<p>National Transit Database agency dimension — one row per agency-mode-TOS combination.</p>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ntd_id</code></td>
+  <td>INTEGER PK</td>
+  <td>NTD agency ID (e.g. 30022 = PRT)</td>
+</tr>
+<tr>
+  <td><code>agency_name</code></td>
+  <td>TEXT</td>
+  <td>Agency name</td>
+</tr>
+<tr>
+  <td><code>mode</code></td>
+  <td>TEXT PK</td>
+  <td>Mode code (MB=bus, LR=light rail, etc.)</td>
+</tr>
+<tr>
+  <td><code>tos</code></td>
+  <td>TEXT PK</td>
+  <td>Type of service (DO=directly operated, PT=purchased transport)</td>
+</tr>
+<tr>
+  <td><code>hq_city</code></td>
+  <td>TEXT</td>
+  <td>Headquarters city</td>
+</tr>
+<tr>
+  <td><code>hq_state</code></td>
+  <td>TEXT</td>
+  <td>Headquarters state</td>
+</tr>
+<tr>
+  <td><code>uza_name</code></td>
+  <td>TEXT</td>
+  <td>Urbanized area name</td>
+</tr>
+</tbody>
+</table>
+<p>Primary key: <code>(ntd_id, mode, tos)</code>. Source: NTD Monthly Module Excel, Master sheet.</p>
+<h3><code>ntd_ridership</code></h3>
+<p>Monthly unlinked passenger trips (UPT) from the NTD Monthly Module, Jan 2002–Dec 2025.</p>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ntd_id</code></td>
+  <td>INTEGER FK</td>
+  <td>References <code>ntd_agency.ntd_id</code></td>
+</tr>
+<tr>
+  <td><code>mode</code></td>
+  <td>TEXT FK</td>
+  <td>Mode code</td>
+</tr>
+<tr>
+  <td><code>tos</code></td>
+  <td>TEXT FK</td>
+  <td>Type of service</td>
+</tr>
+<tr>
+  <td><code>month</code></td>
+  <td>TEXT PK</td>
+  <td><code>&quot;2002-01&quot;</code> through <code>&quot;2025-12&quot;</code></td>
+</tr>
+<tr>
+  <td><code>upt</code></td>
+  <td>INTEGER</td>
+  <td>Unlinked passenger trips (nullable)</td>
+</tr>
+</tbody>
+</table>
+<p>Primary key: <code>(ntd_id, mode, tos, month)</code>. Source: NTD Monthly Module Excel, UPT sheet. Built by <code>src/prt_otp_analysis/ntd_ridership.py</code>.</p>
+<h2>Route ID Reconciliation</h2>
+<p>Route codes are extracted from <code>routes_by_month.csv</code> by splitting on <code>&quot; - &quot;</code> (first token).</p>
+<table>
+<thead>
+<tr>
+  <th>Mapping</th>
+  <th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>MONONGAHELA INCLINE</code> -&gt; <code>MI</code></td>
+  <td>Name used in OTP data maps to system code</td>
+</tr>
+<tr>
+  <td><code>37</code>, <code>42</code>, <code>P2</code>, <code>RLSH</code>, <code>SWL</code></td>
+  <td>In OTP data only (historical/temporary routes)</td>
+</tr>
+<tr>
+  <td><code>DQI</code>, <code>Y1</code>, <code>Y45</code>--<code>Y49</code></td>
+  <td>In current system only (no OTP data)</td>
+</tr>
+</tbody>
+</table>
+<h2>Source Files</h2>
+<table>
+<thead>
+<tr>
+  <th>File</th>
+  <th>Rows</th>
+  <th>Feeds into</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>routes_by_month.csv</code></td>
+  <td>99 routes x 84 months</td>
+  <td><code>routes</code>, <code>otp_monthly</code></td>
+</tr>
+<tr>
+  <td><code>Transit_stops_(current)_by_route_*.csv</code></td>
+  <td>17,546</td>
+  <td><code>stops</code>, <code>route_stops</code></td>
+</tr>
+<tr>
+  <td><code>PRT_Current_Routes_Full_System_*.csv</code></td>
+  <td>277</td>
+  <td><code>routes</code></td>
+</tr>
+<tr>
+  <td><code>PRT_Stop_Reference_Lookup_Table.csv</code></td>
+  <td>7,554</td>
+  <td><code>stop_reference</code></td>
+</tr>
+<tr>
+  <td><code>Transit_stops_*.geojson</code></td>
+  <td>17,546</td>
+  <td>Not used (same data as stops CSV)</td>
+</tr>
+<tr>
+  <td><code>ntd-monthly-ridership/*.xlsx</code></td>
+  <td>2,340 agencies x 288 months</td>
+  <td><code>ntd_agency</code>, <code>ntd_ridership</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Source File: routes_by_month.csv</h2>
+<h2>Fields</h2>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>Route</code></td>
+  <td>Text</td>
+  <td>Route identifier and name (e.g. <code>&quot;1 - FREEPORT ROAD&quot;</code>, <code>&quot;P1 - EAST BUSWAY-ALL STOPS&quot;</code>)</td>
+</tr>
+<tr>
+  <td><code>YYYY-Mon</code></td>
+  <td>Float</td>
+  <td>On-Time Percentage for that route in that month, scaled 0.0 to 1.0</td>
+</tr>
+</tbody>
+</table>
+<h3>Route naming conventions</h3>
+<p>Routes follow several naming patterns that reflect service type:</p>
+<table>
+<thead>
+<tr>
+  <th>Pattern</th>
+  <th>Example</th>
+  <th>Service type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Number only</td>
+  <td><code>1 - FREEPORT ROAD</code></td>
+  <td>Local bus</td>
+</tr>
+<tr>
+  <td>Number + <code>L</code></td>
+  <td><code>51L - CARRICK LIMITED</code></td>
+  <td>Limited-stop bus</td>
+</tr>
+<tr>
+  <td>Number + <code>X</code></td>
+  <td><code>28X - AIRPORT FLYER</code></td>
+  <td>Express bus</td>
+</tr>
+<tr>
+  <td><code>P</code> prefix</td>
+  <td><code>P1 - EAST BUSWAY-ALL STOPS</code></td>
+  <td>Busway / flyer</td>
+</tr>
+<tr>
+  <td><code>O</code> prefix</td>
+  <td><code>O1 - ROSS FLYER</code></td>
+  <td>Flyer (express)</td>
+</tr>
+<tr>
+  <td><code>G</code> prefix</td>
+  <td><code>G2 - WEST BUSWAY</code></td>
+  <td>Busway</td>
+</tr>
+<tr>
+  <td>Color name</td>
+  <td><code>RED - Castle Shannon via Beechview</code></td>
+  <td>Light rail (T)</td>
+</tr>
+<tr>
+  <td><code>SLVR</code></td>
+  <td><code>SLVR - Libary via Overbrook</code></td>
+  <td>Light rail (T)</td>
+</tr>
+<tr>
+  <td><code>BLUE</code></td>
+  <td><code>BLUE - SouthHills Village via Overbrook</code></td>
+  <td>Light rail (T)</td>
+</tr>
+<tr>
+  <td>Special</td>
+  <td><code>MONONGAHELA INCLINE</code>, <code>RLSH - Red Line Shuttle</code>, <code>SWL - Outbound to SHJ</code></td>
+  <td>Incline / shuttle</td>
+</tr>
+</tbody>
+</table>
+<h3>OTP value</h3>
+<p>Each numeric cell represents the <strong>On-Time Percentage</strong> for a route in a given month.</p>
+<table>
+<thead>
+<tr>
+  <th>Property</th>
+  <th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Data type</td>
+  <td>Float (or empty)</td>
+</tr>
+<tr>
+  <td>Range</td>
+  <td>0.0 -- 1.0</td>
+</tr>
+<tr>
+  <td>Interpretation</td>
+  <td>0.0 = 0%, 1.0 = 100%</td>
+</tr>
+<tr>
+  <td>Example</td>
+  <td>0.6912 = 69.12% on-time</td>
+</tr>
+</tbody>
+</table>
+<h2>Known ambiguities and data quality notes</h2>
+<h3>1. &quot;On-time&quot; definition is unspecified</h3>
+<p>The dataset does not define what threshold constitutes &quot;on-time.&quot; Transit industry standards vary:</p>
+<ul>
+<li>Common definition: a vehicle is on-time if it departs <strong>0 to 5 minutes late</strong> (and not early)</li>
+<li>PRT may use a different window (e.g. 1 minute early to 5 minutes late)</li>
+<li>It is unclear whether OTP is measured at all stops, timepoints only, or at origin/destination</li>
+</ul>
+<h3>2. Empty cells are ambiguous</h3>
+<p>Many cells are blank. Possible reasons include:</p>
+<ul>
+<li><strong>Route did not exist</strong> during that period (e.g. <code>37 - CASTLE SHANNON</code> only has Jan--Mar 2024)</li>
+<li><strong>Route was temporarily suspended</strong> (e.g. COVID-era service reductions)</li>
+<li><strong>Data was not collected or reported</strong> for that month</li>
+<li><strong>Route was discontinued</strong> (e.g. <code>P2 - EAST BUSWAY SHORT</code> data ends after Sep 2023)</li>
+</ul>
+<p>There is no sentinel value or flag to distinguish these cases.</p>
+<h3>3. Sparse or short-lived routes</h3>
+<p>Several routes have very limited data, suggesting they were introduced, discontinued, or are seasonal:</p>
+<table>
+<thead>
+<tr>
+  <th>Route</th>
+  <th>Data months</th>
+  <th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>37 - CASTLE SHANNON</code></td>
+  <td>3</td>
+  <td>Only Jan--Mar 2024</td>
+</tr>
+<tr>
+  <td><code>42 - POTOMAC</code></td>
+  <td>3</td>
+  <td>Only Jan--Mar 2024</td>
+</tr>
+<tr>
+  <td><code>53 - HOMESTEAD PARK</code></td>
+  <td>2</td>
+  <td>Only Jan--Feb 2020</td>
+</tr>
+<tr>
+  <td><code>78 - MONONGAHELA INCLINE</code></td>
+  <td>0</td>
+  <td>Row present but all values empty</td>
+</tr>
+<tr>
+  <td><code>88 - P2 - EAST BUSWAY SHORT</code></td>
+  <td>56</td>
+  <td>Data ends after Sep 2023</td>
+</tr>
+<tr>
+  <td><code>98 - RLSH - Red Line Shuttle</code></td>
+  <td>3</td>
+  <td>Only Jan--Mar 2024</td>
+</tr>
+<tr>
+  <td><code>100 - SWL - Outbound to SHJ</code></td>
+  <td>~12</td>
+  <td>Sparse data, mostly 2024</td>
+</tr>
+</tbody>
+</table>
+<h3>4. Potential outliers or anomalies</h3>
+<p>Some values appear as sharp drops that may indicate data quality issues rather than true performance:</p>
+<ul>
+<li><code>15 - CHARLES</code>: drops to ~0.35 in Jul--Sep 2022, then rebounds to ~0.80 (possible measurement change or route restructuring)</li>
+<li><code>65 - SQUIRREL HILL</code>: drops to 0.28--0.37 range in mid-2023, far below its historical norm</li>
+<li><code>SWL - Outbound to SHJ</code>: value of <strong>0.2097</strong> in Dec 2024 (single-month anomaly amid ~0.88--0.90 values)</li>
+<li><code>39 - BROOKLINE</code>: drops to 0.4000 in Mar 2022, otherwise consistently 0.72--0.89</li>
+<li><code>7 - SPRING GARDEN</code>: value of <strong>0.2863</strong> in Aug 2025, far below its historical range</li>
+</ul>
+<h3>5. Data source is undocumented</h3>
+<ul>
+<li>The dataset does not specify where the OTP values originate (e.g. AVL/APC systems, manual reporting, GTFS-realtime)</li>
+<li>It is unclear whether these are PRT self-reported figures or independently calculated</li>
+<li>Aggregation method is unknown (simple average across all trips? weighted by ridership?)</li>
+</ul>
+<h3>6. Trailing comma</h3>
+<p>Each data row ends with a trailing comma, which may produce an extra empty column when parsed. Parsers should account for this.</p>
+<h3>7. Typo in source data</h3>
+<p><code>SLVR - Libary via Overbrook</code> appears to be a misspelling of &quot;Library.&quot;</p>
+
+  </div>
+</section>
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Data Dictionary - PRT OTP Analysis{% endblock %}
+{% block content %}
+<section class="hero hero-compact">
+  <p class="kicker">Reference</p>
+  <h1>Data Dictionary</h1>
+  <p class="lede">Database tables, columns, types, and known data quality notes for the PRT OTP dataset.</p>
+  <p class="lede">Built {{ run_metadata.generated_at_utc }} · Commit {{ run_metadata.git_revision }}</p>
+</section>
+<section class="panel">
+  <div class="markdown-body">
+    {{ dictionary_html }}
+  </div>
+</section>
+{% endblock %}
