@@ -32,7 +32,7 @@
   <h1>02 - Mode Comparison</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -98,8 +98,8 @@
 <thead>
 <tr>
   <th>Mode / Type</th>
-  <th>Avg OTP (unweighted)</th>
-  <th>Avg OTP (trip-weighted)</th>
+  <th>Avg <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (unweighted)</th>
+  <th>Avg <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (trip-weighted)</th>
   <th>Route Count</th>
 </tr>
 </thead>
@@ -144,9 +144,9 @@
 </table>
 <h3>Statistical Tests</h3>
 <ul>
-<li><strong>Mann-Whitney U test (RAIL vs BUS monthly OTP):</strong> U = 6,563, p &lt; 0.001 (n = 83 months each). Rail median monthly OTP = 86.1%, bus median = 69.2%. The difference is highly significant.</li>
-<li><strong>Paired route comparison (2 pairs: 51/51L, 53/53L):</strong> Limited variants average <strong>+3.5 percentage points</strong> over their local counterparts (paired t-test: t = 7.37, p &lt; 0.001, 95% CI: [+2.5, +4.4 pp], n = 85 paired monthly observations across 2 pairs). While the test is significant, the sample of only 2 route pairs limits the generalizability of this finding.</li>
-<li><strong>Trip-weighted mode average:</strong> Bus trip-weighted OTP (66.8%) is about 2 pp below the unweighted average (68.9%), confirming that high-frequency bus routes tend to perform worse. Rail is nearly the same weighted (83.8%) vs unweighted (84.1%).</li>
+<li><strong><a href="../../glossary.html#mann-whitney-u-test" class="glossary-link" data-definition="Non-parametric two-group comparison based on rank ordering.">Mann-Whitney U test</a> (RAIL vs BUS monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>):</strong> U = 6,563, p &lt; 0.001 (n = 83 months each). Rail <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> = 86.1%, bus <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> = 69.2%. The difference is highly significant.</li>
+<li><strong>Paired route comparison (2 pairs: 51/51L, 53/53L):</strong> Limited variants average <strong>+3.5 percentage points</strong> over their local counterparts (<a href="../../glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">paired t-test</a>: t = 7.37, p &lt; 0.001, 95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a>: [+2.5, +4.4 pp], n = 85 paired monthly observations across 2 pairs). While the test is significant, the sample of only 2 route pairs limits the generalizability of this finding.</li>
+<li><strong>Trip-weighted mode average:</strong> Bus trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (66.8%) is about 2 pp below the unweighted average (68.9%), confirming that high-frequency bus routes tend to perform worse. Rail is nearly the same weighted (83.8%) vs unweighted (84.1%).</li>
 </ul>
 <h2>Observations</h2>
 <ul>
@@ -154,19 +154,19 @@
 <li>The previous classification grouped all P/G-prefix routes as &quot;busway,&quot; which incorrectly included flyer routes like P17 (Lincoln Park Flyer), P78 (Oakmont Flyer), G3 (Moon Flyer), and G31 (Bridgeville Flyer). The corrected classification identifies only P1, P2, P3, and G2 as true busway routes.</li>
 <li>Only 2 local/limited pairs were found in the data (routes with matching base IDs). More pairs would strengthen the comparison.</li>
 <li>The RAIL--BUS gap has been roughly stable over time -- both modes declined in parallel, suggesting system-wide factors rather than mode-specific ones.</li>
-<li>The INCLINE mode has no OTP data and was excluded.</li>
+<li>The INCLINE mode has no <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data and was excluded.</li>
 </ul>
 <h2>Caveats</h2>
 <ul>
-<li>Five UNKNOWN-mode routes (37, 42, P2, RLSH, SWL) were excluded from the analysis. P2 (East Busway Short) is plausibly a BUS/busway route, but its mode is listed as UNKNOWN in the database and it also lacks <code>route_stops</code> data.</li>
+<li>Five UNKNOWN-mode routes (37, 42, P2, RLSH, SWL) were excluded from the analysis. P2 (East Busway Short) is plausibly a BUS/<a href="../../glossary.html#busway-route" class="glossary-link" data-definition="Route operating on dedicated right-of-way for part of its alignment.">busway route</a>, but its mode is listed as UNKNOWN in the database and it also lacks <code>route_stops</code> data.</li>
 <li>Bus route classification uses route ID naming conventions. True busway routes are identified as P1, P2, P3, G2; all other P/G/O-prefix routes are classified as flyers. Some routes may still be misclassified if their ID doesn't follow the standard pattern.</li>
-<li>Rail has only 3 routes (RED, BLUE, SLVR), so its average is sensitive to any single route's performance. The Mann-Whitney test has adequate statistical power due to 83 months of observations, but the underlying data comes from only 3 routes.</li>
+<li>Rail has only 3 routes (RED, BLUE, SLVR), so its average is sensitive to any single route's performance. The Mann-Whitney test has adequate <a href="../../glossary.html#statistical-power" class="glossary-link" data-definition="Probability of detecting a true effect when it exists.">statistical power</a> due to 83 months of observations, but the underlying data comes from only 3 routes.</li>
 <li>The mode-level unweighted average treats each route equally regardless of trip volume. The trip-weighted version provides a ridership-adjusted perspective.</li>
 <li>Route composition varies across months (68--96 routes reporting). No balanced-panel filter is applied, so the set of routes contributing to each month's average is not fixed.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
-<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 6 issues (1 significant). Replaced &quot;significantly outperforms&quot; with formal Mann-Whitney U test, added paired t-test with 95% CI, excluded UNKNOWN-mode routes, fixed classify_bus_route to correctly distinguish busway from flyer routes, added trip-weighted mode comparison, and documented composition variability.</li>
+<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 6 issues (1 significant). Replaced &quot;significantly outperforms&quot; with formal <a href="../../glossary.html#mann-whitney-u-test" class="glossary-link" data-definition="Non-parametric two-group comparison based on rank ordering.">Mann-Whitney U test</a>, added <a href="../../glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">paired t-test</a> with 95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a>, excluded UNKNOWN-mode routes, fixed classify_bus_route to correctly distinguish busway from flyer routes, added trip-weighted mode comparison, and documented composition variability.</li>
 </ul>
 </div>
   </details>
@@ -252,8 +252,8 @@
 <h2>Approach</h2>
 <ul>
 <li>Exclude UNKNOWN-mode routes (37, 42, P2, RLSH, SWL) from the analysis to avoid ambiguous classifications.</li>
-<li>Group routes by mode (BUS, RAIL) and compute average OTP per mode per month, both unweighted and trip-weighted (using <code>trips_7d</code> from <code>route_stops</code>).</li>
-<li>Perform a Mann-Whitney U test on the monthly mode-level OTP distributions to formally test whether the RAIL--BUS difference is statistically significant.</li>
+<li>Group routes by mode (BUS, RAIL) and compute average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per mode per month, both unweighted and trip-weighted (using <code>trips_7d</code> from <code>route_stops</code>).</li>
+<li>Perform a <a href="../../glossary.html#mann-whitney-u-test" class="glossary-link" data-definition="Non-parametric two-group comparison based on rank ordering.">Mann-Whitney U test</a> on the monthly mode-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> distributions to formally test whether the RAIL--BUS difference is statistically significant.</li>
 <li>Classify bus routes by type using route ID patterns:<ul>
 <li><strong>Busway:</strong> P1, P2, P3, G2 (dedicated right-of-way)</li>
 <li><strong>Flyer:</strong> Other P/G-prefix routes (e.g., P17, P78, G3, G31) and O-prefix routes (park-and-ride express services)</li>
@@ -262,7 +262,7 @@
 <li><strong>Local:</strong> All other bus routes</li>
 </ul>
 </li>
-<li>Compare paired routes sharing the same corridor (e.g. 51 vs 51L) as natural experiments. Perform a paired t-test on monthly OTP differences and report the mean difference with a 95% confidence interval.</li>
+<li>Compare paired routes sharing the same corridor (e.g. 51 vs 51L) as natural experiments. Perform a <a href="../../glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">paired t-test</a> on monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> differences and report the <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> difference with a 95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">confidence interval</a>.</li>
 <li>Test whether the mode gap changes over time.</li>
 </ul>
 <h2>Data</h2>
@@ -277,7 +277,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -294,8 +294,8 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/mode_comparison.csv</code> -- monthly OTP by mode/type (unweighted)</li>
-<li><code>output/mode_comparison_weighted.csv</code> -- monthly OTP by mode (trip-weighted)</li>
+<li><code>output/mode_comparison.csv</code> -- monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by mode/type (unweighted)</li>
+<li><code>output/mode_comparison_weighted.csv</code> -- monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by mode (trip-weighted)</li>
 <li><code>output/mode_comparison.png</code> -- comparison chart</li>
 </ul>
 </div>

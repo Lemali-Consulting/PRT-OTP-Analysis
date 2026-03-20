@@ -32,7 +32,7 @@
   <h1>31 - Stop Consolidation Candidates</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -94,17 +94,17 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Stop Consolidation Candidates</h1>
 <h2>Summary</h2>
-<p>43% of all stop-route combinations in the PRT system see fewer than 5 daily boardings+alightings on weekdays, and nearly all of these have a same-route neighbor within 400 m walking distance. Removing these low-usage stops could yield an average OTP improvement of +3.2 percentage points per route, with the highest-impact routes gaining up to +10 pp. The top candidates are long suburban/flyer routes with many lightly used stops along corridors.</p>
+<p>43% of all stop-route combinations in the PRT system see fewer than 5 daily boardings+alightings on weekdays, and nearly all of these have a same-route neighbor within 400 m walking distance. Removing these low-usage stops could yield an average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> improvement of +3.2 percentage points per route, with the highest-impact routes gaining up to +10 pp. The top candidates are long suburban/flyer routes with many lightly used stops along corridors.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>11,461</strong> stop-route combinations in the pre-pandemic weekday data</li>
 <li><strong>4,991</strong> (43%) are low-usage (&lt; 5 avg daily ons+offs)</li>
 <li><strong>4,963</strong> of those have a neighbor on the same route within 400 m (consolidation candidates)</li>
-<li><strong>87 of 90</strong> routes (97%) matched to OTP data have at least one candidate</li>
-<li><strong>Median</strong> candidates per route: <strong>44 stops</strong></li>
-<li><strong>Regression slope</strong>: each stop removed is associated with +0.059 pp OTP</li>
-<li><strong>Average</strong> estimated OTP gain: <strong>+3.2 pp</strong> across routes with candidates</li>
-<li><strong>Maximum</strong> estimated OTP gain: <strong>+10.2 pp</strong> (Route 59, Mon Valley -- 174 candidate stops)</li>
+<li><strong>87 of 90</strong> routes (97%) matched to <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data have at least one candidate</li>
+<li><strong><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a></strong> candidates per route: <strong>44 stops</strong></li>
+<li><strong>Regression slope</strong>: each stop removed is associated with +0.059 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><strong>Average</strong> estimated <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain: <strong>+3.2 pp</strong> across routes with candidates</li>
+<li><strong>Maximum</strong> estimated <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain: <strong>+10.2 pp</strong> (Route 59, Mon Valley -- 174 candidate stops)</li>
 </ul>
 <h2>Observations</h2>
 <ul>
@@ -112,24 +112,24 @@
 <li><strong>Route 59 (Mon Valley)</strong> tops the list with 174 candidates out of 334 stop-route pairs, representing a potential 52% reduction in stops.</li>
 <li><strong>The candidate map shows candidates distributed system-wide</strong>, with particularly dense clusters in outer suburban corridors where stop spacing is tight but usage is low.</li>
 <li><strong>Almost all low-usage stops (99.4%) have a nearby neighbor</strong>, meaning very few riders would lack a within-walking-distance alternative.</li>
-<li><strong>The OTP gain estimate is conservative</strong>: the regression slope (-0.059 pp/stop) comes from cross-sectional variation, not from an experiment. Actual gains from targeted consolidation could differ.</li>
+<li><strong>The <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain estimate is conservative</strong>: the regression slope (-0.059 pp/stop) comes from cross-sectional variation, not from an experiment. Actual gains from targeted consolidation could differ.</li>
 </ul>
 <h2>Discussion</h2>
 <h3>What the data shows</h3>
-<p>Analysis 07 established that stop count is the strongest single predictor of poor OTP (r = -0.53), and this analysis shows that nearly half the system's stop-route pairs see trivially low usage. The correlation between stop count and OTP is real and robust across multiple specifications.</p>
+<p>Analysis 07 established that stop count is the strongest single predictor of poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (r = -0.53), and this analysis shows that nearly half the system's stop-route pairs see trivially low usage. The correlation between stop count and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is real and robust across multiple specifications.</p>
 <p>The concentration of candidates on flyer routes (P10, P16, O5) is intuitive: these routes traverse long suburban corridors where stops were placed at frequent intervals to maximize coverage, but actual demand clusters at a few park-and-ride or transfer locations.</p>
-<h3>Why the OTP gain estimate is likely overstated</h3>
+<h3>Why the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain estimate is likely overstated</h3>
 <p>The +3.2 pp average gain estimate assumes each stop removed saves equivalent time, but PRT bus drivers already skip stops where no one is waiting and no one has signaled to alight. A low-usage stop with &lt;5 daily boardings is empty on the vast majority of individual bus trips, meaning the bus already passes it without stopping most of the time. Removing the sign does not change this operational reality.</p>
 <p>The cross-sectional regression slope (-0.059 pp/stop) captures the fact that routes with many stops are structurally different -- they are longer, serve denser urban corridors with more traffic signals, and have higher cumulative probability of someone being at the next stop. These are route design characteristics, not marginal effects of individual stops. The causal effect of removing a single low-usage stop is likely well below the regression estimate.</p>
-<p>Analysis 34 (Ridership Concentration) reinforces this interpretation: per-stop ridership concentration has no correlation with OTP (r = -0.016, p = 0.88), suggesting dwell time from passenger volumes is not the dominant mechanism. The stop count/OTP relationship is better understood as a proxy for route design philosophy (local vs limited-stop vs express) rather than a per-stop causal lever.</p>
+<p>Analysis 34 (Ridership Concentration) reinforces this interpretation: per-stop ridership concentration has no correlation with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (r = -0.016, p = 0.88), suggesting dwell time from passenger volumes is not the dominant mechanism. The stop count/<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> relationship is better understood as a proxy for route design philosophy (local vs limited-stop vs express) rather than a per-stop causal lever.</p>
 <h3>Accessibility and equity concerns</h3>
 <p>The 400 m walk-distance filter assumes riders can walk to the next stop, but this may not hold for riders with disabilities, elderly riders, or those with mobility limitations -- particularly given Pittsburgh's hilly terrain. ADA compliance is not just a legal requirement but a core service obligation. Any consolidation program would require stop-by-stop accessibility review. Some low-usage stops may also serve riders making short trips where incremental stop spacing is the primary value of the bus service.</p>
 <h3>Reframing the finding</h3>
-<p>The stop count/OTP relationship is best read as evidence that <strong>route design with fewer, better-spaced stops outperforms local-stop design</strong> -- which is already reflected in the busway/express vs local gap (Analysis 02). The policy implication points more toward limited-stop or express overlays on high-ridership corridors than toward individual stop removal. Converting low-usage suburban segments to limited-stop service (as the flyer route candidates suggest) is more defensible than piecemeal stop removal, because it redesigns the service pattern rather than degrading existing local coverage.</p>
-<p>Stop consolidation remains politically sensitive. Community opposition to stop removal often exceeds what ridership data would justify. A phased approach -- starting with stops below 1 rider/day that have a neighbor within 200 m, with accessibility review -- would minimize controversy while testing whether actual OTP gains materialize.</p>
+<p>The stop count/<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> relationship is best read as evidence that <strong>route design with fewer, better-spaced stops outperforms local-stop design</strong> -- which is already reflected in the busway/express vs local gap (Analysis 02). The policy implication points more toward limited-stop or express overlays on high-ridership corridors than toward individual stop removal. Converting low-usage suburban segments to limited-stop service (as the flyer route candidates suggest) is more defensible than piecemeal stop removal, because it redesigns the service pattern rather than degrading existing local coverage.</p>
+<p>Stop consolidation remains politically sensitive. Community opposition to stop removal often exceeds what ridership data would justify. A phased approach -- starting with stops below 1 rider/day that have a neighbor within 200 m, with accessibility review -- would minimize controversy while testing whether actual <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gains materialize.</p>
 <h2>Caveats</h2>
 <ul>
-<li><strong>The OTP gain estimate is likely overstated</strong> because buses already skip empty stops operationally; removing the sign at a stop that is already being passed most trips has minimal time savings.</li>
+<li><strong>The <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain estimate is likely overstated</strong> because buses already skip empty stops operationally; removing the sign at a stop that is already being passed most trips has minimal time savings.</li>
 <li>The regression slope is a cross-sectional system-wide average reflecting route design differences, not a causal per-stop marginal effect. Individual stop removal may have near-zero impact.</li>
 <li><strong>Accessibility</strong>: the 400 m walk-distance filter may be inadequate for riders with disabilities or limited mobility, especially on Pittsburgh's hilly terrain. ADA review is required before any consolidation.</li>
 <li><strong>Short trips</strong>: some low-usage stops serve riders making short trips where incremental stop spacing is the primary value of the service.</li>
@@ -139,7 +139,7 @@
 </ul>
 <h2>Review History</h2>
 <ul>
-<li>2026-02-27: <a href="../../RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md">RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md</a> — 1 significant issue. OTP gain estimates now produced only for bus routes; non-bus routes set to null (bus-only regression slope not applicable to rail/busway). METHODS.md updated to reflect independent slope computation.</li>
+<li>2026-02-27: <a href="../../RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md">RED-TEAM-REPORTS/2026-02-27-analyses-31-35.md</a> — 1 significant issue. <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain estimates now produced only for bus routes; non-bus routes set to null (bus-only regression slope not applicable to rail/busway). METHODS.md updated to reflect independent slope computation.</li>
 </ul>
 </div>
   </details>
@@ -230,7 +230,7 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: Stop Consolidation Candidates</h1>
 <h2>Question</h2>
-<p>Which low-usage bus stops are candidates for consolidation, and how much OTP improvement could each route expect from fewer stops?</p>
+<p>Which low-usage bus stops are candidates for consolidation, and how much <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> improvement could each route expect from fewer stops?</p>
 <h2>Approach</h2>
 <ul>
 <li>Use pre-pandemic weekday stop-level ridership (datekeys 201909 and 202001) as a stable baseline, averaging across the two periods.</li>
@@ -238,8 +238,8 @@
 <li>Flag stops with average daily usage below a threshold (&lt; 5 total ons+offs per weekday).</li>
 <li>For each low-usage stop on a route, compute haversine distance to the nearest other stop on the same route. If a neighbor exists within 400 m, the stop is a consolidation candidate (riders can walk to the next stop).</li>
 <li>Per route: count current stops, count candidates, compute the potential reduced stop count.</li>
-<li>Compute the stop-count/OTP regression slope independently (bus-only) and apply it to estimate the OTP benefit from consolidation. OTP gain estimates are produced only for bus routes; non-bus routes are included in the summary but flagged as not applicable for the bus-derived slope.</li>
-<li>Generate per-route summary, system-wide statistics, and a chart of estimated OTP gains.</li>
+<li>Compute the stop-count/<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> regression slope independently (bus-only) and apply it to estimate the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> benefit from consolidation. <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain estimates are produced only for bus routes; non-bus routes are included in the summary but flagged as not applicable for the bus-derived slope.</li>
+<li>Generate per-route summary, system-wide statistics, and a chart of estimated <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gains.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -253,7 +253,7 @@
 <tbody>
 <tr>
   <td><code>wprdc_stop_data.csv</code></td>
-  <td>Stop-level boardings/alightings by route, period, and day type</td>
+  <td>Stop-level boardings/alightings by route, period, and <a href="../../glossary.html#day-type" class="glossary-link" data-definition="Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.">day type</a></td>
   <td>Local CSV (<code>data/bus-stop-usage/</code>)</td>
 </tr>
 <tr>
@@ -268,7 +268,7 @@
 </tr>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route (for current performance baseline)</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route (for current performance baseline)</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -281,8 +281,8 @@
 <h2>Output</h2>
 <ul>
 <li><code>output/consolidation_candidates.csv</code> -- per-stop detail: stop, route, usage, nearest neighbor distance, candidate flag</li>
-<li><code>output/route_consolidation_summary.csv</code> -- per-route summary: current stops, candidates, projected new stop count, estimated OTP gain</li>
-<li><code>output/otp_gain_by_route.png</code> -- bar chart of estimated OTP improvement per route</li>
+<li><code>output/route_consolidation_summary.csv</code> -- per-route summary: current stops, candidates, projected new stop count, estimated <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain</li>
+<li><code>output/otp_gain_by_route.png</code> -- bar chart of estimated <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> improvement per route</li>
 <li><code>output/candidate_map.png</code> -- scatter map of candidate stops colored by usage</li>
 </ul>
 </div>

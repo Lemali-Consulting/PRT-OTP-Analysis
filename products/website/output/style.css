@@ -273,3 +273,46 @@ pre.mermaid {
   .panel { padding: 0.85rem; }
   th, td { font-size: 0.9rem; }
 }
+.glossary-link {
+  color: inherit;
+  text-decoration: underline dotted var(--accent-alt) 1.5px;
+  text-underline-offset: 2px;
+  position: relative;
+  cursor: help;
+}
+.glossary-link:hover { color: var(--accent-alt); }
+.glossary-link:hover::after {
+  content: attr(data-definition);
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 6px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  max-width: 320px;
+  width: max-content;
+  z-index: 50;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+.glossary-link:hover::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  bottom: 100%;
+  margin-bottom: 0;
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+  z-index: 51;
+  pointer-events: none;
+}
+.glossary-usage {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  margin: 0.3rem 0 0;
+}
+.glossary-usage a { font-weight: 600; }

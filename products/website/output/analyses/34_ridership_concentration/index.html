@@ -32,7 +32,7 @@
   <h1>34 - Ridership Concentration (Pareto)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -92,34 +92,34 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Ridership Concentration (Pareto)</h1>
 <h2>Summary</h2>
-<p>PRT ridership is extremely concentrated: just 2% of stops serve 50% of all weekday riders, and 14% of stops serve 80%. The system-wide Gini coefficient is 0.82, indicating very high inequality in stop-level usage. However, per-route ridership concentration (Gini) has essentially zero correlation with that route's OTP (r = -0.016, p = 0.88), meaning whether a route's riders are clustered at a few stops or spread evenly has no bearing on schedule reliability.</p>
+<p>PRT ridership is extremely concentrated: just 2% of stops serve 50% of all weekday riders, and 14% of stops serve 80%. The system-wide <a href="../../glossary.html#gini-coefficient" class="glossary-link" data-definition="Inequality metric on a 0 to 1 scale used for concentration analysis.">Gini coefficient</a> is 0.82, indicating very high inequality in stop-level usage. However, per-route ridership concentration (Gini) has essentially zero correlation with that route's <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (r = -0.016, p = 0.88), meaning whether a route's riders are clustered at a few stops or spread evenly has no bearing on schedule reliability.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>2.2%</strong> of stops serve <strong>50%</strong> of ridership</li>
 <li><strong>13.9%</strong> of stops serve <strong>80%</strong> of ridership</li>
 <li><strong>27.9%</strong> of stops serve <strong>90%</strong> of ridership</li>
 <li>System-wide <strong>Gini = 0.824</strong></li>
-<li>Per-route Gini range: <strong>0.338 - 0.890</strong> (median 0.649)</li>
+<li>Per-route Gini range: <strong>0.338 - 0.890</strong> (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 0.649)</li>
 <li><strong>95</strong> routes with &gt;= 3 stops analyzed</li>
-<li><strong>90</strong> routes matched to OTP data</li>
-<li>Gini vs OTP (bus-only): <strong>Pearson r = -0.016</strong> (p = 0.879), <strong>Spearman rho = 0.103</strong> (p = 0.339)</li>
+<li><strong>90</strong> routes matched to <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data</li>
+<li>Gini vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bus-only): <strong>Pearson r = -0.016</strong> (p = 0.879), <strong>Spearman rho = 0.103</strong> (p = 0.339)</li>
 </ul>
 <h2>Observations</h2>
 <ul>
 <li><strong>The Pareto curve is steep</strong>: the top ~150 stops (out of 6,700+) account for half of all weekday boardings and alightings. This is more extreme than a classic 80/20 rule -- it's closer to a 2/50 pattern.</li>
-<li><strong>Most stops see very little usage</strong>: the median stop handles only ~7 riders/day, while the top stops see 2,000-5,800/day. The bottom 70% of stops collectively serve only 10% of ridership.</li>
+<li><strong>Most stops see very little usage</strong>: the <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> stop handles only ~7 riders/day, while the top stops see 2,000-5,800/day. The bottom 70% of stops collectively serve only 10% of ridership.</li>
 <li><strong>Route-level concentration varies widely</strong>: some routes have Gini as low as 0.34 (relatively even usage across stops) while others reach 0.89 (nearly all ridership at a few stops). Flyer/express routes tend to have higher Gini since ridership clusters at downtown endpoints.</li>
-<li><strong>Concentration does not predict OTP.</strong> The scatter plot shows no trend at all -- the regression line is essentially flat. Routes with highly concentrated ridership perform no better or worse than those with evenly distributed usage.</li>
+<li><strong>Concentration does not predict <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</strong> The scatter plot shows no trend at all -- the regression line is essentially flat. Routes with highly concentrated ridership perform no better or worse than those with evenly distributed usage.</li>
 </ul>
 <h2>Discussion</h2>
-<p>The extreme system-wide concentration (Gini = 0.82) reinforces the stop consolidation finding from Analysis 31: most stops contribute very little ridership, and removing the lowest-usage ones would affect few riders while potentially improving OTP by reducing stop count.</p>
-<p>The null result for Gini vs OTP is notable. One might hypothesize that routes with concentrated ridership would have better OTP (less dwell time at most stops), but this doesn't hold. This suggests that dwell time at individual stops is not a dominant factor in OTP variance -- the time cost of <em>stopping</em> (deceleration, door opening, acceleration) matters more than the time cost of <em>boarding passengers</em>. This aligns with the Analysis 07 finding that raw stop count, not passenger volume, drives OTP.</p>
+<p>The extreme system-wide concentration (Gini = 0.82) reinforces the stop consolidation finding from Analysis 31: most stops contribute very little ridership, and removing the lowest-usage ones would affect few riders while potentially improving <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by reducing stop count.</p>
+<p>The null result for Gini vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is notable. One might hypothesize that routes with concentrated ridership would have better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (less dwell time at most stops), but this doesn't hold. This suggests that dwell time at individual stops is not a dominant factor in <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> -- the time cost of <em>stopping</em> (deceleration, door opening, acceleration) matters more than the time cost of <em>boarding passengers</em>. This aligns with the Analysis 07 finding that raw stop count, not passenger volume, drives <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</p>
 <p>The 2/50 concentration ratio has resource allocation implications: if PRT focused infrastructure investment (shelters, real-time signs, ADA upgrades) on just 150 stops, it would reach half of all riders. The current shelter coverage of 7% (Analysis 32) suggests significant room to target the highest-impact locations.</p>
 <h2>Caveats</h2>
 <ul>
 <li>Stop-level usage data is from FY2019; current patterns may differ, especially post-pandemic.</li>
 <li>Gini is computed from stop-route combinations, not physical stops. Routes sharing physical stops may inflate the apparent concentration.</li>
-<li>The OTP data covers a longer time range (2019-2025) than the usage snapshot (2019), so the correlation compares static usage structure against time-averaged OTP.</li>
+<li>The <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data covers a longer time range (2019-2025) than the usage snapshot (2019), so the correlation compares static usage structure against time-averaged <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
 <li>Very short routes (&lt; 3 stops) are excluded from the Gini analysis, which drops a few incline and shuttle routes.</li>
 </ul>
 </div>
@@ -211,14 +211,14 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: Ridership Concentration (Pareto)</h1>
 <h2>Question</h2>
-<p>How concentrated is ridership across stops? What fraction of stops serves 80% of riders, and does ridership concentration on a route correlate with that route's OTP?</p>
+<p>How concentrated is ridership across stops? What fraction of stops serves 80% of riders, and does ridership concentration on a route correlate with that route's <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>?</p>
 <h2>Approach</h2>
 <ul>
 <li>Aggregate pre-pandemic weekday stop-level ridership (datekeys 201909, 202001) to physical-stop level and per-route level.</li>
 <li><strong>System-wide Pareto</strong>: sort all stops by usage, compute cumulative share, and find the fraction of stops that serve 50%, 80%, and 90% of total ridership.</li>
-<li><strong>Per-route Gini coefficient</strong>: for each route, compute the Gini coefficient of stop-level usage as a concentration metric (0 = perfectly even, 1 = all ridership at one stop).</li>
-<li>Join per-route Gini with route-level average OTP from the database and test for correlation (Pearson, Spearman).</li>
-<li>Generate a system-wide Pareto curve and a scatter plot of Gini vs OTP by route.</li>
+<li><strong>Per-route <a href="../../glossary.html#gini-coefficient" class="glossary-link" data-definition="Inequality metric on a 0 to 1 scale used for concentration analysis.">Gini coefficient</a></strong>: for each route, compute the <a href="../../glossary.html#gini-coefficient" class="glossary-link" data-definition="Inequality metric on a 0 to 1 scale used for concentration analysis.">Gini coefficient</a> of stop-level usage as a concentration metric (0 = perfectly even, 1 = all ridership at one stop).</li>
+<li>Join per-route Gini with route-level average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> from the database and test for correlation (Pearson, Spearman).</li>
+<li>Generate a system-wide Pareto curve and a scatter plot of Gini vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by route.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -237,7 +237,7 @@
 </tr>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -250,9 +250,9 @@
 <h2>Output</h2>
 <ul>
 <li><code>output/pareto_system.csv</code> -- cumulative ridership share by stop rank</li>
-<li><code>output/route_gini.csv</code> -- per-route Gini coefficient and OTP</li>
+<li><code>output/route_gini.csv</code> -- per-route <a href="../../glossary.html#gini-coefficient" class="glossary-link" data-definition="Inequality metric on a 0 to 1 scale used for concentration analysis.">Gini coefficient</a> and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 <li><code>output/pareto_curve.png</code> -- system-wide Pareto curve</li>
-<li><code>output/gini_vs_otp.png</code> -- scatter plot of route Gini vs average OTP</li>
+<li><code>output/gini_vs_otp.png</code> -- scatter plot of route Gini vs average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 </ul>
 </div>
   </details>

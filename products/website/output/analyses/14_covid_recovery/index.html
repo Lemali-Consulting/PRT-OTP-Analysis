@@ -32,7 +32,7 @@
   <h1>14: COVID Recovery Trajectories</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -92,15 +92,15 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: COVID Recovery Trajectories</h1>
 <h2>Summary</h2>
-<p>The system-wide OTP decline since COVID is <strong>unevenly distributed</strong>. Of 92 routes with data in both periods, 43 improved and 49 declined, with a median delta of -0.9 pp and a mean delta of -2.1 pp. However, a <strong>significant regression-to-the-mean effect</strong> (r = -0.25, p = 0.02) means that much of the apparent divergence between &quot;improved&quot; and &quot;declined&quot; routes is a statistical artifact: routes with extreme baselines naturally regress toward the mean.</p>
+<p>The system-wide <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> decline since COVID is <strong>unevenly distributed</strong>. Of 92 routes with data in both periods, 43 improved and 49 declined, with a <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> delta of -0.9 pp and a <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> delta of -2.1 pp. However, a <strong>significant regression-to-the-<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> effect</strong> (r = -0.25, p = 0.02) means that much of the apparent divergence between &quot;improved&quot; and &quot;declined&quot; routes is a statistical artifact: routes with extreme baselines naturally regress toward the <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>92 routes</strong> with data in both pre-COVID (2019-01 to 2020-02) and current (2024-12 to 2025-11) periods</li>
 <li><strong>43 improved</strong>, <strong>49 declined</strong></li>
-<li>Median recovery delta: <strong>-0.9 pp</strong></li>
-<li>Mean recovery delta: <strong>-2.1 pp</strong></li>
-<li>Regression-to-the-mean: <strong>r = -0.25</strong> (p = 0.02) -- routes with high baselines tended to decline; routes with low baselines tended to improve</li>
-<li>Kruskal-Wallis test across subtypes: <strong>H = 5.5, p = 0.24</strong> -- no significant difference between route types</li>
+<li><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> recovery delta: <strong>-0.9 pp</strong></li>
+<li><a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> recovery delta: <strong>-2.1 pp</strong></li>
+<li>Regression-to-the-<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>: <strong>r = -0.25</strong> (p = 0.02) -- routes with high baselines tended to decline; routes with low baselines tended to improve</li>
+<li><a href="../../glossary.html#kruskal-wallis-test" class="glossary-link" data-definition="Non-parametric multi-group comparison using ranked observations.">Kruskal-Wallis test</a> across subtypes: <strong>H = 5.5, p = 0.24</strong> -- no significant difference between route types</li>
 <li>Stop count vs recovery (bus): r = -0.11, p = 0.32 -- not significant</li>
 </ul>
 <h2>Most Improved / Most Declined</h2>
@@ -168,15 +168,15 @@
 </table>
 <h2>Observations</h2>
 <ul>
-<li>The <strong>regression-to-the-mean test is significant</strong> (r = -0.25, p = 0.02): routes that started with below-average OTP tended to improve, and routes that started above-average tended to decline. This does not mean the recovery differences are entirely artifactual, but it means the extreme cases (P7 improving +17 pp from a 58.7% baseline, or Route 6 declining -17.8 pp from an 80.5% baseline) are partially explained by statistical regression rather than operational changes.</li>
-<li>The <strong>Kruskal-Wallis test across subtypes is not significant</strong> (p = 0.24), meaning there is no statistically defensible evidence that premium routes recovered better than local routes <em>as a group</em>. The observation that the top improvers are flyers/busway routes may reflect cherry-picking the extremes rather than a systematic pattern.</li>
+<li>The <strong>regression-to-the-<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> test is significant</strong> (r = -0.25, p = 0.02): routes that started with below-average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> tended to improve, and routes that started above-average tended to decline. This does not <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> the recovery differences are entirely artifactual, but it means the extreme cases (P7 improving +17 pp from a 58.7% baseline, or Route 6 declining -17.8 pp from an 80.5% baseline) are partially explained by statistical regression rather than operational changes.</li>
+<li>The <strong><a href="../../glossary.html#kruskal-wallis-test" class="glossary-link" data-definition="Non-parametric multi-group comparison using ranked observations.">Kruskal-Wallis test</a> across subtypes is not significant</strong> (p = 0.24), meaning there is no statistically defensible evidence that premium routes recovered better than local routes <em>as a group</em>. The observation that the top improvers are flyers/busway routes may reflect cherry-picking the extremes rather than a systematic pattern.</li>
 <li>That said, the most-declined routes are genuinely concentrated in Pittsburgh's eastern neighborhoods (Highland Park, Greenfield, Squirrel Hill), and these declines are large enough to be concerning regardless of the RTM effect.</li>
 </ul>
 <h2>Implication</h2>
 <p>The recovery picture is more nuanced than &quot;premium routes improved, local routes declined.&quot; RTM explains a substantial fraction of the divergence. The policy-relevant finding is narrower: specific local bus routes in the eastern corridor have deteriorated badly (15-21 pp below pre-COVID levels), and this decline exceeds what RTM alone would predict.</p>
 <h2>Caveats</h2>
 <ul>
-<li>Regression to the mean is not the only explanation. Operational changes (schedule modifications, staffing shifts) may have genuinely affected some routes more than others.</li>
+<li><a href="../../glossary.html#regression-to-the-mean" class="glossary-link" data-definition="Tendency of extreme observations to move closer to average on repeated measurement.">Regression to the mean</a> is not the only explanation. Operational changes (schedule modifications, staffing shifts) may have genuinely affected some routes more than others.</li>
 <li>The current period is the trailing 12 months of available data (2024-12 to 2025-11), which may not represent a stable equilibrium.</li>
 <li>The pre-COVID baseline (2019-01 to 2020-02) includes months of varying performance; a longer baseline would be more stable.</li>
 </ul>
@@ -268,14 +268,14 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: COVID Recovery Trajectories</h1>
 <h2>Question</h2>
-<p>PRT system OTP declined from ~69% pre-COVID to ~62% currently (Analysis 01). But did all routes decline equally, or did some recover while others cratered? What route characteristics predict recovery?</p>
+<p>PRT system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> declined from ~69% pre-COVID to ~62% currently (Analysis 01). But did all routes decline equally, or did some recover while others cratered? What route characteristics predict recovery?</p>
 <h2>Approach</h2>
 <ul>
-<li>Define <strong>pre-COVID baseline</strong> as average OTP during 2019-01 through 2020-02 (14 months before COVID disruption).</li>
+<li>Define <strong>pre-COVID baseline</strong> as average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> during 2019-01 through 2020-02 (14 months before COVID disruption).</li>
 <li>Define <strong>current period</strong> as the trailing 12 months of data.</li>
 <li>For each route with data in both periods, compute:<ul>
-<li><strong>Recovery delta</strong> = current OTP - baseline OTP (positive = improved, negative = declined).</li>
-<li><strong>Recovery ratio</strong> = current OTP / baseline OTP.</li>
+<li><strong>Recovery delta</strong> = current <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> - baseline <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (positive = improved, negative = declined).</li>
+<li><strong>Recovery ratio</strong> = current <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> / baseline <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
 </ul>
 </li>
 <li>Exclude routes with fewer than 6 months in either period.</li>
@@ -295,7 +295,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>

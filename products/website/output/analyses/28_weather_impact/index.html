@@ -32,7 +32,7 @@
   <h1>28 - Weather Impact</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2019-01 to 2025-12 (from otp_monthly, weather_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -92,34 +92,34 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Weather Impact on OTP</h1>
+    <div class="markdown"><h1>Findings: Weather Impact on <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Summary</h2>
-<p>Weather variables show <strong>moderate raw correlations</strong> with system OTP (freeze_days r=+0.44, mean_tmin r=-0.40, snow_days r=+0.40) that <strong>strengthen after detrending</strong> (freeze_days r=+0.57, mean_tmin r=-0.57), but these correlations are <strong>counterintuitive</strong> -- colder, snowier months have <em>better</em> OTP. Weather jointly adds 15pp of R2 beyond a linear trend (F=3.44, p=0.008) but does <strong>not</strong> significantly improve on month dummies (F=0.92, p=0.48). The seasonal pattern from Analysis 06 is partially explained by weather -- weather adjustment flattens the winter peak by ~2.4pp and lifts the September trough by ~1.3pp -- but month dummies add no significant additional explanatory power beyond weather either (F=1.09, p=0.39). At the route-month level with cluster-robust standard errors, <strong>no weather variable is significant</strong> (all p&gt;0.12), indicating weather effects are too small relative to route-level noise to detect in the panel.</p>
+<p>Weather variables show <strong>moderate raw correlations</strong> with system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (freeze_days r=+0.44, mean_tmin r=-0.40, snow_days r=+0.40) that <strong>strengthen after <a href="../../glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">detrending</a></strong> (freeze_days r=+0.57, mean_tmin r=-0.57), but these correlations are <strong>counterintuitive</strong> -- colder, snowier months have <em>better</em> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. Weather jointly adds 15pp of <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a> beyond a linear trend (F=3.44, p=0.008) but does <strong>not</strong> significantly improve on month dummies (F=0.92, p=0.48). The seasonal pattern from Analysis 06 is partially explained by weather -- weather adjustment flattens the winter peak by ~2.4pp and lifts the September trough by ~1.3pp -- but month dummies add no significant additional explanatory power beyond weather either (F=1.09, p=0.39). At the route-month level with cluster-robust standard errors, <strong>no weather variable is significant</strong> (all p&gt;0.12), indicating weather effects are too small relative to route-level noise to detect in the panel.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>Detrended correlations</strong> (n=66 months): freeze_days r=+0.57, mean_tmin r=-0.57, mean_wind r=+0.55, snow_days r=+0.46, mean_tmax r=-0.56 (all p&lt;0.001)</li>
-<li><strong>Weather + trend regression</strong> (n=72): R2=0.43, vs trend-only R2=0.28, weather adds +15pp (F=3.44, p=0.008)</li>
-<li><strong>Month-only model</strong>: R2=0.50; Weather-only model: R2=0.43; Combined: R2=0.54</li>
+<li><strong>Weather + trend regression</strong> (n=72): <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a>=0.43, vs trend-only <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a>=0.28, weather adds +15pp (F=3.44, p=0.008)</li>
+<li><strong>Month-only model</strong>: <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a>=0.50; Weather-only model: <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a>=0.43; Combined: <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a>=0.54</li>
 <li><strong>F-test (weather added to months)</strong>: F=0.92, p=0.48 -- weather does NOT improve on month dummies</li>
 <li><strong>F-test (months added to weather)</strong>: F=1.09, p=0.39 -- months do NOT improve on weather either</li>
-<li><strong>Route-level panel</strong> (n=6,672, 72 clusters): R2=0.045; no variable significant with cluster-robust SEs</li>
+<li><strong>Route-level panel</strong> (n=6,672, 72 clusters): <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a>=0.045; no variable significant with cluster-robust SEs</li>
 <li><strong>Seasonal adjustment</strong>: January raw 70.8% -&gt; adjusted 68.4% (-2.4pp); September raw 64.0% -&gt; adjusted 65.3% (+1.3pp)</li>
 <li>Only 1 of 11 month dummies significant in combined model (September, p=0.039)</li>
 </ul>
 <h2>Observations</h2>
 <ul>
-<li>The raw correlations confirm Analysis 06's finding: winter months have better OTP. This is not despite the weather -- it is <em>correlated with</em> cold weather features (freeze days, snow days, low temperatures, high wind).</li>
-<li>After detrending, correlations strengthen substantially (freeze_days: 0.44 -&gt; 0.57), indicating the seasonal weather-OTP relationship is not an artifact of shared secular trends.</li>
-<li>Temperature variables show the strongest detrended correlations (mean_tmin r=-0.57, mean_tmax r=-0.56), meaning warmer months systematically have worse OTP.</li>
-<li>Precipitation (total_precip) has a weak negative correlation (r=-0.23 detrended, p=0.07) -- wetter months have slightly worse OTP, but this is the expected direction and not statistically significant.</li>
+<li>The raw correlations confirm Analysis 06's finding: winter months have better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. This is not despite the weather -- it is <em>correlated with</em> cold weather features (freeze days, snow days, low temperatures, high wind).</li>
+<li>After <a href="../../glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">detrending</a>, correlations strengthen substantially (freeze_days: 0.44 -&gt; 0.57), indicating the seasonal weather-<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> relationship is not an artifact of shared secular trends.</li>
+<li>Temperature variables show the strongest detrended correlations (mean_tmin r=-0.57, mean_tmax r=-0.56), meaning warmer months systematically have worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+<li>Precipitation (total_precip) has a weak negative correlation (r=-0.23 detrended, p=0.07) -- wetter months have slightly worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, but this is the expected direction and not statistically significant.</li>
 <li>In the combined model, weather and month dummies are <strong>collinear enough that neither adds significantly to the other</strong>. Both capture the same seasonal signal through different variables.</li>
 <li>Weather adjustment partially flattens the seasonal profile: it reduces the January peak by 2.4pp and lifts September by 1.3pp, narrowing the best-to-worst spread from 6.8pp to 3.8pp.</li>
-<li>The panel regression (Block C) shows weather effects are tiny at the route level (R2=4.5%), and cluster-robust SEs (acknowledging that weather is constant within months) eliminate all significance.</li>
+<li>The panel regression (Block C) shows weather effects are tiny at the route level (<a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a>=4.5%), and cluster-robust SEs (acknowledging that weather is constant within months) eliminate all significance.</li>
 </ul>
 <h2>Discussion</h2>
-<p>The key finding is that weather and seasonality are <strong>statistically interchangeable</strong> at the system level -- they capture overlapping variance, and neither adds significantly beyond the other. This means the Analysis 06 seasonal pattern can be <em>described</em> as a weather pattern (cold months = better OTP) but we cannot determine whether weather <em>causes</em> the pattern or merely co-occurs with other seasonal factors (school schedules, construction seasons, ridership patterns).</p>
-<p>The counterintuitive direction (cold = better OTP) suggests the mechanism is not weather-as-impediment but rather <strong>seasonal demand and operational patterns</strong>: winter reduces ridership and road congestion, improving schedule adherence despite worse driving conditions. Snow and cold are proxies for lower demand, not direct causes of better performance.</p>
-<p>The panel regression null result is important: even though system-level correlations are strong (r&gt;0.5), weather variation explains only 4.5% of route-month OTP variation, and this disappears with proper clustering. This indicates weather is a <strong>system-level seasonal modulator</strong> rather than a route-level predictor -- all routes respond similarly to weather, so it provides no discriminating power for individual route performance.</p>
+<p>The key finding is that weather and seasonality are <strong>statistically interchangeable</strong> at the system level -- they capture overlapping <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a>, and neither adds significantly beyond the other. This means the Analysis 06 seasonal pattern can be <em>described</em> as a weather pattern (cold months = better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>) but we cannot determine whether weather <em>causes</em> the pattern or merely co-occurs with other seasonal factors (school schedules, construction seasons, ridership patterns).</p>
+<p>The counterintuitive direction (cold = better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>) suggests the mechanism is not weather-as-impediment but rather <strong>seasonal demand and operational patterns</strong>: winter reduces ridership and road congestion, improving schedule adherence despite worse driving conditions. Snow and cold are proxies for lower demand, not direct causes of better performance.</p>
+<p>The panel regression null result is important: even though system-level correlations are strong (r&gt;0.5), weather variation explains only 4.5% of route-month <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> variation, and this disappears with proper clustering. This indicates weather is a <strong>system-level seasonal modulator</strong> rather than a route-level predictor -- all routes respond similarly to weather, so it provides no discriminating power for individual route performance.</p>
 <h2>Caveats</h2>
 <ul>
 <li><strong>n=72 months</strong> is small for a 17-parameter model (Block B combined). The F-tests have limited power to distinguish between month dummies and weather variables.</li>
@@ -127,7 +127,7 @@
 <li><strong>AWND (wind speed) has 5 missing daily values</strong> (0.2%), unlikely to affect monthly aggregates.</li>
 <li><strong>Collinearity between weather and month-of-year</strong> is inherent -- weather <em>is</em> seasonal. The F-tests correctly diagnose this overlap but cannot resolve causality.</li>
 <li><strong>No extreme-event analysis</strong>: daily weather extremes (ice storms, heat waves) may have strong route-level effects that are averaged away in monthly aggregation.</li>
-<li><strong>Counterintuitive cold = better OTP</strong> may reflect omitted variables (construction, school, ridership) rather than a direct cold-weather benefit.</li>
+<li><strong>Counterintuitive cold = better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> may reflect omitted variables (construction, school, ridership) rather than a direct cold-weather benefit.</li>
 </ul>
 </div>
   </details>
@@ -234,30 +234,30 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Weather Impact on OTP</h1>
+    <div class="markdown"><h1>Methods: Weather Impact on <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Question</h2>
-<p>Does weather (precipitation, snow, temperature) explain OTP variance or the counterintuitive seasonal pattern found in Analysis 06 (winter months outperform fall)?</p>
+<p>Does weather (precipitation, snow, temperature) explain <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> or the counterintuitive seasonal pattern found in Analysis 06 (winter months outperform fall)?</p>
 <h2>Approach</h2>
 <p>Three analysis blocks test weather's explanatory power at different levels:</p>
-<p><strong>Block A -- System-level weather-OTP correlation:</strong></p>
+<p><strong>Block A -- System-level weather-<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation:</strong></p>
 <ul>
-<li>Join <code>weather_monthly</code> to system-wide monthly OTP (trip-weighted from balanced panel of routes).</li>
-<li>Compute Pearson and Spearman correlations for each weather variable vs system OTP.</li>
-<li>Detrend both series (subtract 12-month rolling mean) to remove shared secular trends, then re-test.</li>
-<li>Fit a multiple regression: system OTP ~ weather variables (controlling for linear trend).</li>
+<li>Join <code>weather_monthly</code> to system-wide monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (trip-weighted from balanced panel of routes).</li>
+<li>Compute Pearson and Spearman correlations for each weather variable vs system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+<li>Detrend both series (subtract 12-month <a href="../../glossary.html#rolling-mean" class="glossary-link" data-definition="Moving-window average used to smooth short-term volatility.">rolling mean</a>) to remove shared secular trends, then re-test.</li>
+<li>Fit a multiple regression: system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> ~ weather variables (controlling for linear trend).</li>
 </ul>
-<p><strong>Block B -- Seasonal decomposition test:</strong></p>
+<p><strong>Block B -- <a href="../../glossary.html#seasonal-decomposition" class="glossary-link" data-definition="Separation of a time series into trend, seasonal, and residual components.">Seasonal decomposition</a> test:</strong></p>
 <ul>
 <li>Replicate Analysis 06's monthly seasonal profile (month-of-year deviations from trend).</li>
 <li>Add weather controls: does the September trough disappear after adding weather? Does the January peak?</li>
-<li>Compare R2 of month-only model vs month + weather model.</li>
+<li>Compare <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a> of month-only model vs month + weather model.</li>
 <li>Key test: if weather fully explains the seasonal pattern, month dummies should lose significance.</li>
 </ul>
 <p><strong>Block C -- Route-level panel regression:</strong></p>
 <ul>
-<li>Join weather to route-month OTP observations (long format).</li>
+<li>Join weather to route-month <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> observations (long format).</li>
 <li>Route fixed effects + weather variables.</li>
-<li>Tests whether weather affects OTP <em>within</em> routes over time (not just across routes).</li>
+<li>Tests whether weather affects <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <em>within</em> routes over time (not just across routes).</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -276,7 +276,7 @@
 </tr>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Route-month OTP observations</td>
+  <td>Route-month <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> observations</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -293,11 +293,11 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>weather_otp_correlation.csv</code> -- correlation matrix of weather variables vs system OTP</li>
+<li><code>weather_otp_correlation.csv</code> -- correlation matrix of weather variables vs system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 <li><code>model_comparison.csv</code> -- regression results for all models</li>
-<li><code>weather_otp_timeseries.png</code> -- weather time series overlaid with system OTP (dual-axis)</li>
+<li><code>weather_otp_timeseries.png</code> -- weather time series overlaid with system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (dual-axis)</li>
 <li><code>seasonal_weather_adjusted.png</code> -- monthly seasonal profile: actual vs weather-adjusted</li>
-<li><code>weather_scatter_matrix.png</code> -- scatter matrix of key weather variables vs detrended system OTP</li>
+<li><code>weather_scatter_matrix.png</code> -- scatter matrix of key weather variables vs detrended system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 <li><code>weather_correlation_heatmap.png</code> -- heatmap of weather variable inter-correlations</li>
 </ul>
 </div>

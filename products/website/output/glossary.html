@@ -31,41 +31,159 @@
   <p class="kicker">Reference</p>
   <h1>Glossary</h1>
   <p class="lede">Common statistical and transit terms used throughout the analyses.</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
   <section class="panel">
     <h2>Transit Operations</h2>
     <div class="card-grid">
     
-      <article class="card">
+      <article class="card" id="on-time-performance">
         <h3>On-Time Performance (OTP)</h3>
         <p>Share of trips that meet the agency's on-time threshold, usually expressed from 0 to 1.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a>, 
+          
+            <a href="pipeline/02_scheduled_trips/index.html">Scheduled Trips ETL</a>, 
+          
+            <a href="pipeline/03_weather/index.html">Weather ETL</a>, 
+          
+            <a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a>, 
+          
+            <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>, 
+          
+            <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>, 
+          
+            <a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a>, 
+          
+            <a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a>, 
+          
+            <a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a>, 
+          
+            <a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a>, 
+          
+            <a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a>, 
+          
+            <a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a>, 
+          
+            <a href="analyses/10_frequency_vs_otp/index.html">10: Trip Frequency vs OTP</a>, 
+          
+            <a href="analyses/11_directional_asymmetry/index.html">11: Directional Asymmetry</a>, 
+          
+            <a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a>, 
+          
+            <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>, 
+          
+            <a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a>, 
+          
+            <a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a>, 
+          
+            <a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a>, 
+          
+            <a href="analyses/17_weekend_weekday_profile/index.html">17: Weekend vs Weekday Service Profile</a>, 
+          
+            <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>, 
+          
+            <a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a>, 
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>, 
+          
+            <a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a>, 
+          
+            <a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a>, 
+          
+            <a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a>, 
+          
+            <a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a>, 
+          
+            <a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a>, 
+          
+            <a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a>, 
+          
+            <a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a>, 
+          
+            <a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a>, 
+          
+            <a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a>, 
+          
+            <a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a>, 
+          
+            <a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a>, 
+          
+            <a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a>, 
+          
+            <a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a>, 
+          
+            <a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="trip-weighted-otp">
         <h3>Trip-Weighted OTP</h3>
         <p>OTP average where each route is weighted by its scheduled trip volume.</p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="ridership-weighted-otp">
         <h3>Ridership-Weighted OTP</h3>
         <p>OTP average where each route is weighted by passenger volume rather than trip count.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a>, 
+          
+            <a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="day-type">
         <h3>Day Type</h3>
         <p>Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="pipeline/02_scheduled_trips/index.html">Scheduled Trips ETL</a>, 
+          
+            <a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a>, 
+          
+            <a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a>, 
+          
+            <a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a>, 
+          
+            <a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="route-span">
         <h3>Route Span</h3>
         <p>Maximum geographic distance covered by a route across its served stops.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="busway-route">
         <h3>Busway Route</h3>
         <p>Route operating on dedicated right-of-way for part of its alignment.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>
+          
+        </p>
+        
       </article>
     
     </div>
@@ -75,34 +193,176 @@
     <h2>Descriptive Statistics</h2>
     <div class="card-grid">
     
-      <article class="card">
+      <article class="card" id="mean">
         <h3>Mean</h3>
         <p>Arithmetic average of values, computed as sum divided by count.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a>, 
+          
+            <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>, 
+          
+            <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>, 
+          
+            <a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a>, 
+          
+            <a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a>, 
+          
+            <a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a>, 
+          
+            <a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a>, 
+          
+            <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>, 
+          
+            <a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a>, 
+          
+            <a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a>, 
+          
+            <a href="analyses/17_weekend_weekday_profile/index.html">17: Weekend vs Weekday Service Profile</a>, 
+          
+            <a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a>, 
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>, 
+          
+            <a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a>, 
+          
+            <a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a>, 
+          
+            <a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a>, 
+          
+            <a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a>, 
+          
+            <a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a>, 
+          
+            <a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a>, 
+          
+            <a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a>, 
+          
+            <a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a>, 
+          
+            <a href="analyses/33_pandemic_ridership_geography/index.html">33 - Pandemic Ridership Geography</a>, 
+          
+            <a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="median">
         <h3>Median</h3>
         <p>Middle value of an ordered distribution, robust to extreme outliers.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>, 
+          
+            <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>, 
+          
+            <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>, 
+          
+            <a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a>, 
+          
+            <a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a>, 
+          
+            <a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a>, 
+          
+            <a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a>, 
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>, 
+          
+            <a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a>, 
+          
+            <a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a>, 
+          
+            <a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a>, 
+          
+            <a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a>, 
+          
+            <a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a>, 
+          
+            <a href="analyses/33_pandemic_ridership_geography/index.html">33 - Pandemic Ridership Geography</a>, 
+          
+            <a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a>, 
+          
+            <a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a>, 
+          
+            <a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a>, 
+          
+            <a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="standard-deviation">
         <h3>Standard Deviation (SD)</h3>
         <p>Dispersion measure showing how far values tend to deviate from the mean.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>, 
+          
+            <a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="variance">
         <h3>Variance</h3>
         <p>Squared standard deviation used in many statistical formulas.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>, 
+          
+            <a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a>, 
+          
+            <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>, 
+          
+            <a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a>, 
+          
+            <a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a>, 
+          
+            <a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a>, 
+          
+            <a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a>, 
+          
+            <a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a>, 
+          
+            <a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a>, 
+          
+            <a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="percentile">
         <h3>Percentile</h3>
         <p>Value below which a given percentage of observations falls.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="interquartile-range">
         <h3>Interquartile Range (IQR)</h3>
         <p>Difference between the 75th and 25th percentiles, capturing the middle half of data.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>, 
+          
+            <a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a>
+          
+        </p>
+        
       </article>
     
     </div>
@@ -112,54 +372,136 @@
     <h2>Correlation and Regression</h2>
     <div class="card-grid">
     
-      <article class="card">
+      <article class="card" id="pearson-correlation">
         <h3>Pearson Correlation</h3>
         <p>Linear association metric ranging from -1 to 1.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/10_frequency_vs_otp/index.html">10: Trip Frequency vs OTP</a>, 
+          
+            <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="spearman-correlation">
         <h3>Spearman Correlation</h3>
         <p>Rank-based monotonic association metric less sensitive to nonlinearity and outliers.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a>, 
+          
+            <a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="partial-correlation">
         <h3>Partial Correlation</h3>
         <p>Correlation between two variables after controlling for one or more covariates.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="ordinary-least-squares">
         <h3>Ordinary Least Squares (OLS)</h3>
         <p>Regression method that estimates coefficients by minimizing squared residuals.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>, 
+          
+            <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>, 
+          
+            <a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a>, 
+          
+            <a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a>, 
+          
+            <a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="r-squared">
         <h3>R-squared (R2)</h3>
         <p>Fraction of outcome variance explained by a regression model.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>, 
+          
+            <a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a>, 
+          
+            <a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="adjusted-r-squared">
         <h3>Adjusted R-squared</h3>
         <p>R2 variant that penalizes unnecessary predictors.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>, 
+          
+            <a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="standardized-coefficient">
         <h3>Standardized Coefficient (Beta)</h3>
         <p>Regression coefficient scaled in standard deviation units for cross-predictor comparison.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>, 
+          
+            <a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="variance-inflation-factor">
         <h3>Variance Inflation Factor (VIF)</h3>
         <p>Diagnostic for multicollinearity among predictors.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>, 
+          
+            <a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a>, 
+          
+            <a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="nested-model-f-test">
         <h3>Nested Model F-Test</h3>
         <p>Test comparing a restricted model to an expanded model to assess added explanatory value.</p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="degrees-of-freedom">
         <h3>Degrees of Freedom (df)</h3>
         <p>Number of independent pieces of information remaining after estimating model parameters.</p>
+        
       </article>
     
     </div>
@@ -169,44 +511,108 @@
     <h2>Hypothesis Testing</h2>
     <div class="card-grid">
     
-      <article class="card">
+      <article class="card" id="p-value">
         <h3>P-Value</h3>
         <p>Probability of observing results at least this extreme under the null hypothesis.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a>, 
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>, 
+          
+            <a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a>, 
+          
+            <a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a>, 
+          
+            <a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="confidence-interval">
         <h3>Confidence Interval (CI)</h3>
         <p>Interval estimate that captures plausible parameter values at a chosen confidence level.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>, 
+          
+            <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="paired-t-test">
         <h3>Paired t-Test</h3>
         <p>Mean-difference test for matched observations measured on the same units.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>, 
+          
+            <a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="welch-t-test">
         <h3>Welch t-Test</h3>
         <p>Two-sample t-test variant that does not assume equal variances.</p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="mann-whitney-u-test">
         <h3>Mann-Whitney U Test</h3>
         <p>Non-parametric two-group comparison based on rank ordering.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>, 
+          
+            <a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="kruskal-wallis-test">
         <h3>Kruskal-Wallis Test</h3>
         <p>Non-parametric multi-group comparison using ranked observations.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a>, 
+          
+            <a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a>, 
+          
+            <a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="wilcoxon-signed-rank-test">
         <h3>Wilcoxon Signed-Rank Test</h3>
         <p>Non-parametric paired comparison based on signed ranks of differences.</p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="bonferroni-correction">
         <h3>Bonferroni Correction</h3>
         <p>Multiple-testing adjustment that scales p-value thresholds by the number of tests.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>, 
+          
+            <a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a>
+          
+        </p>
+        
       </article>
     
     </div>
@@ -216,39 +622,90 @@
     <h2>Time Series and Forecasting Concepts</h2>
     <div class="card-grid">
     
-      <article class="card">
+      <article class="card" id="rolling-mean">
         <h3>Rolling Mean</h3>
         <p>Moving-window average used to smooth short-term volatility.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a>, 
+          
+            <a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="rolling-z-score">
         <h3>Rolling Z-Score</h3>
         <p>Standardized deviation from a rolling mean used to detect anomalies.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="seasonal-decomposition">
         <h3>Seasonal Decomposition</h3>
         <p>Separation of a time series into trend, seasonal, and residual components.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a>, 
+          
+            <a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="detrending">
         <h3>Detrending</h3>
         <p>Removal of long-run trend to isolate short-run or relative variation.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a>, 
+          
+            <a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a>, 
+          
+            <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>, 
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>, 
+          
+            <a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a>, 
+          
+            <a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="lagged-cross-correlation">
         <h3>Lagged Cross-Correlation</h3>
         <p>Correlation of two series at offset time lags.</p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="granger-causality">
         <h3>Granger Causality</h3>
         <p>Test of whether past values of one series improve prediction of another series.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="baseline-indexing">
         <h3>Baseline Indexing</h3>
         <p>Rescaling series to a reference period equal to 100 for comparability.</p>
+        
       </article>
     
     </div>
@@ -258,34 +715,70 @@
     <h2>Clustering and Concentration</h2>
     <div class="card-grid">
     
-      <article class="card">
+      <article class="card" id="hierarchical-clustering">
         <h3>Hierarchical Clustering</h3>
         <p>Iterative grouping method that forms a nested tree of clusters.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="dendrogram">
         <h3>Dendrogram</h3>
         <p>Tree visualization showing hierarchical cluster merges and distances.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="silhouette-score">
         <h3>Silhouette Score</h3>
         <p>Cluster-quality metric measuring cohesion within clusters and separation between clusters.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="gini-coefficient">
         <h3>Gini Coefficient</h3>
         <p>Inequality metric on a 0 to 1 scale used for concentration analysis.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="lorenz-curve">
         <h3>Lorenz Curve</h3>
         <p>Cumulative-share plot used to visualize distributional inequality.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="pareto-concentration">
         <h3>Pareto Concentration</h3>
         <p>Pattern where a small share of units accounts for a large share of outcomes.</p>
+        
       </article>
     
     </div>
@@ -295,34 +788,80 @@
     <h2>Data Quality and Causal Caveats</h2>
     <div class="card-grid">
     
-      <article class="card">
+      <article class="card" id="simpson-s-paradox">
         <h3>Simpson's Paradox</h3>
         <p>Aggregated trends that reverse or change direction after stratification.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a>, 
+          
+            <a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a>, 
+          
+            <a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="regression-to-the-mean">
         <h3>Regression to the Mean</h3>
         <p>Tendency of extreme observations to move closer to average on repeated measurement.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a>, 
+          
+            <a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a>, 
+          
+            <a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="ecological-fallacy">
         <h3>Ecological Fallacy</h3>
         <p>Error of inferring individual-level behavior from group-level aggregates.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a>, 
+          
+            <a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="selection-bias">
         <h3>Selection Bias</h3>
         <p>Distortion caused by non-random inclusion of observations or intervention targets.</p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="statistical-power">
         <h3>Statistical Power</h3>
         <p>Probability of detecting a true effect when it exists.</p>
+        
+        <p class="glossary-usage">Used in:
+          
+            <a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a>, 
+          
+            <a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a>, 
+          
+            <a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a>, 
+          
+            <a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a>
+          
+        </p>
+        
       </article>
     
-      <article class="card">
+      <article class="card" id="survivorship-bias">
         <h3>Survivorship Bias</h3>
         <p>Bias introduced by observing only units that remain after attrition or filtering.</p>
+        
       </article>
     
     </div>

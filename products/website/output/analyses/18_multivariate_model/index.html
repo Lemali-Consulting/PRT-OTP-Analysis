@@ -32,7 +32,7 @@
   <h1>18: Multivariate OTP Model</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -92,9 +92,9 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Multivariate OTP Model</h1>
+    <div class="markdown"><h1>Findings: Multivariate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> Model</h1>
 <h2>Summary</h2>
-<p>A six-feature OLS model explains <strong>47.2% of OTP variance</strong> (adjusted R² = 0.435) across 92 routes. Three features are significant: stop count, geographic span, and rail mode. The model confirms that structural route characteristics explain nearly half of all performance variation, with the remaining 53% attributable to unmeasured factors (traffic, staffing, weather, schedule design).</p>
+<p>A six-feature <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> model explains <strong>47.2% of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a></strong> (adjusted R² = 0.435) across 92 routes. Three features are significant: stop count, geographic span, and rail mode. The model confirms that structural route characteristics explain nearly half of all performance variation, with the remaining 53% attributable to unmeasured factors (traffic, staffing, weather, schedule design).</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>R² = 0.472</strong>, <strong>Adjusted R² = 0.435</strong></li>
@@ -105,8 +105,8 @@
 <tr>
   <th>Feature</th>
   <th>Coefficient</th>
-  <th>p-value</th>
-  <th>Beta Weight</th>
+  <th><a href="../../glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a></th>
+  <th><a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">Beta</a> Weight</th>
   <th>Significant?</th>
 </tr>
 </thead>
@@ -157,14 +157,14 @@
 </table>
 <h2>Observations</h2>
 <ul>
-<li><strong>Stop count</strong> (beta = -0.49) and <strong>geographic span</strong> (beta = -0.47) are the two strongest predictors, with nearly equal standardized effects. Each additional stop costs roughly -0.06 pp OTP; each additional km of span costs roughly -0.49 pp.</li>
-<li><strong>Rail mode</strong> (beta = +0.34) provides a +13.3 pp OTP advantage over bus after controlling for structural factors. This is partly inherent to rail (dedicated right-of-way) and not fully captured by other features.</li>
-<li><strong>Number of municipalities</strong> has a surprising positive coefficient (+0.009 per muni, beta = +0.41). This is likely a suppressor effect: after controlling for stop count and span, routes that serve more municipalities tend to be express/busway routes that skip stops, which perform better.</li>
+<li><strong>Stop count</strong> (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> = -0.49) and <strong>geographic span</strong> (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> = -0.47) are the two strongest predictors, with nearly equal standardized effects. Each additional stop costs roughly -0.06 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>; each additional km of span costs roughly -0.49 pp.</li>
+<li><strong>Rail mode</strong> (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> = +0.34) provides a +13.3 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> advantage over bus after controlling for structural factors. This is partly inherent to rail (dedicated right-of-way) and not fully captured by other features.</li>
+<li><strong>Number of municipalities</strong> has a surprising positive coefficient (+0.009 per muni, <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> = +0.41). This is likely a suppressor effect: after controlling for stop count and span, routes that serve more municipalities tend to be express/busway routes that skip stops, which perform better.</li>
 <li><strong>Premium bus</strong> (busway/flyer/express/limited) is not significant once stop count and span are controlled -- these routes' advantage is fully explained by having fewer stops and shorter spans, not by their service type per se.</li>
 <li><strong>Weekend ratio</strong> is not significant, confirming the null finding from Analysis 17.</li>
 </ul>
 <h2>Model Interpretation</h2>
-<p>The 47% R² means that knowing just a route's stop count, length, and mode gets you almost halfway to predicting its OTP. The unexplained 53% likely reflects:</p>
+<p>The 47% R² means that knowing just a route's stop count, length, and mode gets you almost halfway to predicting its <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. The unexplained 53% likely reflects:</p>
 <ul>
 <li>Traffic conditions and road geometry</li>
 <li>Schedule design (running time padding, layover adequacy)</li>
@@ -175,13 +175,13 @@
 <p>These factors would require operational data not present in this dataset.</p>
 <h2>Caveats</h2>
 <ul>
-<li>OLS assumes linear relationships and independent errors. Some non-linearity is visible in the residuals.</li>
-<li>The n_munis coefficient is a suppressor and should not be interpreted as &quot;more municipalities = better OTP.&quot;</li>
+<li><a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> assumes linear relationships and independent errors. Some non-linearity is visible in the residuals.</li>
+<li>The n_munis coefficient is a suppressor and should not be interpreted as &quot;more municipalities = better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.&quot;</li>
 <li>With only 92 observations and 6 predictors, the model is at the edge of stable estimation.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
-<li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 4 issues (3 significant). VIF check added; n_munis labeled as suppressor; numerical stability improved.</li>
+<li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 4 issues (3 significant). <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> check added; n_munis labeled as suppressor; numerical stability improved.</li>
 </ul>
 </div>
   </details>
@@ -256,15 +256,15 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Multivariate OTP Model</h1>
+    <div class="markdown"><h1>Methods: Multivariate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> Model</h1>
 <h2>Question</h2>
-<p>How much of OTP variation can we explain with available structural variables? Which factors matter most when all are considered simultaneously? Previous analyses found effects for stop count (Analysis 07), mode (Analysis 02), and geographic span (Analysis 12), but these were tested individually. A multivariate model quantifies relative importance and reveals how much variance remains unexplained.</p>
+<p>How much of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> variation can we explain with available structural variables? Which factors matter most when all are considered simultaneously? Previous analyses found effects for stop count (Analysis 07), mode (Analysis 02), and geographic span (Analysis 12), but these were tested individually. A multivariate model quantifies relative importance and reveals how much <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> remains unexplained.</p>
 <h2>Approach</h2>
 <ul>
-<li>For each route with OTP data, assemble features: stop count, geographic span (km), mode (BUS/RAIL dummy), bus subtype (local/limited/express/busway/flyer dummies), weekend service ratio, and number of municipalities served.</li>
-<li>Fit an OLS regression with average OTP as the dependent variable.</li>
-<li>Report R-squared, adjusted R-squared, and per-feature coefficients with p-values.</li>
-<li>Use standardized coefficients (beta weights) to compare relative importance across features with different scales.</li>
+<li>For each route with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data, assemble features: stop count, geographic span (km), mode (BUS/RAIL dummy), bus subtype (local/limited/express/busway/flyer dummies), weekend service ratio, and number of municipalities served.</li>
+<li>Fit an <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> regression with average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> as the dependent variable.</li>
+<li>Report <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a>, <a href="../../glossary.html#adjusted-r-squared" class="glossary-link" data-definition="R2 variant that penalizes unnecessary predictors.">adjusted R-squared</a>, and per-feature coefficients with p-values.</li>
+<li>Use standardized coefficients (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weights) to compare relative importance across features with different scales.</li>
 <li>Generate a coefficient plot and a predicted-vs-actual scatter plot.</li>
 </ul>
 <h2>Data</h2>
@@ -279,7 +279,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route (averaged)</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route (averaged)</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -301,7 +301,7 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/model_coefficients.csv</code> -- feature, coefficient, std error, p-value, beta weight</li>
+<li><code>output/model_coefficients.csv</code> -- feature, coefficient, std error, <a href="../../glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a>, <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight</li>
 <li><code>output/coefficient_plot.png</code> -- horizontal bar chart of standardized coefficients</li>
 <li><code>output/predicted_vs_actual.png</code> -- scatter plot with 1:1 line</li>
 </ul>

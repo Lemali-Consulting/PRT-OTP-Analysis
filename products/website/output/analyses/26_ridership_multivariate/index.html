@@ -32,7 +32,7 @@
   <h1>26 - Ridership in Multivariate OTP Model</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -94,9 +94,9 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Ridership in Multivariate OTP Model</h1>
+    <div class="markdown"><h1>Findings: Ridership in Multivariate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> Model</h1>
 <h2>Summary</h2>
-<p>Adding log-transformed average weekday ridership to the Analysis 18 multivariate model does <strong>not</strong> significantly improve explanatory power. The F-test for the ridership term is not significant (F = 2.53, p = 0.116), and R² increases by only 1.5 pp (from 0.499 to 0.514). Ridership is <strong>not collinear</strong> with stop count or span (VIF = 1.73), but it is largely redundant with the existing predictors -- once route structure is controlled for, knowing how many people ride a route tells you almost nothing additional about its OTP.</p>
+<p>Adding log-transformed average weekday ridership to the Analysis 18 multivariate model does <strong>not</strong> significantly improve explanatory power. The F-test for the ridership term is not significant (F = 2.53, p = 0.116), and R² increases by only 1.5 pp (from 0.499 to 0.514). Ridership is <strong>not collinear</strong> with stop count or span (<a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> = 1.73), but it is largely redundant with the existing predictors -- once route structure is controlled for, knowing how many people ride a route tells you almost nothing additional about its <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</p>
 <h2>Key Numbers</h2>
 <table>
 <thead>
@@ -143,17 +143,17 @@
 <ul>
 <li><strong>F-test for log_riders</strong> (all routes): F = 2.53, p = 0.116</li>
 <li><strong>F-test for log_riders</strong> (bus only): F = 2.55, p = 0.114</li>
-<li><strong>log_riders beta weight</strong>: -0.16 (weakly negative, not significant)</li>
-<li><strong>VIF for log_riders</strong>: 1.73 (no multicollinearity concern)</li>
-<li><strong>Ridership-only model</strong> explains just 23.2% of variance (vs 49.9% for structural model)</li>
+<li><strong>log_riders <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight</strong>: -0.16 (weakly negative, not significant)</li>
+<li><strong><a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for log_riders</strong>: 1.73 (no multicollinearity concern)</li>
+<li><strong>Ridership-only model</strong> explains just 23.2% of <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> (vs 49.9% for structural model)</li>
 </ul>
 <h3>Expanded model coefficients</h3>
 <table>
 <thead>
 <tr>
   <th>Feature</th>
-  <th>Beta Weight</th>
-  <th>p-value</th>
+  <th><a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">Beta</a> Weight</th>
+  <th><a href="../../glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a></th>
 </tr>
 </thead>
 <tbody>
@@ -197,20 +197,20 @@
 <h2>Observations</h2>
 <ul>
 <li>The base model replicates Analysis 18's results closely (R² = 0.499 here vs 0.472 in Analysis 18; the small difference is because this analysis restricts to routes with ridership data, dropping 0 routes from the 92-route sample).</li>
-<li>Log ridership has a weakly negative coefficient (beta = -0.16): higher-ridership routes tend to have slightly worse OTP after controls, but the effect is not statistically significant. This is consistent with Analysis 19's finding that ridership-weighted OTP is slightly higher than trip-weighted -- the two observations are not contradictory because the relationship is weak and confounded.</li>
+<li>Log ridership has a weakly negative coefficient (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> = -0.16): higher-ridership routes tend to have slightly worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> after controls, but the effect is not statistically significant. This is consistent with Analysis 19's finding that <a href="../../glossary.html#ridership-weighted-otp" class="glossary-link" data-definition="OTP average where each route is weighted by passenger volume rather than trip count.">ridership-weighted OTP</a> is slightly higher than trip-weighted -- the two observations are not contradictory because the relationship is weak and confounded.</li>
 <li>Log ridership is surprisingly <strong>uncorrelated</strong> with stop count (r = +0.15, p = 0.16) and span (r = -0.00, p = 1.00). It is most strongly correlated with weekend_ratio (r = +0.57) -- routes with more riders tend to have relatively more weekend service.</li>
-<li>The ridership-only model (log_riders + is_rail, R² = 0.232) explains less than half the variance of the structural model (0.499), confirming that ridership is a weak proxy for the real drivers of OTP (stop count and span).</li>
+<li>The ridership-only model (log_riders + is_rail, R² = 0.232) explains less than half the <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> of the structural model (0.499), confirming that ridership is a weak proxy for the real drivers of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (stop count and span).</li>
 <li>All VIFs remain below 3.0 in the expanded model, so multicollinearity is not a concern.</li>
 </ul>
 <h2>Discussion</h2>
-<p>This is a clean null result. Ridership does not add meaningful information to the OTP model once route structure is accounted for. The practical implication is that <strong>PRT does not need to worry that high ridership per se degrades OTP</strong> -- the routes with poor OTP happen to have high ridership because they are long, many-stop local bus corridors, not because passenger volumes cause delays. This is consistent with Analysis 10's finding that trip frequency does not predict OTP.</p>
-<p>The weak negative direction of the ridership coefficient (-0.16 beta) is suggestive but not significant, and it could reflect residual confounding (high-ridership routes serve congested urban corridors) rather than a causal ridership-to-delay mechanism.</p>
+<p>This is a clean null result. Ridership does not add meaningful information to the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> model once route structure is accounted for. The practical implication is that <strong>PRT does not need to worry that high ridership per se degrades <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> -- the routes with poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> happen to have high ridership because they are long, many-stop local bus corridors, not because passenger volumes cause delays. This is consistent with Analysis 10's finding that trip frequency does not predict <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</p>
+<p>The weak negative direction of the ridership coefficient (-0.16 <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a>) is suggestive but not significant, and it could reflect residual confounding (high-ridership routes serve congested urban corridors) rather than a causal ridership-to-delay mechanism.</p>
 <h2>Caveats</h2>
 <ul>
 <li>Ridership is measured as average daily weekday riders per route, not per-trip load. Per-trip crowding data would better test the hypothesis that passenger volumes cause delays through dwell time.</li>
 <li>The log transform assumes diminishing marginal effects; a linear specification also fails to reach significance (not shown).</li>
-<li>The sample is restricted to 92 routes with both OTP and ridership data; 6 OTP-only routes are excluded.</li>
-<li>As with Analysis 18, the model's unexplained 50% of variance likely requires operational data (traffic, staffing, schedule slack) not available in this dataset.</li>
+<li>The sample is restricted to 92 routes with both <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and ridership data; 6 <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>-only routes are excluded.</li>
+<li>As with Analysis 18, the model's unexplained 50% of <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> likely requires operational data (traffic, staffing, schedule slack) not available in this dataset.</li>
 </ul>
 </div>
   </details>
@@ -299,17 +299,17 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Ridership in Multivariate OTP Model</h1>
+    <div class="markdown"><h1>Methods: Ridership in Multivariate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> Model</h1>
 <h2>Question</h2>
-<p>Does average ridership add explanatory power to the Analysis 18 OLS model (stop count, span, mode, n_munis, premium, weekend ratio) or is it collinear with existing predictors?</p>
+<p>Does average ridership add explanatory power to the Analysis 18 <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> model (stop count, span, mode, n_munis, premium, weekend ratio) or is it collinear with existing predictors?</p>
 <h2>Approach</h2>
 <ul>
-<li>Replicate the Analysis 18 six-feature OLS model on routes with ridership data available.</li>
-<li>Add log-transformed average weekday ridership as a seventh predictor. Log transform is used because ridership is right-skewed and the relationship with OTP is expected to be diminishing (doubling from 100 to 200 riders matters more than from 5,000 to 5,100).</li>
+<li>Replicate the Analysis 18 six-feature <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> model on routes with ridership data available.</li>
+<li>Add log-transformed average weekday ridership as a seventh predictor. Log transform is used because ridership is right-skewed and the relationship with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is expected to be diminishing (doubling from 100 to 200 riders matters more than from 5,000 to 5,100).</li>
 <li>Compare adjusted R² between the six-feature and seven-feature models using a nested F-test.</li>
-<li>Check VIF for the expanded model to assess multicollinearity with stop count and span.</li>
+<li>Check <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for the expanded model to assess multicollinearity with stop count and span.</li>
 <li>If ridership is significant, test a reduced model (ridership + mode only) to see if ridership proxies for stop count.</li>
-<li>Report beta weights, p-values, and model comparison statistics.</li>
+<li>Report <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weights, p-values, and model comparison statistics.</li>
 <li>Repeat with bus-only subset.</li>
 </ul>
 <h2>Data</h2>
@@ -324,7 +324,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>route_id, month, otp (averaged to route-level)</td>
+  <td>route_id, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">otp</a> (averaged to route-level)</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -353,8 +353,8 @@
 <h2>Output</h2>
 <ul>
 <li><code>output/model_comparison.csv</code> -- side-by-side regression results (base vs expanded vs bus-only)</li>
-<li><code>output/vif_table.csv</code> -- VIF values for expanded model</li>
-<li><code>output/coefficient_comparison.png</code> -- beta weight comparison between base and expanded models</li>
+<li><code>output/vif_table.csv</code> -- <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> values for expanded model</li>
+<li><code>output/coefficient_comparison.png</code> -- <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight comparison between base and expanded models</li>
 <li><code>output/partial_residual.png</code> -- partial residual plot for log_ridership</li>
 </ul>
 </div>

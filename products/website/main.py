@@ -7,6 +7,7 @@ import subprocess
 import re
 import shutil
 from datetime import datetime, timezone
+import html as html_lib
 from html import escape
 from dataclasses import dataclass
 from pathlib import Path
@@ -891,6 +892,49 @@ pre.mermaid {
   .panel { padding: 0.85rem; }
   th, td { font-size: 0.9rem; }
 }
+.glossary-link {
+  color: inherit;
+  text-decoration: underline dotted var(--accent-alt) 1.5px;
+  text-underline-offset: 2px;
+  position: relative;
+  cursor: help;
+}
+.glossary-link:hover { color: var(--accent-alt); }
+.glossary-link:hover::after {
+  content: attr(data-definition);
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 6px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  max-width: 320px;
+  width: max-content;
+  z-index: 50;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+.glossary-link:hover::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  bottom: 100%;
+  margin-bottom: 0;
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+  z-index: 51;
+  pointer-events: none;
+}
+.glossary-usage {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  margin: 0.3rem 0 0;
+}
+.glossary-usage a { font-weight: 600; }
 """
     (OUTPUT_DIR / "style.css").write_text(css.strip() + "\n", encoding="utf-8")
 
@@ -903,6 +947,156 @@ def copy_red_team_reports() -> None:
     dest.mkdir(parents=True, exist_ok=True)
     for path in RED_TEAM_DIR.glob("*.md"):
         shutil.copy2(path, dest / path.name)
+
+
+# ---------------------------------------------------------------------------
+# Glossary cross-referencing and auto-linking
+# ---------------------------------------------------------------------------
+
+_TAG_RE = re.compile(r"<[^>]+>")
+_SEGMENT_RE = re.compile(r"(<[^>]+>)")
+_WB = r"(?<![a-zA-Z0-9_])"
+_WA = r"(?![a-zA-Z0-9_])"
+_MATH_RE = re.compile(r"\$\$.*?\$\$|\$(?!\s).*?(?<!\s)\$", re.DOTALL)
+
+
+def _strip_html_tags(html: str) -> str:
+    """Strip HTML tags and decode entities to get plain text."""
+    return html_lib.unescape(_TAG_RE.sub(" ", html))
+
+
+def _term_anchor(term: str) -> str:
+    """Generate a URL-safe slug for a glossary term anchor."""
+    return re.sub(r"[^a-z0-9]+", "-", term.lower()).strip("-")
+
+
+def _build_term_patterns(
+    term: str, abbreviation: str | None, aliases: list[str] | None = None,
+) -> list[re.Pattern]:
+    """Compile regex patterns for a glossary term, its abbreviation, and aliases."""
+    patterns: list[re.Pattern] = []
+    patterns.append(re.compile(_WB + re.escape(term) + _WA, re.IGNORECASE))
+    if abbreviation and abbreviation != term:
+        esc_abbr = re.escape(abbreviation)
+        if abbreviation.isdigit():
+            patterns.append(re.compile(r"(?<![a-zA-Z0-9])" + esc_abbr + r"(?![a-zA-Z0-9])"))
+        else:
+            patterns.append(re.compile(_WB + esc_abbr + _WA))
+    for alias in aliases or []:
+        patterns.append(re.compile(_WB + re.escape(alias) + _WA, re.IGNORECASE))
+    return patterns
+
+
+def build_glossary_index(categories: list[dict]) -> list[dict]:
+    """Build a flat index of glossary terms with compiled regex patterns."""
+    index: list[dict] = []
+    for cat in categories:
+        for entry in cat.get("terms", []):
+            aliases = entry.get("aliases", [])
+            definition = entry.get("definition", "").strip()
+            definition = re.sub(r"\s+", " ", definition)
+            index.append({
+                "term": entry["term"],
+                "abbreviation": entry.get("abbreviation"),
+                "aliases": aliases,
+                "category": cat["name"],
+                "definition": definition,
+                "patterns": _build_term_patterns(
+                    entry["term"], entry.get("abbreviation"), aliases,
+                ),
+                "used_in": [],
+                "anchor": _term_anchor(entry["term"]),
+            })
+    return index
+
+
+def scan_glossary_usage(
+    glossary_index: list[dict], rendered_pages: list[dict],
+) -> None:
+    """Scan rendered HTML pages and populate used_in for each glossary term."""
+    for page in rendered_pages:
+        plain = _strip_html_tags(page["html"])
+        for entry in glossary_index:
+            for pat in entry["patterns"]:
+                if pat.search(plain):
+                    entry["used_in"].append({
+                        "kind": page["kind"], "dirname": page["dirname"],
+                        "title": page["title"], "url": page["url"],
+                    })
+                    break
+
+
+def _replace_in_text_nodes(
+    html: str, pattern: re.Pattern, make_replacement,
+) -> str:
+    """Apply pattern substitution only in text nodes outside <a>, <code>, <pre> tags and math."""
+    segments = _SEGMENT_RE.split(html)
+    skip_depth = 0
+    result: list[str] = []
+    for seg in segments:
+        if seg.startswith("<"):
+            lower = seg.lower()
+            for tag in ("a", "code", "pre"):
+                if re.match(rf"<{tag}[\s>]", lower):
+                    skip_depth += 1
+                elif lower.startswith(f"</{tag}"):
+                    skip_depth = max(0, skip_depth - 1)
+            result.append(seg)
+        else:
+            if skip_depth > 0:
+                result.append(seg)
+            else:
+                parts = _MATH_RE.split(seg)
+                math_spans = _MATH_RE.findall(seg)
+                replaced: list[str] = []
+                for j, part in enumerate(parts):
+                    replaced.append(pattern.sub(make_replacement, part))
+                    if j < len(math_spans):
+                        replaced.append(math_spans[j])
+                result.append("".join(replaced))
+    return "".join(result)
+
+
+def autolink_glossary_terms(
+    html: str, glossary_index: list[dict], page_root: str,
+) -> str:
+    """Wrap first plain-text occurrence of each glossary term with a tooltip link."""
+    def _max_variant_len(entry: dict) -> int:
+        lengths = [len(entry["term"])]
+        if entry.get("abbreviation"):
+            lengths.append(len(entry["abbreviation"]))
+        for a in entry.get("aliases", []):
+            lengths.append(len(a))
+        return max(lengths)
+
+    sorted_entries = sorted(glossary_index, key=_max_variant_len, reverse=True)
+
+    for entry in sorted_entries:
+        anchor = entry["anchor"]
+        definition = html_lib.escape(entry.get("definition", ""), quote=True)
+        tooltip_attr = f' data-definition="{definition}"' if definition else ""
+        link_open = (
+            f'<a href="{page_root}glossary.html#{anchor}"'
+            f' class="glossary-link"{tooltip_attr}>'
+        )
+
+        variants: list[str] = [html_lib.escape(entry["term"], quote=False)]
+        if entry.get("abbreviation"):
+            variants.append(html_lib.escape(entry["abbreviation"], quote=False))
+        for alias in entry.get("aliases", []):
+            variants.append(html_lib.escape(alias, quote=False))
+        variants.sort(key=len, reverse=True)
+
+        escaped = [re.escape(v) for v in variants]
+        alt = "|".join(escaped)
+        pat = re.compile(_WB + r"(" + alt + r")" + _WA, re.IGNORECASE)
+
+        def make_replacement(m: re.Match, _lo: str = link_open) -> str:
+            return f"{_lo}{m.group(0)}</a>"
+
+        html = _replace_in_text_nodes(html, pat, make_replacement)
+
+    return html
 
 
 def main() -> None:
@@ -929,6 +1123,10 @@ def main() -> None:
         next_page = by_slug[analysis_slugs[idx + 1]] if idx + 1 < len(analysis_slugs) else None
         prev_next[slug] = {"prev": prev_page, "next": next_page}
 
+    glossary_data = read_yaml(Path(__file__).resolve().parent / "glossary.yaml")
+    glossary_index = build_glossary_index(glossary_data.get("categories", []))
+    rendered_pages: list[dict] = []
+
     site_items = []
     source_index: dict[tuple[str, str], dict] = {}
     output_errors: list[str] = []
@@ -940,6 +1138,8 @@ def main() -> None:
 
         findings_html = md_to_html(PROJECT_ROOT / page.rel_dir / "FINDINGS.md")
         methods_html = md_to_html(PROJECT_ROOT / page.rel_dir / "METHODS.md")
+        findings_html = autolink_glossary_terms(findings_html, glossary_index, "../../")
+        methods_html = autolink_glossary_terms(methods_html, glossary_index, "../../")
         output_artifacts, errors = collect_outputs(page)
         output_errors.extend(errors)
         output_groups = group_output_artifacts(output_artifacts)
@@ -965,6 +1165,12 @@ def main() -> None:
             next_page=neighbors["next"],
         )
         (page_dir / "index.html").write_text(html, encoding="utf-8")
+
+        rendered_pages.append({
+            "kind": page.kind, "dirname": page.slug,
+            "title": page.title, "url": f"{kind_path}/{page.slug}/index.html",
+            "html": findings_html + methods_html,
+        })
 
         rel_path = f"{kind_path}/{page.slug}/index.html"
         site_items.append(
@@ -1054,10 +1260,23 @@ def main() -> None:
     )
     (OUTPUT_DIR / "sources.html").write_text(sources_html, encoding="utf-8")
 
-    glossary_data = read_yaml(Path(__file__).resolve().parent / "glossary.yaml")
+    scan_glossary_usage(glossary_index, rendered_pages)
+    # Enrich glossary categories with anchors and used_in for the template
+    anchor_lookup = {e["term"]: e for e in glossary_index}
+    enriched_categories = []
+    for cat in glossary_data.get("categories", []):
+        enriched_terms = []
+        for term in cat.get("terms", []):
+            entry = anchor_lookup.get(term["term"], {})
+            enriched_terms.append({
+                **term,
+                "anchor": entry.get("anchor", ""),
+                "used_in": entry.get("used_in", []),
+            })
+        enriched_categories.append({"name": cat["name"], "terms": enriched_terms})
     glossary_html = env.get_template("glossary.html").render(
         root="",
-        categories=glossary_data.get("categories", []),
+        categories=enriched_categories,
         run_metadata=run_metadata,
     )
     (OUTPUT_DIR / "glossary.html").write_text(glossary_html, encoding="utf-8")

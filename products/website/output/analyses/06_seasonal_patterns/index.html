@@ -32,7 +32,7 @@
   <h1>06: Seasonal Patterns</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -91,14 +91,14 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Seasonal Patterns</h1>
 <h2>Summary</h2>
-<p>PRT shows a consistent seasonal cycle with <strong>winter months outperforming summer/fall</strong>. The system-wide seasonal swing is about 6.8 percentage points after detrending. 93 routes had sufficient data (3+ years) for route-level seasonal analysis.</p>
+<p>PRT shows a consistent seasonal cycle with <strong>winter months outperforming summer/fall</strong>. The system-wide seasonal swing is about 6.8 percentage points after <a href="../../glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">detrending</a>. 93 routes had sufficient data (3+ years) for route-level seasonal analysis.</p>
 <h2>System-Wide Seasonal Profile</h2>
 <p>Computed from a balanced panel of 93 routes (present in all 12 months-of-year) over complete calendar years (2019--2024).</p>
 <table>
 <thead>
 <tr>
   <th>Month</th>
-  <th>Weighted OTP</th>
+  <th>Weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
   <th>Deviation from Trend</th>
 </tr>
 </thead>
@@ -166,11 +166,11 @@
 </tbody>
 </table>
 <h2>Methodology Note</h2>
-<p>Seasonal profiles are computed by first removing a 12-month centered rolling mean (trend), then averaging the detrended residuals by month-of-year. This ensures that long-term trends (e.g., the COVID dip) do not distort the seasonal pattern. Route-level analysis requires at least 3 years of data to ensure each month-of-year is represented multiple times.</p>
+<p>Seasonal profiles are computed by first removing a 12-month centered <a href="../../glossary.html#rolling-mean" class="glossary-link" data-definition="Moving-window average used to smooth short-term volatility.">rolling mean</a> (trend), then averaging the detrended residuals by month-of-year. This ensures that long-term trends (e.g., the COVID dip) do not distort the seasonal pattern. Route-level analysis requires at least 3 years of data to ensure each month-of-year is represented multiple times.</p>
 <p><strong>Red-team corrections applied (2026-02-10):</strong></p>
 <ul>
 <li>Restricted to complete calendar years (2019-01 through 2024-12) to ensure every month-of-year has equal year coverage. Previously, December was missing 2025 data (the worst-performing year), inflating its seasonal average.</li>
-<li>Used a balanced panel of routes present in all 12 months-of-year for the system-wide profile. This excluded 5 routes: 3 winter-only routes with very high OTP (37 Castle Shannon 81%, 42 Potomac 83%, RLSH Red Line Shuttle 98%) and 2 with other gaps (53 Homestead Park, SWL). Their inclusion previously inflated winter averages.</li>
+<li>Used a balanced panel of routes present in all 12 months-of-year for the system-wide profile. This excluded 5 routes: 3 winter-only routes with very high <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (37 Castle Shannon 81%, 42 Potomac 83%, RLSH Red Line Shuttle 98%) and 2 with other gaps (53 Homestead Park, SWL). Their inclusion previously inflated winter averages.</li>
 <li>Note: <code>trips_7d</code> weighting is a static snapshot and may not reflect historical service levels. The seasonal pattern holds in both weighted and unweighted averages, so the core finding is robust to weighting choice.</li>
 </ul>
 <h2>Most Seasonally Affected Routes (detrended)</h2>
@@ -198,15 +198,15 @@
 </table>
 <h2>Observations</h2>
 <ul>
-<li>The winter advantage is somewhat counterintuitive -- one might expect snow and ice to worsen OTP. Possible explanations: lower ridership reduces dwell time; fewer construction detours; school breaks reduce congestion.</li>
+<li>The winter advantage is somewhat counterintuitive -- one might expect snow and ice to worsen <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. Possible explanations: lower ridership reduces dwell time; fewer construction detours; school breaks reduce congestion.</li>
 <li>September is consistently the worst month (-3.9 pp from trend), possibly due to the return of school-year traffic and late-summer construction.</li>
 <li>After applying the balanced panel filter and complete-years restriction, the seasonal pattern persists with minimal change in magnitude, confirming it is a genuine operational pattern rather than a data artifact.</li>
 <li>Most routes have a seasonal amplitude under 15%. The heatmap of the top 20 routes shows no single month dominates as &quot;worst&quot; across all routes -- the pattern varies, though fall months are generally weaker.</li>
 </ul>
 <h2>Caveats</h2>
 <ul>
-<li>Seasonal decomposition uses a centered moving-average method to remove trend, not a formal STL decomposition. Results are directionally correct but assume additive seasonality.</li>
-<li>Only 6 years of complete data (2019--2024) means each month-of-year average is based on ~6 detrended observations, limiting statistical power.</li>
+<li><a href="../../glossary.html#seasonal-decomposition" class="glossary-link" data-definition="Separation of a time series into trend, seasonal, and residual components.">Seasonal decomposition</a> uses a centered moving-average method to remove trend, not a formal STL decomposition. Results are directionally correct but assume additive seasonality.</li>
+<li>Only 6 years of complete data (2019--2024) means each month-of-year average is based on ~6 detrended observations, limiting <a href="../../glossary.html#statistical-power" class="glossary-link" data-definition="Probability of detecting a true effect when it exists.">statistical power</a>.</li>
 <li>The <code>trips_7d</code> weighting reflects a single point-in-time snapshot of service frequency, not historical values. Route frequencies likely changed over the study period (especially during COVID).</li>
 </ul>
 <h2>Review History</h2>
@@ -279,7 +279,7 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: Seasonal Patterns</h1>
 <h2>Question</h2>
-<p>Do PRT routes exhibit consistent seasonal OTP patterns? Are summer or winter months systematically better or worse?</p>
+<p>Do PRT routes exhibit consistent seasonal <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> patterns? Are summer or winter months systematically better or worse?</p>
 <h2>Approach</h2>
 <ul>
 <li>Restrict to <strong>complete calendar years</strong> (2019--2024) to ensure every month-of-year has equal year coverage.</li>
@@ -287,9 +287,9 @@
 <li>Compute a system-wide seasonal profile by averaging across balanced-panel routes (trip-weighted).</li>
 <li>Measure seasonal amplitude: max(month-of-year avg) - min(month-of-year avg) per route.</li>
 <li>Decompose into trend + seasonal + residual using a moving-average approach:<ol>
-<li>Trend = 12-month centered rolling mean</li>
-<li>Seasonal = month-of-year mean of (OTP - trend)</li>
-<li>Residual = OTP - trend - seasonal</li>
+<li>Trend = 12-month centered <a href="../../glossary.html#rolling-mean" class="glossary-link" data-definition="Moving-window average used to smooth short-term volatility.">rolling mean</a></li>
+<li>Seasonal = month-of-year <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> of (<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> - trend)</li>
+<li>Residual = <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> - trend - seasonal</li>
 </ol>
 </li>
 <li>Rank routes by seasonal amplitude to identify those most affected by seasons.</li>
@@ -307,7 +307,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -325,7 +325,7 @@
 <h2>Output</h2>
 <ul>
 <li><code>output/seasonal_patterns.csv</code> -- month-of-year seasonal profile per route</li>
-<li><code>output/seasonal_patterns.png</code> -- seasonal decomposition charts</li>
+<li><code>output/seasonal_patterns.png</code> -- <a href="../../glossary.html#seasonal-decomposition" class="glossary-link" data-definition="Separation of a time series into trend, seasonal, and residual components.">seasonal decomposition</a> charts</li>
 </ul>
 </div>
   </details>

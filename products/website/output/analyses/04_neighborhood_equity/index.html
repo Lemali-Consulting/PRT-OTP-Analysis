@@ -32,7 +32,7 @@
   <h1>04 - Neighborhood Equity</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -92,15 +92,15 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Neighborhood Equity</h1>
 <h2>Summary</h2>
-<p>There is a <strong>25 percentage-point spread</strong> in OTP between the best- and worst-served neighborhoods (all modes pooled). When restricted to <strong>bus-only</strong>, the spread narrows to 20 pp but the bottom neighborhoods remain the same. The disparity is structural and stable over time -- all neighborhoods rise and fall together with the system. OTP is now computed from route-level averages (each route weighted once regardless of how many months of data it has), weighted by trip frequency.</p>
+<p>There is a <strong>25 percentage-point spread</strong> in <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> between the best- and worst-served neighborhoods (all modes pooled). When restricted to <strong>bus-only</strong>, the spread narrows to 20 pp but the bottom neighborhoods remain the same. The disparity is structural and stable over time -- all neighborhoods rise and fall together with the system. <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is now computed from route-level averages (each route weighted once regardless of how many months of data it has), weighted by trip frequency.</p>
 <h2>Worst-Served Neighborhoods</h2>
 <table>
 <thead>
 <tr>
   <th>Neighborhood</th>
   <th>Municipality</th>
-  <th>OTP (pooled)</th>
-  <th>OTP (bus-only)</th>
+  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (pooled)</th>
+  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bus-only)</th>
   <th>Routes</th>
 </tr>
 </thead>
@@ -142,15 +142,15 @@
 </tr>
 </tbody>
 </table>
-<p>The bottom neighborhoods are served entirely by bus, so their pooled and bus-only OTP are identical.</p>
+<p>The bottom neighborhoods are served entirely by bus, so their pooled and bus-only <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> are identical.</p>
 <h2>Best-Served Neighborhoods</h2>
 <table>
 <thead>
 <tr>
   <th>Neighborhood</th>
   <th>Municipality</th>
-  <th>OTP (pooled)</th>
-  <th>OTP (bus-only)</th>
+  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (pooled)</th>
+  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bus-only)</th>
   <th>Routes (all)</th>
   <th>Routes (bus)</th>
 </tr>
@@ -198,14 +198,14 @@
 </tr>
 </tbody>
 </table>
-<h2>Bus-Only Stratification (Simpson's Paradox Check)</h2>
-<p>Restricting to BUS-mode routes reveals that some neighborhoods' high pooled OTP is driven by rail:</p>
+<h2>Bus-Only Stratification (<a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's Paradox</a> Check)</h2>
+<p>Restricting to BUS-mode routes reveals that some neighborhoods' high pooled <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is driven by rail:</p>
 <table>
 <thead>
 <tr>
   <th>Neighborhood</th>
-  <th>Pooled OTP</th>
-  <th>Bus-Only OTP</th>
+  <th>Pooled <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
+  <th>Bus-Only <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
   <th>Pooled Rank</th>
   <th>Bus Rank</th>
   <th>Shift</th>
@@ -238,12 +238,12 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Bon Air</strong> is a clear case of Simpson's paradox: it appears well-served in the pooled analysis (rank 13) but drops to rank 53 (bus-only) because its high pooled OTP is driven almost entirely by rail service. Beechview similarly drops 9 positions.</p>
+<p><strong>Bon Air</strong> is a clear case of <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a>: it appears well-served in the pooled analysis (rank 13) but drops to rank 53 (bus-only) because its high pooled <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is driven almost entirely by rail service. Beechview similarly drops 9 positions.</p>
 <p>The bus-only spread (20 pp) is narrower than the pooled spread (25 pp), confirming that rail inflates the apparent equity of neighborhoods it serves.</p>
 <h2>Frequency-Weighting Effect</h2>
-<p>Comparing trip-weighted OTP to unweighted (equal weight per route) reveals where high-frequency service diverges from the route average:</p>
+<p>Comparing trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to unweighted (equal weight per route) reveals where high-frequency service diverges from the route average:</p>
 <ul>
-<li><strong>Mean gap</strong>: -0.27% (small on average -- the two measures broadly agree).</li>
+<li><strong><a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> gap</strong>: -0.27% (small on average -- the two measures broadly agree).</li>
 <li><strong>Range</strong>: -6.1% to +5.7% (meaningful divergence for individual neighborhoods).</li>
 </ul>
 <table>
@@ -277,7 +277,7 @@
 </tbody>
 </table>
 <ul>
-<li><strong>Negative gap</strong> (Carrick, Regent Square): high-frequency routes underperform relative to infrequent ones. Riders experience worse OTP than the simple route average suggests.</li>
+<li><strong>Negative gap</strong> (Carrick, Regent Square): high-frequency routes underperform relative to infrequent ones. Riders experience worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> than the simple route average suggests.</li>
 <li><strong>Positive gap</strong> (Troy Hill): high-frequency routes are more reliable, so the rider experience is better than the route average implies.</li>
 </ul>
 <h2>Observations</h2>
@@ -286,20 +286,20 @@
 <li>Worst-performing neighborhoods depend on long local bus routes with many stops (e.g., routes 61C, 71B, 77).</li>
 <li>The quintile gap (Q5 - Q1) tracks roughly in parallel over time, meaning the equity disparity is baked into route structure rather than worsening.</li>
 <li>89 neighborhoods analyzed; 3,760 of 6,466 stops were excluded because they lacked a neighborhood assignment in the data.</li>
-<li>Routes with fewer than 12 months of OTP data are excluded from the analysis.</li>
+<li>Routes with fewer than 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data are excluded from the analysis.</li>
 </ul>
 <h2>Caveats</h2>
 <ul>
-<li><strong>Sample size varies widely</strong>: neighborhoods have between 1 and 74 routes. The 25 pp spread should be interpreted with this context -- neighborhoods with only 1-2 routes have OTP estimates driven by a single route's performance, while those with 10+ routes have more stable estimates. A neighborhood served by one bad route will look worse than a neighborhood with a diversified mix.</li>
-<li><strong>Panel balance (time series)</strong>: The quintile time series uses an unbalanced panel. Neighborhoods gaining or losing routes over time may show OTP changes from composition shifts (a route entering or exiting), not performance changes. This could create artificial trends in the quintile chart, though the overall pattern of parallel movement suggests this effect is small.</li>
-<li>OTP is weighted by current <code>trips_7d</code>, not historical ridership. Neighborhoods where service was cut would show current-frequency weights, not past ones.</li>
+<li><strong>Sample size varies widely</strong>: neighborhoods have between 1 and 74 routes. The 25 pp spread should be interpreted with this context -- neighborhoods with only 1-2 routes have <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> estimates driven by a single route's performance, while those with 10+ routes have more stable estimates. A neighborhood served by one bad route will look worse than a neighborhood with a diversified mix.</li>
+<li><strong>Panel balance (time series)</strong>: The quintile time series uses an unbalanced panel. Neighborhoods gaining or losing routes over time may show <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> changes from composition shifts (a route entering or exiting), not performance changes. This could create artificial trends in the quintile chart, though the overall pattern of parallel movement suggests this effect is small.</li>
+<li><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is weighted by current <code>trips_7d</code>, not historical ridership. Neighborhoods where service was cut would show current-frequency weights, not past ones.</li>
 <li>The <code>hood</code> field had some invalid values (e.g., &quot;0&quot;) that were filtered out.</li>
-<li>A neighborhood's OTP reflects the routes that pass through it, not the experience of residents who may transfer between routes.</li>
+<li>A neighborhood's <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> reflects the routes that pass through it, not the experience of residents who may transfer between routes.</li>
 <li>The unweighted measure treats each route equally regardless of how many trips it runs, which can overstate the importance of infrequent routes.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
-<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> — 7 issues (1 significant). Fixed time-pooled weighting (pre-aggregate OTP to route level before joining), added bus-only stratification revealing Simpson's paradox in Bon Air and Beechview, added NULL trips_7d filter, added minimum-month filter, documented panel balance caveat, added sample-size caveat, and clarified METHODS.md weighting description.</li>
+<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> — 7 issues (1 significant). Fixed time-pooled weighting (pre-aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to route level before joining), added bus-only stratification revealing <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> in Bon Air and Beechview, added NULL trips_7d filter, added minimum-month filter, documented panel balance caveat, added sample-size caveat, and clarified METHODS.md weighting description.</li>
 </ul>
 </div>
   </details>
@@ -390,18 +390,18 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: Neighborhood Equity</h1>
 <h2>Question</h2>
-<p>Are certain neighborhoods or municipalities systematically underserved by on-time performance?</p>
+<p>Are certain neighborhoods or municipalities systematically underserved by <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a>?</p>
 <h2>Approach</h2>
 <ul>
-<li>Pre-aggregate OTP to route-level averages (<code>AVG(otp) GROUP BY route_id, HAVING COUNT(*) &gt;= 12</code>), then join to <code>route_stops</code> and <code>stops</code>. This ensures each route contributes one weight regardless of how many months of data it has.</li>
+<li>Pre-aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to route-level averages (<code>AVG(otp) GROUP BY route_id, HAVING COUNT(*) &gt;= 12</code>), then join to <code>route_stops</code> and <code>stops</code>. This ensures each route contributes one weight regardless of how many months of data it has.</li>
 <li>Filter out <code>route_stops</code> rows with NULL <code>trips_7d</code> to avoid null-weight contamination.</li>
-<li>For each neighborhood, compute two OTP measures:<ul>
-<li><strong>Weighted OTP</strong>: route-level average OTP weighted by <code>trips_7d</code> (weekly trip count per route-stop). Answers: &quot;What OTP does the average <em>trip</em> in this neighborhood experience?&quot;</li>
-<li><strong>Unweighted OTP</strong>: simple average across unique routes per neighborhood (deduplicated by route to avoid inflating routes with many stops). Answers: &quot;What is the average reliability of <em>routes</em> serving this area?&quot;</li>
+<li>For each neighborhood, compute two <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> measures:<ul>
+<li><strong>Weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong>: route-level average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> weighted by <code>trips_7d</code> (weekly trip count per route-stop). Answers: &quot;What <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> does the average <em>trip</em> in this neighborhood experience?&quot;</li>
+<li><strong>Unweighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong>: simple average across unique routes per neighborhood (deduplicated by route to avoid inflating routes with many stops). Answers: &quot;What is the average reliability of <em>routes</em> serving this area?&quot;</li>
 </ul>
 </li>
 <li>Compute the gap (weighted - unweighted) per neighborhood to identify where high-frequency service over- or under-performs relative to the route average.</li>
-<li><strong>Bus-only stratification</strong>: Repeat the weighted OTP analysis using only BUS-mode routes to check for Simpson's paradox (neighborhoods appearing well-served due to rail rather than bus performance).</li>
+<li><strong>Bus-only stratification</strong>: Repeat the weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> analysis using only BUS-mode routes to check for <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> (neighborhoods appearing well-served due to rail rather than bus performance).</li>
 <li>Rank neighborhoods by service quality.</li>
 <li>Examine whether the gap between best- and worst-served areas is widening or narrowing over time via rolling quintile assignment on monthly data.</li>
 </ul>
@@ -417,7 +417,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route (routes with fewer than 12 months excluded)</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route (routes with fewer than 12 months excluded)</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -439,10 +439,10 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/neighborhood_otp.csv</code> -- OTP aggregated by neighborhood (weighted, unweighted, gap, and bus-only weighted)</li>
-<li><code>output/neighborhood_otp_bus_only.csv</code> -- bus-only OTP by neighborhood</li>
+<li><code>output/neighborhood_otp.csv</code> -- <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> aggregated by neighborhood (weighted, unweighted, gap, and bus-only weighted)</li>
+<li><code>output/neighborhood_otp_bus_only.csv</code> -- bus-only <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by neighborhood</li>
 <li><code>output/neighborhood_equity.png</code> -- top/bottom neighborhoods bar chart and quintile time series</li>
-<li><code>output/weighted_vs_unweighted_otp.png</code> -- scatter plot comparing the two OTP measures and bar chart of the frequency-weighting effect per neighborhood</li>
+<li><code>output/weighted_vs_unweighted_otp.png</code> -- scatter plot comparing the two <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> measures and bar chart of the frequency-weighting effect per neighborhood</li>
 </ul>
 </div>
   </details>

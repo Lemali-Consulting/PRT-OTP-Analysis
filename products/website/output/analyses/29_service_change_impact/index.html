@@ -32,7 +32,7 @@
   <h1>29 - Service Change Impact on OTP</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2016-11 to 2025-11 (from otp_monthly, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -88,41 +88,41 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Service Change Impact on OTP</h1>
+    <div class="markdown"><h1>Findings: Service Change Impact on <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Summary</h2>
-<p>Schedule changes (pick period transitions) are associated with a small but statistically significant <strong>positive</strong> OTP shift on average, though the effect is weak and does not differ significantly by event type (increase, cut, or neutral).</p>
+<p>Schedule changes (pick period transitions) are associated with a small but statistically significant <strong>positive</strong> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> shift on average, though the effect is weak and does not differ significantly by event type (increase, cut, or neutral).</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>738 schedule change events</strong> detected across 101 routes (Nov 2016 -- Mar 2021)</li>
-<li><strong>Mean OTP delta: +0.6 pp</strong> (naive t=2.82, p=0.005; route-clustered t=4.37, p&lt;0.001) -- schedule changes are followed by slightly higher OTP on average</li>
+<li><strong><a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> delta: +0.6 pp</strong> (naive t=2.82, p=0.005; route-clustered t=4.37, p&lt;0.001) -- schedule changes are followed by slightly higher <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> on average</li>
 <li><strong>By event type:</strong><ul>
-<li>Service increases (+118 trips/day avg): +1.3 pp OTP delta (n=110)</li>
-<li>Service cuts (-64 trips/day avg): +0.1 pp OTP delta (n=215)</li>
-<li>Neutral (same trips, new schedule): +0.8 pp OTP delta (n=413)</li>
+<li>Service increases (+118 trips/day avg): +1.3 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> delta (n=110)</li>
+<li>Service cuts (-64 trips/day avg): +0.1 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> delta (n=215)</li>
+<li>Neutral (same trips, new schedule): +0.8 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> delta (n=413)</li>
 </ul>
 </li>
 <li><strong>Kruskal-Wallis across types:</strong> H=4.03, p=0.13 -- no significant difference between event types</li>
-<li><strong>Trip delta vs OTP delta:</strong> Pearson r=0.072 (p=0.050), Spearman rho=0.074 (p=0.045) -- marginally significant positive association</li>
+<li><strong>Trip delta vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> delta:</strong> Pearson r=0.072 (p=0.050), Spearman rho=0.074 (p=0.045) -- marginally significant positive association</li>
 </ul>
 <h2>Observations</h2>
 <ul>
 <li>The dominant event type is &quot;neutral&quot; (413 of 738) -- same trip count, different schedule period. This suggests most pick transitions are schedule restructurings rather than service level changes.</li>
-<li>Service increases show the largest OTP improvement (+1.3 pp), while service cuts show nearly no change (+0.1 pp). However, the Kruskal-Wallis test does not detect a significant difference, so this pattern may be noise.</li>
-<li>COVID period events (n=184) show a smaller mean delta (+0.2 pp) than non-COVID events (+0.8 pp), possibly because the COVID period involves confounding system-wide disruptions.</li>
-<li>The correlation between trip count change and OTP change is marginally significant (p~0.05) but very weak (r=0.07), explaining less than 1% of variance.</li>
+<li>Service increases show the largest <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> improvement (+1.3 pp), while service cuts show nearly no change (+0.1 pp). However, the <a href="../../glossary.html#kruskal-wallis-test" class="glossary-link" data-definition="Non-parametric multi-group comparison using ranked observations.">Kruskal-Wallis test</a> does not detect a significant difference, so this pattern may be noise.</li>
+<li>COVID period events (n=184) show a smaller <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> delta (+0.2 pp) than non-COVID events (+0.8 pp), possibly because the COVID period involves confounding system-wide disruptions.</li>
+<li>The correlation between trip count change and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> change is marginally significant (p~0.05) but very weak (r=0.07), explaining less than 1% of <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a>.</li>
 </ul>
 <h2>Discussion</h2>
-<p>The statistically significant but tiny positive mean delta (+0.6 pp) is best interpreted as evidence that schedule changes are <strong>not harmful</strong> to OTP, rather than evidence that they improve it. The effect size is operationally negligible -- less than 1 percentage point -- and the lack of differentiation across event types (Kruskal-Wallis p=0.13) means we cannot conclude that service increases help or that service cuts hurt.</p>
-<p>The most striking finding is the dominance of &quot;neutral&quot; events (413 of 738). Most pick period transitions leave trip counts unchanged, meaning PRT's schedule restructurings are primarily about rearranging timing, not adding or removing service. These neutral events still show a +0.8 pp OTP delta, which is consistent with the hypothesis that PRT uses schedule changes as opportunities to adjust running times or pad recovery time -- operational improvements that would improve OTP without changing trip frequency.</p>
-<p>The marginal Spearman correlation (rho=0.074, p=0.045) aligns with the direction suggested by Analysis 30's pre-COVID subperiod (adding trips slightly degrades OTP), but in the opposite direction here -- adding trips is associated with better OTP. This apparent contradiction dissolves when considering that Analysis 29 measures 3-month average shifts around discrete events, while Analysis 30 measures month-over-month continuous variation. The schedule change event likely captures a package of operational adjustments (new running times, rerouted deadheads, adjusted layover) that happen to coincide with trip count changes, not a pure frequency effect.</p>
-<p>For policy, the null Kruskal-Wallis result is the most actionable finding: it suggests PRT can adjust service levels (up or down) without expecting systematic OTP consequences. OTP is determined by factors other than how many trips are scheduled.</p>
+<p>The statistically significant but tiny positive <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> delta (+0.6 pp) is best interpreted as evidence that schedule changes are <strong>not harmful</strong> to <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, rather than evidence that they improve it. The effect size is operationally negligible -- less than 1 percentage point -- and the lack of differentiation across event types (Kruskal-Wallis p=0.13) means we cannot conclude that service increases help or that service cuts hurt.</p>
+<p>The most striking finding is the dominance of &quot;neutral&quot; events (413 of 738). Most pick period transitions leave trip counts unchanged, meaning PRT's schedule restructurings are primarily about rearranging timing, not adding or removing service. These neutral events still show a +0.8 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> delta, which is consistent with the hypothesis that PRT uses schedule changes as opportunities to adjust running times or pad recovery time -- operational improvements that would improve <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> without changing trip frequency.</p>
+<p>The marginal <a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a> (rho=0.074, p=0.045) aligns with the direction suggested by Analysis 30's pre-COVID subperiod (adding trips slightly degrades <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>), but in the opposite direction here -- adding trips is associated with better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. This apparent contradiction dissolves when considering that Analysis 29 measures 3-month average shifts around discrete events, while Analysis 30 measures month-over-month continuous variation. The schedule change event likely captures a package of operational adjustments (new running times, rerouted deadheads, adjusted layover) that happen to coincide with trip count changes, not a pure frequency effect.</p>
+<p>For policy, the null Kruskal-Wallis result is the most actionable finding: it suggests PRT can adjust service levels (up or down) without expecting systematic <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> consequences. <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is determined by factors other than how many trips are scheduled.</p>
 <h2>Caveats</h2>
 <ul>
-<li><strong>Non-independence</strong>: the 738 events come from only 101 routes (~7 events per route), and the 3-month averaging windows can overlap for events on the same route. The naive t-test (p=0.003) overstates significance by treating all events as independent. A route-clustered test (averaging within route first, then testing n=101 route means) provides a more conservative and appropriate p-value.</li>
+<li><strong>Non-independence</strong>: the 738 events come from only 101 routes (~7 events per route), and the 3-month averaging windows can overlap for events on the same route. The naive t-test (p=0.003) overstates significance by treating all events as independent. A route-clustered test (averaging within route first, then testing n=101 route means) provides a more conservative and appropriate <a href="../../glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a>.</li>
 <li>Only events between consecutive months are included; gaps in the panel are excluded to avoid spurious multi-month deltas.</li>
 <li>The 3-month averaging window means overlapping events can contaminate each other. Routes with frequent schedule changes (every 2-3 months) have correlated before/after windows.</li>
-<li>The positive mean OTP delta could reflect a selection effect: PRT may time schedule changes to coincide with seasonal improvements or known operational gains.</li>
-<li>Causality cannot be established -- schedule changes and OTP improvements may share common causes (e.g., new management priorities).</li>
+<li>The positive <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> delta could reflect a selection effect: PRT may time schedule changes to coincide with seasonal improvements or known operational gains.</li>
+<li>Causality cannot be established -- schedule changes and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> improvements may share common causes (e.g., new management priorities).</li>
 </ul>
 <h2>Review History</h2>
 <ul>
@@ -206,19 +206,19 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Service Change Impact on OTP</h1>
+    <div class="markdown"><h1>Methods: Service Change Impact on <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Question</h2>
-<p>Do schedule changes (transitions between pick periods) correlate with OTP shifts? When PRT restructures service for a route, does OTP improve, decline, or stay the same?</p>
+<p>Do schedule changes (transitions between pick periods) correlate with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> shifts? When PRT restructures service for a route, does <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> improve, decline, or stay the same?</p>
 <h2>Approach</h2>
 <ul>
 <li>Identify schedule change events: months where a route's <code>pick_id</code> changes from the prior month in <code>scheduled_trips_monthly</code>.</li>
-<li>For each change event, compute the OTP delta: mean OTP in the 3 months after the change minus mean OTP in the 3 months before.</li>
+<li>For each change event, compute the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> delta: <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> in the 3 months after the change minus <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> in the 3 months before.</li>
 <li>Also compute the trip count delta (daily_trips after minus before) to distinguish service increases from cuts.</li>
 <li>Classify events by direction: service increase (more trips), service cut (fewer trips), or neutral (same trips, different schedule).</li>
 <li>Only detect change events between consecutive months (no gaps) to avoid spurious multi-month deltas.</li>
-<li>Test whether OTP deltas differ from zero using both a naive one-sample t-test and a route-clustered t-test (average within route first, then test route means) to account for non-independence of events within routes. Test event-type differences with Kruskal-Wallis.</li>
+<li>Test whether <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> deltas differ from zero using both a naive one-sample t-test and a route-clustered t-test (average within route first, then test route means) to account for non-independence of events within routes. Test event-type differences with Kruskal-Wallis.</li>
 <li>Examine the COVID period (Mar--Apr 2020) separately, since it represents the largest service change in the dataset.</li>
-<li>Scatter plot: trip count change vs OTP change at each event, colored by pre/post COVID.</li>
+<li>Scatter plot: trip count change vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> change at each event, colored by pre/post COVID.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -232,12 +232,12 @@
 <tbody>
 <tr>
   <td><code>scheduled_trips_monthly</code></td>
-  <td>Route-level monthly trip counts and pick_id (WEEKDAY day type)</td>
+  <td>Route-level monthly trip counts and pick_id (WEEKDAY <a href="../../glossary.html#day-type" class="glossary-link" data-definition="Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.">day type</a>)</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -249,8 +249,8 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/service_change_events.csv</code> -- all detected schedule change events with OTP and trip deltas</li>
-<li><code>output/service_change_impact.png</code> -- scatter plot of trip change vs OTP change</li>
+<li><code>output/service_change_events.csv</code> -- all detected schedule change events with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and trip deltas</li>
+<li><code>output/service_change_impact.png</code> -- scatter plot of trip change vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> change</li>
 <li><code>output/service_change_summary.csv</code> -- summary statistics by event type</li>
 </ul>
 </div>

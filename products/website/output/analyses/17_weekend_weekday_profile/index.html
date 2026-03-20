@@ -32,7 +32,7 @@
   <h1>17: Weekend vs Weekday Service Profile</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -91,7 +91,7 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Weekend vs Weekday Service Profile</h1>
 <h2>Summary</h2>
-<p>There is <strong>no meaningful correlation</strong> between a route's weekend-to-weekday service ratio and its OTP. Routes that run heavy weekend service perform identically to commuter-oriented weekday-heavy routes.</p>
+<p>There is <strong>no meaningful correlation</strong> between a route's weekend-to-weekday service ratio and its <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. Routes that run heavy weekend service perform identically to commuter-oriented weekday-heavy routes.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>Pearson r = -0.03</strong> (p = 0.79, n = 93)</li>
@@ -102,7 +102,7 @@
 <tr>
   <th>Service Tier</th>
   <th>Routes</th>
-  <th>Mean OTP</th>
+  <th><a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
 </tr>
 </thead>
 <tbody>
@@ -125,14 +125,14 @@
 </table>
 <h2>Observations</h2>
 <ul>
-<li>The three service tiers are virtually indistinguishable in OTP (69.8%, 68.8%, 70.3%).</li>
+<li>The three service tiers are virtually indistinguishable in <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (69.8%, 68.8%, 70.3%).</li>
 <li>Neither Pearson nor Spearman correlations approach significance.</li>
 <li>This null result makes sense: the weekend service ratio reflects demand patterns and scheduling choices, not route structure. A route with high weekend service isn't inherently harder to run on time.</li>
-<li>Since OTP is reported monthly (not by day-of-week), it aggregates weekday and weekend performance, which may mask day-specific patterns.</li>
+<li>Since <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is reported monthly (not by day-of-week), it aggregates weekday and weekend performance, which may mask day-specific patterns.</li>
 <li>Bus-only correlation (r = -0.06, p = 0.56) confirms the null result holds within the dominant mode.</li>
 </ul>
 <h2>Implication</h2>
-<p>Weekend vs weekday service intensity is not a useful predictor of OTP. The structural factors identified in other analyses (stop count, mode, route length) dominate.</p>
+<p>Weekend vs weekday service intensity is not a useful predictor of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. The structural factors identified in other analyses (stop count, mode, route length) dominate.</p>
 <h2>Review History</h2>
 <ul>
 <li>2026-02-10: <a href="../../RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md">RED-TEAM-REPORTS/2026-02-10-analyses-12-18.md</a> — 2 issues (both moderate). Bus-only correlation added; caveats strengthened. Null finding unchanged.</li>
@@ -212,13 +212,13 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: Weekend vs Weekday Service Profile</h1>
 <h2>Question</h2>
-<p>Do commuter-oriented routes (high weekday, low weekend service) perform differently than all-day routes (similar weekday and weekend service)? The ratio of weekend to weekday trips signals route purpose, and since OTP is reported monthly, it likely reflects weekday-dominant measurement.</p>
+<p>Do commuter-oriented routes (high weekday, low weekend service) perform differently than all-day routes (similar weekday and weekend service)? The ratio of weekend to weekday trips signals route purpose, and since <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is reported monthly, it likely reflects weekday-dominant measurement.</p>
 <h2>Approach</h2>
 <ul>
 <li>For each route, compute peak weekday trips (MAX trips_wd), peak Saturday trips (MAX trips_sa), and peak Sunday trips (MAX trips_su) from <code>route_stops</code>.</li>
 <li>Compute <strong>weekend ratio</strong> = (max_sa + max_su) / (2 * max_wd), representing the proportion of weekday service provided on weekends (1.0 = identical, 0 = weekday-only).</li>
-<li>Correlate weekend ratio with average OTP.</li>
-<li>Classify routes as <strong>weekday-heavy</strong> (ratio &lt; 0.3), <strong>balanced</strong> (0.3-0.7), or <strong>weekend-heavy</strong> (&gt; 0.7) and compare OTP distributions.</li>
+<li>Correlate weekend ratio with average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+<li>Classify routes as <strong>weekday-heavy</strong> (ratio &lt; 0.3), <strong>balanced</strong> (0.3-0.7), or <strong>weekend-heavy</strong> (&gt; 0.7) and compare <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> distributions.</li>
 <li>Scatter plot and box plot.</li>
 </ul>
 <h2>Data</h2>
@@ -238,7 +238,7 @@
 </tr>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -250,7 +250,7 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/service_profile.csv</code> -- per-route trip counts, weekend ratio, and OTP</li>
+<li><code>output/service_profile.csv</code> -- per-route trip counts, weekend ratio, and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 <li><code>output/weekend_ratio_vs_otp.png</code> -- scatter plot</li>
 <li><code>output/service_tier_comparison.png</code> -- box plot by service profile tier</li>
 </ul>

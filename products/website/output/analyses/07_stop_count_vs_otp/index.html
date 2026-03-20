@@ -32,7 +32,7 @@
   <h1>07: Stop Count vs OTP</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -89,32 +89,32 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Stop Count vs OTP</h1>
+    <div class="markdown"><h1>Findings: Stop Count vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Summary</h2>
-<p>There is a <strong>moderately strong negative correlation</strong> between the number of stops on a route and its average OTP. This finding holds for both all routes and bus-only analysis, ruling out Simpson's paradox as a confounder.</p>
+<p>There is a <strong>moderately strong negative correlation</strong> between the number of stops on a route and its average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. This finding holds for both all routes and bus-only analysis, ruling out <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> as a confounder.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>All routes: Pearson r = -0.53</strong> (p &lt; 0.001, n = 92)</li>
 <li><strong>Bus only: Pearson r = -0.50</strong> (p &lt; 0.001, n = 89)</li>
 <li><strong>Bus only: Spearman r = -0.49</strong> (p &lt; 0.001)</li>
-<li>Routes with &lt; 50 stops: typically 80%+ OTP</li>
-<li>Routes with 150+ stops: typically below 60% OTP</li>
+<li>Routes with &lt; 50 stops: typically 80%+ <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li>Routes with 150+ stops: typically below 60% <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 </ul>
-<p>Routes with fewer than 12 months of OTP data are excluded to avoid noisy averages from sparse observations.</p>
+<p>Routes with fewer than 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data are excluded to avoid noisy averages from sparse observations.</p>
 <h2>Observations</h2>
 <ul>
-<li>The bus-only correlation (r = -0.50) is nearly as strong as the all-routes correlation (r = -0.53), confirming that the effect is not driven by the BUS/RAIL mode split (Simpson's paradox). Stop count predicts OTP within the bus mode alone.</li>
+<li>The bus-only correlation (r = -0.50) is nearly as strong as the all-routes correlation (r = -0.53), confirming that the effect is not driven by the BUS/RAIL mode split (<a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a>). Stop count predicts <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> within the bus mode alone.</li>
 <li>The Spearman rank correlation (r = -0.49) is consistent with the Pearson, indicating the relationship is approximately monotonic without being driven by outliers or non-linearity.</li>
 <li>Every stop adds dwell time (boarding/alighting), traffic signal delay, and schedule recovery risk. The cumulative effect is substantial.</li>
 <li>Busway and rail routes tend to have fewer stops and dedicated right-of-way, giving them a double advantage.</li>
-<li>Route 77 (Penn Hills) is an extreme case: 258 stops and among the worst OTP in the system.</li>
+<li>Route 77 (Penn Hills) is an extreme case: 258 stops and among the worst <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> in the system.</li>
 </ul>
 <h2>Implication</h2>
 <p>Stop consolidation -- reducing the number of stops on long routes -- is a common transit strategy for improving schedule adherence. This data strongly supports that approach for PRT's worst-performing routes.</p>
 <h2>Caveats</h2>
 <ul>
-<li>Correlation is not causation. Routes with many stops also tend to serve congested corridors, cover longer distances, and carry more passengers -- all of which independently affect OTP.</li>
-<li><strong>Temporal mismatch:</strong> Stop counts come from the current <code>route_stops</code> snapshot while OTP is averaged across all historical months (2019--2025). Routes that changed stop configurations during this period have a mismatch between their current stop count and earlier OTP observations. This is inherent to the available data and cannot be corrected without historical stop-count snapshots.</li>
+<li>Correlation is not causation. Routes with many stops also tend to serve congested corridors, cover longer distances, and carry more passengers -- all of which independently affect <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+<li><strong>Temporal mismatch:</strong> Stop counts come from the current <code>route_stops</code> snapshot while <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is averaged across all historical months (2019--2025). Routes that changed stop configurations during this period have a mismatch between their current stop count and earlier <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> observations. This is inherent to the available data and cannot be corrected without historical stop-count snapshots.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
@@ -184,18 +184,18 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Stop Count vs OTP</h1>
+    <div class="markdown"><h1>Methods: Stop Count vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Question</h2>
-<p>Do routes with more stops have worse on-time performance? Each stop is another opportunity to fall behind schedule.</p>
+<p>Do routes with more stops have worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a>? Each stop is another opportunity to fall behind schedule.</p>
 <h2>Approach</h2>
 <ul>
 <li>Count distinct stops per route from <code>route_stops</code>.</li>
-<li>Compute average OTP per route from <code>otp_monthly</code>, requiring at least 12 months of data (<code>HAVING COUNT(*) &gt;= 12</code>) to exclude routes with sparse observations.</li>
-<li>Create a scatter plot of stop count vs average OTP, colored by mode.</li>
-<li>Compute Pearson and Spearman correlation coefficients, both for all routes and for bus-only (to check for Simpson's paradox from mixing modes).</li>
+<li>Compute average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route from <code>otp_monthly</code>, requiring at least 12 months of data (<code>HAVING COUNT(*) &gt;= 12</code>) to exclude routes with sparse observations.</li>
+<li>Create a scatter plot of stop count vs average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, colored by mode.</li>
+<li>Compute Pearson and <a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a> coefficients, both for all routes and for bus-only (to check for <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> from mixing modes).</li>
 <li>Fit a simple linear regression line (bus-only, via <code>scipy.stats.linregress</code>).</li>
 </ul>
-<p><strong>Note:</strong> Stop counts come from the current <code>route_stops</code> snapshot, while OTP is averaged across all historical months. Routes that changed stop configurations over time will have a mismatch between their current stop count and the OTP values from earlier periods.</p>
+<p><strong>Note:</strong> Stop counts come from the current <code>route_stops</code> snapshot, while <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is averaged across all historical months. Routes that changed stop configurations over time will have a mismatch between their current stop count and the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> values from earlier periods.</p>
 <h2>Data</h2>
 <table>
 <thead>
@@ -208,7 +208,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -225,7 +225,7 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/stop_count_otp.csv</code> -- per-route stop count and average OTP</li>
+<li><code>output/stop_count_otp.csv</code> -- per-route stop count and average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 <li><code>output/stop_count_vs_otp.png</code> -- scatter plot with regression line</li>
 </ul>
 </div>

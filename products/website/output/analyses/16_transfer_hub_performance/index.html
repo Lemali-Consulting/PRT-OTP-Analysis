@@ -32,7 +32,7 @@
   <h1>16: Transfer Hub Performance</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -93,15 +93,15 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Transfer Hub Performance</h1>
 <h2>Summary</h2>
-<p>Higher-connectivity stops appear to have modestly worse OTP in stop-level data, but this finding <strong>does not survive correction for non-independence</strong>. At the route level (independent observations), the correlation between stop connectivity and OTP is not significant (r = -0.15, p = 0.16). The apparent &quot;hub penalty&quot; is a composition effect driven by inflated sample size at the stop level.</p>
+<p>Higher-connectivity stops appear to have modestly worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> in stop-level data, but this finding <strong>does not survive correction for non-independence</strong>. At the route level (independent observations), the correlation between stop connectivity and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is not significant (r = -0.15, p = 0.16). The apparent &quot;hub penalty&quot; is a composition effect driven by inflated sample size at the stop level.</p>
 <h2>Key Numbers</h2>
 <table>
 <thead>
 <tr>
   <th>Tier</th>
   <th>Stops</th>
-  <th>Mean OTP</th>
-  <th>Median OTP</th>
+  <th><a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
+  <th><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
 </tr>
 </thead>
 <tbody>
@@ -140,16 +140,16 @@
 </ul>
 <h2>Observations</h2>
 <ul>
-<li>The stop-level correlations (r = -0.17, rho = -0.32) are statistically significant but <strong>misleading</strong>: the 6,209 &quot;stops&quot; are not independent observations. Stops on the same route share the same underlying OTP, so the effective sample size is closer to ~90 (the number of distinct routes). With n_eff ~ 90, a correlation of r = -0.15 yields p = 0.16, which is not significant.</li>
-<li>The route-level analysis confirms this: average stop connectivity per route has no significant relationship with route OTP (r = -0.15, p = 0.16). Within bus routes only, the relationship is even weaker (r = -0.09, p = 0.39).</li>
-<li>The 3.5 pp tier gap (simple 69.5% vs hub 66.4%) is real in the raw data but reflects a <strong>composition effect</strong>: hubs are served by many routes including poor-performing local bus routes, which drag down the average. The hub location itself is not causing worse OTP.</li>
+<li>The stop-level correlations (r = -0.17, rho = -0.32) are statistically significant but <strong>misleading</strong>: the 6,209 &quot;stops&quot; are not independent observations. Stops on the same route share the same underlying <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, so the effective sample size is closer to ~90 (the number of distinct routes). With n_eff ~ 90, a correlation of r = -0.15 yields p = 0.16, which is not significant.</li>
+<li>The route-level analysis confirms this: average stop connectivity per route has no significant relationship with route <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (r = -0.15, p = 0.16). Within bus routes only, the relationship is even weaker (r = -0.09, p = 0.39).</li>
+<li>The 3.5 pp tier gap (simple 69.5% vs hub 66.4%) is real in the raw data but reflects a <strong>composition effect</strong>: hubs are served by many routes including poor-performing local bus routes, which drag down the average. The hub location itself is not causing worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
 <li>The busiest hub (East Busway Penn Station, 27 routes) actually outperforms the system average (72.1%) because it sits on dedicated right-of-way.</li>
 </ul>
 <h2>Implication</h2>
-<p>Being a transfer hub does not independently predict worse OTP. The apparent hub penalty is driven by which routes converge there. Policy should focus on improving the poorly-performing routes themselves, not on the hub locations.</p>
+<p>Being a transfer hub does not independently predict worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. The apparent hub penalty is driven by which routes converge there. Policy should focus on improving the poorly-performing routes themselves, not on the hub locations.</p>
 <h2>Caveats</h2>
 <ul>
-<li>This analysis uses route-level OTP projected onto stops (ecological fallacy). We don't have stop-level OTP data; a route's on-time performance may vary along its length.</li>
+<li>This analysis uses route-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> projected onto stops (<a href="../../glossary.html#ecological-fallacy" class="glossary-link" data-definition="Error of inferring individual-level behavior from group-level aggregates.">ecological fallacy</a>). We don't have stop-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data; a route's <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a> may vary along its length.</li>
 <li>The route-level analysis uses &quot;average stop connectivity per route,&quot; which is itself an approximation. A more direct test would require stop-level arrival data.</li>
 </ul>
 <h2>Review History</h2>
@@ -235,11 +235,11 @@
 <h2>Approach</h2>
 <ul>
 <li>Count distinct routes per stop from <code>route_stops</code> to measure <strong>connectivity</strong> (number of routes serving each stop).</li>
-<li>For each stop, compute a trip-weighted average OTP across all routes serving it.</li>
+<li>For each stop, compute a trip-weighted average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> across all routes serving it.</li>
 <li>Classify stops as <strong>hubs</strong> (5+ routes), <strong>medium</strong> (2-4 routes), or <strong>simple</strong> (1 route).</li>
-<li>Compare OTP distributions across these tiers.</li>
-<li>Identify the busiest hubs and their OTP.</li>
-<li>Scatter plot of connectivity vs stop-level OTP.</li>
+<li>Compare <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> distributions across these tiers.</li>
+<li>Identify the busiest hubs and their <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+<li>Scatter plot of connectivity vs stop-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -263,7 +263,7 @@
 </tr>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -275,9 +275,9 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/hub_performance.csv</code> -- per-stop connectivity, OTP, and classification</li>
-<li><code>output/connectivity_vs_otp.png</code> -- scatter plot of routes-per-stop vs OTP</li>
-<li><code>output/hub_tier_comparison.png</code> -- box plot of OTP by hub tier</li>
+<li><code>output/hub_performance.csv</code> -- per-stop connectivity, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, and classification</li>
+<li><code>output/connectivity_vs_otp.png</code> -- scatter plot of routes-per-stop vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/hub_tier_comparison.png</code> -- box plot of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by hub tier</li>
 </ul>
 </div>
   </details>

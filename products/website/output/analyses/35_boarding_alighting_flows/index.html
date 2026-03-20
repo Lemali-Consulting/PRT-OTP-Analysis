@@ -32,7 +32,7 @@
   <h1>35 - Boarding/Alighting Flow Analysis</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -94,7 +94,7 @@
 <li><strong>Outbound</strong> on/off ratio: <strong>0.72</strong> (net -12,234 boardings)</li>
 <li>Top generator: <strong>Smithfield St at Sixth Ave</strong> (+1,993 net/day)</li>
 <li>Top attractor: <strong>Wood St btw Forbes &amp; Fifth</strong> (-1,350 net/day)</li>
-<li>Median stop on/off ratio: <strong>0.76</strong> (slight attractor skew)</li>
+<li><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> stop on/off ratio: <strong>0.76</strong> (slight attractor skew)</li>
 <li><strong>38.8%</strong> of stops are strong generators (ratio &gt; 1.5); <strong>48.0%</strong> are strong attractors (ratio &lt; 0.67)</li>
 </ul>
 <h2>Observations</h2>
@@ -104,12 +104,12 @@
 <li><strong>Busway stations appear on both lists.</strong> Wilkinsburg Station shows split behavior: Platform C is a generator (+837/day, outbound departures from the East Busway) while Platform A is an attractor (-935/day, inbound arrivals). This confirms the station's role as a major suburban interchange.</li>
 <li><strong>North Side Station is the #5 attractor</strong> (-994 net/day), consistent with its role as a major inbound terminus where light rail and busway passengers alight.</li>
 <li><strong>Oakland/university stops are generators</strong>: 5th Ave opp Thackeray (+871) and Forbes at Morewood (+868) show students boarding outbound to return home.</li>
-<li><strong>The median stop is a slight attractor</strong> (ratio 0.76), reflecting that many suburban stops have more people getting off (returning home) than getting on.</li>
+<li><strong>The <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> stop is a slight attractor</strong> (ratio 0.76), reflecting that many suburban stops have more people getting off (returning home) than getting on.</li>
 </ul>
 <h2>Discussion</h2>
 <p>The boarding/alighting flow pattern is a direct fingerprint of Pittsburgh's commuter geography. The strong inbound-boarding / outbound-alighting asymmetry (+11K/-12K) confirms that PRT operates as a radial commuter network focused on downtown. The slight imbalance (outbound net is ~1,000 higher than inbound net) likely reflects &quot;Both&quot;-direction stops that aggregate mixed flows.</p>
 <p>The street-level generator/attractor split in downtown is operationally informative: Smithfield St outbound stops need boarding capacity (shelters, queuing space, real-time info), while Wood St inbound stops need alighting capacity (wide sidewalks, clear exits). This differs from a simple &quot;downtown = destination&quot; model and has implications for stop amenity design.</p>
-<p>The presence of Oakland as a net generator is notable -- it suggests the 5th Ave/Forbes corridor serves as a secondary hub where students and workers board to travel outbound, not just as a destination from downtown. This bidirectional flow may explain why 5th Ave routes face OTP challenges: high dwell time at stops that serve both directions heavily.</p>
+<p>The presence of Oakland as a net generator is notable -- it suggests the 5th Ave/Forbes corridor serves as a secondary hub where students and workers board to travel outbound, not just as a destination from downtown. This bidirectional flow may explain why 5th Ave routes face <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> challenges: high dwell time at stops that serve both directions heavily.</p>
 <p>For service planning, the net flow data identifies where passenger demand is structurally asymmetric. Routes serving strong generators could potentially benefit from express or limited-stop variants in the outbound direction, while routes terminating at strong attractors could justify higher inbound frequency.</p>
 <h2>Caveats</h2>
 <ul>

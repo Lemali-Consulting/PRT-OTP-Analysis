@@ -24,3 +24,8 @@
   - Use `--title "Custom Title"` and `--summary "Brief description"` to fill in README.md directly
 - **Update index:** `uv run python scaffold.py index --json`
 - **Run all analyses:** `uv run python scaffold.py run-all --json`
+
+## Commit discipline
+- Always git commit all changes at the end of an action, right before returning control to the user.
+- Use a concise, descriptive commit message summarizing what was done.
+- Stage only the files you changed; do not use `git add -A` or `git add .`.

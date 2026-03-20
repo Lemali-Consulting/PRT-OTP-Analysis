@@ -32,7 +32,7 @@
   <h1>11: Directional Asymmetry</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -91,7 +91,7 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Directional Asymmetry</h1>
 <h2>Summary</h2>
-<p>The correlation between directional trip imbalance and OTP is <strong>weak and not statistically significant</strong> (r = -0.12, p = 0.26). After correcting methodology issues in the original analysis, PRT routes show very little directional asymmetry, and what asymmetry exists does not predict OTP.</p>
+<p>The correlation between directional trip imbalance and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is <strong>weak and not statistically significant</strong> (r = -0.12, p = 0.26). After correcting methodology issues in the original analysis, PRT routes show very little directional asymmetry, and what asymmetry exists does not predict <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>All routes: Pearson r = -0.12</strong> (p = 0.26, n = 90)</li>
@@ -109,7 +109,7 @@
   <th>IB Trips</th>
   <th>OB Trips</th>
   <th>Asymmetry</th>
-  <th>OTP</th>
+  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
 </tr>
 </thead>
 <tbody>
@@ -140,16 +140,16 @@
 <ul>
 <li>With corrected methodology, PRT routes are remarkably balanced directionally. The most asymmetric route (19L) has only a 7.7% imbalance (7 vs 6 trips), and most routes are at or near 0%.</li>
 <li>The previous finding of routes with 100% asymmetry (Routes 11 and 60) was a data artifact caused by excluding bidirectional (IB,OB) stops. These routes are excluded in the corrected analysis because they lack separate IB and OB data after the fix.</li>
-<li>The slight negative correlation (r = -0.12) suggests marginally worse OTP with more asymmetry, but the effect is too small and not statistically significant.</li>
+<li>The slight negative correlation (r = -0.12) suggests marginally worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> with more asymmetry, but the effect is too small and not statistically significant.</li>
 </ul>
 <h2>Conclusion</h2>
-<p>Directional imbalance does not predict OTP. PRT routes are sufficiently balanced that this is not a measurable factor in schedule adherence. The hypothesis that scheduling asymmetry creates operational strain is not supported by this data.</p>
+<p>Directional imbalance does not predict <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. PRT routes are sufficiently balanced that this is not a measurable factor in schedule adherence. The hypothesis that scheduling asymmetry creates operational strain is not supported by this data.</p>
 <h2>Caveats</h2>
 <ul>
 <li>The analysis uses peak trip frequency (<code>MAX(trips_wd)</code>) at a single stop per direction, which may not capture all scheduling nuances.</li>
 <li>The <code>route_stops</code> data reflects current service, not historical. Historical asymmetry may have differed.</li>
 <li>Including IB,OB stops in both directions can compress the asymmetry index toward zero when an IB,OB stop has the highest <code>trips_wd</code> for a route. In that case, both IB and OB MAX values equal the same number, mechanically forcing asymmetry to zero. This is a known limitation -- the alternative (excluding IB,OB stops) creates the opposite bias by dropping data.</li>
-<li>Routes with fewer than 12 months of OTP data are excluded.</li>
+<li>Routes with fewer than 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data are excluded.</li>
 <li>Three correlation tests were run (Pearson all-routes, Pearson bus-only, Spearman bus-only) without multiple-comparison correction. Since all three are non-significant (smallest p = 0.11), correction would not change any conclusion.</li>
 </ul>
 <h2>Review History</h2>
@@ -222,14 +222,14 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: Inbound vs Outbound Asymmetry</h1>
 <h2>Question</h2>
-<p>Does a structural directional imbalance in trip frequency correlate with worse OTP? Routes with significantly different IB vs OB trip counts may face operational challenges.</p>
+<p>Does a structural directional imbalance in trip frequency correlate with worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>? Routes with significantly different IB vs OB trip counts may face operational challenges.</p>
 <h2>Approach</h2>
 <ul>
 <li>For each route, compute peak IB frequency and peak OB frequency (<code>MAX(trips_wd)</code>) from <code>route_stops</code>. Stops with <code>trips_wd IS NULL</code> are excluded.</li>
 <li>Include stops with <code>IB,OB</code> direction in both IB and OB counts to avoid exclusion bias.</li>
 <li>Compute an asymmetry index: abs(IB_trips - OB_trips) / (IB_trips + OB_trips).</li>
-<li>Compute average OTP per route from <code>otp_monthly</code>, requiring at least 12 months of data (<code>HAVING COUNT(*) &gt;= 12</code>).</li>
-<li>Correlate asymmetry with average OTP using Pearson (all routes), Pearson (bus-only), and Spearman (bus-only).</li>
+<li>Compute average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route from <code>otp_monthly</code>, requiring at least 12 months of data (<code>HAVING COUNT(*) &gt;= 12</code>).</li>
+<li>Correlate asymmetry with average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> using Pearson (all routes), Pearson (bus-only), and Spearman (bus-only).</li>
 <li>Investigate routes with highest asymmetry.</li>
 </ul>
 <h2>Data</h2>
@@ -249,7 +249,7 @@
 </tr>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>OTP per route</td>
+  <td><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -261,8 +261,8 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/directional_asymmetry.csv</code> -- per-route directional trip breakdown and OTP</li>
-<li><code>output/directional_asymmetry.png</code> -- scatter plot of asymmetry vs OTP</li>
+<li><code>output/directional_asymmetry.csv</code> -- per-route directional trip breakdown and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/directional_asymmetry.png</code> -- scatter plot of asymmetry vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 </ul>
 </div>
   </details>

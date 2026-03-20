@@ -32,7 +32,7 @@
   <h1>27 - Traffic Congestion and OTP</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -94,34 +94,34 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Traffic Congestion and OTP</h1>
+    <div class="markdown"><h1>Findings: Traffic Congestion and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Summary</h2>
-<p>Total traffic volume (AADT) does <strong>not</strong> explain OTP variance after controlling for structural features (F=0.011, p=0.92). However, <strong>truck percentage</strong> is a significant predictor (p=0.006), jointly boosting R2 from 0.40 to 0.45. Routes with higher truck traffic perform better on-time, likely because truck-heavy corridors tend to be wider arterials with fewer stops and more predictable traffic flow.</p>
+<p>Total traffic volume (AADT) does <strong>not</strong> explain <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> after controlling for structural features (F=0.011, p=0.92). However, <strong>truck percentage</strong> is a significant predictor (p=0.006), jointly boosting <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a> from 0.40 to 0.45. Routes with higher truck traffic perform better on-time, likely because truck-heavy corridors tend to be wider arterials with fewer stops and more predictable traffic flow.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li>89 routes analyzed (88 bus, 1 rail) after filtering match_rate &gt;= 0.3</li>
-<li>Base model (6 structural features): R2 = 0.40, Adj R2 = 0.36</li>
-<li>Adding log(AADT): R2 = 0.40 (+0.0001), p = 0.92 -- <strong>not significant</strong></li>
-<li>Adding log(AADT) + truck_pct: R2 = 0.45 (+0.05), joint F = 3.97, p = 0.023</li>
-<li>Truck percentage beta weight: +0.26 (p = 0.006), third-strongest predictor</li>
-<li>VIF for log_aadt = 1.17 -- no multicollinearity concern</li>
+<li>Base model (6 structural features): <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a> = 0.40, Adj <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a> = 0.36</li>
+<li>Adding log(AADT): <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a> = 0.40 (+0.0001), p = 0.92 -- <strong>not significant</strong></li>
+<li>Adding log(AADT) + truck_pct: <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a> = 0.45 (+0.05), joint F = 3.97, p = 0.023</li>
+<li>Truck percentage <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight: +0.26 (p = 0.006), third-strongest predictor</li>
+<li><a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for log_aadt = 1.17 -- no multicollinearity concern</li>
 <li>AADT range across matched routes: 4,181 -- 15,748 vehicles/day</li>
 <li>Top AADT routes: G3 (15,748), 28X (15,328), P12 (15,162)</li>
 </ul>
 <h2>Observations</h2>
 <ul>
-<li><strong>Traffic volume is orthogonal to OTP</strong> once structural features are controlled. The bivariate correlation is weak (r = +0.01) and the partial residual plot shows no trend. Routes on high-traffic roads perform similarly to those on quieter ones.</li>
-<li><strong>Truck percentage captures road type</strong>, not congestion. The positive coefficient (+0.021 OTP per 1% truck share) suggests that truck-heavy routes operate on highways/arterials with infrastructure advantages (dedicated lanes, longer signal phases, wider roads).</li>
+<li><strong>Traffic volume is orthogonal to <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> once structural features are controlled. The bivariate correlation is weak (r = +0.01) and the partial residual plot shows no trend. Routes on high-traffic roads perform similarly to those on quieter ones.</li>
+<li><strong>Truck percentage captures road type</strong>, not congestion. The positive coefficient (+0.021 <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per 1% truck share) suggests that truck-heavy routes operate on highways/arterials with infrastructure advantages (dedicated lanes, longer signal phases, wider roads).</li>
 <li>The three excluded routes (BLUE, P1, SLVR) are rail/busway with match_rate &lt; 0.3, confirming that the PennDOT road network does not cover dedicated transit rights-of-way.</li>
 <li>Bus-only subgroup shows the same null result: log_aadt F = 0.011, p = 0.92.</li>
-<li>The spatial match rate is high (median 80%), indicating good coverage of the PennDOT road network for bus routes.</li>
+<li>The spatial match rate is high (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 80%), indicating good coverage of the PennDOT road network for bus routes.</li>
 </ul>
 <h2>Discussion</h2>
-<p>The headline result is a null: traffic volume, the leading candidate for explaining the remaining 50% of OTP variance after structural features, contributes essentially nothing (R2 change of 0.01%). This is not a measurement failure -- the VIF of 1.17 confirms that AADT is nearly orthogonal to stop count and span, so it had every opportunity to capture independent variance. It simply doesn't.</p>
+<p>The headline result is a null: traffic volume, the leading candidate for explaining the remaining 50% of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> after structural features, contributes essentially nothing (<a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R2</a> change of 0.01%). This is not a measurement failure -- the <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> of 1.17 confirms that AADT is nearly orthogonal to stop count and span, so it had every opportunity to capture independent <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a>. It simply doesn't.</p>
 <p>Why not? The most likely explanation is that <strong>AADT measures the wrong thing</strong>. Annual average daily traffic smooths over the peak-hour congestion that actually delays buses. A road carrying 15,000 vehicles/day spread evenly across 24 hours is very different from one carrying the same total with 40% concentrated in two rush-hour peaks. PRT buses operate disproportionately during those peaks, so the congestion they experience is poorly proxied by a 24-hour average. Directional, time-of-day traffic counts -- or better yet, speed/travel-time data from probe vehicles -- would be a more direct test.</p>
-<p>The truck percentage finding is the genuine contribution of this analysis. At +0.26 beta weight (third-strongest after stop count and span), truck share adds 5 percentage points of explained variance. But this almost certainly proxies for <strong>road classification</strong> rather than a direct truck-bus interaction. Roads with high truck percentages tend to be state highways and major arterials -- wider, with longer signal cycles, fewer pedestrian crossings, and more predictable traffic flow. The truck_pct variable is effectively encoding &quot;this route runs on a highway&quot; in a way that is_premium_bus failed to capture (since many non-premium routes also use arterial segments for part of their alignment).</p>
-<p>This connects to the broader model-building narrative across Analyses 18, 26, and 27. The base model (stop count + span + mode) explains ~40% of variance. Adding n_munis as a suppressor pushes it to ~47%. Adding truck_pct pushes it to ~45% on the traffic-matched subsample. Ridership (Analysis 26) added nothing. The cumulative picture is that <strong>roughly half of OTP variance is explained by route geometry and road type</strong>, and the other half likely requires operational data (schedule padding, driver availability, vehicle condition, real-time traffic conditions) that is not in this dataset.</p>
-<p>For policy, the null AADT result is actually useful: it suggests that rerouting buses to lower-traffic roads would not improve OTP, since traffic volume per se is not the problem. The truck_pct finding, if it indeed proxies for road type, suggests that routes spending more of their alignment on arterials (vs. neighborhood streets) perform better -- consistent with the stop count finding, since arterial segments typically have fewer stops per mile.</p>
+<p>The truck percentage finding is the genuine contribution of this analysis. At +0.26 <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight (third-strongest after stop count and span), truck share adds 5 percentage points of explained <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a>. But this almost certainly proxies for <strong>road classification</strong> rather than a direct truck-bus interaction. Roads with high truck percentages tend to be state highways and major arterials -- wider, with longer signal cycles, fewer pedestrian crossings, and more predictable traffic flow. The truck_pct variable is effectively encoding &quot;this route runs on a highway&quot; in a way that is_premium_bus failed to capture (since many non-premium routes also use arterial segments for part of their alignment).</p>
+<p>This connects to the broader model-building narrative across Analyses 18, 26, and 27. The base model (stop count + span + mode) explains ~40% of <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a>. Adding n_munis as a suppressor pushes it to ~47%. Adding truck_pct pushes it to ~45% on the traffic-matched subsample. Ridership (Analysis 26) added nothing. The cumulative picture is that <strong>roughly half of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> is explained by route geometry and road type</strong>, and the other half likely requires operational data (schedule padding, driver availability, vehicle condition, real-time traffic conditions) that is not in this dataset.</p>
+<p>For policy, the null AADT result is actually useful: it suggests that rerouting buses to lower-traffic roads would not improve <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, since traffic volume per se is not the problem. The truck_pct finding, if it indeed proxies for road type, suggests that routes spending more of their alignment on arterials (vs. neighborhood streets) perform better -- consistent with the stop count finding, since arterial segments typically have fewer stops per mile.</p>
 <h2>Caveats</h2>
 <ul>
 <li>AADT is an annual average; it does not capture peak-hour congestion, which is when buses run most frequently and are most affected. Directional or time-of-day traffic data would be a stronger test.</li>
@@ -239,19 +239,19 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Traffic Congestion and OTP</h1>
+    <div class="markdown"><h1>Methods: Traffic Congestion and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Question</h2>
-<p>Does traffic volume (AADT) explain OTP variance beyond stop count, geographic span, and other structural features from the Analysis 18 model?</p>
+<p>Does traffic volume (AADT) explain <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> beyond stop count, geographic span, and other structural features from the Analysis 18 model?</p>
 <h2>Approach</h2>
 <ul>
-<li>Replicate the Analysis 18 six-feature OLS model on routes with matched PennDOT traffic data.</li>
+<li>Replicate the Analysis 18 six-feature <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> model on routes with matched PennDOT traffic data.</li>
 <li>Filter to routes with <code>match_rate &gt;= 0.3</code> (sufficient spatial overlap with PennDOT road network).</li>
 <li>Add log-transformed weighted AADT as a seventh predictor. Log transform is used because the effect of traffic on delays is expected to show diminishing returns (doubling from 5,000 to 10,000 AADT matters more than 25,000 to 30,000).</li>
-<li>Compare adjusted R-squared between six-feature and seven-feature models using a nested F-test.</li>
+<li>Compare <a href="../../glossary.html#adjusted-r-squared" class="glossary-link" data-definition="R2 variant that penalizes unnecessary predictors.">adjusted R-squared</a> between six-feature and seven-feature models using a nested F-test.</li>
 <li>Fit a second expanded model adding <code>avg_truck_pct</code> as an eighth predictor.</li>
-<li>Check VIF for multicollinearity (AADT may correlate with span or stop count).</li>
+<li>Check <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for multicollinearity (AADT may correlate with span or stop count).</li>
 <li>Repeat with bus-only subset.</li>
-<li>Generate bivariate scatter (AADT vs OTP), coefficient comparison chart, and partial residual plot.</li>
+<li>Generate bivariate scatter (AADT vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>), coefficient comparison chart, and partial residual plot.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -265,7 +265,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>route_id, month, otp (averaged to route-level, 12+ months required)</td>
+  <td>route_id, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">otp</a> (averaged to route-level, 12+ months required)</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -293,10 +293,10 @@
 <h2>Output</h2>
 <ul>
 <li><code>output/model_comparison.csv</code> -- regression results for all models</li>
-<li><code>output/vif_table.csv</code> -- VIF values for expanded model</li>
-<li><code>output/route_traffic_summary.csv</code> -- per-route traffic data with OTP</li>
-<li><code>output/aadt_vs_otp_scatter.png</code> -- bivariate scatter of AADT vs OTP</li>
-<li><code>output/coefficient_comparison.png</code> -- beta weight comparison between base and expanded models</li>
+<li><code>output/vif_table.csv</code> -- <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> values for expanded model</li>
+<li><code>output/route_traffic_summary.csv</code> -- per-route traffic data with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/aadt_vs_otp_scatter.png</code> -- bivariate scatter of AADT vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/coefficient_comparison.png</code> -- <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight comparison between base and expanded models</li>
 <li><code>output/partial_residual.png</code> -- partial residual plot for log_aadt</li>
 </ul>
 </div>

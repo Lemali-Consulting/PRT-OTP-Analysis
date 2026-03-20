@@ -32,7 +32,7 @@
   <h1>19 - Ridership-Weighted OTP</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -89,32 +89,32 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Ridership-Weighted OTP</h1>
+    <div class="markdown"><h1>Findings: <a href="../../glossary.html#ridership-weighted-otp" class="glossary-link" data-definition="OTP average where each route is weighted by passenger volume rather than trip count.">Ridership-Weighted OTP</a></h1>
 <h2>Summary</h2>
-<p>Ridership-weighted system OTP (69.4%) runs <strong>1.6 percentage points higher</strong> than trip-weighted OTP (67.8%), and the difference is statistically significant (paired t = -18.1, p &lt; 0.001; Wilcoxon W = 1, p &lt; 0.001). This means the average PRT rider experiences slightly <em>better</em> on-time performance than the trip-weighted system average suggests.</p>
+<p>Ridership-weighted system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (69.4%) runs <strong>1.6 percentage points higher</strong> than trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (67.8%), and the difference is statistically significant (paired t = -18.1, p &lt; 0.001; Wilcoxon W = 1, p &lt; 0.001). This means the average PRT rider experiences slightly <em>better</em> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a> than the trip-weighted system average suggests.</p>
 <h2>Key Numbers</h2>
 <ul>
-<li><strong>Unweighted OTP</strong> (all routes equal): 69.9% mean, 70.3% median</li>
-<li><strong>Trip-weighted OTP</strong> (scheduled frequency): 67.8% mean, 67.8% median</li>
-<li><strong>Ridership-weighted OTP</strong> (avg daily riders): 69.4% mean, 69.2% median</li>
+<li><strong>Unweighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> (all routes equal): 69.9% <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, 70.3% <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a></li>
+<li><strong>Trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> (scheduled frequency): 67.8% <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, 67.8% <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a></li>
+<li><strong><a href="../../glossary.html#ridership-weighted-otp" class="glossary-link" data-definition="OTP average where each route is weighted by passenger volume rather than trip count.">Ridership-weighted OTP</a></strong> (avg daily riders): 69.4% <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, 69.2% <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a></li>
 <li><strong>Ridership vs trip-weighted gap</strong>: +1.6 pp (p &lt; 0.001, n = 70 months)</li>
-<li>93 routes with 12+ months of paired OTP + ridership data</li>
+<li>93 routes with 12+ months of paired <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> + ridership data</li>
 <li>Overlap period: Jan 2019 -- Oct 2024 (70 months)</li>
 </ul>
 <h2>Interpretation</h2>
-<p>Both weighted series fall <em>below</em> the unweighted average, meaning both scheduled trips and actual riders concentrate somewhat on worse-performing routes. However, <strong>trip frequency overstates how much ridership is concentrated on the worst routes</strong>. High-frequency routes tend to have many stops and poor OTP (Analysis 07), but riders don't fill those trips proportionally -- some high-frequency routes carry fewer riders per trip than expected. The result is that the average rider's experience is worse than the average route's OTP, but not as bad as the trip-weighted number implies.</p>
-<p>This does <em>not</em> mean high-ridership routes have better OTP. It means ridership is distributed more evenly across the OTP spectrum than trip frequency is.</p>
+<p>Both weighted series fall <em>below</em> the unweighted average, meaning both scheduled trips and actual riders concentrate somewhat on worse-performing routes. However, <strong>trip frequency overstates how much ridership is concentrated on the worst routes</strong>. High-frequency routes tend to have many stops and poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (Analysis 07), but riders don't fill those trips proportionally -- some high-frequency routes carry fewer riders per trip than expected. The result is that the average rider's experience is worse than the average route's <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, but not as bad as the trip-weighted number implies.</p>
+<p>This does <em>not</em> <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> high-ridership routes have better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. It means ridership is distributed more evenly across the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> spectrum than trip frequency is.</p>
 <h2>Observations</h2>
 <ul>
-<li>The gap between trip-weighted and ridership-weighted OTP is not constant: it was near zero during COVID (2020), widened to ~3 pp in late 2022, and has stabilized around 1--2 pp since 2023. This likely reflects post-COVID ridership redistribution.</li>
+<li>The gap between trip-weighted and <a href="../../glossary.html#ridership-weighted-otp" class="glossary-link" data-definition="OTP average where each route is weighted by passenger volume rather than trip count.">ridership-weighted OTP</a> is not constant: it was near zero during COVID (2020), widened to ~3 pp in late 2022, and has stabilized around 1--2 pp since 2023. This likely reflects post-COVID ridership redistribution.</li>
 <li>All three series show the same overall trend: COVID spike, steady decline through late 2022, partial stabilization in 2023--2024.</li>
 </ul>
 <h2>Caveats</h2>
 <ul>
 <li>Ridership data is weekday average only; the analysis does not capture weekend rider experience.</li>
-<li><code>route_stops.trips_7d</code> is a current snapshot, not a monthly time series -- trip-weighted OTP uses the same weights for all months.</li>
+<li><code>route_stops.trips_7d</code> is a current snapshot, not a monthly time series -- trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> uses the same weights for all months.</li>
 <li>Routes missing from the ridership dataset (RLSH, SWL) are excluded from all three series for comparability, so the unweighted series here may differ slightly from Analysis 01.</li>
-<li>The ridership CSV ends Oct 2024 while OTP data extends to Nov 2025; the analysis is restricted to the overlap period.</li>
+<li>The ridership CSV ends Oct 2024 while <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data extends to Nov 2025; the analysis is restricted to the overlap period.</li>
 </ul>
 </div>
   </details>
@@ -194,21 +194,21 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Ridership-Weighted OTP</h1>
+    <div class="markdown"><h1>Methods: <a href="../../glossary.html#ridership-weighted-otp" class="glossary-link" data-definition="OTP average where each route is weighted by passenger volume rather than trip count.">Ridership-Weighted OTP</a></h1>
 <h2>Question</h2>
-<p>How does the average rider's on-time experience differ from the average route's OTP? Does weighting by actual ridership instead of scheduled trip frequency change the system-wide OTP picture?</p>
+<p>How does the average rider's on-time experience differ from the average route's <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>? Does weighting by actual ridership instead of scheduled trip frequency change the system-wide <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> picture?</p>
 <h2>Approach</h2>
 <ul>
-<li>Join monthly OTP data with monthly average weekday ridership by route and month.</li>
-<li>Compute three monthly system OTP series:<ol>
-<li><strong>Unweighted</strong>: simple mean of all route OTPs (all routes equal).</li>
+<li>Join monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data with monthly average weekday ridership by route and month.</li>
+<li>Compute three monthly system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> series:<ol>
+<li><strong>Unweighted</strong>: simple <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> of all route OTPs (all routes equal).</li>
 <li><strong>Trip-weighted</strong>: <code>sum(otp_i * trips_7d_i) / sum(trips_7d_i)</code> using static scheduled trip counts from <code>route_stops</code> (same weight every month).</li>
 <li><strong>Ridership-weighted</strong>: <code>sum(otp_i * avg_riders_i) / sum(avg_riders_i)</code> using that route's average daily weekday ridership for the same month (weight varies month-to-month).</li>
 </ol>
 </li>
 <li>Plot all three series over time to visualize divergence.</li>
-<li>Compute summary statistics (mean, spread) for each weighting scheme.</li>
-<li>Test whether the ridership-weighted series is significantly different from the trip-weighted series (paired t-test or Wilcoxon).</li>
+<li>Compute summary statistics (<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, spread) for each weighting scheme.</li>
+<li>Test whether the ridership-weighted series is significantly different from the trip-weighted series (<a href="../../glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">paired t-test</a> or Wilcoxon).</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -222,7 +222,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Route, month, OTP</td>
+  <td>Route, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -242,7 +242,7 @@
 <ul>
 <li><code>output/ridership_weighted_otp_trend.png</code> -- three-series time plot</li>
 <li><code>output/weighting_comparison.csv</code> -- monthly values for all three series</li>
-<li><code>output/summary_stats.csv</code> -- mean, median, std for each weighting scheme</li>
+<li><code>output/summary_stats.csv</code> -- <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>, std for each weighting scheme</li>
 </ul>
 </div>
   </details>

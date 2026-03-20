@@ -32,7 +32,7 @@
   <h1>33 - Pandemic Ridership Geography</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -86,15 +86,15 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Pandemic Ridership Geography</h1>
 <h2>Summary</h2>
-<p>System-wide weekday ridership fell 63% between the pre-pandemic baseline (Sep 2019/Jan 2020) and the pandemic period (Sep 2020/Apr 2021). The loss was remarkably uniform geographically: the median stop lost ~60% regardless of whether it was in downtown, the inner ring, or the outer suburbs. The largest absolute losses were concentrated at high-volume downtown and university-area stops, while outer suburban stops showed slightly better retention in aggregate.</p>
+<p>System-wide weekday ridership fell 63% between the pre-pandemic baseline (Sep 2019/Jan 2020) and the pandemic period (Sep 2020/Apr 2021). The loss was remarkably uniform geographically: the <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> stop lost ~60% regardless of whether it was in downtown, the inner ring, or the outer suburbs. The largest absolute losses were concentrated at high-volume downtown and university-area stops, while outer suburban stops showed slightly better retention in aggregate.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>6,719</strong> stops with matched pre/post data; <strong>6,556</strong> with pre-pandemic usage &gt; 0</li>
 <li>System total weekday usage: <strong>259,783 -&gt; 95,798</strong> (-63.1%)</li>
-<li>Median stop-level change: <strong>-60.2%</strong>; Mean: <strong>-50.7%</strong></li>
-<li><strong>Downtown (&lt; 2 km)</strong>: median -60%, aggregate -64.1% (n=369)</li>
-<li><strong>Inner ring (2-8 km)</strong>: median -62%, aggregate -65.7% (n=2,658)</li>
-<li><strong>Outer ring (&gt; 8 km)</strong>: median -59%, aggregate -55.7% (n=3,529)</li>
+<li><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> stop-level change: <strong>-60.2%</strong>; <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a>: <strong>-50.7%</strong></li>
+<li><strong>Downtown (&lt; 2 km)</strong>: <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> -60%, aggregate -64.1% (n=369)</li>
+<li><strong>Inner ring (2-8 km)</strong>: <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> -62%, aggregate -65.7% (n=2,658)</li>
+<li><strong>Outer ring (&gt; 8 km)</strong>: <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> -59%, aggregate -55.7% (n=3,529)</li>
 <li><strong>Kruskal-Wallis (zones)</strong>: H=13.40, p=0.001 -- zones differ significantly<ul>
 <li>Pairwise (Bonferroni): inner ring vs outer ring p=0.001; downtown vs either ring p&gt;0.8</li>
 </ul>
@@ -104,7 +104,7 @@
 </ul>
 <h2>Observations</h2>
 <ul>
-<li><strong>The pandemic hit uniformly across geography.</strong> All three zones saw median declines of 59-62%. The hypothesis that downtown would lose disproportionately more (due to remote work) is only weakly supported: downtown's aggregate loss (-64%) is slightly above average but well within the range of the inner ring (-66%).</li>
+<li><strong>The pandemic hit uniformly across geography.</strong> All three zones saw <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> declines of 59-62%. The hypothesis that downtown would lose disproportionately more (due to remote work) is only weakly supported: downtown's aggregate loss (-64%) is slightly above average but well within the range of the inner ring (-66%).</li>
 <li><strong>The inner ring actually lost the most in aggregate</strong> (-65.7%), likely because it contains high-volume university (Oakland) and hospital-adjacent stops that saw steep declines.</li>
 <li><strong>Outer suburbs retained ridership slightly better</strong> (-55.7% aggregate), consistent with more essential/transit-dependent riders in these areas.</li>
 <li><strong>The biggest absolute losses are clustered in two corridors</strong>: downtown (Liberty Ave, Smithfield St) and Oakland/university area (5th Ave at Thackeray, Forbes Ave at Morewood). These are commuter and student-heavy stops.</li>
@@ -205,7 +205,7 @@
 <p>Where did ridership fall the most during the pandemic, and does the geographic pattern differ by mode or stop type?</p>
 <h2>Approach</h2>
 <ul>
-<li>Compute average weekday usage per physical stop in two periods: pre-pandemic (mean of datekeys 201909, 202001) and pandemic (mean of 202009, 202104).</li>
+<li>Compute average weekday usage per physical stop in two periods: pre-pandemic (<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> of datekeys 201909, 202001) and pandemic (<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> of 202009, 202104).</li>
 <li>Calculate the absolute change and percentage change in usage per stop.</li>
 <li>Classify stops into geographic zones using distance from downtown Pittsburgh centroid (40.4406, -79.9959): downtown core (&lt; 2 km), inner ring (2-8 km), outer ring (&gt; 8 km).</li>
 <li>Compare ridership loss by zone and mode. Test zone differences with Kruskal-Wallis; if significant, follow up with pairwise Mann-Whitney tests (Bonferroni-corrected). Test mode differences with Kruskal-Wallis.</li>
@@ -233,7 +233,7 @@
 <ul>
 <li><code>output/pandemic_change_by_stop.csv</code> -- per-stop pre/post usage and change metrics</li>
 <li><code>output/ridership_change_map.png</code> -- geographic scatter plot colored by % change</li>
-<li><code>output/change_by_zone.png</code> -- bar chart of median % change by zone and histogram of changes</li>
+<li><code>output/change_by_zone.png</code> -- bar chart of <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> % change by zone and histogram of changes</li>
 </ul>
 </div>
   </details>

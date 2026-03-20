@@ -32,7 +32,7 @@
   <h1>05 - Anomaly Investigation</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -88,9 +88,9 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Anomaly Investigation</h1>
 <h2>Summary</h2>
-<p>842 anomalous months were flagged across 94 routes using a rolling z-score method with a <strong>lagged window</strong> (current month excluded from the baseline). The detection is two-sided, flagging both sharp drops and spikes. Anomalies cluster in time (COVID, late 2022) rather than being randomly distributed, suggesting system-wide shocks.</p>
+<p>842 anomalous months were flagged across 94 routes using a <a href="../../glossary.html#rolling-z-score" class="glossary-link" data-definition="Standardized deviation from a rolling mean used to detect anomalies.">rolling z-score</a> method with a <strong>lagged window</strong> (current month excluded from the baseline). The detection is two-sided, flagging both sharp drops and spikes. Anomalies cluster in time (COVID, late 2022) rather than being randomly distributed, suggesting system-wide shocks.</p>
 <h2>Methodology Note</h2>
-<p>The anomaly detector uses a 12-month rolling window shifted by one month, so the current observation is never included in its own baseline. This prevents self-dampening of z-scores and produces more sensitive detection (842 anomalies vs. 406 with the unshifted approach). When the rolling standard deviation is near zero (constant OTP over the window), z-scores are set to 0.0 to avoid division-by-zero artifacts.</p>
+<p>The anomaly detector uses a 12-month rolling window shifted by one month, so the current observation is never included in its own baseline. This prevents self-dampening of z-scores and produces more sensitive detection (842 anomalies vs. 406 with the unshifted approach). When the rolling <a href="../../glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">standard deviation</a> is near zero (constant <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> over the window), z-scores are set to 0.0 to avoid division-by-zero artifacts.</p>
 <h2>Routes with Most Anomalies</h2>
 <table>
 <thead>
@@ -153,15 +153,15 @@
 </tr>
 </tbody>
 </table>
-<p>RAIL routes show a slightly higher anomaly rate (14.3%) despite consistently high OTP. This is because their performance is normally very stable, so even moderate dips trigger the 2-sigma threshold. The 5 UNKNOWN-mode routes (RLSH, P2, 42, SWL, 37) are included in the analysis; most have very few months of data.</p>
+<p>RAIL routes show a slightly higher anomaly rate (14.3%) despite consistently high <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. This is because their performance is normally very stable, so even moderate dips trigger the 2-sigma threshold. The 5 UNKNOWN-mode routes (RLSH, P2, 42, SWL, 37) are included in the analysis; most have very few months of data.</p>
 <h2>Expected vs Actual False-Positive Rate</h2>
-<p>With 7,076 evaluated route-month observations and a 2-sigma two-sided threshold, the expected false-positive rate under normality is approximately 4.6%, yielding ~322 expected false positives. The actual count of 842 anomalies is <strong>2.6x the null expectation</strong>, indicating that a substantial majority of flagged anomalies reflect genuine OTP deviations beyond what random variation would produce. However, roughly 300-350 of the 842 could be expected by chance alone, so not every flagged anomaly should be interpreted as a &quot;real&quot; event.</p>
+<p>With 7,076 evaluated route-month observations and a 2-sigma two-sided threshold, the expected false-positive rate under normality is approximately 4.6%, yielding ~322 expected false positives. The actual count of 842 anomalies is <strong>2.6x the null expectation</strong>, indicating that a substantial majority of flagged anomalies reflect genuine <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> deviations beyond what random variation would produce. However, roughly 300-350 of the 842 could be expected by chance alone, so not every flagged anomaly should be interpreted as a &quot;real&quot; event.</p>
 <h2>Lagged-Window Trend Bias</h2>
-<p>The lagged rolling window introduces a systematic bias for trending routes. When a route's OTP is declining, the baseline (computed from the prior 12 months) is always slightly above the current value, making negative anomalies more likely. Conversely, improving routes are biased toward positive anomalies. This means the anomaly detector is more sensitive to deviations in the direction of the trend. No detrending is applied, so some fraction of flagged anomalies may reflect gradual trends rather than abrupt shocks.</p>
+<p>The lagged rolling window introduces a systematic bias for trending routes. When a route's <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is declining, the baseline (computed from the prior 12 months) is always slightly above the current value, making negative anomalies more likely. Conversely, improving routes are biased toward positive anomalies. This means the anomaly detector is more sensitive to deviations in the direction of the trend. No <a href="../../glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">detrending</a> is applied, so some fraction of flagged anomalies may reflect gradual trends rather than abrupt shocks.</p>
 <h2>Key Anomaly Clusters</h2>
 <ul>
-<li><strong>March--June 2020 (COVID):</strong> Many routes showed <em>positive</em> anomalies -- OTP improved because reduced ridership meant less dwell time and fewer delays. This was a temporary artifact, not genuine improvement.</li>
-<li><strong>Late 2022:</strong> A cluster of negative anomalies across many routes, coinciding with the system-wide OTP trough (58% in September 2022). May indicate staffing shortages, construction, or service restructuring.</li>
+<li><strong>March--June 2020 (COVID):</strong> Many routes showed <em>positive</em> anomalies -- <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> improved because reduced ridership meant less dwell time and fewer delays. This was a temporary artifact, not genuine improvement.</li>
+<li><strong>Late 2022:</strong> A cluster of negative anomalies across many routes, coinciding with the system-wide <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> trough (58% in September 2022). May indicate staffing shortages, construction, or service restructuring.</li>
 <li><strong>Route 79 (East Hills):</strong> The most anomaly-prone route, with 18 flagged months, indicating persistent instability in schedule adherence.</li>
 </ul>
 <h2>Excluded Routes</h2>
@@ -195,7 +195,7 @@
 <h2>Observations</h2>
 <ul>
 <li>The lagged window methodology results in more anomalies being flagged, particularly for routes with gradual trends, since the baseline is always slightly behind.</li>
-<li>Rail routes (RED, BLUE) have many anomalies despite high average OTP because their performance is normally very consistent, so even moderate dips trigger the 2-sigma threshold.</li>
+<li>Rail routes (RED, BLUE) have many anomalies despite high average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> because their performance is normally very consistent, so even moderate dips trigger the 2-sigma threshold.</li>
 <li>The z-score method requires at least 6 months of rolling history, so the first few months of each route's data are not evaluated.</li>
 <li>5 UNKNOWN-mode routes are included in the analysis (RLSH, P2, 42, SWL, 37). Most have very few months of data.</li>
 </ul>
@@ -274,13 +274,13 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: Anomaly Investigation</h1>
 <h2>Question</h2>
-<p>What explains sharp OTP deviations (both drops and spikes) for routes across the system? Are they real performance issues or data artifacts?</p>
+<p>What explains sharp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> deviations (both drops and spikes) for routes across the system? Are they real performance issues or data artifacts?</p>
 <h2>Approach</h2>
 <ul>
-<li>For each route, flag months where OTP deviates more than 2 standard deviations from the route's rolling 12-month mean (two-sided: both positive and negative deviations).</li>
+<li>For each route, flag months where <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> deviates more than 2 standard deviations from the route's rolling 12-month <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> (two-sided: both positive and negative deviations).</li>
 <li>Use a lagged rolling window (current month excluded from baseline) to prevent self-dampening of z-scores.</li>
-<li>Guard against division by zero: when rolling standard deviation is near zero (&lt; 1e-9), set z-score to 0.0.</li>
-<li>Catalog all flagged anomalies with route, month, OTP value, and deviation magnitude.</li>
+<li>Guard against division by zero: when rolling <a href="../../glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">standard deviation</a> is near zero (&lt; 1e-9), set z-score to 0.0.</li>
+<li>Catalog all flagged anomalies with route, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> value, and deviation magnitude.</li>
 <li>Cross-reference known events: COVID shutdowns (Mar 2020), PRT service restructurings, construction projects.</li>
 <li>Report anomaly rates stratified by mode (BUS, RAIL, UNKNOWN).</li>
 <li>Compare actual anomaly count to the expected false-positive rate under normality (~4.6% for a 2-sigma two-sided threshold).</li>
@@ -298,7 +298,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>

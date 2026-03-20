@@ -32,7 +32,7 @@
   <h1>32 - Shelter Equity</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -86,15 +86,15 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Shelter Equity</h1>
 <h2>Summary</h2>
-<p>Only 7.3% of PRT bus stops have shelters, yet those sheltered stops serve 31% of total system ridership. Sheltered stops have 5x the median daily usage of unsheltered stops (34 vs 7 riders/day). The most striking gap is among regular bus stops, where just 7% have shelters despite serving the vast majority of riders. Several of the system's busiest stops -- including downtown intersections with 2,000+ daily boardings -- lack any shelter.</p>
+<p>Only 7.3% of PRT bus stops have shelters, yet those sheltered stops serve 31% of total system ridership. Sheltered stops have 5x the <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> daily usage of unsheltered stops (34 vs 7 riders/day). The most striking gap is among regular bus stops, where just 7% have shelters despite serving the vast majority of riders. Several of the system's busiest stops -- including downtown intersections with 2,000+ daily boardings -- lack any shelter.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>6,719</strong> unique physical stops in the pre-pandemic weekday data</li>
 <li><strong>491</strong> (7.3%) have shelters; <strong>6,228</strong> do not</li>
-<li>Sheltered stops: <strong>median 34.3/day</strong>, mean 162.6/day</li>
-<li>Unsheltered stops: <strong>median 6.5/day</strong>, mean 28.9/day</li>
+<li>Sheltered stops: <strong><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 34.3/day</strong>, <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> 162.6/day</li>
+<li>Unsheltered stops: <strong><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 6.5/day</strong>, <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> 28.9/day</li>
 <li>Sheltered stops serve <strong>30.7%</strong> of total system ridership despite being only 7% of stops</li>
-<li>Mann-Whitney U test: p = 9.2e-84 (sheltered stops have significantly higher usage)</li>
+<li><a href="../../glossary.html#mann-whitney-u-test" class="glossary-link" data-definition="Non-parametric two-group comparison based on rank ordering.">Mann-Whitney U test</a>: p = 9.2e-84 (sheltered stops have significantly higher usage)</li>
 <li><strong>Bus</strong> mode: only <strong>7%</strong> sheltered; <strong>Busway</strong>: 73%; <strong>Light Rail</strong>: 100%</li>
 </ul>
 <h2>Observations</h2>
@@ -107,7 +107,7 @@
 <li><strong>&quot;Envision Downtown&quot; and &quot;Other&quot; shelters</strong> serve the absolute highest-volume locations (2,913 and 1,090/day respectively), but account for only 5 stops total.</li>
 </ul>
 <h2>Discussion</h2>
-<p>The shelter coverage gap represents a tangible rider experience problem. The 20 busiest unsheltered stops collectively serve ~35,000 riders per day who wait without weather protection. Given Pittsburgh's climate (Analysis 28 showed snow days and freeze days significantly affect OTP), shelter absence at high-volume stops compounds the negative experience of unreliable service.</p>
+<p>The shelter coverage gap represents a tangible rider experience problem. The 20 busiest unsheltered stops collectively serve ~35,000 riders per day who wait without weather protection. Given Pittsburgh's climate (Analysis 28 showed snow days and freeze days significantly affect <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>), shelter absence at high-volume stops compounds the negative experience of unreliable service.</p>
 <p>The divergence between shelter owners reveals different placement strategies. PAAC and City of Pittsburgh place shelters at moderately high-usage stops (165-204/day), following a ridership-informed approach. Lamar's advertising-driven placements (26/day average) prioritize visibility for ad revenue over rider need, and Heffner's placements (3/day) appear driven by factors entirely unrelated to ridership. This suggests the advertising-shelter model, while providing free infrastructure, does not align with transit equity goals.</p>
 <p>The Pareto finding from Analysis 34 (2% of stops serve 50% of riders) frames the opportunity: sheltering just the top 150 unsheltered stops would reach a large share of unprotected riders. At typical shelter costs of $15-30K per installation, covering the top 20 unsheltered stops would cost $300-600K while protecting ~35,000 daily riders -- a strong return on investment.</p>
 <p>The downtown equity gap is particularly striking because these stops are the most visible face of the transit system. Visitors and new riders encountering a 2,800-rider/day stop with no shelter receive a signal about the system's investment priorities. Addressing the downtown/Oakland gaps would improve both rider experience and public perception.</p>
@@ -212,7 +212,7 @@
 <ul>
 <li>Aggregate pre-pandemic weekday ridership to the physical-stop level (summing across routes) to get total daily usage per stop.</li>
 <li>Classify each stop as sheltered or unsheltered using the <code>shelter</code> column; further break down by shelter owner.</li>
-<li>Compare median and mean usage between sheltered vs unsheltered stops (Mann-Whitney U test).</li>
+<li>Compare <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> and <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> usage between sheltered vs unsheltered stops (<a href="../../glossary.html#mann-whitney-u-test" class="glossary-link" data-definition="Non-parametric two-group comparison based on rank ordering.">Mann-Whitney U test</a>).</li>
 <li>Compute the share of total system ridership served by sheltered stops.</li>
 <li>Identify the top high-usage unsheltered stops (ranked by daily ons+offs) as priority candidates for shelter installation.</li>
 <li>Examine shelter coverage by mode (bus, busway, light rail) and stop type.</li>

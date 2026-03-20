@@ -32,7 +32,7 @@
   <h1>03 - Route Ranking</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -93,18 +93,18 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Route Ranking</h1>
 <h2>Summary</h2>
-<p>94 routes had sufficient data (12+ months) to rank. Rankings use <strong>trailing 12-month average OTP</strong> to reflect current performance, and <strong>post-2022 slope</strong> to capture recent trajectory without COVID distortion. Slopes now include 95% confidence intervals via <code>scipy.stats.linregress</code>; 51 of 94 slopes are statistically significant (CI excludes zero). 3 routes were flagged as high-volatility. Routes are ranked both overall and within their mode (BUS, RAIL, UNKNOWN).</p>
-<h2>Regression to the Mean</h2>
-<p><strong>Caution:</strong> Extreme-ranked routes -- both top/bottom performers and most-improving/declining -- are expected to <strong>regress toward the mean</strong> in subsequent periods. This is a statistical phenomenon, not an operational one: routes that happen to have unusually good or bad stretches will tend to look less extreme next time, even without any intervention. Rankings should be interpreted as snapshots, not predictions. A route appearing at the top or bottom of a list does not necessarily mean it will stay there. Formal empirical Bayes shrinkage could partially correct for this, but is beyond the scope of this analysis. Readers should weight these rankings accordingly, especially for routes with fewer observations or higher volatility.</p>
-<h2>Top 5 Routes (by trailing 12-month OTP)</h2>
+<p>94 routes had sufficient data (12+ months) to rank. Rankings use <strong>trailing 12-month average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> to reflect current performance, and <strong>post-2022 slope</strong> to capture recent trajectory without COVID distortion. Slopes now include 95% confidence intervals via <code>scipy.stats.linregress</code>; 51 of 94 slopes are statistically significant (<a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a> excludes zero). 3 routes were flagged as high-volatility. Routes are ranked both overall and within their mode (BUS, RAIL, UNKNOWN).</p>
+<h2><a href="../../glossary.html#regression-to-the-mean" class="glossary-link" data-definition="Tendency of extreme observations to move closer to average on repeated measurement.">Regression to the Mean</a></h2>
+<p><strong>Caution:</strong> Extreme-ranked routes -- both top/bottom performers and most-improving/declining -- are expected to <strong>regress toward the <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a></strong> in subsequent periods. This is a statistical phenomenon, not an operational one: routes that happen to have unusually good or bad stretches will tend to look less extreme next time, even without any intervention. Rankings should be interpreted as snapshots, not predictions. A route appearing at the top or bottom of a list does not necessarily <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> it will stay there. Formal empirical Bayes shrinkage could partially correct for this, but is beyond the scope of this analysis. Readers should weight these rankings accordingly, especially for routes with fewer observations or higher volatility.</p>
+<h2>Top 5 Routes (by trailing 12-month <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>)</h2>
 <table>
 <thead>
 <tr>
   <th>Route</th>
   <th>Mode</th>
   <th>Mode Rank</th>
-  <th>Recent OTP</th>
-  <th>All-Time OTP</th>
+  <th>Recent <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
+  <th>All-Time <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
   <th>Stops</th>
 </tr>
 </thead>
@@ -152,15 +152,15 @@
 </tbody>
 </table>
 <p>All top 5 are BUS routes. The 3 RAIL routes rank 9th (SLVR, 78.8%), 12th (BLUE, 77.4%), and 30th (RED, 72.8%) overall.</p>
-<h2>Bottom 5 Routes (by trailing 12-month OTP)</h2>
+<h2>Bottom 5 Routes (by trailing 12-month <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>)</h2>
 <table>
 <thead>
 <tr>
   <th>Route</th>
   <th>Mode</th>
   <th>Mode Rank</th>
-  <th>Recent OTP</th>
-  <th>All-Time OTP</th>
+  <th>Recent <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
+  <th>All-Time <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
   <th>Stops</th>
 </tr>
 </thead>
@@ -208,14 +208,14 @@
 </tbody>
 </table>
 <h2>Post-COVID Trends (2022 onward)</h2>
-<p>Slopes are computed via OLS with standard errors. Only statistically significant slopes (95% CI excludes zero) are listed below. 43 of 94 routes have slopes that are <strong>not</strong> statistically significant -- their trend cannot be distinguished from flat.</p>
+<p>Slopes are computed via <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> with standard errors. Only statistically significant slopes (95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a> excludes zero) are listed below. 43 of 94 routes have slopes that are <strong>not</strong> statistically significant -- their trend cannot be distinguished from flat.</p>
 <p><strong>Most improving</strong> (statistically significant):</p>
 <table>
 <thead>
 <tr>
   <th>Route</th>
   <th>Slope (pp/yr)</th>
-  <th>95% CI</th>
+  <th>95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a></th>
   <th>Months</th>
 </tr>
 </thead>
@@ -258,7 +258,7 @@
 <tr>
   <th>Route</th>
   <th>Slope (pp/yr)</th>
-  <th>95% CI</th>
+  <th>95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a></th>
   <th>Months</th>
 </tr>
 </thead>
@@ -295,7 +295,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Notable non-significant slopes:</strong> SWL (Outbound to SHJ) has a point estimate of -10.4 pp/yr but its 95% CI is [-34.7, +13.8] due to having only 13 observations over a 21-month span -- the apparent steep decline cannot be statistically distinguished from zero.</p>
+<p><strong>Notable non-significant slopes:</strong> SWL (Outbound to SHJ) has a point estimate of -10.4 pp/yr but its 95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a> is [-34.7, +13.8] due to having only 13 observations over a 21-month span -- the apparent steep decline cannot be statistically distinguished from zero.</p>
 <h2>Observation Span</h2>
 <p>Most routes with slopes have the full 47-month post-2022 span. Two routes have notably narrow observation windows:</p>
 <ul>
@@ -305,9 +305,9 @@
 <p>Routes with narrow spans may have slopes that are less representative of sustained trends.</p>
 <h2>Observations</h2>
 <ul>
-<li>Using trailing 12-month OTP shifts the rankings compared to all-time averages: G2 (West Busway) has improved markedly and now leads, while 71B (Highland Park) and 65 (Squirrel Hill) have deteriorated significantly.</li>
+<li>Using trailing 12-month <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> shifts the rankings compared to all-time averages: G2 (West Busway) has improved markedly and now leads, while 71B (Highland Park) and 65 (Squirrel Hill) have deteriorated significantly.</li>
 <li>The post-COVID slope isolates recent trajectory without the structural break caused by the 2020 COVID ridership drop, which dominated full-period slopes.</li>
-<li>High-volatility routes (std &gt; 2x median) include SWL, 15 (Charles), and 65 (Squirrel Hill), which have extreme month-to-month swings.</li>
+<li>High-volatility routes (std &gt; 2x <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>) include SWL, 15 (Charles), and 65 (Squirrel Hill), which have extreme month-to-month swings.</li>
 <li>4 routes were excluded from ranking for having fewer than 12 months of data.</li>
 <li>89 of the 94 ranked routes are BUS, 3 are RAIL, and 2 are UNKNOWN mode. Within-mode ranks are provided in the CSV to allow fair comparisons.</li>
 </ul>
@@ -317,12 +317,12 @@
 <ul>
 <li>Stop counts come from current data; historical stop counts may have differed.</li>
 <li>Post-COVID slope assumes a roughly linear trajectory from 2022 onward, which may not hold for all routes.</li>
-<li><strong>Regression to the mean</strong> (see dedicated section above) means that top/bottom rankings and most-improving/declining lists overstate the persistence of extreme performance. These lists identify current outliers, not necessarily future ones.</li>
+<li><strong><a href="../../glossary.html#regression-to-the-mean" class="glossary-link" data-definition="Tendency of extreme observations to move closer to average on repeated measurement.">Regression to the mean</a></strong> (see dedicated section above) means that top/bottom rankings and most-improving/declining lists overstate the persistence of extreme performance. These lists identify current outliers, not necessarily future ones.</li>
 <li>Routes with narrow observation spans (SWL, P2) have less reliable slope estimates even when statistically significant.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
-<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> — 7 issues (1 significant). Added RTM caveat, slope standard errors and 95% CIs, observation span tracking, within-mode rankings, zero-variance guard, updated METHODS.md for post-2022 period, and documented null stop counts.</li>
+<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> — 7 issues (1 significant). Added RTM caveat, slope standard errors and 95% CIs, observation span tracking, within-mode rankings, zero-<a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> guard, updated METHODS.md for post-2022 period, and documented null stop counts.</li>
 </ul>
 </div>
   </details>
@@ -393,13 +393,13 @@
 <p>Which routes are the best and worst performers? Which are improving or declining? Which are most volatile?</p>
 <h2>Approach</h2>
 <ul>
-<li>Compute per-route summary stats: mean OTP, standard deviation, min, max.</li>
-<li>Compute trailing 12-month average OTP as &quot;recent performance&quot; metric.</li>
-<li>Fit a simple linear slope (OTP vs. time) per route <strong>for the post-2022 period only</strong> (<code>POST_COVID_START = &quot;2022-01&quot;</code>) to quantify recent trend direction without COVID distortion. Slopes are computed via <code>scipy.stats.linregress</code>, which provides standard errors.</li>
-<li>For each slope, compute a 95% confidence interval and flag whether it is statistically significant (CI excludes zero).</li>
-<li>A zero-variance guard prevents division-by-zero when all observations fall in the same month.</li>
+<li>Compute per-route summary stats: <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, <a href="../../glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">standard deviation</a>, min, max.</li>
+<li>Compute trailing 12-month average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> as &quot;recent performance&quot; metric.</li>
+<li>Fit a simple linear slope (<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> vs. time) per route <strong>for the post-2022 period only</strong> (<code>POST_COVID_START = &quot;2022-01&quot;</code>) to quantify recent trend direction without COVID distortion. Slopes are computed via <code>scipy.stats.linregress</code>, which provides standard errors.</li>
+<li>For each slope, compute a 95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">confidence interval</a> and flag whether it is statistically significant (<a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a> excludes zero).</li>
+<li>A zero-<a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> guard prevents division-by-zero when all observations fall in the same month.</li>
 <li>Compute actual observation span (first-to-last month range) alongside observation count to identify routes with narrow windows.</li>
-<li>Rank routes three ways: by recent average OTP, by trend slope, and by volatility (std dev). Rankings are computed both overall and <strong>within mode</strong> (BUS, RAIL, etc.).</li>
+<li>Rank routes three ways: by recent average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, by trend slope, and by volatility (std dev). Rankings are computed both overall and <strong>within mode</strong> (BUS, RAIL, etc.).</li>
 <li>Flag routes with high volatility that may warrant anomaly investigation.</li>
 </ul>
 <h2>Data</h2>
@@ -414,7 +414,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>

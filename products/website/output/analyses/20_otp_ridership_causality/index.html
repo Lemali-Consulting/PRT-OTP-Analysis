@@ -32,7 +32,7 @@
   <h1>20 - OTP → Ridership Causality</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -89,39 +89,39 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: OTP -&gt; Ridership Causality</h1>
+    <div class="markdown"><h1>Findings: <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> -&gt; Ridership Causality</h1>
 <h2>Summary</h2>
-<p>There is <strong>no evidence that OTP declines predict subsequent ridership losses</strong>. After detrending and Bonferroni correction, zero of 93 routes show statistically significant Granger causality from OTP to ridership. The raw cross-correlations are weakly <em>negative</em>, suggesting the opposite direction: months with lower ridership tend to have better OTP.</p>
+<p>There is <strong>no evidence that <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> declines predict subsequent ridership losses</strong>. After <a href="../../glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">detrending</a> and <a href="../../glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a>, zero of 93 routes show statistically significant <a href="../../glossary.html#granger-causality" class="glossary-link" data-definition="Test of whether past values of one series improve prediction of another series.">Granger causality</a> from <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to ridership. The raw cross-correlations are weakly <em>negative</em>, suggesting the opposite direction: months with lower ridership tend to have better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</p>
 <h2>Key Numbers</h2>
 <ul>
-<li><strong>Granger causality</strong>: 8/93 routes significant at p &lt; 0.05 uncorrected; <strong>0/93 after Bonferroni correction</strong></li>
-<li><strong>Median cross-correlation at lag 0</strong>: r = -0.18 (IQR: [-0.41, +0.10])</li>
-<li><strong>Median cross-correlation at lag 1</strong>: r = -0.15 (IQR: [-0.38, +0.09])</li>
+<li><strong><a href="../../glossary.html#granger-causality" class="glossary-link" data-definition="Test of whether past values of one series improve prediction of another series.">Granger causality</a></strong>: 8/93 routes significant at p &lt; 0.05 uncorrected; <strong>0/93 after <a href="../../glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a></strong></li>
+<li><strong><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> cross-correlation at lag 0</strong>: r = -0.18 (<a href="../../glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">IQR</a>: [-0.41, +0.10])</li>
+<li><strong><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> cross-correlation at lag 1</strong>: r = -0.15 (<a href="../../glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">IQR</a>: [-0.38, +0.09])</li>
 <li>Cross-correlations are flat across lags 0--6 -- no dominant lag emerges</li>
-<li>93 routes with 36+ months of paired OTP + ridership data (57--70 months each)</li>
-<li>Both series detrended by subtracting system-wide monthly mean before testing</li>
+<li>93 routes with 36+ months of paired <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> + ridership data (57--70 months each)</li>
+<li>Both series detrended by subtracting system-wide monthly <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> before testing</li>
 <li>ADF stationarity test applied per route; routes with non-stationary detrended series are first-differenced before Granger testing to avoid spurious regression</li>
 </ul>
 <h2>Observations</h2>
 <ul>
-<li>The p-value histogram is roughly uniform (with a small pile-up near zero), consistent with the null hypothesis being true for most routes.</li>
+<li>The <a href="../../glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a> histogram is roughly uniform (with a small pile-up near zero), consistent with the null hypothesis being true for most routes.</li>
 <li>Of the 8 nominally significant routes, 3 have best lag = 1 month and the rest are scattered across lags 2--6. No consistent lag structure emerges.</li>
-<li>The weakly negative contemporaneous correlation (median r = -0.18) is consistent with <strong>reverse causality</strong>: months when fewer people ride (summer, holidays) see better OTP because of reduced dwell times and less crowding, not because good OTP attracts riders.</li>
+<li>The weakly negative contemporaneous correlation (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> r = -0.18) is consistent with <strong>reverse causality</strong>: months when fewer people ride (summer, holidays) see better <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> because of reduced dwell times and less crowding, not because good <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> attracts riders.</li>
 </ul>
 <h2>Discussion</h2>
-<p>The hypothesis that poor OTP drives riders away is intuitive, but this data cannot confirm it. Several factors may explain the null result:</p>
+<p>The hypothesis that poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> drives riders away is intuitive, but this data cannot confirm it. Several factors may explain the null result:</p>
 <ul>
 <li><strong>Temporal resolution is too coarse</strong>: monthly data may be too slow to capture rider responses, which could operate at the trip or week level.</li>
-<li><strong>Riders have limited alternatives</strong>: in a single-provider transit system, riders may tolerate poor OTP because they have no substitute, especially for commute trips.</li>
-<li><strong>Confounders dominate</strong>: ridership is driven primarily by employment, gas prices, weather, and COVID -- factors far larger than OTP fluctuations. The detrending removes system-wide trends but not route-specific confounders.</li>
-<li><strong>Reverse causality may mask the effect</strong>: if high ridership causes poor OTP (crowding, dwell times) while poor OTP also causes ridership loss, the two effects partially cancel.</li>
+<li><strong>Riders have limited alternatives</strong>: in a single-provider transit system, riders may tolerate poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> because they have no substitute, especially for commute trips.</li>
+<li><strong>Confounders dominate</strong>: ridership is driven primarily by employment, gas prices, weather, and COVID -- factors far larger than <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> fluctuations. The <a href="../../glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">detrending</a> removes system-wide trends but not route-specific confounders.</li>
+<li><strong>Reverse causality may mask the effect</strong>: if high ridership causes poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (crowding, dwell times) while poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> also causes ridership loss, the two effects partially cancel.</li>
 </ul>
 <h2>Caveats</h2>
 <ul>
-<li>Granger causality tests linear predictive ability, not true causation. A null result does not prove OTP has no effect on ridership.</li>
-<li>The 70-month overlap period with monthly granularity gives limited statistical power for 6-lag models (effective sample ~60 per route).</li>
-<li>Detrending removes system-wide trends but not route-specific shocks (e.g., service changes, construction).</li>
-<li>Bonferroni correction is conservative; a less strict correction (e.g., Benjamini-Hochberg) might yield a few significant routes, but the overall pattern would remain weak.</li>
+<li><a href="../../glossary.html#granger-causality" class="glossary-link" data-definition="Test of whether past values of one series improve prediction of another series.">Granger causality</a> tests linear predictive ability, not true causation. A null result does not prove <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> has no effect on ridership.</li>
+<li>The 70-month overlap period with monthly granularity gives limited <a href="../../glossary.html#statistical-power" class="glossary-link" data-definition="Probability of detecting a true effect when it exists.">statistical power</a> for 6-lag models (effective sample ~60 per route).</li>
+<li><a href="../../glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">Detrending</a> removes system-wide trends but not route-specific shocks (e.g., service changes, construction).</li>
+<li><a href="../../glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a> is conservative; a less strict correction (e.g., Benjamini-Hochberg) might yield a few significant routes, but the overall pattern would remain weak.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
@@ -214,18 +214,18 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: OTP → Ridership Causality</h1>
+    <div class="markdown"><h1>Methods: <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> → Ridership Causality</h1>
 <h2>Question</h2>
-<p>Does a decline in on-time performance predict subsequent ridership losses? If so, at what lag and magnitude?</p>
+<p>Does a decline in <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a> predict subsequent ridership losses? If so, at what lag and magnitude?</p>
 <h2>Approach</h2>
 <ul>
-<li>Join monthly OTP with monthly weekday ridership by route and month over the overlap period.</li>
-<li>For each route, compute lagged cross-correlations between OTP and ridership at lags of 1--6 months (OTP leading ridership).</li>
-<li>Aggregate cross-correlations across routes (median and IQR) to identify the dominant lag.</li>
-<li>Run Granger causality tests (statsmodels) on routes with sufficient data (36+ months), testing whether lagged OTP improves ridership prediction beyond ridership's own autoregressive trend.</li>
-<li>Control for system-wide trends by detrending both series (subtract system monthly mean) before testing.</li>
+<li>Join monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> with monthly weekday ridership by route and month over the overlap period.</li>
+<li>For each route, compute lagged cross-correlations between <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and ridership at lags of 1--6 months (<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> leading ridership).</li>
+<li>Aggregate cross-correlations across routes (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> and <a href="../../glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">IQR</a>) to identify the dominant lag.</li>
+<li>Run <a href="../../glossary.html#granger-causality" class="glossary-link" data-definition="Test of whether past values of one series improve prediction of another series.">Granger causality</a> tests (statsmodels) on routes with sufficient data (36+ months), testing whether lagged <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> improves ridership prediction beyond ridership's own autoregressive trend.</li>
+<li>Control for system-wide trends by <a href="../../glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">detrending</a> both series (subtract system monthly <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>) before testing.</li>
 <li>Check stationarity of each route's detrended series using the Augmented Dickey-Fuller (ADF) test. For routes where either series is non-stationary (ADF p &gt;= 0.05), first-difference both series before Granger testing to avoid spurious regression.</li>
-<li>Report the share of routes where Granger causality is significant at p &lt; 0.05, with Bonferroni correction.</li>
+<li>Report the share of routes where <a href="../../glossary.html#granger-causality" class="glossary-link" data-definition="Test of whether past values of one series improve prediction of another series.">Granger causality</a> is significant at p &lt; 0.05, with <a href="../../glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a>.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -239,7 +239,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>route_id, month, OTP</td>
+  <td>route_id, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -252,8 +252,8 @@
 <p><strong>Notes:</strong> Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024). Exclude routes with fewer than 36 months of paired data.</p>
 <h2>Output</h2>
 <ul>
-<li><code>output/lagged_crosscorr.png</code> -- median cross-correlation by lag with IQR band</li>
-<li><code>output/granger_results.csv</code> -- per-route Granger test results (F-stat, p-value, optimal lag)</li>
+<li><code>output/lagged_crosscorr.png</code> -- <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> cross-correlation by lag with <a href="../../glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">IQR</a> band</li>
+<li><code>output/granger_results.csv</code> -- per-route Granger test results (F-stat, <a href="../../glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a>, optimal lag)</li>
 <li><code>output/granger_summary.png</code> -- histogram of p-values across routes</li>
 </ul>
 </div>

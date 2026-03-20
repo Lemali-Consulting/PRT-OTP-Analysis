@@ -32,7 +32,7 @@
   <h1>23 - Garage-Level Performance</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -96,15 +96,15 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Garage-Level Performance</h1>
 <h2>Summary</h2>
-<p>PRT garages differ <strong>significantly</strong> in route-level OTP, and the difference <strong>survives controlling for route structure</strong>. An OLS model with stop count and geographic span as controls shows that garage dummies add significant explanatory power (F = 4.55, p = 0.005). Collier garage routes run +5.4 pp above East Liberty routes after controlling for stop count and span (p &lt; 0.001).</p>
+<p>PRT garages differ <strong>significantly</strong> in route-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, and the difference <strong>survives controlling for route structure</strong>. An <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> model with stop count and geographic span as controls shows that garage dummies add significant explanatory power (F = 4.55, p = 0.005). Collier garage routes run +5.4 pp above East Liberty routes after controlling for stop count and span (p &lt; 0.001).</p>
 <h2>Key Numbers</h2>
 <table>
 <thead>
 <tr>
   <th>Garage</th>
   <th>Routes</th>
-  <th>Mean OTP</th>
-  <th>Ridership-Wtd OTP</th>
+  <th><a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
+  <th>Ridership-Wtd <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
   <th>Avg Daily Riders</th>
 </tr>
 </thead>
@@ -151,7 +151,7 @@
 <li><strong>Kruskal-Wallis (bus only)</strong>: H = 20.0, p = 0.0002 (4 garages)</li>
 <li>93 routes with 12+ months of paired data</li>
 </ul>
-<h3>Controlled OLS Model (bus only, n = 89, reference = East Liberty)</h3>
+<h3>Controlled <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> Model (bus only, n = 89, reference = East Liberty)</h3>
 <table>
 <thead>
 <tr>
@@ -179,7 +179,7 @@
 <tr>
   <th>Feature</th>
   <th>Coefficient</th>
-  <th>p-value</th>
+  <th><a href="../../glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a></th>
 </tr>
 </thead>
 <tbody>
@@ -224,17 +224,17 @@
 <ol>
 <li><strong>Lower corridor congestion.</strong> Collier serves the western suburbs, which have less traffic congestion than the eastern corridors served by East Liberty and West Mifflin. The AADT-based congestion analysis (Analysis 27) found 24-hour traffic volume non-significant, but that measure is too coarse to capture the peak-hour congestion differences that matter for bus operations.</li>
 <li><strong>Shorter downtown routing.</strong> Some Collier routes have very short segments in downtown Pittsburgh, reducing exposure to the congested street grid where delays accumulate. East Liberty routes tend to traverse longer downtown segments.</li>
-<li><strong>Route distribution.</strong> Garages do not cover equal areas or operate equal numbers of routes. Collier's route portfolio may be inherently more favorable for OTP beyond what stop count and span capture.</li>
+<li><strong>Route distribution.</strong> Garages do not cover equal areas or operate equal numbers of routes. Collier's route portfolio may be inherently more favorable for <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> beyond what stop count and span capture.</li>
 </ol>
 <p>These factors suggest the garage effect is primarily a <strong>corridor-level congestion proxy</strong> rather than evidence of operational differences in garage management. The controlled model accounts for route length and stop count but not for the traffic environment each route operates in -- and the available traffic data (AADT) is too coarse to fill this gap.</p>
 <p>West Mifflin's poor raw performance, by contrast, <em>is</em> largely explained by route structure: it operates the long eastern-corridor routes, and after controlling for that, it is statistically indistinguishable from East Liberty.</p>
-<p>The R² increase from 0.31 to 0.41 suggests that garage assignment captures roughly 10% of OTP variance beyond what stop count and span explain. Given the corridor-congestion explanation, this 10% likely represents traffic environment variance rather than garage-specific operational practices.</p>
+<p>The R² increase from 0.31 to 0.41 suggests that garage assignment captures roughly 10% of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> beyond what stop count and span explain. Given the corridor-congestion explanation, this 10% likely represents traffic environment <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> rather than garage-specific operational practices.</p>
 <h2>Caveats</h2>
 <ul>
 <li>The <code>current_garage</code> field is a snapshot; historical garage assignments are not available. If routes were reassigned between garages, the analysis would not capture that (though the data shows no garage changes for any route).</li>
 <li>The controlled model uses only stop count and span as structural controls. Adding further controls (e.g., traffic density, road type, schedule slack) could reduce or eliminate the garage effect.</li>
-<li>The F-test assumes normally distributed residuals; the Kruskal-Wallis test (non-parametric) is more robust but does not support covariates.</li>
-<li>South Hills Village (n=3 rail routes) and Incline (excluded, no OTP data) are too small for meaningful comparison and are excluded from the controlled model.</li>
+<li>The F-test assumes normally distributed residuals; the <a href="../../glossary.html#kruskal-wallis-test" class="glossary-link" data-definition="Non-parametric multi-group comparison using ranked observations.">Kruskal-Wallis test</a> (non-parametric) is more robust but does not support covariates.</li>
+<li>South Hills Village (n=3 rail routes) and Incline (excluded, no <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data) are too small for meaningful comparison and are excluded from the controlled model.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
@@ -343,15 +343,15 @@
     <summary><h2>Methods</h2></summary>
     <div class="markdown"><h1>Methods: Garage-Level Performance</h1>
 <h2>Question</h2>
-<p>Do PRT garages (Ross, Collier, East Liberty, West Mifflin) differ systematically in the OTP and ridership of routes they operate?</p>
+<p>Do PRT garages (Ross, Collier, East Liberty, West Mifflin) differ systematically in the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and ridership of routes they operate?</p>
 <h2>Approach</h2>
 <ul>
-<li>Join ridership data (which includes <code>current_garage</code>) with OTP data by route and month.</li>
-<li>Compute garage-level aggregate OTP (ridership-weighted and unweighted) and total ridership per month.</li>
-<li>Test for differences across garages using Kruskal-Wallis on route-level average OTP, grouped by garage.</li>
-<li>Plot garage-level OTP trends over time to see if garages diverge or move together.</li>
+<li>Join ridership data (which includes <code>current_garage</code>) with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data by route and month.</li>
+<li>Compute garage-level aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (ridership-weighted and unweighted) and total ridership per month.</li>
+<li>Test for differences across garages using Kruskal-Wallis on route-level average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, grouped by garage.</li>
+<li>Plot garage-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> trends over time to see if garages diverge or move together.</li>
 <li>Control for route composition (garages may differ because they operate different types of routes, not because of operational quality) by comparing within-mode (bus-only) results.</li>
-<li>Fit a controlled OLS model (bus-only): base model with stop_count and span_km, then full model adding garage dummy variables (East Liberty as reference, being the largest). Use an F-test on the nested models to determine if garage dummies add significant explanatory power beyond route structure.</li>
+<li>Fit a controlled <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> model (bus-only): base model with stop_count and span_km, then full model adding garage dummy variables (East Liberty as reference, being the largest). Use an F-test on the nested models to determine if garage dummies add significant explanatory power beyond route structure.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -365,7 +365,7 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>route_id, month, otp</td>
+  <td>route_id, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">otp</a></td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -393,8 +393,8 @@
 <p><strong>Notes:</strong> Join on route_id and month; overlap period only (Jan 2019 -- Oct 2024). Exclude routes with fewer than 12 months of paired data or NULL garage.</p>
 <h2>Output</h2>
 <ul>
-<li><code>output/garage_otp_trend.png</code> -- monthly OTP by garage</li>
-<li><code>output/garage_boxplot.png</code> -- OTP distribution by garage</li>
+<li><code>output/garage_otp_trend.png</code> -- monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by garage</li>
+<li><code>output/garage_boxplot.png</code> -- <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> distribution by garage</li>
 <li><code>output/garage_summary.csv</code> -- garage-level summary statistics</li>
 </ul>
 </div>

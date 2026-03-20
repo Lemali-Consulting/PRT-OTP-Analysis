@@ -32,7 +32,7 @@
   <h1>12: Route Geographic Span vs OTP</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-03 02:23 UTC · Commit defd5c8</p>
+  <p class="lede">Built 2026-03-20 19:21 UTC · Commit e3fc8c3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -92,28 +92,28 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Route Geographic Span vs OTP</h1>
+    <div class="markdown"><h1>Findings: Route Geographic Span vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Summary</h2>
-<p>Geographic span (the maximum distance between any two stops on a route) is a <strong>moderate negative predictor</strong> of OTP within bus routes (r = -0.38, p &lt; 0.001), but stop count remains the stronger predictor after controlling for the other. Partial correlation analysis disentangles the two: stop count predicts OTP even after controlling for span (partial r = -0.41, p &lt; 0.001), while span's independent contribution is smaller (partial r = -0.23, p = 0.03).</p>
+<p>Geographic span (the maximum distance between any two stops on a route) is a <strong>moderate negative predictor</strong> of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> within bus routes (r = -0.38, p &lt; 0.001), but stop count remains the stronger predictor after controlling for the other. <a href="../../glossary.html#partial-correlation" class="glossary-link" data-definition="Correlation between two variables after controlling for one or more covariates.">Partial correlation</a> analysis disentangles the two: stop count predicts <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> even after controlling for span (partial r = -0.41, p &lt; 0.001), while span's independent contribution is smaller (partial r = -0.23, p = 0.03).</p>
 <h2>Key Numbers</h2>
 <ul>
-<li><strong>Span vs OTP (bus only, primary):</strong> Pearson r = -0.38 (p &lt; 0.001, n = 89), Spearman rho = -0.37 (p &lt; 0.001)</li>
-<li><strong>Span vs OTP (all routes, secondary):</strong> r = -0.32 (p = 0.002, n = 92) -- includes Simpson's paradox risk</li>
-<li><strong>Stop density vs OTP (bus only):</strong> r = 0.04 (p = 0.71) -- not significant</li>
-<li><strong>Span vs OTP | stop count (bus, partial):</strong> r = -0.23 (p = 0.03)</li>
-<li><strong>Stop count vs OTP | span (bus, partial):</strong> r = -0.41 (p &lt; 0.001)</li>
+<li><strong>Span vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bus only, primary):</strong> Pearson r = -0.38 (p &lt; 0.001, n = 89), Spearman rho = -0.37 (p &lt; 0.001)</li>
+<li><strong>Span vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (all routes, secondary):</strong> r = -0.32 (p = 0.002, n = 92) -- includes <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> risk</li>
+<li><strong>Stop density vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bus only):</strong> r = 0.04 (p = 0.71) -- not significant</li>
+<li><strong>Span vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> | stop count (bus, partial):</strong> r = -0.23 (p = 0.03)</li>
+<li><strong>Stop count vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> | span (bus, partial):</strong> r = -0.41 (p &lt; 0.001)</li>
 <li><strong>Span-stop count collinearity:</strong> r = 0.41</li>
 </ul>
 <h2>Observations</h2>
 <ul>
-<li>The bus-only correlation (r = -0.38) is actually <em>stronger</em> than the all-mode correlation (r = -0.32). The pooled-mode result was muted by Simpson's paradox -- rail routes have moderate span but high OTP, pulling the all-mode trend line toward zero.</li>
-<li>Span and stop count are moderately correlated (r = 0.41), but not so strongly as to make partial correlation unreliable.</li>
-<li>After controlling for stop count, span still has a small but significant independent effect -- longer routes face additional challenges beyond just having more stops (longer exposure to traffic, more variance in conditions).</li>
-<li>However, stop count's partial correlation (-0.41) is nearly twice span's (-0.23), confirming that the <strong>number of stops matters more than the distance covered</strong>.</li>
-<li>Stop density (stops per km) shows no correlation with OTP at all (r = 0.04), meaning that tightly-packed stops are no worse than widely-spaced stops once total count and distance are accounted for.</li>
+<li>The bus-only correlation (r = -0.38) is actually <em>stronger</em> than the all-mode correlation (r = -0.32). The pooled-mode result was muted by <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> -- rail routes have moderate span but high <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, pulling the all-mode trend line toward zero.</li>
+<li>Span and stop count are moderately correlated (r = 0.41), but not so strongly as to make <a href="../../glossary.html#partial-correlation" class="glossary-link" data-definition="Correlation between two variables after controlling for one or more covariates.">partial correlation</a> unreliable.</li>
+<li>After controlling for stop count, span still has a small but significant independent effect -- longer routes face additional challenges beyond just having more stops (longer exposure to traffic, more <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> in conditions).</li>
+<li>However, stop count's <a href="../../glossary.html#partial-correlation" class="glossary-link" data-definition="Correlation between two variables after controlling for one or more covariates.">partial correlation</a> (-0.41) is nearly twice span's (-0.23), confirming that the <strong>number of stops matters more than the distance covered</strong>.</li>
+<li>Stop density (stops per km) shows no correlation with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> at all (r = 0.04), meaning that tightly-packed stops are no worse than widely-spaced stops once total count and distance are accounted for.</li>
 </ul>
 <h2>Implication</h2>
-<p>Both stop count and route distance independently degrade OTP, but stop consolidation is the higher-leverage intervention. Shortening routes would help modestly, but eliminating stops on existing routes would have roughly twice the impact per unit of change.</p>
+<p>Both stop count and route distance independently degrade <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, but stop consolidation is the higher-leverage intervention. Shortening routes would help modestly, but eliminating stops on existing routes would have roughly twice the impact per unit of change.</p>
 <h2>Caveats</h2>
 <ul>
 <li>Geographic span (max pairwise distance) is a crude proxy for actual route length. GTFS shape data would provide a more accurate route-length measurement.</li>
@@ -196,17 +196,17 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Route Geographic Span vs OTP</h1>
+    <div class="markdown"><h1>Methods: Route Geographic Span vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
 <h2>Question</h2>
-<p>Does the geographic extent of a route predict on-time performance independently of stop count? Analysis 07 found stop count is the strongest OTP predictor (r = -0.53), but routes with many stops also tend to cover more distance. Disentangling the two could clarify whether the problem is &quot;too many stops&quot; or &quot;too long a route.&quot;</p>
+<p>Does the geographic extent of a route predict <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a> independently of stop count? Analysis 07 found stop count is the strongest <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> predictor (r = -0.53), but routes with many stops also tend to cover more distance. Disentangling the two could clarify whether the problem is &quot;too many stops&quot; or &quot;too long a route.&quot;</p>
 <h2>Approach</h2>
 <ul>
 <li>For each route, collect all stop coordinates from <code>route_stops</code> joined to <code>stops</code>.</li>
 <li>Compute <strong>geographic span</strong> as the maximum haversine distance between any pair of stops on the route (the diameter of the stop set in km).</li>
 <li>Compute <strong>stop density</strong> as stops per km of span, to capture how tightly packed stops are.</li>
-<li>Correlate span, stop density, and stop count separately with average OTP (Pearson and Spearman).</li>
-<li>Use partial correlation to test whether span predicts OTP after controlling for stop count, and vice versa.</li>
-<li>Scatter plots for span vs OTP and stop density vs OTP.</li>
+<li>Correlate span, stop density, and stop count separately with average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (Pearson and Spearman).</li>
+<li>Use <a href="../../glossary.html#partial-correlation" class="glossary-link" data-definition="Correlation between two variables after controlling for one or more covariates.">partial correlation</a> to test whether span predicts <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> after controlling for stop count, and vice versa.</li>
+<li>Scatter plots for span vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and stop density vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -230,7 +230,7 @@
 </tr>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly OTP per route</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -242,9 +242,9 @@
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/geographic_span.csv</code> -- per-route span, stop density, stop count, avg OTP</li>
-<li><code>output/span_vs_otp.png</code> -- scatter plot of geographic span vs OTP</li>
-<li><code>output/density_vs_otp.png</code> -- scatter plot of stop density vs OTP</li>
+<li><code>output/geographic_span.csv</code> -- per-<a href="../../glossary.html#route-span" class="glossary-link" data-definition="Maximum geographic distance covered by a route across its served stops.">route span</a>, stop density, stop count, avg <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/span_vs_otp.png</code> -- scatter plot of geographic span vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/density_vs_otp.png</code> -- scatter plot of stop density vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 </ul>
 </div>
   </details>
