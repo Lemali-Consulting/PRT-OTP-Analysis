@@ -1293,6 +1293,26 @@ def main() -> None:
     )
     (OUTPUT_DIR / "glossary.html").write_text(glossary_html, encoding="utf-8")
 
+    # --- Methods Primer page ---
+    primer_md_path = Path(__file__).resolve().parent / "primer.md"
+    primer_body = md_to_html(primer_md_path)
+    primer_toc: list[dict[str, str]] = []
+    for m in re.finditer(r'<h2[^>]*>(.*?)</h2>', primer_body):
+        title = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+        slug = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+        primer_body = primer_body.replace(
+            m.group(0), f'<h2 id="{slug}">{m.group(1)}</h2>', 1,
+        )
+        primer_toc.append({"slug": slug, "title": title})
+    primer_body = autolink_glossary_terms(primer_body, glossary_index, "")
+    primer_html_out = env.get_template("primer.html").render(
+        root="",
+        primer_html=primer_body,
+        toc=primer_toc,
+        run_metadata=run_metadata,
+    )
+    (OUTPUT_DIR / "primer.html").write_text(primer_html_out, encoding="utf-8")
+
     all_errors = pipeline_manifest_errors + output_errors
     if all_errors:
         details = "\n".join(f"  - {msg}" for msg in all_errors)

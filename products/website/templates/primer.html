@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Methods Primer - PRT OTP Analysis{% endblock %}
+{% block content %}
+<section class="hero hero-compact">
+  <p class="kicker">Reference</p>
+  <h1>Methods Primer</h1>
+  <p class="lede">A plain-language guide to the statistical methods and measures used across the PRT analyses. Start here to build intuition before diving into individual results.</p>
+  <p class="lede">Built {{ run_metadata.generated_at_utc }} · Commit {{ run_metadata.git_revision }}</p>
+</section>
+
+<nav class="glossary-nav" id="primer-toc">
+  {% for section in toc %}
+    <a href="#{{ section.slug }}">{{ section.title }}</a>
+  {% endfor %}
+</nav>
+
+<section class="panel">
+  <div class="markdown-body">
+    {{ primer_html }}
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.markdown-body'), {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ]
+  });"></script>
+{% endblock %}

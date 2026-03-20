@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Methods Primer - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="index.html#pipeline">Pipeline</a>
+        <a href="index.html#analyses">Analyses</a>
+        <a href="sources.html">Sources</a>
+        <a href="primer.html">Methods</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Reference</p>
+  <h1>Methods Primer</h1>
+  <p class="lede">A plain-language guide to the statistical methods and measures used across the PRT analyses. Start here to build intuition before diving into individual results.</p>
+  <p class="lede">Built 2026-03-20 19:31 UTC · Commit 1ffb273</p>
+</section>
+
+<nav class="glossary-nav" id="primer-toc">
+  
+    <a href="#transit-metrics">Transit Metrics</a>
+  
+    <a href="#descriptive-statistics">Descriptive Statistics</a>
+  
+    <a href="#correlation-methods">Correlation Methods</a>
+  
+    <a href="#hypothesis-tests">Hypothesis Tests</a>
+  
+    <a href="#regression-methods">Regression Methods</a>
+  
+    <a href="#time-series-methods">Time Series Methods</a>
+  
+    <a href="#clustering">Clustering</a>
+  
+    <a href="#key-concepts">Key Concepts</a>
+  
+</nav>
+
+<section class="panel">
+  <div class="markdown-body">
+    <h2 id="transit-metrics">Transit Metrics</h2>
+<h3><a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">On-Time Performance</a> (<a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>)</h3>
+<p>The central measure in this project. A trip is &quot;on time&quot; if the bus arrives no more than 1 minute early or 5 minutes late relative to its scheduled time. <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is the percentage of trips meeting this threshold.</p>
+<p>$$\text{OTP} = \frac{\text{on-time trips}}{\text{total trips}} \times 100$$</p>
+<p><strong>Range:</strong> 0% to 100%. PRT's system-wide <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> typically falls between 60% and 80%.</p>
+<p><strong>Three flavors of averaging:</strong></p>
+<ul>
+<li><strong>Unweighted <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> — each route-month gets equal weight, regardless of how many trips it runs. Useful for comparing route-level performance on a level playing field.</li>
+<li><strong>Trip-weighted <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> — weights each route-month by its number of trips. Routes with more scheduled service count more. This is the &quot;system average&quot; PRT would report.</li>
+<li><strong><a href="glossary.html#ridership-weighted-otp" class="glossary-link" data-definition="OTP average where each route is weighted by passenger volume rather than trip count.">Ridership-weighted OTP</a></strong> — weights each route-month by its ridership. This answers: &quot;What <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> does the typical <em>rider</em> experience?&quot; A route carrying 10,000 riders matters more than one carrying 500.</li>
+</ul>
+<p><strong>Why it matters:</strong> Unweighted and <a href="glossary.html#ridership-weighted-otp" class="glossary-link" data-definition="OTP average where each route is weighted by passenger volume rather than trip count.">ridership-weighted OTP</a> can diverge substantially. If high-ridership routes perform worse than low-ridership ones, the average rider experiences worse service than the route-level average suggests.</p>
+<h3>Average Weekday Ridership (AWR)</h3>
+<p>The average number of boardings on a typical weekday for a route or the system. Calculated from monthly ridership data divided by the number of weekdays in the month. AWR is the standard transit industry measure for comparing ridership across routes and time periods.</p>
+<h3>Late Rider-Trips</h3>
+<p>The estimated number of riders affected by late buses in a given period:</p>
+<p>$$\text{Late rider-trips} = \text{ridership} \times (1 - \text{OTP} / 100)$$</p>
+<p>A route with 10,000 monthly riders and 70% <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> produces 3,000 late rider-trips. This metric combines service quality with ridership volume to identify where delays cause the most harm.</p>
+<h3>Ridership Concentration</h3>
+<p>Measures how unevenly ridership is distributed across routes, using the <a href="glossary.html#lorenz-curve" class="glossary-link" data-definition="Cumulative-share plot used to visualize distributional inequality.">Lorenz curve</a> and a concentration index analogous to the <a href="glossary.html#gini-coefficient" class="glossary-link" data-definition="Inequality metric on a 0 to 1 scale used for concentration analysis.">Gini coefficient</a>.</p>
+<p>$$\text{Concentration Index} = \frac{\sum_{i=1}^{n}(2i - n - 1) \cdot x_i}{n \sum_{i=1}^{n} x_i}$$</p>
+<p>where $x_i$ is ridership for route $i$ sorted in ascending order.</p>
+<p><strong>Range:</strong> 0 (all routes carry equal ridership) to 1 (all ridership on one route). PRT's concentration index is typically around 0.6–0.7, meaning a small number of routes carry the vast majority of riders.</p>
+<h3>Service Structure Metrics</h3>
+<p>Several analyses examine the physical characteristics of routes:</p>
+<ul>
+<li><strong>Stop count</strong> — total number of stops served by a route.</li>
+<li><strong>Geographic span</strong> — straight-line distance (km) between a route's two most distant stops.</li>
+<li><strong>Stop density</strong> — stops per kilometer of geographic span. High density means frequent stops; low density means an express-like pattern.</li>
+<li><strong>Directional asymmetry</strong> — the difference in stop count or <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> between the inbound and outbound directions of a route. Large asymmetry can indicate one-way traffic patterns or route design issues.</li>
+<li><strong>Hub connectivity</strong> — the number of major transfer hubs a route serves. Routes touching more hubs tend to have different performance profiles.</li>
+</ul>
+<hr />
+<h2 id="descriptive-statistics">Descriptive Statistics</h2>
+<h3>Summary Statistics</h3>
+<p>Most analyses begin by reporting basic distributional measures:</p>
+<ul>
+<li><strong><a href="glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a></strong> — the arithmetic average. Sensitive to outliers.</li>
+<li><strong><a href="glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a></strong> — the middle value when sorted. More robust to extreme values.</li>
+<li><strong><a href="glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">Standard deviation</a> (<a href="glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">SD</a>)</strong> — measures spread around the <a href="glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>. About 68% of values fall within 1 <a href="glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">SD</a> of the <a href="glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> for normally distributed data.</li>
+<li><strong><a href="glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">Interquartile range</a> (<a href="glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">IQR</a>)</strong> — the range from the 25th to the 75th <a href="glossary.html#percentile" class="glossary-link" data-definition="Value below which a given percentage of observations falls.">percentile</a>. Contains the middle 50% of values and is robust to outliers.</li>
+<li><strong>Percentiles</strong> — the value below which a given percentage of observations fall. The 10th <a href="glossary.html#percentile" class="glossary-link" data-definition="Value below which a given percentage of observations falls.">percentile</a> <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> tells you the performance level that only the worst 10% of routes fall below.</li>
+</ul>
+<h3>Weighted Averages</h3>
+<p>When routes differ in size, a simple average can be misleading. Weighted averages account for this:</p>
+<p>$$\bar{x}<em>w = \frac{\sum</em>{i} w_i , x_i}{\sum_{i} w_i}$$</p>
+<p>where $w_i$ is the weight (trips, riders, or population) for observation $i$.</p>
+<p><strong>Trip-weighted</strong> averages treat each scheduled trip equally — a route running 500 trips/month counts five times as much as one running 100. <strong>Ridership-weighted</strong> averages treat each rider equally — the experience of a route carrying 10,000 riders dominates one carrying 1,000.</p>
+<h3>Year-over-Year Change</h3>
+<p>Many analyses track how a metric changes between years or periods. Reported as either:</p>
+<ul>
+<li><strong>Absolute change</strong> ($\Delta$): new value minus old value. &quot;<a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> rose by 3.2 percentage points.&quot;</li>
+<li><strong>Percentage change</strong>: $\frac{\text{new} - \text{old}}{\text{old}} \times 100$. &quot;Ridership grew 15%.&quot;</li>
+</ul>
+<p>Percentage-point changes and percentage changes are different. If <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> goes from 70% to 73%, that is a 3 percentage-point increase but a 4.3% increase.</p>
+<hr />
+<h2 id="correlation-methods">Correlation Methods</h2>
+<p>Correlation measures how two variables move together. All correlations in this project are computed at the route or system level — they describe relationships between <em>route-level averages</em>, not individual trips or riders.</p>
+<h3><a href="glossary.html#pearson-correlation" class="glossary-link" data-definition="Linear association metric ranging from -1 to 1.">Pearson Correlation</a> (r)</h3>
+<p>Measures the strength of a <em>linear</em> relationship between two continuous variables.</p>
+<p>$$r = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2 \sum (y_i - \bar{y})^2}}$$</p>
+<p><strong>Range:</strong> $-1$ to $+1$.</p>
+<ul>
+<li>$+1$ = perfect positive linear relationship.</li>
+<li>$-1$ = perfect negative linear relationship.</li>
+<li>$0$ = no linear relationship (but a nonlinear one might still exist).</li>
+</ul>
+<p><strong>Sensitivity:</strong> Pearson is sensitive to outliers. A single extreme value can inflate or deflate $r$ substantially.</p>
+<h3>Spearman Rank Correlation</h3>
+<p>Like Pearson, but computed on the <em>ranks</em> of the data rather than the raw values. Captures any monotonic relationship (consistently increasing or decreasing), even if the relationship is curved.</p>
+<p><strong>When to prefer it:</strong> When the data are skewed, contain outliers, or the relationship is monotonic but not strictly linear. Many PRT analyses report both Pearson and Spearman as a robustness check.</p>
+<h3><a href="glossary.html#partial-correlation" class="glossary-link" data-definition="Correlation between two variables after controlling for one or more covariates.">Partial Correlation</a></h3>
+<p>Measures the correlation between two variables <em>after removing the effect</em> of one or more confounders. For example, the <a href="glossary.html#partial-correlation" class="glossary-link" data-definition="Correlation between two variables after controlling for one or more covariates.">partial correlation</a> between stop count and <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> controlling for ridership asks: &quot;Among routes with similar ridership, do those with more stops still have worse <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>?&quot;</p>
+<p>$$r_{xy \cdot z} = \frac{r_{xy} - r_{xz} , r_{yz}}{\sqrt{(1 - r_{xz}^2)(1 - r_{yz}^2)}}$$</p>
+<p>If the <a href="glossary.html#partial-correlation" class="glossary-link" data-definition="Correlation between two variables after controlling for one or more covariates.">partial correlation</a> is much smaller than the raw correlation, the apparent relationship was largely driven by the confounder.</p>
+<hr />
+<h2 id="hypothesis-tests">Hypothesis Tests</h2>
+<p>Hypothesis tests assess whether an observed pattern is likely due to chance. The <strong><a href="glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a></strong> is the probability of seeing a result at least as extreme as the observed one if there were truly no effect. A small <a href="glossary.html#p-value" class="glossary-link" data-definition="Probability of observing results at least this extreme under the null hypothesis.">p-value</a> (conventionally $p &lt; 0.05$) suggests the pattern is unlikely to be due to chance alone.</p>
+<h3><a href="glossary.html#mann-whitney-u-test" class="glossary-link" data-definition="Non-parametric two-group comparison based on rank ordering.">Mann-Whitney U Test</a></h3>
+<p>A nonparametric test for whether two independent groups differ in their distributions. Used when comparing, say, bus routes serving low-income neighborhoods vs. those serving high-income ones.</p>
+<p><strong>Why nonparametric?</strong> It does not assume the data are normally distributed — only that observations can be ranked. This makes it appropriate for skewed <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> or ridership data.</p>
+<p>Effect size is reported as rank-biserial $r$:</p>
+<p>$$r = 1 - \frac{2U}{n_1 n_2}$$</p>
+<p>where $U$ is the test statistic and $n_1$, $n_2$ are the group sizes. Ranges from $-1$ to $+1$; values near $0$ indicate no difference.</p>
+<h3><a href="glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">Paired t-test</a></h3>
+<p>Tests whether the <a href="glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> difference between paired observations is zero. Used when the same routes are measured at two time points (e.g., <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> before vs. after a service change).</p>
+<p>$$t = \frac{\bar{d}}{s_d / \sqrt{n}}$$</p>
+<p>where $\bar{d}$ is the <a href="glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> of the paired differences, $s_d$ is their <a href="glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">standard deviation</a>, and $n$ is the number of pairs.</p>
+<h3><a href="glossary.html#kruskal-wallis-test" class="glossary-link" data-definition="Non-parametric multi-group comparison using ranked observations.">Kruskal-Wallis Test</a></h3>
+<p>The nonparametric equivalent of one-way ANOVA. Tests whether three or more groups have the same distribution. Used, for example, to compare <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> across multiple garages or seasonal categories.</p>
+<p>If significant, it tells you the groups differ <em>somewhere</em>, but not which specific pairs differ — follow-up pairwise tests (e.g., Dunn's test) are needed.</p>
+<h3><a href="glossary.html#wilcoxon-signed-rank-test" class="glossary-link" data-definition="Non-parametric paired comparison based on signed ranks of differences.">Wilcoxon Signed-Rank Test</a></h3>
+<p>A nonparametric paired test — the nonparametric counterpart to the <a href="glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">paired t-test</a>. Tests whether the <a href="glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> difference between paired observations is zero. More robust than the <a href="glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">paired t-test</a> when differences are skewed.</p>
+<h3><a href="glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni Correction</a></h3>
+<p>When running multiple hypothesis tests simultaneously, the chance of at least one false positive grows. The <a href="glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a> divides the significance threshold by the number of tests:</p>
+<p>$$\alpha_{\text{adjusted}} = \frac{\alpha}{m}$$</p>
+<p>where $m$ is the number of tests. If testing 10 comparisons at $\alpha = 0.05$, each individual test must reach $p &lt; 0.005$ to be considered significant.</p>
+<p><strong>Trade-off:</strong> Bonferroni is conservative — it reduces false positives but increases the chance of missing real effects (false negatives). It is most appropriate when the number of tests is modest (under ~20).</p>
+<hr />
+<h2 id="regression-methods">Regression Methods</h2>
+<h3><a href="glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> Regression</h3>
+<p><a href="glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">Ordinary least squares</a> regression fits a linear model predicting an outcome from one or more predictors by minimizing the sum of squared residuals.</p>
+<p>$$y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \cdots + \epsilon$$</p>
+<p>Key statistics reported:</p>
+<ul>
+<li><strong>$R^2$</strong> — the proportion of <a href="glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> in the outcome explained by the model. Ranges from 0 to 1. An $R^2$ of 0.45 means the predictors explain 45% of the variation.</li>
+<li><strong>Adjusted $R^2$</strong> — penalizes $R^2$ for the number of predictors. Prevents overfit models from looking artificially good.</li>
+<li><strong>Standardized coefficients ($\beta$)</strong> — express each predictor's effect in <a href="glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">standard deviation</a> units, making it possible to compare the relative importance of predictors measured on different scales. A standardized $\beta$ of 0.3 means a 1 <a href="glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">SD</a> increase in the predictor is associated with a 0.3 <a href="glossary.html#standard-deviation" class="glossary-link" data-definition="Dispersion measure showing how far values tend to deviate from the mean.">SD</a> increase in the outcome.</li>
+</ul>
+<h3>Nested F-Tests</h3>
+<p>Used to compare two regression models where one is a subset of the other (e.g., Model 1 has predictors A and B; Model 2 adds C and D). The F-test asks: &quot;Does adding the extra predictors significantly improve the fit?&quot;</p>
+<p>$$F = \frac{(R^2_{\text{full}} - R^2_{\text{reduced}}) / k}{(1 - R^2_{\text{full}}) / (n - p - 1)}$$</p>
+<p>where $k$ is the number of added predictors, $n$ is the sample size, and $p$ is the total number of predictors in the full model.</p>
+<p>A significant F-test means the additional predictors contribute meaningfully beyond what was already in the model.</p>
+<h3><a href="glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">Variance Inflation Factor</a> (<a href="glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a>)</h3>
+<p>Measures how much a predictor's <a href="glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> is inflated by correlation with other predictors (multicollinearity).</p>
+<p>$$\text{VIF}_j = \frac{1}{1 - R_j^2}$$</p>
+<p>where $R_j^2$ is the $R^2$ from regressing predictor $j$ on all other predictors.</p>
+<p><strong>Interpretation:</strong></p>
+<ul>
+<li><a href="glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> = 1: no multicollinearity.</li>
+<li><a href="glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> = 5: the predictor's standard error is $\sqrt{5} \approx 2.2$ times larger than it would be without multicollinearity.</li>
+<li><a href="glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> &gt; 10: severe multicollinearity — coefficient estimates become unstable.</li>
+</ul>
+<p>When <a href="glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> is high, predictors are too correlated to disentangle their individual effects. Analyses address this by dropping redundant predictors or combining them.</p>
+<hr />
+<h2 id="time-series-methods">Time Series Methods</h2>
+<h3><a href="glossary.html#seasonal-decomposition" class="glossary-link" data-definition="Separation of a time series into trend, seasonal, and residual components.">Seasonal Decomposition</a></h3>
+<p>Breaks a time series into three components:</p>
+<p>$$Y_t = T_t + S_t + R_t$$</p>
+<ul>
+<li><strong>Trend ($T_t$)</strong> — the long-run direction (improving or declining <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>).</li>
+<li><strong>Seasonality ($S_t$)</strong> — repeating patterns within each year (e.g., winter dips in <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>).</li>
+<li><strong>Residual ($R_t$)</strong> — what is left after removing trend and seasonality. Large residuals point to unusual events (service changes, weather, COVID).</li>
+</ul>
+<p>PRT analyses use additive decomposition with a 12-month period, appropriate when seasonal fluctuations are roughly constant in magnitude over time.</p>
+<h3>Augmented Dickey-Fuller (ADF) Test</h3>
+<p>Tests whether a time series is <strong>stationary</strong> — meaning its statistical properties (<a href="glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, <a href="glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a>) do not change over time.</p>
+<ul>
+<li><strong>Null hypothesis:</strong> the series has a unit root (is non-stationary — it wanders without reverting to a <a href="glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>).</li>
+<li><strong>Rejection</strong> ($p &lt; 0.05$): the series is stationary.</li>
+</ul>
+<p><strong>Why it matters:</strong> Many time series methods (including <a href="glossary.html#granger-causality" class="glossary-link" data-definition="Test of whether past values of one series improve prediction of another series.">Granger causality</a>) require stationary data. If a series is non-stationary, it must be differenced (subtracting each value from the previous one) before analysis.</p>
+<h3><a href="glossary.html#granger-causality" class="glossary-link" data-definition="Test of whether past values of one series improve prediction of another series.">Granger Causality</a></h3>
+<p>Tests whether past values of series $X$ help predict future values of series $Y$, beyond what $Y$'s own past values predict. If so, $X$ is said to &quot;Granger-cause&quot; $Y$.</p>
+<p><strong>Important caveats:</strong></p>
+<ul>
+<li><a href="glossary.html#granger-causality" class="glossary-link" data-definition="Test of whether past values of one series improve prediction of another series.">Granger causality</a> is about <em>predictive precedence</em>, not true causation. If ridership changes Granger-cause <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> changes, it means ridership shifts tend to precede <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> shifts — not necessarily that one causes the other.</li>
+<li>Both series must be stationary (see ADF test above).</li>
+<li>Results depend on the number of lags tested.</li>
+</ul>
+<h3><a href="glossary.html#lagged-cross-correlation" class="glossary-link" data-definition="Correlation of two series at offset time lags.">Lagged Cross-Correlation</a></h3>
+<p>Measures the correlation between series $X$ at time $t$ and series $Y$ at time $t + k$, for various lags $k$. This reveals whether changes in one series precede changes in the other, and by how many months.</p>
+<p>A peak at lag $k = -2$ means $X$ leads $Y$ by 2 months. A peak at $k = 0$ means the two series move in sync.</p>
+<hr />
+<h2 id="clustering">Clustering</h2>
+<h3><a href="glossary.html#hierarchical-clustering" class="glossary-link" data-definition="Iterative grouping method that forms a nested tree of clusters.">Hierarchical Clustering</a> (Ward's Method)</h3>
+<p>Groups routes (or other units) into clusters based on similarity, building a tree (<a href="glossary.html#dendrogram" class="glossary-link" data-definition="Tree visualization showing hierarchical cluster merges and distances.">dendrogram</a>) from the bottom up:</p>
+<ol>
+<li>Start with each route as its own cluster.</li>
+<li>At each step, merge the two clusters whose combination increases within-cluster <a href="glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> the least (Ward's criterion).</li>
+<li>Continue until all routes are in one cluster.</li>
+</ol>
+<p>The <a href="glossary.html#dendrogram" class="glossary-link" data-definition="Tree visualization showing hierarchical cluster merges and distances.">dendrogram</a> is then &quot;cut&quot; at a chosen height to produce a specific number of clusters.</p>
+<p><strong>Why Ward's method?</strong> It tends to produce compact, similarly-sized clusters and works well with the Euclidean-like distances used in PRT analyses.</p>
+<h3><a href="glossary.html#silhouette-score" class="glossary-link" data-definition="Cluster-quality metric measuring cohesion within clusters and separation between clusters.">Silhouette Score</a></h3>
+<p>Measures how well each observation fits its assigned cluster versus the nearest neighboring cluster.</p>
+<p>$$s(i) = \frac{b(i) - a(i)}{\max(a(i),, b(i))}$$</p>
+<p>where $a(i)$ is the average distance from point $i$ to other points in its cluster, and $b(i)$ is the average distance to points in the nearest other cluster.</p>
+<p><strong>Range:</strong> $-1$ to $+1$.</p>
+<ul>
+<li>Near $+1$: well-clustered — the point is much closer to its own cluster than to others.</li>
+<li>Near $0$: borderline — the point sits between two clusters.</li>
+<li>Negative: misclassified — the point is closer to another cluster.</li>
+</ul>
+<p>The average <a href="glossary.html#silhouette-score" class="glossary-link" data-definition="Cluster-quality metric measuring cohesion within clusters and separation between clusters.">silhouette score</a> across all points summarizes overall clustering quality.</p>
+<h3>Correlation-Based Distance</h3>
+<p>Instead of using geographic or Euclidean distance, some analyses define route similarity based on how similarly their <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> time series behave:</p>
+<p>$$d(i, j) = 1 - |r_{ij}|$$</p>
+<p>where $r_{ij}$ is the <a href="glossary.html#pearson-correlation" class="glossary-link" data-definition="Linear association metric ranging from -1 to 1.">Pearson correlation</a> between routes $i$ and $j$ over time. Routes with highly correlated <a href="glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> patterns (rising and falling together) are considered &quot;close,&quot; even if they serve different parts of the city.</p>
+<hr />
+<h2 id="key-concepts">Key Concepts</h2>
+<h3><a href="glossary.html#detrending" class="glossary-link" data-definition="Removal of long-run trend to isolate short-run or relative variation.">Detrending</a></h3>
+<p>Many PRT analyses need to distinguish route-specific behavior from system-wide shocks (weather, COVID, service changes) that affect all routes simultaneously.</p>
+<p><strong>Approach:</strong> Subtract the system-wide monthly average from each route's value:</p>
+<p>$$\text{detrended}<em>{i,t} = x</em>{i,t} - \bar{x}_t$$</p>
+<p>A positive detrended value means the route performed better than the system average that month; a negative value means it performed worse. This removes shared variation and isolates route-specific patterns.</p>
+<h3>COVID Recovery Metrics</h3>
+<p>Several analyses quantify how routes recovered from the pandemic ridership collapse:</p>
+<ul>
+<li><strong>Recovery delta</strong> — the absolute difference between a route's post-COVID metric and its pre-COVID baseline.</li>
+<li><strong>Recovery ratio</strong> — post-COVID value divided by pre-COVID value. A ratio of 0.85 means the route has recovered to 85% of its pre-pandemic level.</li>
+</ul>
+<p>Pre-COVID baselines are typically defined as the 12 months before March 2020. Post-COVID periods vary by analysis but generally begin in mid-2021 or later.</p>
+<h3><a href="glossary.html#lorenz-curve" class="glossary-link" data-definition="Cumulative-share plot used to visualize distributional inequality.">Lorenz Curve</a> and Concentration Index</h3>
+<p>The <a href="glossary.html#lorenz-curve" class="glossary-link" data-definition="Cumulative-share plot used to visualize distributional inequality.">Lorenz curve</a> visualizes inequality in a distribution. For ridership concentration:</p>
+<ol>
+<li>Sort routes from lowest to highest ridership.</li>
+<li>Plot the cumulative share of routes (x-axis) against the cumulative share of total ridership (y-axis).</li>
+</ol>
+<p>If ridership were perfectly equal, the curve would be a 45-degree line. The more it bows away from that line, the more concentrated ridership is.</p>
+<p>The <strong>concentration index</strong> (analogous to the <a href="glossary.html#gini-coefficient" class="glossary-link" data-definition="Inequality metric on a 0 to 1 scale used for concentration analysis.">Gini coefficient</a>) is twice the area between the <a href="glossary.html#lorenz-curve" class="glossary-link" data-definition="Cumulative-share plot used to visualize distributional inequality.">Lorenz curve</a> and the 45-degree line. It summarizes the curve as a single number from 0 (perfect equality) to 1 (maximum concentration).</p>
+
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('.markdown-body'), {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ]
+  });"></script>
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
