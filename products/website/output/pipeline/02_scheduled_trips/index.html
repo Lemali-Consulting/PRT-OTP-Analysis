@@ -34,7 +34,7 @@
   <h1>Scheduled Trips ETL</h1>
   
   <p class="lede">Coverage: 2012-03 to 2026-02 (from schedule_periods, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-20 19:31 UTC · Commit 1ffb273</p>
+  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
 </section>
 
 <section class="panel toc-panel">
@@ -63,6 +63,11 @@
   a2_02_scheduled_trips{"WPRDC Pick Lookup"} --> 02_scheduled_trips
   t_routes[("routes")] --> 02_scheduled_trips
   01_data_ingestion[["Data Ingestion"]] --> t_routes
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
   02_scheduled_trips --> tp_scheduled_trips_monthly[("scheduled_trips_monthly")]
   02_scheduled_trips --> tp_schedule_periods[("schedule_periods")]
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
@@ -73,7 +78,7 @@
   classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
   class 02_scheduled_trips page;
   class t_routes,tp_schedule_periods,tp_scheduled_trips_monthly table;
-  class f1_02_scheduled_trips,f2_02_scheduled_trips file;
+  class f1_02_scheduled_trips,f2_02_scheduled_trips,u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
   class a1_02_scheduled_trips,a2_02_scheduled_trips api;
   class 01_data_ingestion pipeline;</pre>
   </details>
@@ -169,6 +174,7 @@
           <td>Snapshot file; refresh by rerunning its pipeline step.</td>
           <td>May lag upstream source updates.</td>
         </tr>
+        
       
         <tr>
           <td>data/wprdc-schedule/paac_pick_lookup.csv</td>
@@ -178,6 +184,7 @@
           <td>Snapshot file; refresh by rerunning its pipeline step.</td>
           <td>May lag upstream source updates.</td>
         </tr>
+        
       
         <tr>
           <td>WPRDC Schedule Monthly Aggregate</td>
@@ -187,6 +194,7 @@
           <td>Queried during pipeline execution; freshness depends on upstream updates.</td>
           <td>Availability and schema can change without notice.</td>
         </tr>
+        
       
         <tr>
           <td>WPRDC Pick Lookup</td>
@@ -196,6 +204,7 @@
           <td>Queried during pipeline execution; freshness depends on upstream updates.</td>
           <td>Availability and schema can change without notice.</td>
         </tr>
+        
       
         <tr>
           <td>routes</td>
@@ -205,6 +214,28 @@
           <td>Updated when the producing pipeline step is rerun.</td>
           <td>Coverage depends on upstream source availability and ETL assumptions.</td>
         </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
       
       </tbody>
     </table>

@@ -34,7 +34,7 @@
   <h1>36 - National Ridership Growth (2019 vs 2024)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
-  <p class="lede">Built 2026-03-20 19:31 UTC · Commit 1ffb273</p>
+  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
 </section>
 
 <section class="panel toc-panel">
@@ -67,6 +67,7 @@
   36_national_ridership_growth(["36 - National Ridership Growth (2019 vs 2024)"])
   t_ntd_agency[("ntd_agency")] --> 36_national_ridership_growth
   05_ntd_ridership[["NTD Ridership ETL"]] --> t_ntd_agency
+  u1_05_ntd_ridership[/"data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx"/] --> 05_ntd_ridership
   t_ntd_ridership[("ntd_ridership")] --> 36_national_ridership_growth
   05_ntd_ridership[["NTD Ridership ETL"]] --> t_ntd_ridership
   d1_36_national_ridership_growth(("polars (lib)")) --> 36_national_ridership_growth
@@ -79,6 +80,7 @@
   class 36_national_ridership_growth page;
   class t_ntd_agency,t_ntd_ridership table;
   class d1_36_national_ridership_growth dep;
+  class u1_05_ntd_ridership file;
   class 05_ntd_ridership pipeline;</pre>
   </details>
 </section>
@@ -239,6 +241,20 @@
           <td>Updated when the producing pipeline step is rerun.</td>
           <td>Coverage depends on upstream source availability and ETL assumptions.</td>
         </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</strong> — NTD monthly ridership workbook containing agency metadata and UPT series.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
       
         <tr>
           <td>ntd_ridership</td>
@@ -248,6 +264,20 @@
           <td>Updated when the producing pipeline step is rerun.</td>
           <td>Coverage depends on upstream source availability and ETL assumptions.</td>
         </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</strong> — NTD monthly ridership workbook containing agency metadata and UPT series.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
       
         <tr>
           <td>polars</td>
@@ -257,6 +287,7 @@
           <td>Version pinned by project environment until dependency updates are applied.</td>
           <td>Library updates may change behavior or defaults.</td>
         </tr>
+        
       
       </tbody>
     </table>

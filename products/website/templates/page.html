@@ -157,6 +157,20 @@
           <td>{{ src.freshness }}</td>
           <td>{{ src.caveat }}</td>
         </tr>
+        {% if src.upstream %}
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources ({{ src.upstream | length }})</summary>
+              <ul class="upstream-list">
+              {% for u in src.upstream %}
+                <li><span class="tag">{{ u.kind }}</span> <strong>{{ u.name }}</strong>{% if u.description %} — {{ u.description }}{% endif %}</li>
+              {% endfor %}
+              </ul>
+            </details>
+          </td>
+        </tr>
+        {% endif %}
       {% endfor %}
       </tbody>
     </table>

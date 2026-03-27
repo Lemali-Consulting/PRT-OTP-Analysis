@@ -34,7 +34,7 @@
   <h1>30 - Service Level vs OTP Longitudinal</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2016-11 to 2025-11 (from otp_monthly, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-20 19:31 UTC · Commit 1ffb273</p>
+  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
 </section>
 
 <section class="panel toc-panel">
@@ -67,10 +67,19 @@
   30_service_level_otp_longitudinal(["30 - Service Level vs OTP Longitudinal"])
   t_otp_monthly[("otp_monthly")] --> 30_service_level_otp_longitudinal
   01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
   t_routes[("routes")] --> 30_service_level_otp_longitudinal
   01_data_ingestion[["Data Ingestion"]] --> t_routes
   t_scheduled_trips_monthly[("scheduled_trips_monthly")] --> 30_service_level_otp_longitudinal
   02_scheduled_trips[["Scheduled Trips ETL"]] --> t_scheduled_trips_monthly
+  u1_02_scheduled_trips[/"data/wprdc-schedule/schedule_monthly_agg.csv"/] --> 02_scheduled_trips
+  u2_02_scheduled_trips[/"data/wprdc-schedule/paac_pick_lookup.csv"/] --> 02_scheduled_trips
+  u3_02_scheduled_trips{"WPRDC Schedule Monthly Aggregate"} --> 02_scheduled_trips
+  u4_02_scheduled_trips{"WPRDC Pick Lookup"} --> 02_scheduled_trips
   d1_30_service_level_otp_longitudinal(("numpy (lib)")) --> 30_service_level_otp_longitudinal
   d2_30_service_level_otp_longitudinal(("polars (lib)")) --> 30_service_level_otp_longitudinal
   d3_30_service_level_otp_longitudinal(("scipy (lib)")) --> 30_service_level_otp_longitudinal
@@ -83,6 +92,8 @@
   class 30_service_level_otp_longitudinal page;
   class t_otp_monthly,t_routes,t_scheduled_trips_monthly table;
   class d1_30_service_level_otp_longitudinal,d2_30_service_level_otp_longitudinal,d3_30_service_level_otp_longitudinal dep;
+  class u1_01_data_ingestion,u1_02_scheduled_trips,u2_01_data_ingestion,u2_02_scheduled_trips,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class u3_02_scheduled_trips,u4_02_scheduled_trips api;
   class 01_data_ingestion,02_scheduled_trips pipeline;</pre>
   </details>
 </section>
@@ -270,6 +281,28 @@
           <td>Updated when the producing pipeline step is rerun.</td>
           <td>Coverage depends on upstream source availability and ETL assumptions.</td>
         </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
       
         <tr>
           <td>routes</td>
@@ -279,6 +312,28 @@
           <td>Updated when the producing pipeline step is rerun.</td>
           <td>Coverage depends on upstream source availability and ETL assumptions.</td>
         </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
       
         <tr>
           <td>scheduled_trips_monthly</td>
@@ -288,6 +343,26 @@
           <td>Updated when the producing pipeline step is rerun.</td>
           <td>Coverage depends on upstream source availability and ETL assumptions.</td>
         </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (4)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/wprdc-schedule/schedule_monthly_agg.csv</strong> — Monthly route/day-type schedule aggregates (cached copy when available).</li>
+              
+                <li><span class="tag">file</span> <strong>data/wprdc-schedule/paac_pick_lookup.csv</strong> — Pick period lookup metadata (cached copy when available).</li>
+              
+                <li><span class="tag">api</span> <strong>WPRDC Schedule Monthly Aggregate</strong> — Public dataset of route-level monthly schedule aggregates.</li>
+              
+                <li><span class="tag">api</span> <strong>WPRDC Pick Lookup</strong> — Public lookup for pick period date ranges.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
       
         <tr>
           <td>numpy</td>
@@ -297,6 +372,7 @@
           <td>Version pinned by project environment until dependency updates are applied.</td>
           <td>Library updates may change behavior or defaults.</td>
         </tr>
+        
       
         <tr>
           <td>polars</td>
@@ -306,6 +382,7 @@
           <td>Version pinned by project environment until dependency updates are applied.</td>
           <td>Library updates may change behavior or defaults.</td>
         </tr>
+        
       
         <tr>
           <td>scipy</td>
@@ -315,6 +392,7 @@
           <td>Version pinned by project environment until dependency updates are applied.</td>
           <td>Library updates may change behavior or defaults.</td>
         </tr>
+        
       
       </tbody>
     </table>

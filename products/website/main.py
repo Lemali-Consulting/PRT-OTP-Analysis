@@ -106,6 +106,31 @@ def build_table_lookup(pages: list[Page]) -> dict[str, Page]:
     return lookup
 
 
+def build_table_upstream(pages: list[Page]) -> dict[str, list[dict[str, str]]]:
+    """Map each produced table to the upstream files and APIs of its pipeline step."""
+    upstream: dict[str, list[dict[str, str]]] = {}
+    for page in pages:
+        if page.kind != "pipeline":
+            continue
+        sources: list[dict[str, str]] = []
+        for f in page.manifest.get("files", []):
+            sources.append({
+                "kind": "file",
+                "name": f.get("path", "file"),
+                "description": f.get("description", ""),
+            })
+        for a in page.manifest.get("apis", []):
+            sources.append({
+                "kind": "api",
+                "name": a.get("name", a.get("url", "API")),
+                "description": a.get("description", ""),
+            })
+        for table in page.manifest.get("tables_produced", []):
+            name = table.get("name") if isinstance(table, dict) else str(table)
+            upstream[name] = sources
+    return upstream
+
+
 def build_table_descriptions(pages: list[Page]) -> dict[str, str]:
     """Map produced table names to one-sentence descriptions from pipeline manifests."""
     lookup: dict[str, str] = {}
@@ -314,10 +339,13 @@ def _prefer_description(current: str, candidate: str, kind: str) -> str:
 
 
 def page_sources(
-    page: Page, table_lookup: dict[str, Page], table_descriptions: dict[str, str]
-) -> list[dict[str, str]]:
+    page: Page,
+    table_lookup: dict[str, Page],
+    table_descriptions: dict[str, str],
+    table_upstream: dict[str, list[dict[str, str]]] | None = None,
+) -> list[dict]:
     """Build a normalized source list for one page."""
-    out: list[dict[str, str]] = []
+    out: list[dict] = []
     for item in page.manifest.get("files", []):
         name = item.get("path", "file")
         desc = sentence(item.get("description", ""))
@@ -358,6 +386,7 @@ def page_sources(
             desc = f"Database table consumed by this page and produced by {producer.title}."
         else:
             desc = GENERIC_SOURCE_DESCRIPTIONS["table"]
+        upstream = (table_upstream or {}).get(table, [])
         out.append(
             {
                 "name": table,
@@ -367,6 +396,7 @@ def page_sources(
                 "freshness": "Updated when the producing pipeline step is rerun." if producer else "Refresh cadence unknown.",
                 "caveat": "Coverage depends on upstream source availability and ETL assumptions.",
                 "relevance": "Primary analytical table used in this page's computations.",
+                "upstream": upstream,
             }
         )
     for dep in page.manifest.get("dependencies", []):
@@ -467,8 +497,12 @@ def coverage_text_for_page(page: Page, table_coverage: dict[str, tuple[str, str]
     return f"{starts[0]} to {ends[-1]} (from {tables}{suffix})."
 
 
-def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
-    """Build a simple data-lineage diagram for one page."""
+def build_mermaid_page(
+    page: Page,
+    table_lookup: dict[str, Page],
+    table_upstream: dict[str, list[dict[str, str]]] | None = None,
+) -> str:
+    """Build a data-lineage diagram for one page, including upstream sources."""
     def node_expr(node_id: str, label: str, shape: str) -> str:
         safe = label.replace('"', "'")
         if shape == "table":
@@ -507,6 +541,7 @@ def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
         lines.append(f"  {node_expr(node, label, 'api')} --> {node_self}")
         api_nodes.append(node)
 
+    rendered_pipelines: set[str] = set()
     for table in page.manifest.get("tables", []):
         producer = table_lookup.get(table)
         table_node = f"t_{table.replace('-', '_')}"
@@ -516,6 +551,18 @@ def build_mermaid_page(page: Page, table_lookup: dict[str, Page]) -> str:
             prod_node = producer.slug.replace("-", "_")
             lines.append(f"  {node_expr(prod_node, producer.title, 'pipeline')} --> {table_node}")
             pipeline_nodes.append(prod_node)
+            # Add upstream files/APIs for this pipeline (once per pipeline)
+            if table_upstream and prod_node not in rendered_pipelines:
+                rendered_pipelines.add(prod_node)
+                for uidx, usrc in enumerate(table_upstream.get(table, []), start=1):
+                    unode = f"u{uidx}_{prod_node}"
+                    ulabel = usrc["name"]
+                    ushape = usrc["kind"]  # "file" or "api"
+                    lines.append(f"  {node_expr(unode, ulabel, ushape)} --> {prod_node}")
+                    if ushape == "file":
+                        file_nodes.append(unode)
+                    else:
+                        api_nodes.append(unode)
 
     for idx, dep in enumerate(page.manifest.get("dependencies", []), start=1):
         node = f"d{idx}_{node_self}"
@@ -871,6 +918,12 @@ th, td {
   vertical-align: top;
 }
 th { background: #f4e5d2; font-weight: 700; }
+.upstream-row td { border-top: none; padding-top: 0; }
+.upstream-detail { font-size: 0.88rem; color: var(--ink-muted); }
+.upstream-detail summary { cursor: pointer; font-weight: 500; }
+.upstream-list { margin: 0.3rem 0 0.1rem 1.2rem; padding: 0; }
+.upstream-list li { margin-bottom: 0.2rem; }
+.upstream-list .tag { font-size: 0.72rem; }
 .markdown h1, .markdown h2, .markdown h3 { margin-top: 1rem; }
 .markdown p { margin: 0.65rem 0; }
 .markdown ul, .markdown ol { margin: 0.45rem 0 0.65rem 1.2rem; }
@@ -1139,6 +1192,7 @@ def main() -> None:
     pages = discover_pages()
     pipeline_manifest_errors = validate_pipeline_manifests(pages)
     table_lookup = build_table_lookup(pages)
+    table_upstream = build_table_upstream(pages)
     table_descriptions = build_table_descriptions(pages)
     table_coverage = get_table_month_coverage()
     run_metadata = {
@@ -1176,8 +1230,8 @@ def main() -> None:
         output_errors.extend(errors)
         output_groups = group_output_artifacts(output_artifacts)
         page_tables_produced = tables_produced_for_page(page)
-        sources = page_sources(page, table_lookup, table_descriptions)
-        mermaid = build_mermaid_page(page, table_lookup)
+        sources = page_sources(page, table_lookup, table_descriptions, table_upstream)
+        mermaid = build_mermaid_page(page, table_lookup, table_upstream)
         coverage_text = coverage_text_for_page(page, table_coverage)
         neighbors = prev_next.get(page.slug, {"prev": None, "next": None})
 

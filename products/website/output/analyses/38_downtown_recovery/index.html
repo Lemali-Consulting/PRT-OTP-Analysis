@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>38 - Downtown Recovery Gap - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>38 - Downtown Recovery Gap</h1>
+  <p class="lede">Ridership & Recovery</p>
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../37_peer_city_ridership/index.html">← 37 - Peer City Ridership Comparison</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  38_downtown_recovery(["38 - Downtown Recovery Gap"])
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 38_downtown_recovery page;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Downtown Recovery Gap</h1>
+<h2>Summary</h2>
+<p>Downtown dependence is a statistically significant predictor of worse ridership recovery, partially supporting PRT's claim that weak downtown business activity drags system-wide ridership. Routes with higher shares of pre-pandemic downtown boardings show worse recovery trajectories. However, the effect is modest (Spearman rho = -0.29) and explains only a fraction of the system-wide gap — even routes with minimal downtown exposure remain well below 2019 levels.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong><a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a></strong> between downtown boardings share and 2024 recovery: rho = -0.29, p = 0.005.</li>
+<li><strong>High downtown dependence</strong> (top tercile, 31 routes, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 53% downtown share): <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 2024 recovery = 53.4% of 2019.</li>
+<li><strong>Medium downtown dependence</strong> (32 routes, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 41% downtown share): <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> recovery = 47.3%.</li>
+<li><strong>Low downtown dependence</strong> (31 routes, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 15% downtown share): <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> recovery = 63.8%.</li>
+<li><strong>Kruskal-Wallis</strong> across terciles: H = 8.64, p = 0.013.</li>
+<li>Only the <strong>Medium vs Low</strong> pairwise comparison is significant after <a href="../../glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a> (p = 0.02). High vs Low approaches significance (p = 0.11) but does not clear the threshold.</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>PRT's claim is directionally correct but insufficient as a full explanation.</strong> The negative correlation confirms that downtown-oriented routes have recovered less ridership. But the effect is modest — downtown dependence alone accounts for roughly 8% of the <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> in recovery (rho-squared ~ 0.08).</li>
+<li><strong>Even non-downtown routes are far from recovery.</strong> The low-dependence tercile sits at <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 63.8% of 2019, meaning routes with almost no downtown exposure still lost over a third of their riders. This is not purely a downtown story.</li>
+<li><strong>The medium tercile recovered worst, not the high tercile.</strong> This appears driven by commuter express routes (flyers like P12, P67, P71, P76) and express services (Y1, O1, G3) that fall in the medium range for downtown stop share but serve exactly the demographic most likely to shift to remote work. These routes lost 70-85% of ridership.</li>
+<li><strong>Large local routes in the high tercile held up better than expected.</strong> Routes like 6, 12, 17, 81, 83 have &gt;50% downtown share but recovered to 65-79% — likely because they serve diverse trip purposes (shopping, medical, transfers) beyond commuting.</li>
+<li><strong>The best-recovering routes are high-ridership trunk lines with low downtown shares:</strong> 61A (84%), 61C (79%), 71B (80%), 59 (90%). These serve corridor travel that is less sensitive to office occupancy.</li>
+<li><strong>The trajectory chart shows all three groups tracking closely until mid-2021</strong>, after which the low-dependence group pulls ahead. This timing aligns with the return of non-commute travel (errands, school, medical) while office occupancy remained depressed.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Downtown share is computed from pre-pandemic stop-level data (FY2019)</strong>, not current patterns. Routes may have shifted service since 2019.</li>
+<li><strong>The stop-level CSV provides boarding counts, not trip purpose.</strong> A downtown boarding could be a commuter, a shopper, a transfer, or a medical visitor. We cannot isolate the &quot;office worker&quot; effect directly.</li>
+<li><strong>Ecological inference limitation.</strong> Route-level associations do not prove that individual downtown commuters failed to return — only that routes serving more downtown stops recovered less ridership in aggregate.</li>
+<li><strong>Ridership data ends Oct 2024.</strong> More recent recovery may differ.</li>
+<li><strong>The 2 km downtown radius captures the Golden Triangle and adjacent areas</strong> (e.g., Strip District edge, North Shore). A tighter boundary around the CBD might sharpen the signal.</li>
+</ul>
+<h2>Validation</h2>
+<ol>
+<li><strong>Data source verified.</strong> Downtown scores computed from <code>wprdc_stop_data.csv</code> (stop-level ridership with coordinates). Recovery trajectories from <code>ridership_monthly</code> (route-level weekday ridership). Both checked against prior analyses (33, 21).</li>
+<li><strong>Geographic scope matches.</strong> Downtown centroid and 2 km radius match analysis 33's definition. Pre-pandemic baseline (2019) matches analysis 21 and 37.</li>
+<li><strong>Null handling.</strong> Routes with zero 2019 baseline excluded from indexing. Stop records with null lat/lon excluded from downtown scoring.</li>
+<li><strong>Aggregates sanity-checked.</strong> System-wide recovery around 55-60% is consistent with analysis 37's finding of 57.6% via NTD data. Individual route recoveries match analysis 21's findings.</li>
+<li><strong>Direction of effects checked.</strong> More downtown dependence associates with worse recovery — consistent with the remote-work hypothesis. Low-dependence routes recovering better is consistent with known patterns of non-commute ridership being more resilient.</li>
+<li><strong>Small-sample routes present.</strong> Some routes (O5, 7, 71, 18) have very low baselines (&lt;200 avg daily riders). These contribute equally to tercile medians despite less reliable estimates.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (0)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/38_downtown_recovery/recovery_trajectories.png" alt="recovery_trajectories" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/recovery_trajectories.png" target="_blank" rel="noopener noreferrer">recovery_trajectories.png</a>
+          <p class="artifact-desc">Generated chart image produced by this page.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/38_downtown_recovery/scatter_dt_share_vs_recovery.png" alt="scatter_dt_share_vs_recovery" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/scatter_dt_share_vs_recovery.png" target="_blank" rel="noopener noreferrer">scatter_dt_share_vs_recovery.png</a>
+          <p class="artifact-desc">Generated chart image produced by this page.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No data outputs declared.</p>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Downtown Recovery Gap</h1>
+<h2>Question</h2>
+<p>Does downtown-dependent ridership explain Pittsburgh's poor system-wide recovery relative to peer cities? PRT claims that weak downtown business recovery is a primary driver of the system's lagging ridership. If true, routes that depend heavily on downtown stops should show worse recovery trajectories than routes serving other parts of the network.</p>
+<h2>Approach</h2>
+<ol>
+<li><strong>Compute downtown-dependence score per route.</strong> Using pre-pandemic stop-level ridership, calculate the fraction of each route's weekday boardings that occur at downtown stops (within 2 km of the Golden Triangle centroid at 40.4406, -79.9959 — matching analysis 33's definition).</li>
+<li><strong>Classify routes into terciles</strong> by downtown-dependence share: high (top third), medium, and low (bottom third). This avoids arbitrary cutoffs and ensures roughly equal group sizes.</li>
+<li><strong>Build monthly ridership recovery trajectories.</strong> Using <code>ridership_monthly</code> (weekday data, 2017-01 through 2024-10), index each route's ridership to its 2019 monthly average. Aggregate indexed ridership by downtown-dependence tercile to produce three recovery curves.</li>
+<li><strong>Statistical test.</strong> Compare 2024 recovery ratios across the three groups using Kruskal-Wallis (non-parametric, no normality assumption). If significant, apply pairwise Mann-Whitney with <a href="../../glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a>.</li>
+<li><strong>Scatter plot.</strong> Show the relationship between downtown-dependence share (continuous) and 2024 recovery ratio at the route level, with <a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a>.</li>
+</ol>
+<h2>Data</h2>
+<ul>
+<li><code>data/bus-stop-usage/wprdc_stop_data.csv</code> — stop-level ridership with lat/lon. Filtered to <code>time_period == 'Pre-pandemic'</code> and <code>serviceday == 'Weekday'</code>. Used to compute downtown-dependence scores.</li>
+<li><code>ridership_monthly</code> table — route-level monthly ridership. Filtered to <code>day_type == 'WEEKDAY'</code>. Used for recovery trajectories.</li>
+<li>Downtown centroid: (40.4406, -79.9959), radius 2 km (Haversine).</li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>output/recovery_trajectories.png</code> — Monthly indexed ridership (2019=100) for high/medium/low downtown-dependence terciles.</li>
+<li><code>output/scatter_dt_share_vs_recovery.png</code> — Route-level scatter of downtown share vs. 2024 recovery ratio.</li>
+<li><code>output/route_downtown_scores.csv</code> — Per-route downtown-dependence scores and recovery ratios.</li>
+<li><code>output/statistical_tests.csv</code> — Kruskal-Wallis and pairwise test results.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
