@@ -1,9 +1,40 @@
 kind: analysis
-title: "38 - Downtown Recovery Gap"
-group: "Ridership & Recovery"
-tables: []
-files: []
-analyses: []
-description: "TODO: one-sentence description of this analysis."
-dependencies: []
-outputs: []
+title: 38 - Downtown Recovery Gap
+group: Ridership & Recovery
+tables:
+- ridership_monthly
+files:
+- path: data/bus-stop-usage/wprdc_stop_data.csv
+  description: Stop-level ridership with lat/lon, used to compute downtown-dependence
+    scores per route from pre-pandemic weekday boardings.
+analyses:
+- id: 33
+  relationship: uses same downtown centroid (40.4406, -79.9959) and 2 km radius definition.
+- id: 37
+  relationship: extends peer city recovery finding by testing downtown dependence as
+    an explanatory factor.
+- id: 21
+  relationship: extends COVID ridership recovery finding with geographic decomposition.
+description: Tests PRT claim that poor downtown business recovery explains system-wide
+  ridership lag vs peer cities by comparing recovery trajectories of routes grouped
+  by downtown boardings share.
+dependencies:
+- numpy
+- polars
+- scipy
+outputs:
+- path: recovery_trajectories.png
+  kind: image
+  description: Monthly indexed ridership (2019=100) for high/medium/low downtown-dependence
+    terciles.
+- path: scatter_dt_share_vs_recovery.png
+  kind: image
+  description: Route-level scatter of downtown boardings share vs 2024 recovery ratio
+    with Spearman correlation.
+- path: route_downtown_scores.csv
+  kind: data
+  description: Per-route downtown-dependence scores, tercile assignments, and 2024
+    recovery ratios.
+- path: statistical_tests.csv
+  kind: data
+  description: Kruskal-Wallis and pairwise Mann-Whitney test results.

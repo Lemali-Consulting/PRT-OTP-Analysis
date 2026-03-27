@@ -1,4 +1,39 @@
 # Assumptions for Downtown Recovery Gap
 # Each assumption is something the code relies on that could silently produce wrong results if violated.
 
-assumptions: []
+assumptions:
+- id: downtown-radius
+  description: Downtown is defined as stops within 2 km of centroid (40.4406, -79.9959).
+    A tighter or wider radius would reclassify stops and shift route scores.
+  impact: medium
+  check: Visual inspection confirms the 2 km radius captures the Golden Triangle
+    and adjacent areas (Strip District edge, North Shore) without reaching Oakland.
+
+- id: boardings-as-dependence
+  description: Downtown dependence is measured by share of pre-pandemic boardings
+    at downtown stops, not by trip purpose. A boarding at a downtown stop could be a
+    commuter, shopper, transfer, or medical visit.
+  impact: high
+  check: Cannot be validated without trip-purpose survey data. The ecological inference
+    caveat is documented in FINDINGS.md.
+
+- id: static-route-geography
+  description: Downtown-dependence scores use pre-pandemic (FY2019) stop-level data.
+    Routes may have changed stop patterns since then, making current downtown exposure
+    different from the score used.
+  impact: low
+  check: PRT has not done major route restructuring since 2019. Most route alignments
+    are stable.
+
+- id: baseline-year
+  description: 2019 monthly average is used as the recovery baseline. Months with
+    anomalous ridership (holidays, weather) are included in the average.
+  impact: low
+  check: Using a full calendar year (12 months) averages out seasonal effects.
+
+- id: weekday-only
+  description: Analysis uses weekday ridership only. Weekend recovery patterns may
+    differ, and weekend-heavy routes could show different downtown dependence effects.
+  impact: low
+  check: Weekday is the appropriate focus since PRT's downtown recovery claim is about
+    business/commuter activity.
