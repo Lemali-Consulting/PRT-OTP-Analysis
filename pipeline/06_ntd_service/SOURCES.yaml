@@ -1,0 +1,13 @@
+kind: pipeline
+title: NTD Annual Service ETL
+description: >-
+  Loads NTD TS2.2 annual VRH, VRM, UPT, and VOMS data into prt.db for
+  service-level comparative analysis across US transit agencies (1991-2023).
+files:
+  - path: data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx
+    description: NTD TS2.2 workbook with annual service data by system.
+apis: []
+tables: []
+tables_produced:
+  - name: ntd_annual_service
+    description: Annual VRH, VRM, UPT, VOMS by NTD system (1991-2023).

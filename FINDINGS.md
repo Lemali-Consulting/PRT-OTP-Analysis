@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 35 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 39 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -277,6 +277,10 @@ Among the 150 largest US transit agencies, the median ridership change from 2019
 
 Among 8 peer mid-size transit agencies, Pittsburgh ties with St. Louis for the **lowest overall ridership recovery at 57.6%** of 2019 levels. Cleveland leads at 77.4%, followed by Baltimore (72.8%) and Portland (67.4%). **Bus recovery outpaces rail at all 8 peers**: PRT bus is at 59.2% (7th of 8) while PRT light rail is at **43.6% (worst of all 8 peers)**. The rail drag is the largest single factor in Pittsburgh's low ranking — if PRT rail matched the peer median (~56%), overall recovery would be ~60%. Pittsburgh's indexed trajectory flattens earlier than most peers (~mid-2022), suggesting recovery stalled while cities like Cleveland and Baltimore continued improving.
 
+## 39. National Service Cuts (Analysis 39)
+
+PRT cut **15.0% of vehicle revenue hours** between 2019 and 2023, ranking **97th of 150** large US transit agencies (median cut: −10.8%). Only 26 of 150 agencies (17%) recovered to 2019 service levels. However, PRT's ridership dropped **40.8%** over the same period — a **25.8 percentage point gap** that strongly suggests the ridership decline is primarily demand-driven, not a consequence of service cuts. This pattern holds nationally: 136 of 150 agencies lost proportionally more riders than service. Among peers, Cleveland cut the least (−7.3% VRH), while St. Louis cut the most (−34.2%). PRT sits mid-pack between Baltimore (−12.0%) and Buffalo (−15.6%). Even agencies that grew service (e.g. Sacramento +24% VRH) still lost riders, reinforcing that the post-COVID ridership shortfall reflects structural demand shifts rather than service austerity.
+
 ## Key Takeaways
 
 ### What drives OTP
@@ -303,7 +307,8 @@ Among 8 peer mid-size transit agencies, Pittsburgh ties with St. Louis for the *
 14. **OTP declines do not predict subsequent ridership losses** (0/93 routes significant after correction). The weak negative correlation suggests reverse causality: lower ridership improves OTP through reduced crowding, not that poor OTP drives riders away.
 15. **Pandemic ridership loss was geographically uniform** (downtown -60%, inner ring -62%, outer ring -59%), challenging the narrative that downtown transit was disproportionately affected.
 16. **PRT's recovery lags national peers.** At −42.4%, PRT ranks 136th of 150 large agencies (median −22.4%). Among 8 peer mid-size cities, Pittsburgh ties for last at 57.6% recovery; light rail at 43.6% is the worst peer-city rail recovery.
-17. **Downtown dependence partially explains the ridership gap** (Spearman rho = −0.29, p = 0.005). Routes with high downtown boardings share recovered to ~53% of 2019 levels vs ~64% for low-dependence routes. But even routes with minimal downtown exposure remain well below pre-pandemic levels, so downtown weakness is a contributing factor, not the whole story.
+17. **PRT's ridership problem is demand-driven, not supply-driven.** PRT cut 15% of service hours but lost 41% of riders. The 26 pp gap — consistent across 136 of 150 large agencies nationally — means most of the ridership decline occurred independently of service reductions. Even agencies that grew VRH (e.g. Sacramento +24%) still lost riders.
+18. **Downtown dependence partially explains the ridership gap** (Spearman rho = −0.29, p = 0.005). Routes with high downtown boardings share recovered to ~53% of 2019 levels vs ~64% for low-dependence routes. But even routes with minimal downtown exposure remain well below pre-pandemic levels, so downtown weakness is a contributing factor, not the whole story.
 
 ### Equity and human impact
 
@@ -360,3 +365,4 @@ Among 8 peer mid-size transit agencies, Pittsburgh ties with St. Louis for the *
 | 36 | [National Ridership Growth](analyses/36_national_ridership_growth/) | Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies using NTD data; rank PRT nationally. |
 | 37 | [Peer City Ridership](analyses/37_peer_city_ridership/) | Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits. |
 | 38 | [Downtown Recovery](analyses/38_downtown_recovery/) | Tests PRT claim that poor downtown business recovery explains system-wide ridership lag vs peer cities |
+| 39 | [National Service Cuts](analyses/39_national_service_cuts/) | Compare vehicle revenue hour changes 2019-2023 across the 150 largest US transit agencies; rank PRT; contrast supply-side service cuts with demand-side ridership loss. |

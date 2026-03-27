@@ -21,6 +21,7 @@ Pittsburgh Regional Transit (PRT) on-time performance and system data, normalize
 | `otp_monthly`    | 7,651   | Fact: monthly on-time performance        |
 | `ntd_agency`     | 2,340   | Dimension: NTD agency-mode-TOS combos    |
 | `ntd_ridership`  | 673,920 | Fact: monthly UPT by agency/mode/TOS     |
+| `ntd_annual_service` | 90,057 | Fact: annual VRH/VRM/UPT/VOMS by agency |
 
 ### `routes`
 
@@ -118,6 +119,25 @@ Monthly unlinked passenger trips (UPT) from the NTD Monthly Module, Jan 2002–D
 
 Primary key: `(ntd_id, mode, tos, month)`. Source: NTD Monthly Module Excel, UPT sheet. Built by `src/prt_otp_analysis/ntd_ridership.py`.
 
+### `ntd_annual_service`
+
+Annual service metrics from the NTD TS2.2 "Service Data by System" workbook, 1991–2023. System-level (all modes aggregated).
+
+| Column        | Type        | Description                         |
+|---------------|-------------|-------------------------------------|
+| `ntd_id`      | INTEGER PK  | NTD agency ID (e.g. 30022 = PRT)   |
+| `agency_name` | TEXT        | Agency name                          |
+| `city`        | TEXT        | Headquarters city                    |
+| `state`       | TEXT        | Headquarters state                   |
+| `uza_name`    | TEXT        | Primary urbanized area name          |
+| `year`        | INTEGER PK  | Report year (1991–2023)              |
+| `vrh`         | REAL        | Vehicle Revenue Hours (nullable)     |
+| `vrm`         | REAL        | Vehicle Revenue Miles (nullable)     |
+| `upt`         | REAL        | Unlinked Passenger Trips (nullable)  |
+| `voms`        | REAL        | Vehicles Operated in Maximum Service (nullable) |
+
+Primary key: `(ntd_id, year)`. Source: NTD TS2.2 Excel workbook. Built by `src/prt_otp_analysis/ntd_service.py`.
+
 ## Route ID Reconciliation
 
 Route codes are extracted from `routes_by_month.csv` by splitting on `" - "` (first token).
@@ -138,6 +158,7 @@ Route codes are extracted from `routes_by_month.csv` by splitting on `" - "` (fi
 | `PRT_Stop_Reference_Lookup_Table.csv` | 7,554 | `stop_reference` |
 | `Transit_stops_*.geojson` | 17,546 | Not used (same data as stops CSV) |
 | `ntd-monthly-ridership/*.xlsx` | 2,340 agencies x 288 months | `ntd_agency`, `ntd_ridership` |
+| `ntd-annual-service/*.xlsx` | 3,062 agencies x 33 years | `ntd_annual_service` |
 
 ---
 
