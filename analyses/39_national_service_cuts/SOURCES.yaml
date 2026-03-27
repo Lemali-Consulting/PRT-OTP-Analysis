@@ -1,0 +1,35 @@
+kind: analysis
+title: 39 — National Service Cuts (2019 vs 2023)
+group: Equity and Strategic Planning
+description: >-
+  PRT cut 15% of vehicle revenue hours between 2019 and 2023, ranking 102nd of
+  150 large agencies. Contrasts supply-side service cuts with demand-side
+  ridership loss to distinguish agencies that cut service from those that lost
+  riders despite maintaining service.
+tables:
+  - ntd_annual_service
+files: []
+analyses:
+  - 36_national_ridership_growth
+  - 37_peer_city_ridership
+dependencies:
+  - polars
+  - matplotlib
+outputs: []
+# TODO: restore when analysis 39 is implemented
+# outputs:
+#   - path: service_cuts_data.csv
+#     kind: data
+#     description: Per-agency VRH/UPT change data with ranks.
+#   - path: service_cuts_distribution.png
+#     kind: image
+#     description: Histogram of VRH percent change with PRT highlighted.
+#   - path: service_cuts_ranking.png
+#     kind: image
+#     description: Horizontal bar chart ranking 150 agencies by VRH change.
+#   - path: peer_service_vs_ridership.png
+#     kind: image
+#     description: Grouped bars comparing VRH and UPT change for 8 peer cities.
+#   - path: supply_vs_demand_scatter.png
+#     kind: image
+#     description: Scatter plot of VRH change vs UPT change for top 150.

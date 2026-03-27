@@ -35,7 +35,7 @@
   <p class="kicker">Transit Performance Knowledge Base</p>
   <h1>PRT OTP Analysis</h1>
   <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
-  <p class="lede">Built 2026-03-27 19:55 UTC · Commit b63c9a3</p>
+  <p class="lede">Built 2026-03-27 20:03 UTC · Commit a28c93d</p>
 </section>
 
 <section class="panel">
@@ -84,6 +84,11 @@
   <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="ntd ridership etl loads national monthly ridership benchmark data from the ntd workbook.">
     <h3><a href="pipeline/05_ntd_ridership/index.html">NTD Ridership ETL</a></h3>
     <p>Loads national monthly ridership benchmark data from the NTD workbook.</p>
+  </article>
+
+  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="ntd annual service etl loads ntd ts2.2 annual vrh, vrm, upt, and voms data into prt.db for service-level comparative analysis across us transit agencies (1991-2023).">
+    <h3><a href="pipeline/06_ntd_service/index.html">NTD Annual Service ETL</a></h3>
+    <p>Loads NTD TS2.2 annual VRH, VRM, UPT, and VOMS data into prt.db for service-level comparative analysis across US transit agencies (1991-2023).</p>
   </article>
 
 </div>
@@ -278,9 +283,14 @@
     <p>Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits.</p>
   </article>
 
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership & Recovery" data-output-kinds="" data-text="38 - downtown recovery gap todo: one-sentence description of this analysis.">
+  <article class="card filter-card" data-kind="analysis" data-group="Ridership & Recovery" data-output-kinds="data,image" data-text="38 - downtown recovery gap tests prt claim that poor downtown business recovery explains system-wide ridership lag vs peer cities by comparing recovery trajectories of routes grouped by downtown boardings share.">
     <h3><a href="analyses/38_downtown_recovery/index.html">38 - Downtown Recovery Gap</a></h3>
-    <p>TODO: one-sentence description of this analysis.</p>
+    <p>Tests PRT claim that poor downtown business recovery explains system-wide ridership lag vs peer cities by comparing recovery trajectories of routes grouped by downtown boardings share.</p>
+  </article>
+
+  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="" data-text="39 — national service cuts (2019 vs 2023) prt cut 15% of vehicle revenue hours between 2019 and 2023, ranking 102nd of 150 large agencies. contrasts supply-side service cuts with demand-side ridership loss to distinguish agencies that cut service from those that lost riders despite maintaining service.">
+    <h3><a href="analyses/39_national_service_cuts/index.html">39 — National Service Cuts (2019 vs 2023)</a></h3>
+    <p>PRT cut 15% of vehicle revenue hours between 2019 and 2023, ranking 102nd of 150 large agencies. Contrasts supply-side service cuts with demand-side ridership loss to distinguish agencies that cut service from those that lost riders despite maintaining service.</p>
   </article>
 
 </div>

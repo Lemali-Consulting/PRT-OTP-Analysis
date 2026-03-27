@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>39 — National Service Cuts (2019 vs 2023) - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>39 — National Service Cuts (2019 vs 2023)</h1>
+  <p class="lede">Equity and Strategic Planning</p>
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-03-27 20:03 UTC · Commit a28c93d</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../38_downtown_recovery/index.html">← 38 - Downtown Recovery Gap</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  39_national_service_cuts(["39 — National Service Cuts (2019 vs 2023)"])
+  t_ntd_annual_service[("ntd_annual_service")] --> 39_national_service_cuts
+  06_ntd_service[["NTD Annual Service ETL"]] --> t_ntd_annual_service
+  u1_06_ntd_service[/"data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx"/] --> 06_ntd_service
+  d1_39_national_service_cuts(("polars (lib)")) --> 39_national_service_cuts
+  d2_39_national_service_cuts(("matplotlib (lib)")) --> 39_national_service_cuts
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 39_national_service_cuts page;
+  class t_ntd_annual_service table;
+  class d1_39_national_service_cuts,d2_39_national_service_cuts dep;
+  class u1_06_ntd_service file;
+  class 06_ntd_service pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: National Service Cuts (2019 vs 2023)</h1>
+<h2>Summary</h2>
+<p>Brief summary of results.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li>Headline statistics here.</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li>Detailed observations from the analysis.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li>Limitations and caveats of this analysis.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (0)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/39_national_service_cuts/service_cuts_distribution.png" alt="service_cuts_distribution" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/service_cuts_distribution.png" target="_blank" rel="noopener noreferrer">service_cuts_distribution.png</a>
+          <p class="artifact-desc">Generated chart image produced by this page.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/39_national_service_cuts/service_cuts_ranking.png" alt="service_cuts_ranking" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/service_cuts_ranking.png" target="_blank" rel="noopener noreferrer">service_cuts_ranking.png</a>
+          <p class="artifact-desc">Generated chart image produced by this page.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No data outputs declared.</p>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: National Service Cuts (2019 vs 2023)</h1>
+<h2>Question</h2>
+<p>How much service have the largest US transit agencies cut since 2019, where does PRT rank, and how does supply-side service change compare to demand-side ridership change?</p>
+<h2>Approach</h2>
+<ol>
+<li>Load annual VRH (Vehicle Revenue Hours) and UPT (Unlinked Passenger Trips) from <code>ntd_annual_service</code> for 2019 and 2023.</li>
+<li>Filter to agencies with non-null VRH in both years.</li>
+<li>Rank agencies by 2019 VRH (descending) and take the top 150 to match Analysis 36's size-based approach.</li>
+<li>Compute percent change in VRH and UPT for each agency.</li>
+<li>Rank PRT nationally by VRH percent change (best recovery = rank 1).</li>
+<li>Compare PRT to 7 peer cities (Baltimore, Cleveland, Denver, St. Louis, Buffalo, Portland, Minneapolis) on both VRH and UPT change.</li>
+<li>Classify agencies into quadrants based on whether they lost more service (VRH) or more riders (UPT) relative to each other.</li>
+</ol>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ntd_annual_service</code></td>
+  <td>Annual VRH, VRM, UPT, VOMS per agency (1991–2023)</td>
+  <td><code>prt.db</code> table (pipeline 06)</td>
+</tr>
+</tbody>
+</table>
+<h2>Output</h2>
+<table>
+<thead>
+<tr>
+  <th>File</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>service_cuts_distribution.png</code></td>
+  <td>Histogram of VRH % change across 150 agencies, PRT highlighted</td>
+</tr>
+<tr>
+  <td><code>service_cuts_ranking.png</code></td>
+  <td>Horizontal bar chart ranking 150 agencies by VRH % change</td>
+</tr>
+<tr>
+  <td><code>peer_service_vs_ridership.png</code></td>
+  <td>Grouped bars: VRH change vs UPT change for 8 peer cities</td>
+</tr>
+<tr>
+  <td><code>supply_vs_demand_scatter.png</code></td>
+  <td>Scatter plot: VRH change (x) vs UPT change (y) for top 150, with y=x diagonal</td>
+</tr>
+<tr>
+  <td><code>service_cuts_data.csv</code></td>
+  <td>Per-agency data with VRH and UPT changes and ranks</td>
+</tr>
+</tbody>
+</table>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Compare 2019-to-2023 service changes (VRH) across 150 largest US transit agencies; rank PRT.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+
+from prt_otp_analysis.common import get_db, output_dir, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+PRT_NTD_ID = 30022
+TOP_N = 150
+
+# Peer agencies from Analysis 37
+PEERS = {
+    30022: &quot;Pittsburgh&quot;,
+    30034: &quot;Baltimore&quot;,
+    50015: &quot;Cleveland&quot;,
+    80006: &quot;Denver&quot;,
+    70006: &quot;St. Louis&quot;,
+    20004: &quot;Buffalo&quot;,
+    8: &quot;Portland&quot;,
+    50027: &quot;Minneapolis&quot;,
+}
+
+
+def load_service_data(conn) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load VRH and UPT for 2019 and 2023, pivot to wide format.&quot;&quot;&quot;
+    rows = conn.execute(&quot;&quot;&quot;
+        SELECT ntd_id, agency_name, city, state, year, vrh, upt
+        FROM ntd_annual_service
+        WHERE year IN (2019, 2023)
+          AND vrh IS NOT NULL
+    &quot;&quot;&quot;).fetchall()
+    df = pl.DataFrame([dict(r) for r in rows])
+
+    # Pivot to one row per agency with vrh_2019, vrh_2023, upt_2019, upt_2023
+    vrh_wide = (
+        df.select(&quot;ntd_id&quot;, &quot;agency_name&quot;, &quot;city&quot;, &quot;state&quot;, &quot;year&quot;, &quot;vrh&quot;)
+        .pivot(on=&quot;year&quot;, index=[&quot;ntd_id&quot;, &quot;agency_name&quot;, &quot;city&quot;, &quot;state&quot;], values=&quot;vrh&quot;)
+        .rename({&quot;2019&quot;: &quot;vrh_2019&quot;, &quot;2023&quot;: &quot;vrh_2023&quot;})
+    )
+    upt_wide = (
+        df.select(&quot;ntd_id&quot;, &quot;year&quot;, &quot;upt&quot;)
+        .pivot(on=&quot;year&quot;, index=&quot;ntd_id&quot;, values=&quot;upt&quot;)
+        .rename({&quot;2019&quot;: &quot;upt_2019&quot;, &quot;2023&quot;: &quot;upt_2023&quot;})
+    )
+
+    wide = vrh_wide.join(upt_wide, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+
+    # Keep only agencies with VRH data in both years
+    wide = wide.filter(
+        pl.col(&quot;vrh_2019&quot;).is_not_null() &amp; pl.col(&quot;vrh_2023&quot;).is_not_null()
+    )
+
+    return wide
+
+
+def main():
+    plt = setup_plotting()
+    conn = get_db()
+
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 39: National Service Cuts (2019 vs 2023)&quot;)
+    print(&quot;=&quot; * 60)
+
+    # Load data
+    print(&quot;\n1. Loading service data...&quot;)
+    wide = load_service_data(conn)
+    conn.close()
+    print(f&quot;   {len(wide)} agencies with VRH data in both 2019 and 2023&quot;)
+
+    # Rank by 2019 VRH and take top N
+    wide = wide.sort(&quot;vrh_2019&quot;, descending=True).head(TOP_N)
+    print(f&quot;   Top {TOP_N} by 2019 VRH selected&quot;)
+
+    # Compute percent changes
+    wide = wide.with_columns(
+        vrh_pct_change=((pl.col(&quot;vrh_2023&quot;) - pl.col(&quot;vrh_2019&quot;)) / pl.col(&quot;vrh_2019&quot;) * 100),
+        upt_pct_change=((pl.col(&quot;upt_2023&quot;) - pl.col(&quot;upt_2019&quot;)) / pl.col(&quot;upt_2019&quot;) * 100),
+    )
+
+    # Rank by VRH change (best recovery = rank 1)
+    wide = wide.sort(&quot;vrh_pct_change&quot;, descending=True).with_row_index(&quot;rank&quot;, offset=1)
+    wide = wide.with_columns(pl.col(&quot;rank&quot;).cast(pl.Int64))
+
+    result = wide.select(
+        &quot;rank&quot;, &quot;ntd_id&quot;, &quot;agency_name&quot;, &quot;city&quot;, &quot;state&quot;,
+        &quot;vrh_2019&quot;, &quot;vrh_2023&quot;, &quot;vrh_pct_change&quot;,
+        &quot;upt_2019&quot;, &quot;upt_2023&quot;, &quot;upt_pct_change&quot;,
+    )
+
+    # Summary statistics
+    vrh_pct = result[&quot;vrh_pct_change&quot;]
+    median_vrh = vrh_pct.median()
+    mean_vrh = vrh_pct.mean()
+    q25 = vrh_pct.quantile(0.25)
+    q75 = vrh_pct.quantile(0.75)
+    recovered = result.filter(pl.col(&quot;vrh_pct_change&quot;) &gt;= 0)
+
+    print(&quot;\n2. VRH change summary:&quot;)
+    print(f&quot;   Median change: {median_vrh:.1f}%&quot;)
+    print(f&quot;   Mean change:   {mean_vrh:.1f}%&quot;)
+    print(f&quot;   IQR:           {q25:.1f}% to {q75:.1f}%&quot;)
+    print(f&quot;   Recovered to 2019 levels: {len(recovered)} / {TOP_N}&quot;)
+
+    # PRT results
+    prt = result.filter(pl.col(&quot;ntd_id&quot;) == PRT_NTD_ID)
+    if len(prt) &gt; 0:
+        prt_row = prt.row(0, named=True)
+        print(f&quot;\n   PRT: rank {prt_row[&#x27;rank&#x27;]}/{TOP_N}, &quot;
+              f&quot;VRH {prt_row[&#x27;vrh_pct_change&#x27;]:+.1f}%, &quot;
+              f&quot;UPT {prt_row[&#x27;upt_pct_change&#x27;]:+.1f}%&quot;)
+        print(f&quot;   VRH: {prt_row[&#x27;vrh_2019&#x27;]:,.0f} → {prt_row[&#x27;vrh_2023&#x27;]:,.0f}&quot;)
+        print(f&quot;   UPT: {prt_row[&#x27;upt_2019&#x27;]:,.0f} → {prt_row[&#x27;upt_2023&#x27;]:,.0f}&quot;)
+    else:
+        print(&quot;\n   WARNING: PRT not found in top 150&quot;)
+        prt_row = None
+
+    # Save CSV
+    csv_path = OUT / &quot;service_cuts_data.csv&quot;
+    result.write_csv(csv_path)
+    print(f&quot;\n3. Saved {csv_path}&quot;)
+
+    # --- Chart 1: VRH change histogram ---
+    print(&quot;\n4. Generating VRH change histogram...&quot;)
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.hist(vrh_pct.to_list(), bins=30, color=&quot;#4878CF&quot;, edgecolor=&quot;white&quot;, alpha=0.8)
+    ax.axvline(median_vrh, color=&quot;#333333&quot;, linestyle=&quot;--&quot;, linewidth=1.5,
+               label=f&quot;Median: {median_vrh:.1f}%&quot;)
+    ax.axvline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+    if prt_row:
+        prt_vrh_pct = prt_row[&quot;vrh_pct_change&quot;]
+        ax.axvline(prt_vrh_pct, color=&quot;#E24A33&quot;, linestyle=&quot;-&quot;, linewidth=2.5,
+                   label=f&quot;PRT: {prt_vrh_pct:+.1f}%&quot;)
+    ax.set_xlabel(&quot;Vehicle Revenue Hours Change 2019 → 2023 (%)&quot;)
+    ax.set_ylabel(&quot;Number of Agencies&quot;)
+    ax.set_title(f&quot;Service Change Distribution — Top {TOP_N} US Transit Agencies&quot;)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;service_cuts_distribution.png&quot;)
+    plt.close(fig)
+    print(&quot;   Saved service_cuts_distribution.png&quot;)
+
+    # --- Chart 2: Ranking bar chart ---
+    print(&quot;\n5. Generating ranking bar chart...&quot;)
+    sorted_df = result.sort(&quot;vrh_pct_change&quot;)
+    agencies = sorted_df[&quot;agency_name&quot;].to_list()
+    changes = sorted_df[&quot;vrh_pct_change&quot;].to_list()
+    ntd_ids = sorted_df[&quot;ntd_id&quot;].to_list()
+    colors = [&quot;#E24A33&quot; if nid == PRT_NTD_ID else &quot;#4878CF&quot; for nid in ntd_ids]
+
+    fig, ax = plt.subplots(figsize=(14, max(30, TOP_N * 0.22)))
+    ax.barh(range(len(agencies)), changes, color=colors, height=0.8)
+    ax.set_yticks(range(len(agencies)))
+    ax.set_yticklabels(agencies, fontsize=6)
+    ax.set_xlabel(&quot;Vehicle Revenue Hours Change 2019 → 2023 (%)&quot;)
+    ax.set_title(f&quot;Service Change Ranking — Top {TOP_N} US Transit Agencies&quot;)
+    ax.axvline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+
+    if prt_row:
+        prt_idx = [i for i, nid in enumerate(ntd_ids) if nid == PRT_NTD_ID]
+        if prt_idx:
+            ax.get_yticklabels()[prt_idx[0]].set_color(&quot;#E24A33&quot;)
+            ax.get_yticklabels()[prt_idx[0]].set_fontweight(&quot;bold&quot;)
+            ax.get_yticklabels()[prt_idx[0]].set_fontsize(7)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;service_cuts_ranking.png&quot;)
+    plt.close(fig)
+    print(&quot;   Saved service_cuts_ranking.png&quot;)
+
+    # --- Chart 3: Peer city VRH vs UPT change ---
+    print(&quot;\n6. Generating peer city comparison...&quot;)
+    peer_ids = list(PEERS.keys())
+    peer_data = result.filter(pl.col(&quot;ntd_id&quot;).is_in(peer_ids))
+    peer_data = peer_data.with_columns(
+        city_label=pl.col(&quot;ntd_id&quot;).replace(PEERS, return_dtype=pl.Utf8)
+    ).sort(&quot;vrh_pct_change&quot;, descending=True)
+
+    if len(peer_data) &gt; 0:
+        cities = peer_data[&quot;city_label&quot;].to_list()
+        vrh_changes = peer_data[&quot;vrh_pct_change&quot;].to_list()
+        upt_changes = peer_data[&quot;upt_pct_change&quot;].to_list()
+
+        fig, ax = plt.subplots(figsize=(12, 7))
+        x = range(len(cities))
+        width = 0.35
+
+        bars_vrh = ax.bar([i - width / 2 for i in x], vrh_changes, width,
+                          label=&quot;VRH (Service)&quot;, color=&quot;#4878CF&quot;)
+        bars_upt = ax.bar([i + width / 2 for i in x], upt_changes, width,
+                          label=&quot;UPT (Ridership)&quot;, color=&quot;#E24A33&quot;)
+
+        ax.set_xticks(list(x))
+        ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
+        ax.axhline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+        ax.set_ylabel(&quot;Change 2019 → 2023 (%)&quot;)
+        ax.set_title(&quot;Service Cuts vs Ridership Loss — Peer Cities&quot;)
+        ax.legend()
+
+        for i, (v, u) in enumerate(zip(vrh_changes, upt_changes)):
+            ax.text(i - width / 2, v - 2 if v &lt; 0 else v + 1,
+                    f&quot;{v:+.0f}%&quot;, ha=&quot;center&quot;, va=&quot;top&quot; if v &lt; 0 else &quot;bottom&quot;, fontsize=8)
+            ax.text(i + width / 2, u - 2 if u &lt; 0 else u + 1,
+                    f&quot;{u:+.0f}%&quot;, ha=&quot;center&quot;, va=&quot;top&quot; if u &lt; 0 else &quot;bottom&quot;, fontsize=8)
+
+        fig.tight_layout()
+        fig.savefig(OUT / &quot;peer_service_vs_ridership.png&quot;)
+        plt.close(fig)
+        print(&quot;   Saved peer_service_vs_ridership.png&quot;)
+
+        print(&quot;\n   Peer city details:&quot;)
+        for row in peer_data.iter_rows(named=True):
+            marker = &quot; &lt;&lt;&lt;&quot; if row[&quot;ntd_id&quot;] == PRT_NTD_ID else &quot;&quot;
+            gap = row[&quot;vrh_pct_change&quot;] - row[&quot;upt_pct_change&quot;]
+            print(f&quot;   {row[&#x27;city_label&#x27;]:&lt;15s} VRH: {row[&#x27;vrh_pct_change&#x27;]:&gt;+6.1f}%  &quot;
+                  f&quot;UPT: {row[&#x27;upt_pct_change&#x27;]:&gt;+6.1f}%  &quot;
+                  f&quot;gap: {gap:&gt;+6.1f} pp{marker}&quot;)
+    else:
+        print(&quot;   WARNING: No peer cities found in top 150&quot;)
+
+    # --- Chart 4: Supply vs demand scatter ---
+    print(&quot;\n7. Generating supply vs demand scatter...&quot;)
+    scatter_data = result.filter(
+        pl.col(&quot;vrh_pct_change&quot;).is_not_null() &amp; pl.col(&quot;upt_pct_change&quot;).is_not_null()
+    )
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # All agencies
+    vrh_vals = scatter_data[&quot;vrh_pct_change&quot;].to_list()
+    upt_vals = scatter_data[&quot;upt_pct_change&quot;].to_list()
+    ax.scatter(vrh_vals, upt_vals, color=&quot;#4878CF&quot;, alpha=0.4, s=30, zorder=2)
+
+    # Diagonal y=x line
+    lim_min = min(min(vrh_vals), min(upt_vals)) - 5
+    lim_max = max(max(vrh_vals), max(upt_vals)) + 5
+    ax.plot([lim_min, lim_max], [lim_min, lim_max], color=&quot;#999999&quot;, linestyle=&quot;--&quot;,
+            linewidth=1, zorder=1, label=&quot;VRH = UPT change&quot;)
+
+    # Highlight peer cities
+    peer_colors = {
+        &quot;Pittsburgh&quot;: &quot;#E24A33&quot;,
+        &quot;Baltimore&quot;: &quot;#4878CF&quot;,
+        &quot;Cleveland&quot;: &quot;#6ACC65&quot;,
+        &quot;Denver&quot;: &quot;#D65F5F&quot;,
+        &quot;St. Louis&quot;: &quot;#B47CC7&quot;,
+        &quot;Buffalo&quot;: &quot;#C4AD66&quot;,
+        &quot;Portland&quot;: &quot;#77BEDB&quot;,
+        &quot;Minneapolis&quot;: &quot;#FFB347&quot;,
+    }
+    for row in peer_data.iter_rows(named=True):
+        label = row[&quot;city_label&quot;]
+        color = peer_colors.get(label, &quot;#333333&quot;)
+        marker_size = 120 if row[&quot;ntd_id&quot;] == PRT_NTD_ID else 80
+        marker_shape = &quot;D&quot; if row[&quot;ntd_id&quot;] == PRT_NTD_ID else &quot;o&quot;
+        ax.scatter(row[&quot;vrh_pct_change&quot;], row[&quot;upt_pct_change&quot;],
+                   color=color, s=marker_size, marker=marker_shape,
+                   edgecolors=&quot;black&quot;, linewidths=1, zorder=3)
+        ax.annotate(label,
+                    (row[&quot;vrh_pct_change&quot;], row[&quot;upt_pct_change&quot;]),
+                    textcoords=&quot;offset points&quot;, xytext=(8, 8), fontsize=8,
+                    fontweight=&quot;bold&quot; if row[&quot;ntd_id&quot;] == PRT_NTD_ID else &quot;normal&quot;)
+
+    # Quadrant labels
+    ax.text(0.02, 0.02, &quot;Cut service +\nLost riders&quot;,
+            transform=ax.transAxes, fontsize=9, color=&quot;#888888&quot;, va=&quot;bottom&quot;)
+    ax.text(0.98, 0.02, &quot;Grew service +\nLost riders&quot;,
+            transform=ax.transAxes, fontsize=9, color=&quot;#888888&quot;, va=&quot;bottom&quot;, ha=&quot;right&quot;)
+    ax.text(0.02, 0.98, &quot;Cut service +\nGrew riders&quot;,
+            transform=ax.transAxes, fontsize=9, color=&quot;#888888&quot;, va=&quot;top&quot;)
+    ax.text(0.98, 0.98, &quot;Grew service +\nGrew riders&quot;,
+            transform=ax.transAxes, fontsize=9, color=&quot;#888888&quot;, va=&quot;top&quot;, ha=&quot;right&quot;)
+
+    ax.axhline(0, color=&quot;#CCCCCC&quot;, linestyle=&quot;:&quot;, linewidth=0.8)
+    ax.axvline(0, color=&quot;#CCCCCC&quot;, linestyle=&quot;:&quot;, linewidth=0.8)
+    ax.set_xlabel(&quot;Vehicle Revenue Hours Change 2019 → 2023 (%)&quot;)
+    ax.set_ylabel(&quot;Ridership (UPT) Change 2019 → 2023 (%)&quot;)
+    ax.set_title(&quot;Supply vs Demand: Service Cuts vs Ridership Loss&quot;)
+    ax.legend(loc=&quot;upper left&quot;)
+    ax.set_aspect(&quot;equal&quot;, adjustable=&quot;datalim&quot;)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;supply_vs_demand_scatter.png&quot;)
+    plt.close(fig)
+    print(&quot;   Saved supply_vs_demand_scatter.png&quot;)
+
+    # Quadrant summary
+    above_diag = scatter_data.filter(
+        pl.col(&quot;upt_pct_change&quot;) &gt; pl.col(&quot;vrh_pct_change&quot;)
+    )
+    below_diag = scatter_data.filter(
+        pl.col(&quot;upt_pct_change&quot;) &lt;= pl.col(&quot;vrh_pct_change&quot;)
+    )
+    print(f&quot;\n   Above diagonal (ridership outpaced service): {len(above_diag)}&quot;)
+    print(f&quot;   Below diagonal (service outpaced ridership): {len(below_diag)}&quot;)
+
+    # Top and bottom 10
+    print(&quot;\n8. Top 10 service recoveries:&quot;)
+    for row in result.head(10).iter_rows(named=True):
+        print(f&quot;   {row[&#x27;rank&#x27;]:&gt;3d}. {row[&#x27;agency_name&#x27;]:&lt;50s} VRH: {row[&#x27;vrh_pct_change&#x27;]:&gt;+7.1f}%&quot;)
+
+    print(&quot;\n   Bottom 10:&quot;)
+    for row in result.tail(10).iter_rows(named=True):
+        print(f&quot;   {row[&#x27;rank&#x27;]:&gt;3d}. {row[&#x27;agency_name&#x27;]:&lt;50s} VRH: {row[&#x27;vrh_pct_change&#x27;]:&gt;+7.1f}%&quot;)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>ntd_annual_service</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by NTD Annual Service ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</strong> — NTD TS2.2 workbook with annual service data by system.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>matplotlib</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

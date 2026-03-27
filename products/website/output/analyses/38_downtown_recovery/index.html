@@ -35,8 +35,8 @@
   <p class="kicker">Analysis</p>
   <h1>38 - Downtown Recovery Gap</h1>
   <p class="lede">Ridership & Recovery</p>
-  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
+  <p class="lede">Coverage: 2017-01 to 2024-10 (from ridership_monthly).</p>
+  <p class="lede">Built 2026-03-27 20:03 UTC · Commit a28c93d</p>
 </section>
 
 <section class="panel toc-panel">
@@ -47,7 +47,7 @@
     <a href="#outputs">Output</a>
     <a href="#methods">Methods</a>
     
-    
+    <a href="#sources">Sources</a>
     <a href="#source-code">Source Code</a>
   </nav>
 </section>
@@ -57,7 +57,7 @@
   <h2>Analysis Navigation</h2>
   <div class="pager">
     <a href="../37_peer_city_ridership/index.html">← 37 - Peer City Ridership Comparison</a>
-    
+    <a href="../39_national_service_cuts/index.html">39 — National Service Cuts (2019 vs 2023) →</a>
   </div>
 </section>
 
@@ -68,13 +68,28 @@
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
   38_downtown_recovery(["38 - Downtown Recovery Gap"])
+  f1_38_downtown_recovery[/"data/bus-stop-usage/wprdc_stop_data.csv"/] --> 38_downtown_recovery
+  t_ridership_monthly[("ridership_monthly")] --> 38_downtown_recovery
+  01_data_ingestion[["Data Ingestion"]] --> t_ridership_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  d1_38_downtown_recovery(("numpy (lib)")) --> 38_downtown_recovery
+  d2_38_downtown_recovery(("polars (lib)")) --> 38_downtown_recovery
+  d3_38_downtown_recovery(("scipy (lib)")) --> 38_downtown_recovery
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
   classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
   classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
   classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
-  class 38_downtown_recovery page;</pre>
+  class 38_downtown_recovery page;
+  class t_ridership_monthly table;
+  class d1_38_downtown_recovery,d2_38_downtown_recovery,d3_38_downtown_recovery dep;
+  class f1_38_downtown_recovery,u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion pipeline;</pre>
   </details>
 </section>
 
@@ -132,7 +147,7 @@
   <div class="tab-bar output-tabs">
     <button class="tab-btn active" data-target="charts">Charts (2)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
-    <button class="tab-btn" data-target="data">Data (0)</button>
+    <button class="tab-btn" data-target="data">Data (2)</button>
   </div>
 
   <div class="output-pane active" data-pane="charts">
@@ -143,7 +158,7 @@
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/recovery_trajectories.png" target="_blank" rel="noopener noreferrer">recovery_trajectories.png</a>
-          <p class="artifact-desc">Generated chart image produced by this page.</p>
+          <p class="artifact-desc">Monthly indexed ridership (2019=100) for high/medium/low downtown-dependence terciles.</p>
         </figcaption>
       </figure>
     
@@ -152,7 +167,7 @@
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/scatter_dt_share_vs_recovery.png" target="_blank" rel="noopener noreferrer">scatter_dt_share_vs_recovery.png</a>
-          <p class="artifact-desc">Generated chart image produced by this page.</p>
+          <p class="artifact-desc">Route-level scatter of downtown boardings share vs 2024 recovery ratio with Spearman correlation.</p>
         </figcaption>
       </figure>
     
@@ -170,7 +185,35 @@
   <div class="output-pane" data-pane="data">
     <div class="gallery">
     
-    <p class="artifact-desc">No data outputs declared.</p>
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/route_downtown_scores.csv" target="_blank" rel="noopener noreferrer">route_downtown_scores.csv</a>
+          <p class="artifact-desc">Per-route downtown-dependence scores, tercile assignments, and 2024 recovery ratios.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/38_downtown_recovery/route_downtown_scores.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/statistical_tests.csv" target="_blank" rel="noopener noreferrer">statistical_tests.csv</a>
+          <p class="artifact-desc">Kruskal-Wallis and pairwise Mann-Whitney test results.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/38_downtown_recovery/statistical_tests.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
     </div>
   </div>
 </section>
@@ -554,6 +597,89 @@ if __name__ == &quot;__main__&quot;:
 
 
 
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>data/bus-stop-usage/wprdc_stop_data.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Stop-level ridership with lat/lon, used to compute downtown-dependence scores per route from pre-pandemic weekday boardings.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>ridership_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
 
 
   </main>

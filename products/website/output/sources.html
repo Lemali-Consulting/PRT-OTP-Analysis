@@ -35,7 +35,7 @@
   <p class="kicker">Reference</p>
   <h1>Sources Inventory</h1>
   <p class="lede">Unified catalog of files, APIs, tables, and library dependencies used in this project.</p>
-  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
+  <p class="lede">Built 2026-03-27 20:03 UTC · Commit a28c93d</p>
 </section>
 
 <section class="panel">
@@ -201,7 +201,7 @@
       <tr>
         <td><a href="sources/source-017.html">data/bus-stop-usage/wprdc_stop_data.csv</a></td>
         <td><span class="tag">file</span></td>
-        <td>Referenced via DATA_DIR path composition in analysis script.</td>
+        <td>Stop-level ridership with lat/lon, used to compute downtown-dependence scores per route from pre-pandemic weekday boardings.</td>
         <td>Local project data owner not specified.</td>
         <td>Snapshot file; refresh by rerunning its pipeline step.</td>
         <td>May lag upstream source updates.</td>
@@ -217,7 +217,16 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-019.html">data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</a></td>
+        <td><a href="sources/source-019.html">data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</a></td>
+        <td><span class="tag">file</span></td>
+        <td>NTD TS2.2 workbook with annual service data by system.</td>
+        <td>Local project data owner not specified.</td>
+        <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+        <td>May lag upstream source updates.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-020.html">data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</a></td>
         <td><span class="tag">file</span></td>
         <td>NTD monthly ridership workbook containing agency metadata and UPT series.</td>
         <td>Local project data owner not specified.</td>
@@ -226,7 +235,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-020.html">data/penndot-traffic/aadt_raw.json</a></td>
+        <td><a href="sources/source-021.html">data/penndot-traffic/aadt_raw.json</a></td>
         <td><span class="tag">file</span></td>
         <td>Cached PennDOT ArcGIS feature response for Allegheny County roadway segments.</td>
         <td>Local project data owner not specified.</td>
@@ -235,7 +244,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-021.html">data/routes_by_month.csv</a></td>
+        <td><a href="sources/source-022.html">data/routes_by_month.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Monthly route OTP source table in wide format.</td>
         <td>Local project data owner not specified.</td>
@@ -244,7 +253,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-022.html">data/wprdc-schedule/paac_pick_lookup.csv</a></td>
+        <td><a href="sources/source-023.html">data/wprdc-schedule/paac_pick_lookup.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Pick period lookup metadata (cached copy when available).</td>
         <td>Local project data owner not specified.</td>
@@ -253,7 +262,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-023.html">data/wprdc-schedule/schedule_monthly_agg.csv</a></td>
+        <td><a href="sources/source-024.html">data/wprdc-schedule/schedule_monthly_agg.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Monthly route/day-type schedule aggregates (cached copy when available).</td>
         <td>Local project data owner not specified.</td>
@@ -262,7 +271,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-024.html">ntd_agency</a></td>
+        <td><a href="sources/source-025.html">ntd_agency</a></td>
         <td><span class="tag">table</span></td>
         <td>Agency dimension table keyed by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</td>
         <td>Produced by NTD Ridership ETL.</td>
@@ -271,7 +280,16 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-025.html">ntd_ridership</a></td>
+        <td><a href="sources/source-026.html">ntd_annual_service</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Annual VRH, VRM, UPT, VOMS by NTD system (1991-2023). Produced by NTD Annual Service ETL.</td>
+        <td>Produced by NTD Annual Service ETL.</td>
+        <td>Updated when the producing pipeline step is rerun.</td>
+        <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-027.html">ntd_ridership</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly UPT facts by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</td>
         <td>Produced by NTD Ridership ETL.</td>
@@ -280,7 +298,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-026.html">otp_monthly</a></td>
+        <td><a href="sources/source-028.html">otp_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly OTP values by route. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -289,7 +307,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-027.html">ridership_monthly</a></td>
+        <td><a href="sources/source-029.html">ridership_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly ridership by route and day type. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -298,7 +316,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-028.html">route_stops</a></td>
+        <td><a href="sources/source-030.html">route_stops</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -307,7 +325,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-029.html">route_traffic</a></td>
+        <td><a href="sources/source-031.html">route_traffic</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-level traffic exposure metrics including weighted AADT and match quality. Produced by Traffic Overlay ETL.</td>
         <td>Produced by Traffic Overlay ETL.</td>
@@ -316,7 +334,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-030.html">routes</a></td>
+        <td><a href="sources/source-032.html">routes</a></td>
         <td><span class="tag">table</span></td>
         <td>Route dimension table. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -325,7 +343,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-031.html">scheduled_trips_monthly</a></td>
+        <td><a href="sources/source-033.html">scheduled_trips_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly route/day-type scheduled trip counts and distance metrics. Produced by Scheduled Trips ETL.</td>
         <td>Produced by Scheduled Trips ETL.</td>
@@ -334,7 +352,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-032.html">stop_reference</a></td>
+        <td><a href="sources/source-034.html">stop_reference</a></td>
         <td><span class="tag">table</span></td>
         <td>Historical stop metadata and geography. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -343,7 +361,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-033.html">stops</a></td>
+        <td><a href="sources/source-035.html">stops</a></td>
         <td><span class="tag">table</span></td>
         <td>Physical stop dimension table. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -352,7 +370,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-034.html">weather_monthly</a></td>
+        <td><a href="sources/source-036.html">weather_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly precipitation, temperature, snowfall, and wind summary features. Produced by Weather ETL.</td>
         <td>Produced by Weather ETL.</td>

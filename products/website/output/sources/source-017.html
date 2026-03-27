@@ -34,9 +34,9 @@
 <section class="hero hero-compact">
   <p class="kicker">File</p>
   <h1>data/bus-stop-usage/wprdc_stop_data.csv</h1>
-  <p class="lede">Referenced via DATA_DIR path composition in analysis script.</p>
+  <p class="lede">Stop-level ridership with lat/lon, used to compute downtown-dependence scores per route from pre-pandemic weekday boardings.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
+  <p class="lede">Built 2026-03-27 20:03 UTC · Commit a28c93d</p>
 </section>
 
 
@@ -49,6 +49,7 @@
   src --> c3["33 - Pandemic Ridership Geography"]
   src --> c4["34 - Ridership Concentration (Pareto)"]
   src --> c5["35 - Boarding/Alighting Flow Analysis"]
+  src --> c6["38 - Downtown Recovery Gap"]
 </pre>
 </section>
 
@@ -92,6 +93,11 @@
   
     <article class="card">
       <h3><a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/38_downtown_recovery/index.html">38 - Downtown Recovery Gap</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
