@@ -303,6 +303,7 @@ Among 8 peer mid-size transit agencies, Pittsburgh ties with St. Louis for the *
 14. **OTP declines do not predict subsequent ridership losses** (0/93 routes significant after correction). The weak negative correlation suggests reverse causality: lower ridership improves OTP through reduced crowding, not that poor OTP drives riders away.
 15. **Pandemic ridership loss was geographically uniform** (downtown -60%, inner ring -62%, outer ring -59%), challenging the narrative that downtown transit was disproportionately affected.
 16. **PRT's recovery lags national peers.** At −42.4%, PRT ranks 136th of 150 large agencies (median −22.4%). Among 8 peer mid-size cities, Pittsburgh ties for last at 57.6% recovery; light rail at 43.6% is the worst peer-city rail recovery.
+17. **Downtown dependence partially explains the ridership gap** (Spearman rho = −0.29, p = 0.005). Routes with high downtown boardings share recovered to ~53% of 2019 levels vs ~64% for low-dependence routes. But even routes with minimal downtown exposure remain well below pre-pandemic levels, so downtown weakness is a contributing factor, not the whole story.
 
 ### Equity and human impact
 
@@ -358,3 +359,4 @@ Among 8 peer mid-size transit agencies, Pittsburgh ties with St. Louis for the *
 | 35 | [Boarding Alighting Flows](analyses/35_boarding_alighting_flows/) | Analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors. |
 | 36 | [National Ridership Growth](analyses/36_national_ridership_growth/) | Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies using NTD data; rank PRT nationally. |
 | 37 | [Peer City Ridership](analyses/37_peer_city_ridership/) | Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits. |
+| 38 | [Downtown Recovery](analyses/38_downtown_recovery/) | Tests PRT claim that poor downtown business recovery explains system-wide ridership lag vs peer cities |
