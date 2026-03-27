@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>05 - Anomaly Investigation</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -327,6 +330,243 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Anomaly detection: flag and investigate sharp OTP deviations (both drops and spikes).&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+KNOWN_EVENTS = {
+    &quot;2020-03&quot;: &quot;COVID-19 shutdown begins&quot;,
+    &quot;2020-04&quot;: &quot;COVID-19 reduced service&quot;,
+    &quot;2020-05&quot;: &quot;COVID-19 reduced service&quot;,
+    &quot;2020-06&quot;: &quot;COVID-19 partial recovery&quot;,
+}
+
+Z_THRESHOLD = 2.0
+ROLLING_WINDOW = 12
+MIN_PERIODS = 6
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load OTP data with route metadata, sorted for rolling calculations.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp, r.route_name, r.mode
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        ORDER BY o.route_id, o.month
+    &quot;&quot;&quot;)
+
+
+def analyze(df: pl.DataFrame) -&gt; tuple[pl.DataFrame, pl.DataFrame]:
+    &quot;&quot;&quot;Flag anomaly months and return both the full data and flagged anomalies.&quot;&quot;&quot;
+    df = df.sort([&quot;route_id&quot;, &quot;month&quot;])
+
+    # Rolling stats per route (shifted by 1 so current month is excluded from baseline)
+    df = df.with_columns(
+        rolling_mean=pl.col(&quot;otp&quot;)
+        .shift(1)
+        .rolling_mean(window_size=ROLLING_WINDOW, min_samples=MIN_PERIODS)
+        .over(&quot;route_id&quot;),
+        rolling_std=pl.col(&quot;otp&quot;)
+        .shift(1)
+        .rolling_std(window_size=ROLLING_WINDOW, min_samples=MIN_PERIODS)
+        .over(&quot;route_id&quot;),
+    )
+
+    # Z-score and anomaly flag (guard against division by zero when rolling_std ~ 0)
+    df = df.with_columns(
+        z_score=pl.when(pl.col(&quot;rolling_std&quot;) &gt; 1e-9)
+        .then((pl.col(&quot;otp&quot;) - pl.col(&quot;rolling_mean&quot;)) / pl.col(&quot;rolling_std&quot;))
+        .otherwise(0.0),
+    )
+    df = df.with_columns(
+        is_anomaly=pl.col(&quot;z_score&quot;).abs() &gt; Z_THRESHOLD,
+    )
+
+    # Add known events
+    df = df.with_columns(
+        known_event=pl.col(&quot;month&quot;).replace_strict(KNOWN_EVENTS, default=None),
+    )
+
+    anomalies = df.filter(pl.col(&quot;is_anomaly&quot;)).sort([&quot;route_id&quot;, &quot;month&quot;])
+    return df, anomalies
+
+
+def make_chart(full_df: pl.DataFrame, anomalies: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate time series profiles for routes with most anomalies.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # Find top 5 routes by anomaly count
+    top_routes = (
+        anomalies.group_by(&quot;route_id&quot;)
+        .agg(pl.len().alias(&quot;anomaly_count&quot;))
+        .sort(&quot;anomaly_count&quot;, descending=True)
+        .head(5)
+    )
+
+    route_ids = top_routes[&quot;route_id&quot;].to_list()
+    n_routes = len(route_ids)
+    if n_routes == 0:
+        print(&quot;  No anomalies detected; skipping chart.&quot;)
+        return
+
+    fig, axes = plt.subplots(n_routes, 1, figsize=(14, 3 * n_routes), sharex=True)
+    if n_routes == 1:
+        axes = [axes]
+
+    for ax, rid in zip(axes, route_ids):
+        route_data = full_df.filter(pl.col(&quot;route_id&quot;) == rid).sort(&quot;month&quot;)
+        months = route_data[&quot;month&quot;].to_list()
+        otp_vals = route_data[&quot;otp&quot;].to_list()
+        rm_vals = route_data[&quot;rolling_mean&quot;].to_list()
+        rs_vals = route_data[&quot;rolling_std&quot;].to_list()
+        x = range(len(months))
+
+        # OTP line
+        ax.plot(x, otp_vals, color=&quot;#2563eb&quot;, linewidth=1, label=&quot;OTP&quot;)
+        # Rolling mean
+        ax.plot(x, rm_vals, color=&quot;#9ca3af&quot;, linewidth=1, linestyle=&quot;--&quot;, label=&quot;12-mo rolling mean&quot;)
+        # Rolling std band (use NaN for missing values so matplotlib can handle them)
+        nan = float(&quot;nan&quot;)
+        upper = [m + s if m is not None and s is not None else nan for m, s in zip(rm_vals, rs_vals)]
+        lower = [m - s if m is not None and s is not None else nan for m, s in zip(rm_vals, rs_vals)]
+        ax.fill_between(list(x), lower, upper, alpha=0.15, color=&quot;#9ca3af&quot;)
+
+        # Mark anomalies
+        route_anomalies = route_data.filter(pl.col(&quot;is_anomaly&quot;))
+        anom_indices = [months.index(m) for m in route_anomalies[&quot;month&quot;].to_list() if m in months]
+        anom_otps = route_anomalies[&quot;otp&quot;].to_list()
+        ax.scatter(anom_indices, anom_otps, color=&quot;#ef4444&quot;, s=30, zorder=5, label=&quot;Anomaly&quot;)
+
+        route_name = route_data[&quot;route_name&quot;][0]
+        count = len(anom_indices)
+        ax.set_title(f&quot;{rid} - {route_name} ({count} anomalies)&quot;, fontsize=10)
+        ax.set_ylabel(&quot;OTP&quot;)
+        ax.set_ylim(0, 1.05)
+        ax.legend(fontsize=7, loc=&quot;lower left&quot;)
+
+        # X-axis ticks at January of each year
+        tick_positions = [i for i, m in enumerate(months) if m.endswith(&quot;-01&quot;)]
+        tick_labels = [months[i][:4] for i in tick_positions]
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(tick_labels)
+
+    axes[-1].set_xlabel(&quot;Month&quot;)
+    fig.suptitle(&quot;Routes with Most OTP Anomalies&quot;, fontsize=13, y=1.01)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;anomaly_profiles.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;anomaly_profiles.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, detect anomalies, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 05: Anomaly Investigation&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    print(f&quot;  {len(df):,} OTP observations loaded&quot;)
+
+    print(&quot;\nDetecting anomalies...&quot;)
+    full_df, anomalies = analyze(df)
+    n_routes_with = anomalies[&quot;route_id&quot;].n_unique()
+    print(f&quot;  {len(anomalies)} anomalous months flagged across {n_routes_with} routes&quot;)
+    print(f&quot;  (threshold: |z-score| &gt; {Z_THRESHOLD}, rolling window = {ROLLING_WINDOW} months)&quot;)
+
+    # Top offenders
+    top = (
+        anomalies.group_by([&quot;route_id&quot;, &quot;route_name&quot;])
+        .agg(pl.len().alias(&quot;count&quot;))
+        .sort(&quot;count&quot;, descending=True)
+        .head(5)
+    )
+    print(&quot;\n  Top 5 routes by anomaly count:&quot;)
+    for row in top.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5} - {row[&#x27;route_name&#x27;]}: {row[&#x27;count&#x27;]} anomalies&quot;)
+
+    # Mode-stratified anomaly rates
+    mode_summary = (
+        full_df.filter(pl.col(&quot;rolling_mean&quot;).is_not_null())
+        .group_by(&quot;mode&quot;)
+        .agg(
+            total_months=pl.len(),
+            anomaly_count=pl.col(&quot;is_anomaly&quot;).sum(),
+        )
+        .with_columns(
+            anomaly_rate=(pl.col(&quot;anomaly_count&quot;) / pl.col(&quot;total_months&quot;)),
+        )
+        .sort(&quot;mode&quot;)
+    )
+    print(&quot;\n  Anomaly rates by mode:&quot;)
+    print(f&quot;    {&#x27;Mode&#x27;:&lt;10} {&#x27;Anomalies&#x27;:&gt;10} {&#x27;Total Months&#x27;:&gt;13} {&#x27;Rate&#x27;:&gt;8}&quot;)
+    print(f&quot;    {&#x27;-&#x27; * 43}&quot;)
+    for row in mode_summary.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;mode&#x27;]:&lt;10} {row[&#x27;anomaly_count&#x27;]:&gt;10} {row[&#x27;total_months&#x27;]:&gt;13} {row[&#x27;anomaly_rate&#x27;]:&gt;8.1%}&quot;)
+
+    # Expected false-positive rate comparison
+    evaluated_obs = full_df.filter(pl.col(&quot;rolling_mean&quot;).is_not_null()).height
+    expected_fp = int(round(evaluated_obs * 0.0455))  # ~4.55% for 2-sigma two-sided
+    actual_anomalies = len(anomalies)
+    print(f&quot;\n  False-positive context (2-sigma, two-sided):&quot;)
+    print(f&quot;    Evaluated observations: {evaluated_obs:,}&quot;)
+    print(f&quot;    Expected under normality (~4.6%): ~{expected_fp}&quot;)
+    print(f&quot;    Actual anomalies flagged: {actual_anomalies}&quot;)
+    print(f&quot;    Ratio (actual / expected): {actual_anomalies / expected_fp:.2f}x&quot;)
+
+    # Excluded routes (fewer than 7 months of data)
+    route_month_counts = df.group_by(&quot;route_id&quot;).agg(pl.len().alias(&quot;n_months&quot;))
+    excluded = route_month_counts.filter(pl.col(&quot;n_months&quot;) &lt; 7)
+    excluded_with_names = excluded.join(
+        df.select(&quot;route_id&quot;, &quot;route_name&quot;).unique(),
+        on=&quot;route_id&quot;,
+    )
+    print(f&quot;\n  Routes excluded from anomaly detection (&lt; 7 months of data): {len(excluded)}&quot;)
+    for row in excluded_with_names.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]} ({row[&#x27;n_months&#x27;]} months)&quot;)
+
+    # UNKNOWN-mode routes
+    unknown_routes = df.filter(pl.col(&quot;mode&quot;) == &quot;UNKNOWN&quot;).select(&quot;route_id&quot;, &quot;route_name&quot;).unique()
+    print(f&quot;\n  UNKNOWN-mode routes included: {len(unknown_routes)}&quot;)
+    for row in unknown_routes.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]}&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    anomalies.select(
+        &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;month&quot;, &quot;otp&quot;,
+        &quot;rolling_mean&quot;, &quot;rolling_std&quot;, &quot;z_score&quot;, &quot;known_event&quot;,
+    ).write_csv(OUT / &quot;anomalies.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;anomalies.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating chart...&quot;)
+    make_chart(full_df, anomalies)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -491,6 +731,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

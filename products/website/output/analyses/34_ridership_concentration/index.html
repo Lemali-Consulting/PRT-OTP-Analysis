@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>34 - Ridership Concentration (Pareto)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -267,6 +270,258 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Quantify ridership concentration across stops and test whether it correlates with OTP.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+DATA_DIR = HERE.parents[1] / &quot;data&quot;
+
+
+def gini(values: list[float]) -&gt; float:
+    &quot;&quot;&quot;Compute the Gini coefficient for a list of non-negative values.&quot;&quot;&quot;
+    arr = np.array(values, dtype=float)
+    arr = arr[~np.isnan(arr)]
+    if len(arr) &lt; 2 or arr.sum() == 0:
+        return float(&quot;nan&quot;)
+    arr = np.sort(arr)
+    n = len(arr)
+    index = np.arange(1, n + 1)
+    return (2 * np.sum(index * arr) - (n + 1) * np.sum(arr)) / (n * np.sum(arr))
+
+
+def load_stop_usage() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load pre-pandemic weekday stop-route usage from the WPRDC CSV.&quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;])
+    df = df.filter(
+        (pl.col(&quot;time_period&quot;) == &quot;Pre-pandemic&quot;)
+        &amp; (pl.col(&quot;serviceday&quot;) == &quot;Weekday&quot;)
+    )
+    # Average across datekeys per stop-route, then compute total usage
+    usage = (
+        df.group_by([&quot;stop_id&quot;, &quot;route_name&quot;])
+        .agg(
+            pl.col(&quot;avg_ons&quot;).mean().alias(&quot;avg_ons&quot;),
+            pl.col(&quot;avg_offs&quot;).mean().alias(&quot;avg_offs&quot;),
+            pl.col(&quot;stop_name&quot;).first().alias(&quot;stop_name&quot;),
+            pl.col(&quot;latitude&quot;).first().alias(&quot;lat&quot;),
+            pl.col(&quot;longitude&quot;).first().alias(&quot;lon&quot;),
+        )
+        .with_columns(
+            (pl.col(&quot;avg_ons&quot;) + pl.col(&quot;avg_offs&quot;)).alias(&quot;avg_daily_usage&quot;)
+        )
+    )
+    return usage
+
+
+def system_pareto(usage: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute system-wide Pareto curve at the physical-stop level.&quot;&quot;&quot;
+    # Aggregate to physical stop
+    per_stop = (
+        usage.group_by(&quot;stop_id&quot;)
+        .agg(
+            pl.col(&quot;avg_daily_usage&quot;).sum(),
+            pl.col(&quot;stop_name&quot;).first(),
+        )
+        .sort(&quot;avg_daily_usage&quot;, descending=True)
+    )
+
+    total = per_stop[&quot;avg_daily_usage&quot;].sum()
+    cum = per_stop[&quot;avg_daily_usage&quot;].cum_sum()
+    n = len(per_stop)
+
+    pareto = per_stop.with_columns(
+        (pl.Series(&quot;rank&quot;, range(1, n + 1)) / n * 100).alias(&quot;pct_stops&quot;),
+        (cum / total * 100).alias(&quot;cum_pct_ridership&quot;),
+    )
+    return pareto
+
+
+def route_gini(usage: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute Gini coefficient per route from stop-level usage.&quot;&quot;&quot;
+    routes = usage[&quot;route_name&quot;].unique().to_list()
+    rows = []
+    for rt in routes:
+        sub = usage.filter(pl.col(&quot;route_name&quot;) == rt)
+        vals = sub[&quot;avg_daily_usage&quot;].drop_nulls().to_list()
+        if len(vals) &lt; 3:
+            continue
+        g = gini(vals)
+        rows.append({
+            &quot;route_name&quot;: rt,
+            &quot;gini&quot;: g,
+            &quot;n_stops&quot;: len(vals),
+            &quot;total_usage&quot;: sum(vals),
+            &quot;max_stop_usage&quot;: max(vals),
+        })
+    return pl.DataFrame(rows)
+
+
+def load_route_otp() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load average OTP per route from the database.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(*) &gt;= 12
+    &quot;&quot;&quot;)
+
+
+def make_charts(pareto: pl.DataFrame, gini_otp: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate Pareto curve and Gini vs OTP scatter plot.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # --- System-wide Pareto curve ---
+    fig, ax = plt.subplots(figsize=(10, 7))
+    pct_stops = pareto[&quot;pct_stops&quot;].to_list()
+    cum_rider = pareto[&quot;cum_pct_ridership&quot;].to_list()
+
+    ax.plot(pct_stops, cum_rider, color=&quot;#3b82f6&quot;, linewidth=2)
+    ax.plot([0, 100], [0, 100], color=&quot;#94a3b8&quot;, linewidth=1, linestyle=&quot;--&quot;, label=&quot;Perfect equality&quot;)
+
+    # Find key thresholds
+    for target in [50, 80, 90]:
+        for i, cr in enumerate(cum_rider):
+            if cr &gt;= target:
+                ax.axhline(target, color=&quot;#d1d5db&quot;, linewidth=0.5)
+                ax.axvline(pct_stops[i], color=&quot;#d1d5db&quot;, linewidth=0.5)
+                ax.plot(pct_stops[i], target, &quot;o&quot;, color=&quot;#ef4444&quot;, markersize=8)
+                ax.annotate(f&quot;{pct_stops[i]:.0f}% of stops -&gt; {target}% of riders&quot;,
+                            xy=(pct_stops[i], target),
+                            xytext=(pct_stops[i] + 5, target - 5),
+                            fontsize=9, color=&quot;#ef4444&quot;)
+                break
+
+    ax.set_xlabel(&quot;% of Stops (ranked by usage)&quot;)
+    ax.set_ylabel(&quot;Cumulative % of Ridership&quot;)
+    ax.set_title(&quot;System-Wide Ridership Pareto Curve&quot;)
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    ax.legend(loc=&quot;lower right&quot;)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;pareto_curve.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;pareto_curve.png&#x27;}&quot;)
+
+    # --- Gini vs OTP scatter ---
+    fig, ax = plt.subplots(figsize=(10, 7))
+    mode_colors = {&quot;BUS&quot;: &quot;#3b82f6&quot;, &quot;RAIL&quot;: &quot;#22c55e&quot;, &quot;INCLINE&quot;: &quot;#f59e0b&quot;, &quot;UNKNOWN&quot;: &quot;#9ca3af&quot;}
+
+    for mode, color in mode_colors.items():
+        sub = gini_otp.filter(pl.col(&quot;mode&quot;) == mode)
+        if len(sub) == 0:
+            continue
+        ax.scatter(
+            sub[&quot;gini&quot;].to_list(), sub[&quot;avg_otp&quot;].to_list(),
+            color=color, label=mode, s=50, alpha=0.7, edgecolors=&quot;white&quot;, linewidths=0.5,
+        )
+
+    # Bus-only regression
+    bus = gini_otp.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;).drop_nulls(subset=[&quot;gini&quot;, &quot;avg_otp&quot;])
+    if len(bus) &gt;= 3:
+        x = bus[&quot;gini&quot;].to_list()
+        y = bus[&quot;avg_otp&quot;].to_list()
+        lr = stats.linregress(x, y)
+        r, p = stats.pearsonr(x, y)
+        x_line = [min(x), max(x)]
+        y_line = [lr.slope * xi + lr.intercept for xi in x_line]
+        ax.plot(x_line, y_line, color=&quot;#1e40af&quot;, linewidth=1.5, linestyle=&quot;--&quot;,
+                label=f&quot;BUS trend (r={r:.3f}, p={p:.3f})&quot;)
+
+    ax.set_xlabel(&quot;Gini Coefficient (ridership concentration)&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;Route-Level Ridership Concentration vs On-Time Performance&quot;)
+    ax.legend(fontsize=9)
+    ax.set_ylim(0, 1)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;gini_vs_otp.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;gini_vs_otp.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, compute Pareto and Gini, correlate with OTP.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 34: Ridership Concentration (Pareto)&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading stop-level usage (pre-pandemic weekday)...&quot;)
+    usage = load_stop_usage()
+    print(f&quot;  {len(usage):,} stop-route combinations&quot;)
+
+    print(&quot;\nComputing system-wide Pareto curve...&quot;)
+    pareto = system_pareto(usage)
+    cum = pareto[&quot;cum_pct_ridership&quot;].to_list()
+    pct = pareto[&quot;pct_stops&quot;].to_list()
+    for target in [50, 80, 90]:
+        for i, cr in enumerate(cum):
+            if cr &gt;= target:
+                print(f&quot;  {target}% of ridership served by top {pct[i]:.1f}% of stops&quot;)
+                break
+
+    sys_gini = gini(
+        usage.group_by(&quot;stop_id&quot;).agg(pl.col(&quot;avg_daily_usage&quot;).sum())[&quot;avg_daily_usage&quot;].to_list()
+    )
+    print(f&quot;  System-wide Gini: {sys_gini:.3f}&quot;)
+
+    print(&quot;\nComputing per-route Gini coefficients...&quot;)
+    route_g = route_gini(usage)
+    print(f&quot;  {len(route_g)} routes with &gt;= 3 stops&quot;)
+    print(f&quot;  Gini range: {route_g[&#x27;gini&#x27;].min():.3f} - {route_g[&#x27;gini&#x27;].max():.3f}&quot;)
+    print(f&quot;  Median Gini: {route_g[&#x27;gini&#x27;].median():.3f}&quot;)
+
+    print(&quot;\nLoading route OTP...&quot;)
+    route_otp = load_route_otp()
+
+    # Join Gini with OTP (CSV route_name = DB route_id)
+    gini_otp = route_g.join(route_otp, left_on=&quot;route_name&quot;, right_on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    print(f&quot;  {len(gini_otp)} routes matched&quot;)
+
+    bus = gini_otp.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;).drop_nulls(subset=[&quot;gini&quot;, &quot;avg_otp&quot;])
+    if len(bus) &gt;= 3:
+        r, p = stats.pearsonr(bus[&quot;gini&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
+        rho, p_rho = stats.spearmanr(bus[&quot;gini&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
+        print(f&quot;  Bus-only Pearson r = {r:.3f} (p = {p:.3f})&quot;)
+        print(f&quot;  Bus-only Spearman rho = {rho:.3f} (p = {p_rho:.3f})&quot;)
+
+    print(&quot;\nSaving CSVs...&quot;)
+    pareto.write_csv(OUT / &quot;pareto_system.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;pareto_system.csv&#x27;}&quot;)
+    gini_otp.write_csv(OUT / &quot;route_gini.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;route_gini.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_charts(pareto, gini_otp)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -461,6 +716,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

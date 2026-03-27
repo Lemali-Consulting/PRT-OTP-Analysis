@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>ntd_agency</h1>
   <p class="lede">Agency dimension table keyed by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</p>
   <p class="lede">Owner: Produced by NTD Ridership ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 
@@ -149,6 +151,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

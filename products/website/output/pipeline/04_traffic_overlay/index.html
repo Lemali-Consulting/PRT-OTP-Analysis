@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>Traffic Overlay ETL</h1>
   
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     <a href="#tables-produced">Tables Produced</a>
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -121,6 +124,32 @@
 <li><code>route_traffic</code> table in <code>data/prt.db</code></li>
 </ul>
 </div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Pipeline 04: load route-level traffic exposure metrics into prt.db.&quot;&quot;&quot;
+
+from prt_otp_analysis.traffic_overlay import main as traffic_main
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Run traffic overlay ETL.&quot;&quot;&quot;
+    traffic_main()
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
   </details>
 </section>
 
@@ -275,6 +304,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

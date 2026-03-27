@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>06: Seasonal Patterns</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -341,6 +344,273 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Seasonal decomposition of OTP into trend, seasonal, and residual components.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MONTH_LABELS = [&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;, &quot;Apr&quot;, &quot;May&quot;, &quot;Jun&quot;,
+                &quot;Jul&quot;, &quot;Aug&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot;]
+MIN_YEARS = 3  # minimum years of data for route-level seasonal amplitude
+# Restrict to complete calendar years so every month-of-year has the same
+# number of years of data (avoids bias from partial years at the boundaries).
+COMPLETE_YEAR_START = &quot;2019-01&quot;
+COMPLETE_YEAR_END = &quot;2024-12&quot;
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load OTP data with trip weights, restricted to complete calendar years.&quot;&quot;&quot;
+    return query_to_polars(f&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp, r.route_name, r.mode,
+               COALESCE(rs_agg.trips_7d, 0) AS trips_7d
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        LEFT JOIN (
+            SELECT route_id, SUM(trips_7d) AS trips_7d
+            FROM route_stops
+            GROUP BY route_id
+        ) rs_agg ON o.route_id = rs_agg.route_id
+        WHERE o.month &gt;= &#x27;{COMPLETE_YEAR_START}&#x27; AND o.month &lt;= &#x27;{COMPLETE_YEAR_END}&#x27;
+    &quot;&quot;&quot;)
+
+
+def analyze(df: pl.DataFrame) -&gt; tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
+    &quot;&quot;&quot;Compute detrended seasonal profiles and amplitudes.&quot;&quot;&quot;
+    # Extract month-of-year
+    df = df.with_columns(
+        month_num=pl.col(&quot;month&quot;).str.slice(5, 2).cast(pl.Int32),
+    )
+
+    # --- Balanced panel: only routes present in all 12 months-of-year ---
+    # This prevents compositional bias (e.g., winter-only routes inflating
+    # winter averages).
+    months_per_route = (
+        df.group_by(&quot;route_id&quot;)
+        .agg(n_months_of_year=pl.col(&quot;month_num&quot;).n_unique())
+    )
+    balanced_routes = months_per_route.filter(
+        pl.col(&quot;n_months_of_year&quot;) == 12
+    )[&quot;route_id&quot;].to_list()
+    n_total = df[&quot;route_id&quot;].n_unique()
+    n_balanced = len(balanced_routes)
+    print(f&quot;  Balanced panel: {n_balanced} of {n_total} routes present in all 12 months-of-year&quot;)
+
+    df_balanced = df.filter(pl.col(&quot;route_id&quot;).is_in(balanced_routes))
+
+    # --- System-wide seasonal profile (trip-weighted, detrended) ---
+    # Uses only balanced-panel routes so route composition is constant across months.
+    # Note: trips_7d is a static snapshot and may not reflect historical service levels.
+    # Step 1: trip-weighted system OTP per month
+    system_monthly = (
+        df_balanced.group_by(&quot;month&quot;)
+        .agg(
+            weighted_otp=pl.when(pl.col(&quot;trips_7d&quot;).sum() &gt; 0)
+            .then((pl.col(&quot;otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum())
+            .otherwise(pl.col(&quot;otp&quot;).mean()),
+        )
+        .sort(&quot;month&quot;)
+    )
+
+    # Step 2: 12-month centered rolling mean as trend (approximate center via shift)
+    system_monthly = system_monthly.with_columns(
+        trend=pl.col(&quot;weighted_otp&quot;).rolling_mean(window_size=12, min_samples=6).shift(-6),
+        month_num=pl.col(&quot;month&quot;).str.slice(5, 2).cast(pl.Int32),
+    )
+
+    # Step 3: detrend and average by month-of-year
+    system_monthly = system_monthly.with_columns(
+        detrended=pl.col(&quot;weighted_otp&quot;) - pl.col(&quot;trend&quot;),
+    )
+    system_seasonal = (
+        system_monthly.filter(pl.col(&quot;detrended&quot;).is_not_null())
+        .group_by(&quot;month_num&quot;)
+        .agg(
+            deviation=pl.col(&quot;detrended&quot;).mean(),
+            weighted_otp=pl.col(&quot;weighted_otp&quot;).mean(),
+        )
+        .sort(&quot;month_num&quot;)
+    )
+
+    # --- Per-route: detrend, then compute seasonal amplitude ---
+    min_months = MIN_YEARS * 12
+    route_counts = df.group_by(&quot;route_id&quot;).agg(n_months=pl.col(&quot;month&quot;).n_unique())
+    eligible = route_counts.filter(pl.col(&quot;n_months&quot;) &gt;= min_months)[&quot;route_id&quot;].to_list()
+    df_elig = df.filter(pl.col(&quot;route_id&quot;).is_in(eligible)).sort([&quot;route_id&quot;, &quot;month&quot;])
+
+    # Per-route trend and detrending
+    df_elig = df_elig.with_columns(
+        trend=pl.col(&quot;otp&quot;)
+        .rolling_mean(window_size=12, min_samples=6)
+        .shift(-6)
+        .over(&quot;route_id&quot;),
+    )
+    df_elig = df_elig.with_columns(
+        detrended=pl.col(&quot;otp&quot;) - pl.col(&quot;trend&quot;),
+    )
+
+    # Raw month-of-year averages (for heatmap display)
+    route_seasonal = (
+        df_elig.group_by([&quot;route_id&quot;, &quot;route_name&quot;, &quot;month_num&quot;])
+        .agg(avg_otp=pl.col(&quot;otp&quot;).mean())
+        .sort([&quot;route_id&quot;, &quot;month_num&quot;])
+    )
+
+    # Amplitude from detrended values
+    detrended_by_month = (
+        df_elig.filter(pl.col(&quot;detrended&quot;).is_not_null())
+        .group_by([&quot;route_id&quot;, &quot;route_name&quot;, &quot;month_num&quot;])
+        .agg(avg_detrended=pl.col(&quot;detrended&quot;).mean())
+    )
+    route_amplitude = (
+        detrended_by_month.group_by([&quot;route_id&quot;, &quot;route_name&quot;])
+        .agg(
+            seasonal_amplitude=pl.col(&quot;avg_detrended&quot;).max() - pl.col(&quot;avg_detrended&quot;).min(),
+            best_month=pl.col(&quot;month_num&quot;).sort_by(&quot;avg_detrended&quot;, descending=True).first(),
+            worst_month=pl.col(&quot;month_num&quot;).sort_by(&quot;avg_detrended&quot;).first(),
+        )
+        .sort(&quot;seasonal_amplitude&quot;, descending=True)
+    )
+
+    return system_seasonal, route_seasonal, route_amplitude
+
+
+def make_chart(
+    system_seasonal: pl.DataFrame,
+    route_seasonal: pl.DataFrame,
+    route_amplitude: pl.DataFrame,
+) -&gt; None:
+    &quot;&quot;&quot;Generate seasonal pattern charts.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+
+    # Top-left: System-wide seasonal profile (bar chart)
+    ax = axes[0, 0]
+    months = system_seasonal[&quot;month_num&quot;].to_list()
+    devs = system_seasonal[&quot;deviation&quot;].to_list()
+    colors = [&quot;#22c55e&quot; if d &gt;= 0 else &quot;#ef4444&quot; for d in devs]
+    ax.bar(months, devs, color=colors, alpha=0.8)
+    ax.set_xticks(range(1, 13))
+    ax.set_xticklabels(MONTH_LABELS)
+    ax.set_ylabel(&quot;OTP Deviation from Trend&quot;)
+    ax.set_title(&quot;System-Wide Seasonal Profile (detrended)&quot;)
+    ax.axhline(0, color=&quot;black&quot;, linewidth=0.5)
+
+    # Top-right: Top 10 routes by seasonal amplitude
+    ax = axes[0, 1]
+    top10 = route_amplitude.head(10)
+    labels = [f&quot;{r} - {n}&quot; for r, n in zip(top10[&quot;route_id&quot;].to_list(), top10[&quot;route_name&quot;].to_list())]
+    values = top10[&quot;seasonal_amplitude&quot;].to_list()
+    y_pos = range(len(labels))
+    ax.barh(y_pos, values, color=&quot;#7c3aed&quot;, alpha=0.8)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(labels, fontsize=8)
+    ax.set_xlabel(&quot;Seasonal Amplitude (detrended, max - min)&quot;)
+    ax.set_title(f&quot;Routes Most Affected by Season ({MIN_YEARS}+ years data)&quot;)
+    ax.invert_yaxis()
+
+    # Bottom-left: Heatmap of seasonal OTP for top-amplitude routes
+    ax = axes[1, 0]
+    top_routes = route_amplitude.head(20)[&quot;route_id&quot;].to_list()
+    heatmap_data = (
+        route_seasonal.filter(pl.col(&quot;route_id&quot;).is_in(top_routes))
+        .pivot(on=&quot;month_num&quot;, index=[&quot;route_id&quot;, &quot;route_name&quot;], values=&quot;avg_otp&quot;)
+        .sort(&quot;route_id&quot;)
+    )
+    # Build matrix
+    route_labels = [f&quot;{r} - {n}&quot; for r, n in zip(
+        heatmap_data[&quot;route_id&quot;].to_list(), heatmap_data[&quot;route_name&quot;].to_list()
+    )]
+    month_cols = sorted([c for c in heatmap_data.columns if c not in (&quot;route_id&quot;, &quot;route_name&quot;)], key=int)
+    matrix = []
+    for col in month_cols:
+        matrix.append(heatmap_data[col].to_list())
+    import numpy as np
+    matrix_arr = np.array(matrix, dtype=float).T  # routes x months
+
+    im = ax.imshow(matrix_arr, aspect=&quot;auto&quot;, cmap=&quot;RdYlGn&quot;, vmin=0.3, vmax=1.0)
+    ax.set_xticks(range(len(month_cols)))
+    ax.set_xticklabels([MONTH_LABELS[int(c) - 1] for c in month_cols], fontsize=8)
+    ax.set_yticks(range(len(route_labels)))
+    ax.set_yticklabels(route_labels, fontsize=6)
+    ax.set_title(&quot;Seasonal OTP Heatmap (top 20 by amplitude)&quot;)
+    fig.colorbar(im, ax=ax, label=&quot;Average OTP&quot;, shrink=0.8)
+
+    # Bottom-right: Overall best/worst months (system-wide distribution)
+    ax = axes[1, 1]
+    system_otps = system_seasonal[&quot;weighted_otp&quot;].to_list()
+    ax.bar(range(1, 13), system_otps, color=&quot;#3b82f6&quot;, alpha=0.8)
+    ax.set_xticks(range(1, 13))
+    ax.set_xticklabels(MONTH_LABELS)
+    ax.set_ylabel(&quot;Weighted Average OTP&quot;)
+    ax.set_title(&quot;System OTP by Month of Year&quot;)
+    ax.set_ylim(0, 1)
+
+    fig.suptitle(&quot;Seasonal Patterns in PRT On-Time Performance&quot;, fontsize=13)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;seasonal_patterns.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;seasonal_patterns.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze seasonal patterns, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 06: Seasonal Patterns&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    print(f&quot;  {len(df):,} OTP observations loaded&quot;)
+
+    print(&quot;\nAnalyzing...&quot;)
+    system_seasonal, route_seasonal, route_amplitude = analyze(df)
+
+    # Summary
+    best_sys = system_seasonal.sort(&quot;weighted_otp&quot;, descending=True).head(1)
+    worst_sys = system_seasonal.sort(&quot;weighted_otp&quot;).head(1)
+    print(f&quot;  Best system month:  {MONTH_LABELS[best_sys[&#x27;month_num&#x27;][0] - 1]} ({best_sys[&#x27;weighted_otp&#x27;][0]:.1%})&quot;)
+    print(f&quot;  Worst system month: {MONTH_LABELS[worst_sys[&#x27;month_num&#x27;][0] - 1]} ({worst_sys[&#x27;weighted_otp&#x27;][0]:.1%})&quot;)
+
+    n_eligible = route_amplitude.height
+    print(f&quot;  {n_eligible} routes with {MIN_YEARS}+ years of data for seasonal ranking&quot;)
+
+    top3 = route_amplitude.head(3)
+    print(&quot;\n  Most seasonally affected routes (detrended):&quot;)
+    for row in top3.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]}: amplitude = {row[&#x27;seasonal_amplitude&#x27;]:.3f}&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    route_amplitude.write_csv(OUT / &quot;seasonal_patterns.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;seasonal_patterns.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating chart...&quot;)
+    make_chart(system_seasonal, route_seasonal, route_amplitude)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -546,6 +816,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

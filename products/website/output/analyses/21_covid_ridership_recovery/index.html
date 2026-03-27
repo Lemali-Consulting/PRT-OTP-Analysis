@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>21 - COVID Ridership vs OTP Recovery</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -256,6 +259,336 @@
 <li><code>output/recovery_data.csv</code> -- per-route recovery metrics</li>
 </ul>
 </div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 21: Compare ridership recovery trajectories with OTP recovery trajectories post-COVID.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    classify_bus_route,
+    output_dir,
+    query_to_polars,
+    setup_plotting,
+)
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+PRE_COVID_START = &quot;2019-01&quot;
+PRE_COVID_END = &quot;2020-02&quot;
+RECOVERY_START = &quot;2023-01&quot;
+RECOVERY_END = &quot;2024-10&quot;
+MIN_MONTHS = 6
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute pre-COVID and recovery-period averages for both OTP and ridership per route.&quot;&quot;&quot;
+    paired = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r2.route_name, r2.mode, o.month, o.otp, r.avg_riders
+        FROM otp_monthly o
+        JOIN ridership_monthly r
+            ON o.route_id = r.route_id AND o.month = r.month
+            AND r.day_type = &#x27;WEEKDAY&#x27;
+        JOIN routes r2 ON o.route_id = r2.route_id
+    &quot;&quot;&quot;)
+
+    # Pre-COVID baseline
+    pre = (
+        paired.filter(
+            (pl.col(&quot;month&quot;) &gt;= PRE_COVID_START) &amp; (pl.col(&quot;month&quot;) &lt;= PRE_COVID_END)
+        )
+        .group_by(&quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;)
+        .agg(
+            baseline_otp=pl.col(&quot;otp&quot;).mean(),
+            baseline_riders=pl.col(&quot;avg_riders&quot;).mean(),
+            baseline_months=pl.col(&quot;month&quot;).count(),
+        )
+        .filter(pl.col(&quot;baseline_months&quot;) &gt;= MIN_MONTHS)
+    )
+
+    # Recovery period
+    post = (
+        paired.filter(
+            (pl.col(&quot;month&quot;) &gt;= RECOVERY_START) &amp; (pl.col(&quot;month&quot;) &lt;= RECOVERY_END)
+        )
+        .group_by(&quot;route_id&quot;)
+        .agg(
+            recovery_otp=pl.col(&quot;otp&quot;).mean(),
+            recovery_riders=pl.col(&quot;avg_riders&quot;).mean(),
+            recovery_months=pl.col(&quot;month&quot;).count(),
+        )
+        .filter(pl.col(&quot;recovery_months&quot;) &gt;= MIN_MONTHS)
+    )
+
+    df = pre.join(post, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+
+    # Compute deltas and ratios
+    df = df.with_columns(
+        otp_delta=(pl.col(&quot;recovery_otp&quot;) - pl.col(&quot;baseline_otp&quot;)),
+        ridership_pct_change=(
+            (pl.col(&quot;recovery_riders&quot;) - pl.col(&quot;baseline_riders&quot;)) / pl.col(&quot;baseline_riders&quot;)
+        ),
+    )
+
+    # Add subtype
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.Utf8))
+        .otherwise(pl.col(&quot;mode&quot;).str.to_lowercase())
+        .alias(&quot;subtype&quot;)
+    )
+
+    return df.sort(&quot;route_id&quot;)
+
+
+def analyze(df: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Test correlation between ridership recovery and OTP recovery.&quot;&quot;&quot;
+    results = {&quot;n_routes&quot;: len(df)}
+
+    otp_d = df[&quot;otp_delta&quot;].to_numpy()
+    rider_r = df[&quot;ridership_pct_change&quot;].to_numpy()
+
+    # Pearson
+    r_p, p_p = stats.pearsonr(rider_r, otp_d)
+    results[&quot;pearson_r&quot;] = r_p
+    results[&quot;pearson_p&quot;] = p_p
+
+    # Spearman
+    r_s, p_s = stats.spearmanr(rider_r, otp_d)
+    results[&quot;spearman_r&quot;] = r_s
+    results[&quot;spearman_p&quot;] = p_s
+
+    # Regression to the mean test: corr(baseline_otp, otp_delta)
+    baseline_otp = df[&quot;baseline_otp&quot;].to_numpy()
+    rtm_r, rtm_p = stats.pearsonr(baseline_otp, otp_d)
+    results[&quot;rtm_r&quot;] = rtm_r
+    results[&quot;rtm_p&quot;] = rtm_p
+
+    # Summary counts
+    results[&quot;n_both_improved&quot;] = int(((otp_d &gt; 0) &amp; (rider_r &gt; 0)).sum())
+    results[&quot;n_both_declined&quot;] = int(((otp_d &lt; 0) &amp; (rider_r &lt; 0)).sum())
+    results[&quot;n_otp_up_riders_down&quot;] = int(((otp_d &gt; 0) &amp; (rider_r &lt; 0)).sum())
+    results[&quot;n_otp_down_riders_up&quot;] = int(((otp_d &lt; 0) &amp; (rider_r &gt; 0)).sum())
+
+    # Kruskal-Wallis across subtypes for OTP delta
+    subtypes = sorted(df[&quot;subtype&quot;].unique().to_list())
+    groups = []
+    for st in subtypes:
+        vals = df.filter(pl.col(&quot;subtype&quot;) == st)[&quot;otp_delta&quot;].to_list()
+        if len(vals) &gt;= 3:
+            groups.append(vals)
+    if len(groups) &gt;= 2:
+        h, p = stats.kruskal(*groups)
+        results[&quot;kruskal_h&quot;] = h
+        results[&quot;kruskal_p&quot;] = p
+
+    return results
+
+
+def make_scatter(df: pl.DataFrame, results: dict) -&gt; None:
+    &quot;&quot;&quot;Scatter plot: ridership recovery vs OTP recovery, colored by subtype.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    subtype_colors = {
+        &quot;local&quot;: &quot;#3b82f6&quot;,
+        &quot;limited&quot;: &quot;#22c55e&quot;,
+        &quot;express&quot;: &quot;#f59e0b&quot;,
+        &quot;busway&quot;: &quot;#8b5cf6&quot;,
+        &quot;flyer&quot;: &quot;#06b6d4&quot;,
+        &quot;rail&quot;: &quot;#ef4444&quot;,
+        &quot;unknown&quot;: &quot;#9ca3af&quot;,
+    }
+
+    for st in sorted(df[&quot;subtype&quot;].unique().to_list()):
+        sdf = df.filter(pl.col(&quot;subtype&quot;) == st)
+        ax.scatter(
+            sdf[&quot;ridership_pct_change&quot;].to_list(),
+            sdf[&quot;otp_delta&quot;].to_list(),
+            s=40, alpha=0.7,
+            color=subtype_colors.get(st, &quot;#9ca3af&quot;),
+            edgecolors=&quot;white&quot;, linewidths=0.5,
+            label=f&quot;{st} (n={len(sdf)})&quot;,
+        )
+
+    # Reference lines
+    ax.axhline(0, color=&quot;black&quot;, linewidth=0.5, alpha=0.5)
+    ax.axvline(0, color=&quot;black&quot;, linewidth=0.5, alpha=0.5)
+
+    # Regression line
+    x = df[&quot;ridership_pct_change&quot;].to_numpy()
+    y = df[&quot;otp_delta&quot;].to_numpy()
+    slope, intercept = np.polyfit(x, y, 1)
+    x_line = np.array([x.min(), x.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#1e40af&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, label=f&quot;r={results[&#x27;pearson_r&#x27;]:.3f}, p={results[&#x27;pearson_p&#x27;]:.3f}&quot;)
+
+    # Quadrant labels
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    ax.text(xlim[1] * 0.7, ylim[1] * 0.85, f&quot;Both improved\n(n={results[&#x27;n_both_improved&#x27;]})&quot;,
+            ha=&quot;center&quot;, fontsize=8, color=&quot;#16a34a&quot;, alpha=0.8)
+    ax.text(xlim[0] * 0.7, ylim[0] * 0.85, f&quot;Both declined\n(n={results[&#x27;n_both_declined&#x27;]})&quot;,
+            ha=&quot;center&quot;, fontsize=8, color=&quot;#dc2626&quot;, alpha=0.8)
+    ax.text(xlim[0] * 0.7, ylim[1] * 0.85, f&quot;Riders down,\nOTP up (n={results[&#x27;n_otp_up_riders_down&#x27;]})&quot;,
+            ha=&quot;center&quot;, fontsize=8, color=&quot;#9ca3af&quot;, alpha=0.8)
+    ax.text(xlim[1] * 0.7, ylim[0] * 0.85, f&quot;Riders up,\nOTP down (n={results[&#x27;n_otp_down_riders_up&#x27;]})&quot;,
+            ha=&quot;center&quot;, fontsize=8, color=&quot;#9ca3af&quot;, alpha=0.8)
+
+    ax.set_xlabel(&quot;Ridership Change (recovery / baseline - 1)&quot;)
+    ax.set_ylabel(&quot;OTP Change (recovery - baseline)&quot;)
+    ax.set_title(&quot;COVID Recovery: Ridership vs OTP by Route&quot;)
+    ax.legend(loc=&quot;upper left&quot;, fontsize=8)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;recovery_scatter.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;recovery_scatter.png&#x27;}&quot;)
+
+
+def make_subtype_chart(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Side-by-side box plots: ridership recovery and OTP recovery by subtype.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    subtypes = sorted(df[&quot;subtype&quot;].unique().to_list())
+    colors = [&quot;#3b82f6&quot;, &quot;#22c55e&quot;, &quot;#f59e0b&quot;, &quot;#ef4444&quot;, &quot;#8b5cf6&quot;, &quot;#06b6d4&quot;, &quot;#9ca3af&quot;]
+
+    # OTP recovery by subtype
+    otp_data = []
+    labels = []
+    for st in subtypes:
+        vals = df.filter(pl.col(&quot;subtype&quot;) == st)[&quot;otp_delta&quot;].to_list()
+        if len(vals) &gt;= 3:
+            otp_data.append(vals)
+            labels.append(f&quot;{st}\n(n={len(vals)})&quot;)
+
+    bp1 = ax1.boxplot(otp_data, tick_labels=labels, patch_artist=True)
+    for patch, color in zip(bp1[&quot;boxes&quot;], colors):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.6)
+    ax1.axhline(0, color=&quot;#dc2626&quot;, linewidth=1, linestyle=&quot;--&quot;, alpha=0.5)
+    ax1.set_ylabel(&quot;OTP Change (recovery - baseline)&quot;)
+    ax1.set_title(&quot;OTP Recovery by Subtype&quot;)
+
+    # Ridership recovery by subtype
+    rider_data = []
+    labels2 = []
+    for st in subtypes:
+        vals = df.filter(pl.col(&quot;subtype&quot;) == st)[&quot;ridership_pct_change&quot;].to_list()
+        if len(vals) &gt;= 3:
+            rider_data.append(vals)
+            labels2.append(f&quot;{st}\n(n={len(vals)})&quot;)
+
+    bp2 = ax2.boxplot(rider_data, tick_labels=labels2, patch_artist=True)
+    for patch, color in zip(bp2[&quot;boxes&quot;], colors):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.6)
+    ax2.axhline(0, color=&quot;#dc2626&quot;, linewidth=1, linestyle=&quot;--&quot;, alpha=0.5)
+    ax2.set_ylabel(&quot;Ridership Change (recovery / baseline - 1)&quot;)
+    ax2.set_title(&quot;Ridership Recovery by Subtype&quot;)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;recovery_by_subtype.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;recovery_by_subtype.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load, analyze, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 21: COVID Ridership vs OTP Recovery&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    print(f&quot;  {len(df)} routes with both pre-COVID and recovery data&quot;)
+    print(f&quot;  Pre-COVID: {PRE_COVID_START} to {PRE_COVID_END}&quot;)
+    print(f&quot;  Recovery:  {RECOVERY_START} to {RECOVERY_END}&quot;)
+
+    print(&quot;\nAnalyzing...&quot;)
+    results = analyze(df)
+
+    print(f&quot;\n  Quadrant breakdown:&quot;)
+    print(f&quot;    Both improved:           {results[&#x27;n_both_improved&#x27;]}&quot;)
+    print(f&quot;    Both declined:           {results[&#x27;n_both_declined&#x27;]}&quot;)
+    print(f&quot;    OTP up, riders down:     {results[&#x27;n_otp_up_riders_down&#x27;]}&quot;)
+    print(f&quot;    OTP down, riders up:     {results[&#x27;n_otp_down_riders_up&#x27;]}&quot;)
+
+    print(f&quot;\n  Ridership recovery vs OTP recovery:&quot;)
+    print(f&quot;    Pearson:  r = {results[&#x27;pearson_r&#x27;]:.4f}, p = {results[&#x27;pearson_p&#x27;]:.4f}&quot;)
+    print(f&quot;    Spearman: r = {results[&#x27;spearman_r&#x27;]:.4f}, p = {results[&#x27;spearman_p&#x27;]:.4f}&quot;)
+
+    print(f&quot;\n  Regression to the mean test (baseline OTP vs OTP delta):&quot;)
+    print(f&quot;    Pearson:  r = {results[&#x27;rtm_r&#x27;]:.4f}, p = {results[&#x27;rtm_p&#x27;]:.4f}&quot;)
+    if results[&#x27;rtm_p&#x27;] &lt; 0.05:
+        print(&quot;    =&gt; RTM detected: routes with extreme baseline OTP regress toward the mean.&quot;)
+        print(&quot;       The ridership-OTP correlation may be partly artifactual.&quot;)
+
+    if &quot;kruskal_h&quot; in results:
+        print(f&quot;\n  Kruskal-Wallis (OTP delta by subtype):&quot;)
+        print(f&quot;    H = {results[&#x27;kruskal_h&#x27;]:.3f}, p = {results[&#x27;kruskal_p&#x27;]:.4f}&quot;)
+
+    # System-wide ridership recovery
+    median_rider = df[&quot;ridership_pct_change&quot;].median()
+    mean_rider = df[&quot;ridership_pct_change&quot;].mean()
+    print(f&quot;\n  System ridership recovery:&quot;)
+    print(f&quot;    Median: {median_rider:+.1%}&quot;)
+    print(f&quot;    Mean:   {mean_rider:+.1%}&quot;)
+    n_rider_recovered = df.filter(pl.col(&quot;ridership_pct_change&quot;) &gt;= 0).height
+    print(f&quot;    Routes at/above pre-COVID: {n_rider_recovered}/{len(df)}&quot;)
+
+    # Extreme routes
+    print(&quot;\n  Most ridership recovery with OTP decline:&quot;)
+    worst = (
+        df.filter((pl.col(&quot;ridership_pct_change&quot;) &gt; 0) &amp; (pl.col(&quot;otp_delta&quot;) &lt; -0.05))
+        .sort(&quot;otp_delta&quot;)
+        .head(5)
+    )
+    for row in worst.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5s} - {row[&#x27;route_name&#x27;]:&lt;30s}  &quot;
+              f&quot;riders {row[&#x27;ridership_pct_change&#x27;]:+.0%}, OTP {row[&#x27;otp_delta&#x27;]:+.1%}&quot;)
+
+    print(&quot;\n  Most ridership loss with OTP improvement:&quot;)
+    best = (
+        df.filter((pl.col(&quot;ridership_pct_change&quot;) &lt; -0.1) &amp; (pl.col(&quot;otp_delta&quot;) &gt; 0))
+        .sort(&quot;otp_delta&quot;, descending=True)
+        .head(5)
+    )
+    for row in best.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5s} - {row[&#x27;route_name&#x27;]:&lt;30s}  &quot;
+              f&quot;riders {row[&#x27;ridership_pct_change&#x27;]:+.0%}, OTP {row[&#x27;otp_delta&#x27;]:+.1%}&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    df.write_csv(OUT / &quot;recovery_data.csv&quot;)
+    print(f&quot;  {OUT / &#x27;recovery_data.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_scatter(df, results)
+    make_subtype_chart(df)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
   </details>
 </section>
 
@@ -476,6 +809,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>18: Multivariate OTP Model</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -319,6 +322,328 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Multivariate OLS model combining structural predictors of OTP.&quot;&quot;&quot;
+
+import math
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    classify_bus_route,
+    output_dir,
+    query_to_polars,
+    setup_plotting,
+)
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return the great-circle distance in km between two lat/lon points.&quot;&quot;&quot;
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
+         * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def compute_span(lats: list[float], lons: list[float]) -&gt; float:
+    &quot;&quot;&quot;Return the max pairwise haversine distance (km) among a set of points.&quot;&quot;&quot;
+    max_dist = 0.0
+    n = len(lats)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = haversine_km(lats[i], lons[i], lats[j], lons[j])
+            if d &gt; max_dist:
+                max_dist = d
+    return max_dist
+
+
+def load_features() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Assemble all features for the regression model.&quot;&quot;&quot;
+    avg_otp = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp, COUNT(*) AS months
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(*) &gt;= 12
+    &quot;&quot;&quot;)
+    stop_counts = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops
+        GROUP BY route_id
+    &quot;&quot;&quot;)
+    trips = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id,
+               MAX(trips_wd) AS max_wd,
+               MAX(trips_sa) AS max_sa,
+               MAX(trips_su) AS max_su
+        FROM route_stops
+        GROUP BY route_id
+    &quot;&quot;&quot;)
+    munis = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, COUNT(DISTINCT s.muni) AS n_munis
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.route_id
+    &quot;&quot;&quot;)
+    stops_by_route = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, s.lat, s.lon
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.lat IS NOT NULL AND s.lon IS NOT NULL
+    &quot;&quot;&quot;)
+    spans = []
+    for route_id in stops_by_route[&quot;route_id&quot;].unique().sort().to_list():
+        subset = stops_by_route.filter(pl.col(&quot;route_id&quot;) == route_id)
+        span_km = compute_span(subset[&quot;lat&quot;].to_list(), subset[&quot;lon&quot;].to_list())
+        spans.append({&quot;route_id&quot;: route_id, &quot;span_km&quot;: span_km})
+    span_df = pl.DataFrame(spans)
+
+    df = avg_otp
+    df = df.join(stop_counts, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(trips, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(munis, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(span_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+
+    df = df.with_columns(
+        pl.when(pl.col(&quot;max_wd&quot;) &gt; 0)
+        .then((pl.col(&quot;max_sa&quot;) + pl.col(&quot;max_su&quot;)) / (2.0 * pl.col(&quot;max_wd&quot;)))
+        .otherwise(0.0)
+        .alias(&quot;weekend_ratio&quot;)
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;).then(1.0).otherwise(0.0).alias(&quot;is_rail&quot;)
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.Utf8))
+        .otherwise(pl.lit(&quot;non_bus&quot;))
+        .alias(&quot;bus_subtype&quot;)
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;bus_subtype&quot;).is_in([&quot;busway&quot;, &quot;flyer&quot;, &quot;express&quot;, &quot;limited&quot;]))
+        .then(1.0)
+        .otherwise(0.0)
+        .alias(&quot;is_premium_bus&quot;)
+    )
+    df = df.drop_nulls(subset=[&quot;stop_count&quot;, &quot;span_km&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;])
+
+    return df
+
+
+def compute_vif(X_raw: np.ndarray, feature_names: list[str]) -&gt; dict[str, float]:
+    &quot;&quot;&quot;Compute Variance Inflation Factor for each predictor.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    vifs = {}
+    for j in range(k):
+        y_j = X_raw[:, j]
+        X_other = np.delete(X_raw, j, axis=1)
+        X_other = np.column_stack([np.ones(n), X_other])
+        beta, residuals, _, _ = np.linalg.lstsq(X_other, y_j, rcond=None)
+        y_hat = X_other @ beta
+        ss_res = np.sum((y_j - y_hat) ** 2)
+        ss_tot = np.sum((y_j - np.mean(y_j)) ** 2)
+        r2_j = 1 - ss_res / ss_tot if ss_tot &gt; 0 else 0.0
+        vifs[feature_names[j]] = 1.0 / (1.0 - r2_j) if r2_j &lt; 1.0 else float(&quot;inf&quot;)
+    return vifs
+
+
+def fit_ols(y: np.ndarray, X_raw: np.ndarray, feature_names: list[str]) -&gt; tuple[dict, np.ndarray]:
+    &quot;&quot;&quot;Fit OLS regression using lstsq for numerical stability.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    X = np.column_stack([np.ones(n), X_raw])
+
+    # OLS via least squares (more stable than matrix inversion)
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    y_hat = X @ beta
+    residuals = y - y_hat
+
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    adj_r_squared = 1 - (1 - r_squared) * (n - 1) / (n - k - 1)
+    mse = ss_res / (n - k - 1)
+
+    # Standard errors via (X&#x27;X)^-1 * MSE (using pseudoinverse for stability)
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    se = np.sqrt(np.diag(XtX_inv) * mse)
+    t_vals = beta / se
+    p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n - k - 1)) for t in t_vals]
+
+    # Standardized beta weights (using sample std, ddof=1)
+    x_stds = np.std(X_raw, axis=0, ddof=1)
+    y_std = np.std(y, ddof=1)
+    beta_weights = beta[1:] * x_stds / y_std
+
+    results = {
+        &quot;r_squared&quot;: r_squared,
+        &quot;adj_r_squared&quot;: adj_r_squared,
+        &quot;n&quot;: n,
+        &quot;k&quot;: k,
+        &quot;features&quot;: [&quot;intercept&quot;] + feature_names,
+        &quot;coefficients&quot;: beta.tolist(),
+        &quot;std_errors&quot;: se.tolist(),
+        &quot;t_values&quot;: t_vals.tolist(),
+        &quot;p_values&quot;: p_vals,
+        &quot;beta_weights&quot;: [None] + beta_weights.tolist(),
+    }
+    return results, y_hat
+
+
+def print_model(results: dict, label: str) -&gt; None:
+    &quot;&quot;&quot;Print formatted model results.&quot;&quot;&quot;
+    print(f&quot;\n  {label}:&quot;)
+    print(f&quot;  R² = {results[&#x27;r_squared&#x27;]:.4f}, Adj R² = {results[&#x27;adj_r_squared&#x27;]:.4f}, &quot;
+          f&quot;n = {results[&#x27;n&#x27;]}, k = {results[&#x27;k&#x27;]}&quot;)
+    print(f&quot;  {&#x27;Feature&#x27;:&lt;20s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Std Err&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s} {&#x27;Beta&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*60}&quot;)
+    for i, feat in enumerate(results[&quot;features&quot;]):
+        coeff = results[&quot;coefficients&quot;][i]
+        se = results[&quot;std_errors&quot;][i]
+        p = results[&quot;p_values&quot;][i]
+        beta = results[&quot;beta_weights&quot;][i]
+        beta_str = f&quot;{beta:&gt;10.4f}&quot; if beta is not None else f&quot;{&#x27;--&#x27;:&gt;10s}&quot;
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;20s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {beta_str} {sig}&quot;)
+
+
+def make_charts(df: pl.DataFrame, results: dict, y_hat: np.ndarray) -&gt; None:
+    &quot;&quot;&quot;Generate coefficient plot and predicted vs actual scatter.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # Coefficient plot (standardized)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    features = results[&quot;features&quot;][1:]
+    betas = [b for b in results[&quot;beta_weights&quot;][1:]]
+    p_vals = results[&quot;p_values&quot;][1:]
+    colors = [&quot;#22c55e&quot; if p &lt; 0.05 else &quot;#9ca3af&quot; for p in p_vals]
+
+    y_pos = range(len(features))
+    ax.barh(y_pos, betas, color=colors, edgecolor=&quot;white&quot;)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(features)
+    ax.axvline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax.set_xlabel(&quot;Standardized Coefficient (Beta Weight)&quot;)
+    ax.set_title(f&quot;Multivariate OTP Model: Feature Importance\n&quot;
+                 f&quot;R²={results[&#x27;r_squared&#x27;]:.3f}, Adj R²={results[&#x27;adj_r_squared&#x27;]:.3f}, n={results[&#x27;n&#x27;]}&quot;)
+
+    for i, (b, p) in enumerate(zip(betas, p_vals)):
+        marker = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        ax.text(b + 0.01 if b &gt;= 0 else b - 0.01, i, marker,
+                ha=&quot;left&quot; if b &gt;= 0 else &quot;right&quot;, va=&quot;center&quot;, fontsize=10)
+
+    ax.invert_yaxis()
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;coefficient_plot.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;coefficient_plot.png&#x27;}&quot;)
+
+    # Predicted vs actual
+    fig, ax = plt.subplots(figsize=(8, 8))
+    y_actual = df[&quot;avg_otp&quot;].to_list()
+    ax.scatter(y_hat, y_actual, s=30, alpha=0.6, color=&quot;#3b82f6&quot;, edgecolors=&quot;white&quot;, linewidths=0.5)
+    lims = [min(min(y_hat), min(y_actual)) - 0.02, max(max(y_hat), max(y_actual)) + 0.02]
+    ax.plot(lims, lims, &quot;--&quot;, color=&quot;#dc2626&quot;, linewidth=1, label=&quot;Perfect prediction&quot;)
+    ax.set_xlabel(&quot;Predicted OTP&quot;)
+    ax.set_ylabel(&quot;Actual OTP&quot;)
+    ax.set_title(f&quot;Predicted vs Actual OTP (R²={results[&#x27;r_squared&#x27;]:.3f})&quot;)
+    ax.legend()
+    ax.set_xlim(lims)
+    ax.set_ylim(lims)
+    ax.set_aspect(&quot;equal&quot;)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;predicted_vs_actual.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;predicted_vs_actual.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load features, fit models, report, and visualize.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 18: Multivariate OTP Model&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading and assembling features...&quot;)
+    df = load_features()
+    n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
+    n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+    print(f&quot;  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)&quot;)
+
+    # --- Full model (all 6 features) ---
+    full_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
+                     &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+    y = np.array(df[&quot;avg_otp&quot;].to_list())
+    X_full = np.column_stack([np.array(df[f].to_list(), dtype=float) for f in full_features])
+
+    print(&quot;\n--- VIF (Variance Inflation Factors) ---&quot;)
+    vifs = compute_vif(X_full, full_features)
+    for feat, vif in vifs.items():
+        flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
+        print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
+
+    print(&quot;\nFitting full model (6 features)...&quot;)
+    full_results, y_hat_full = fit_ols(y, X_full, full_features)
+    print_model(full_results, &quot;Full model&quot;)
+
+    # --- Reduced model (without n_munis suppressor) ---
+    reduced_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;, &quot;weekend_ratio&quot;]
+    X_reduced = np.column_stack([np.array(df[f].to_list(), dtype=float) for f in reduced_features])
+    print(&quot;\nFitting reduced model (without n_munis)...&quot;)
+    reduced_results, _ = fit_ols(y, X_reduced, reduced_features)
+    print_model(reduced_results, &quot;Reduced model (no n_munis)&quot;)
+
+    # --- Bus-only model ---
+    bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    bus_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_premium_bus&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+    y_bus = np.array(bus_df[&quot;avg_otp&quot;].to_list())
+    X_bus = np.column_stack([np.array(bus_df[f].to_list(), dtype=float) for f in bus_features])
+    print(f&quot;\nFitting bus-only model ({len(bus_df)} routes)...&quot;)
+    bus_results, _ = fit_ols(y_bus, X_bus, bus_features)
+    print_model(bus_results, &quot;Bus-only model&quot;)
+
+    # Save full model coefficients
+    coeff_df = pl.DataFrame({
+        &quot;feature&quot;: full_results[&quot;features&quot;],
+        &quot;coefficient&quot;: full_results[&quot;coefficients&quot;],
+        &quot;std_error&quot;: full_results[&quot;std_errors&quot;],
+        &quot;t_value&quot;: full_results[&quot;t_values&quot;],
+        &quot;p_value&quot;: full_results[&quot;p_values&quot;],
+        &quot;beta_weight&quot;: [b if b is not None else float(&quot;nan&quot;) for b in full_results[&quot;beta_weights&quot;]],
+    })
+    coeff_df.write_csv(OUT / &quot;model_coefficients.csv&quot;)
+    print(f&quot;\n  Saved to {OUT / &#x27;model_coefficients.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_charts(df, full_results, y_hat_full)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -565,6 +890,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>13: Cross-Route Correlation Clustering</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -315,6 +318,260 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Cluster routes by detrended OTP time-series correlation to find co-moving groups.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
+from scipy.spatial.distance import squareform
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MIN_MONTHS = 36
+MIN_OVERLAP = 24
+
+
+def load_data() -&gt; tuple[pl.DataFrame, pl.DataFrame]:
+    &quot;&quot;&quot;Load OTP time series and route metadata.&quot;&quot;&quot;
+    otp = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode, o.month, o.otp
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+    &quot;&quot;&quot;)
+    stop_counts = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops
+        GROUP BY route_id
+    &quot;&quot;&quot;)
+    return otp, stop_counts
+
+
+def detrend(otp: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Subtract the system-wide monthly mean OTP from each route&#x27;s OTP.&quot;&quot;&quot;
+    monthly_mean = (
+        otp.group_by(&quot;month&quot;)
+        .agg(pl.col(&quot;otp&quot;).mean().alias(&quot;system_otp&quot;))
+    )
+    otp = otp.join(monthly_mean, on=&quot;month&quot;, how=&quot;left&quot;)
+    otp = otp.with_columns(
+        (pl.col(&quot;otp&quot;) - pl.col(&quot;system_otp&quot;)).alias(&quot;otp_detrended&quot;)
+    )
+    return otp
+
+
+def build_correlation_matrix(otp: pl.DataFrame) -&gt; tuple[np.ndarray, list[str], list[str], int]:
+    &quot;&quot;&quot;Build a pairwise Pearson correlation matrix on detrended OTP.&quot;&quot;&quot;
+    # Filter to routes with sufficient months
+    route_months = otp.group_by(&quot;route_id&quot;).len().filter(pl.col(&quot;len&quot;) &gt;= MIN_MONTHS)
+    valid_routes = sorted(route_months[&quot;route_id&quot;].to_list())
+
+    otp_filtered = otp.filter(pl.col(&quot;route_id&quot;).is_in(valid_routes))
+
+    # Pivot on detrended values
+    pivot = otp_filtered.pivot(on=&quot;month&quot;, index=&quot;route_id&quot;, values=&quot;otp_detrended&quot;)
+    route_ids = pivot[&quot;route_id&quot;].to_list()
+
+    month_cols = [c for c in pivot.columns if c != &quot;route_id&quot;]
+    matrix = pivot.select(month_cols).to_numpy()
+
+    n = len(route_ids)
+    corr = np.full((n, n), np.nan)
+    n_excluded = 0
+
+    for i in range(n):
+        for j in range(i, n):
+            mask = ~np.isnan(matrix[i]) &amp; ~np.isnan(matrix[j])
+            if mask.sum() &gt;= MIN_OVERLAP:
+                r = np.corrcoef(matrix[i][mask], matrix[j][mask])[0, 1]
+                corr[i, j] = r
+                corr[j, i] = r
+            else:
+                # Leave as NaN instead of imputing 0.0
+                n_excluded += 1
+        corr[i, i] = 1.0
+
+    # For clustering, replace remaining NaN pairs with median correlation
+    median_corr = np.nanmedian(corr[np.triu_indices(n, k=1)])
+    nan_mask = np.isnan(corr)
+    corr[nan_mask] = median_corr
+
+    return corr, route_ids, month_cols, n_excluded
+
+
+def silhouette_score(dist_matrix: np.ndarray, labels: np.ndarray) -&gt; float:
+    &quot;&quot;&quot;Compute mean silhouette score from a precomputed distance matrix.&quot;&quot;&quot;
+    n = len(labels)
+    scores = np.zeros(n)
+    for i in range(n):
+        own_cluster = labels[i]
+        own_mask = labels == own_cluster
+        if own_mask.sum() &lt;= 1:
+            scores[i] = 0.0
+            continue
+        a_i = dist_matrix[i, own_mask].sum() / (own_mask.sum() - 1)
+        b_i = np.inf
+        for c in np.unique(labels):
+            if c == own_cluster:
+                continue
+            other_mask = labels == c
+            b_c = dist_matrix[i, other_mask].mean()
+            b_i = min(b_i, b_c)
+        scores[i] = (b_i - a_i) / max(a_i, b_i) if max(a_i, b_i) &gt; 0 else 0.0
+    return scores.mean()
+
+
+def cluster_routes(corr: np.ndarray) -&gt; tuple[np.ndarray, np.ndarray, int, dict]:
+    &quot;&quot;&quot;Cluster with average linkage; pick k by silhouette score.&quot;&quot;&quot;
+    dist = np.clip(1 - corr, 0, 2)
+    np.fill_diagonal(dist, 0)
+    condensed = squareform(dist)
+    linkage_matrix = linkage(condensed, method=&quot;average&quot;)
+
+    # Find best k via silhouette score
+    sil_scores = {}
+    for k in range(3, 11):
+        labels_k = fcluster(linkage_matrix, t=k, criterion=&quot;maxclust&quot;)
+        sil_scores[k] = silhouette_score(dist, labels_k)
+
+    best_k = max(sil_scores, key=sil_scores.get)
+    labels = fcluster(linkage_matrix, t=best_k, criterion=&quot;maxclust&quot;)
+
+    return labels, linkage_matrix, best_k, sil_scores
+
+
+def make_dendrogram(linkage_matrix: np.ndarray, route_ids: list[str],
+                    route_meta: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate a dendrogram of route clusters.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    labels = []
+    for rid in route_ids:
+        row = route_meta.filter(pl.col(&quot;route_id&quot;) == rid)
+        if len(row) &gt; 0:
+            labels.append(f&quot;{rid}&quot;)
+        else:
+            labels.append(rid)
+
+    fig, ax = plt.subplots(figsize=(16, 8))
+    dendrogram(linkage_matrix, labels=labels, leaf_rotation=90, leaf_font_size=7, ax=ax)
+    ax.set_title(&quot;Route OTP Clustering (Average Linkage on Detrended Correlation Distance)&quot;)
+    ax.set_ylabel(&quot;Distance (1 - r)&quot;)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;dendrogram.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;dendrogram.png&#x27;}&quot;)
+
+
+def make_heatmap(corr: np.ndarray, route_ids: list[str], labels: np.ndarray) -&gt; None:
+    &quot;&quot;&quot;Generate a correlation heatmap ordered by cluster assignment.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    order = np.argsort(labels)
+    corr_sorted = corr[np.ix_(order, order)]
+    sorted_ids = [route_ids[i] for i in order]
+
+    fig, ax = plt.subplots(figsize=(14, 12))
+    im = ax.imshow(corr_sorted, cmap=&quot;RdBu_r&quot;, vmin=-1, vmax=1, aspect=&quot;auto&quot;)
+    ax.set_title(&quot;Pairwise Detrended OTP Correlation (Ordered by Cluster)&quot;)
+
+    tick_positions = list(range(0, len(sorted_ids), 5))
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels([sorted_ids[i] for i in tick_positions], rotation=90, fontsize=6)
+    ax.set_yticks(tick_positions)
+    ax.set_yticklabels([sorted_ids[i] for i in tick_positions], fontsize=6)
+
+    fig.colorbar(im, ax=ax, label=&quot;Pearson r (detrended)&quot;, shrink=0.8)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;correlation_heatmap.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;correlation_heatmap.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load, detrend, correlate, cluster, and visualize.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 13: Cross-Route Correlation Clustering&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    otp, stop_counts = load_data()
+
+    print(&quot;\nDetrending (subtracting system-wide monthly mean)...&quot;)
+    otp = detrend(otp)
+
+    print(&quot;\nBuilding detrended correlation matrix...&quot;)
+    corr, route_ids, month_cols, n_excluded = build_correlation_matrix(otp)
+    print(f&quot;  {len(route_ids)} routes with {MIN_MONTHS}+ months of data&quot;)
+    print(f&quot;  Correlation matrix: {corr.shape}&quot;)
+    print(f&quot;  {n_excluded} route pairs excluded for &lt;{MIN_OVERLAP} overlapping months (imputed with median)&quot;)
+
+    print(&quot;\nClustering routes (silhouette-optimized k)...&quot;)
+    labels, linkage_matrix, best_k, sil_scores = cluster_routes(corr)
+    print(f&quot;  Silhouette scores by k:&quot;)
+    for k, s in sorted(sil_scores.items()):
+        marker = &quot; &lt;-- best&quot; if k == best_k else &quot;&quot;
+        print(f&quot;    k={k}: {s:.4f}{marker}&quot;)
+    print(f&quot;  Selected k={best_k}&quot;)
+
+    # Build metadata for output
+    route_meta = query_to_polars(&quot;&quot;&quot;
+        SELECT r.route_id, r.route_name, r.mode
+        FROM routes r
+    &quot;&quot;&quot;)
+    avg_otp = otp.group_by(&quot;route_id&quot;).agg(pl.col(&quot;otp&quot;).mean().alias(&quot;avg_otp&quot;))
+
+    membership = pl.DataFrame({
+        &quot;route_id&quot;: route_ids,
+        &quot;cluster&quot;: labels.tolist(),
+    })
+    membership = membership.join(route_meta, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    membership = membership.join(avg_otp, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    membership = membership.join(stop_counts, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    membership = membership.sort([&quot;cluster&quot;, &quot;route_id&quot;])
+
+    print(&quot;\nCluster summary:&quot;)
+    for c in sorted(membership[&quot;cluster&quot;].unique().to_list()):
+        cluster = membership.filter(pl.col(&quot;cluster&quot;) == c)
+        n = len(cluster)
+        avg = cluster[&quot;avg_otp&quot;].mean()
+        modes = cluster[&quot;mode&quot;].value_counts().sort(&quot;count&quot;, descending=True)
+        top_mode = modes[&quot;mode&quot;][0] if len(modes) &gt; 0 else &quot;?&quot;
+        avg_stops = cluster[&quot;stop_count&quot;].mean()
+        print(f&quot;  Cluster {c}: {n} routes, avg OTP={avg:.1%}, &quot;
+              f&quot;primary mode={top_mode}, avg stops={avg_stops:.0f}&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    membership.write_csv(OUT / &quot;cluster_membership.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;cluster_membership.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_dendrogram(linkage_matrix, route_ids, route_meta)
+    make_heatmap(corr, route_ids, labels)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -530,6 +787,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

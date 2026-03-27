@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>28 - Weather Impact</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2019-01 to 2025-12 (from otp_monthly, weather_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -317,6 +320,748 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 28: Test whether weather explains OTP variance or the counterintuitive seasonal pattern.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+COMPLETE_YEAR_START = &quot;2019-01&quot;
+COMPLETE_YEAR_END = &quot;2024-12&quot;
+
+WEATHER_VARS = [
+    &quot;total_precip_mm&quot;, &quot;snow_days&quot;, &quot;total_snow_mm&quot;,
+    &quot;mean_tmax_c&quot;, &quot;mean_tmin_c&quot;, &quot;freeze_days&quot;,
+    &quot;hot_days&quot;, &quot;mean_wind_ms&quot;, &quot;heavy_precip_days&quot;,
+]
+
+MONTH_LABELS = [&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;, &quot;Apr&quot;, &quot;May&quot;, &quot;Jun&quot;,
+                &quot;Jul&quot;, &quot;Aug&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot;]
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def fit_ols(y: np.ndarray, X_raw: np.ndarray, feature_names: list[str]) -&gt; dict:
+    &quot;&quot;&quot;Fit OLS regression and return results dict.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    X = np.column_stack([np.ones(n), X_raw])
+
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    y_hat = X @ beta
+    residuals = y - y_hat
+
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    adj_r_squared = 1 - (1 - r_squared) * (n - 1) / (n - k - 1)
+    mse = ss_res / (n - k - 1)
+
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    se = np.sqrt(np.diag(XtX_inv) * mse)
+    t_vals = beta / se
+    p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n - k - 1)) for t in t_vals]
+
+    # Standardized beta weights
+    x_stds = np.std(X_raw, axis=0, ddof=1)
+    y_std = np.std(y, ddof=1)
+    beta_weights = beta[1:] * x_stds / y_std
+
+    return {
+        &quot;r_squared&quot;: r_squared,
+        &quot;adj_r_squared&quot;: adj_r_squared,
+        &quot;ss_res&quot;: ss_res,
+        &quot;n&quot;: n,
+        &quot;k&quot;: k,
+        &quot;features&quot;: [&quot;intercept&quot;] + feature_names,
+        &quot;coefficients&quot;: beta.tolist(),
+        &quot;std_errors&quot;: se.tolist(),
+        &quot;t_values&quot;: t_vals.tolist(),
+        &quot;p_values&quot;: p_vals,
+        &quot;beta_weights&quot;: [None] + beta_weights.tolist(),
+        &quot;y_hat&quot;: y_hat,
+        &quot;residuals&quot;: residuals,
+    }
+
+
+def f_test_nested(base: dict, full: dict) -&gt; tuple[float, float]:
+    &quot;&quot;&quot;F-test comparing nested models. Returns (F_stat, p_value).&quot;&quot;&quot;
+    k_diff = full[&quot;k&quot;] - base[&quot;k&quot;]
+    n = full[&quot;n&quot;]
+    f_stat = ((base[&quot;ss_res&quot;] - full[&quot;ss_res&quot;]) / k_diff) / (full[&quot;ss_res&quot;] / (n - full[&quot;k&quot;] - 1))
+    f_p = 1 - stats.f.cdf(f_stat, k_diff, n - full[&quot;k&quot;] - 1)
+    return f_stat, f_p
+
+
+def print_model(results: dict, label: str) -&gt; None:
+    &quot;&quot;&quot;Print formatted model results.&quot;&quot;&quot;
+    print(f&quot;\n  {label}:&quot;)
+    print(f&quot;  R2 = {results[&#x27;r_squared&#x27;]:.4f}, Adj R2 = {results[&#x27;adj_r_squared&#x27;]:.4f}, &quot;
+          f&quot;n = {results[&#x27;n&#x27;]}, k = {results[&#x27;k&#x27;]}&quot;)
+    print(f&quot;  {&#x27;Feature&#x27;:&lt;22s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Std Err&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s} {&#x27;Beta&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*62}&quot;)
+    for i, feat in enumerate(results[&quot;features&quot;]):
+        coeff = results[&quot;coefficients&quot;][i]
+        se = results[&quot;std_errors&quot;][i]
+        p = results[&quot;p_values&quot;][i]
+        beta = results[&quot;beta_weights&quot;][i]
+        beta_str = f&quot;{beta:&gt;10.4f}&quot; if beta is not None else f&quot;{&#x27;--&#x27;:&gt;10s}&quot;
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;22s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {beta_str} {sig}&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_system_otp() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load trip-weighted system OTP per month (balanced panel).&quot;&quot;&quot;
+    df = query_to_polars(f&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp,
+               COALESCE(rs_agg.trips_7d, 0) AS trips_7d
+        FROM otp_monthly o
+        LEFT JOIN (
+            SELECT route_id, SUM(trips_7d) AS trips_7d
+            FROM route_stops
+            GROUP BY route_id
+        ) rs_agg ON o.route_id = rs_agg.route_id
+        WHERE o.month &gt;= &#x27;{COMPLETE_YEAR_START}&#x27; AND o.month &lt;= &#x27;{COMPLETE_YEAR_END}&#x27;
+    &quot;&quot;&quot;)
+
+    # Balanced panel: only routes present in all 12 months-of-year
+    df = df.with_columns(
+        month_num=pl.col(&quot;month&quot;).str.slice(5, 2).cast(pl.Int32),
+    )
+    months_per_route = (
+        df.group_by(&quot;route_id&quot;)
+        .agg(n_months_of_year=pl.col(&quot;month_num&quot;).n_unique())
+    )
+    balanced = months_per_route.filter(pl.col(&quot;n_months_of_year&quot;) == 12)[&quot;route_id&quot;].to_list()
+    df = df.filter(pl.col(&quot;route_id&quot;).is_in(balanced))
+
+    # Trip-weighted system OTP per month
+    system = (
+        df.group_by(&quot;month&quot;)
+        .agg(
+            weighted_otp=pl.when(pl.col(&quot;trips_7d&quot;).sum() &gt; 0)
+            .then((pl.col(&quot;otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum())
+            .otherwise(pl.col(&quot;otp&quot;).mean()),
+        )
+        .sort(&quot;month&quot;)
+    )
+    return system
+
+
+def load_weather() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load weather_monthly data.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT * FROM weather_monthly ORDER BY month
+    &quot;&quot;&quot;)
+
+
+def load_route_otp() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load route-month OTP for panel regression.&quot;&quot;&quot;
+    return query_to_polars(f&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp, r.mode
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        WHERE o.month &gt;= &#x27;{COMPLETE_YEAR_START}&#x27; AND o.month &lt;= &#x27;{COMPLETE_YEAR_END}&#x27;
+    &quot;&quot;&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Block A: System-level weather-OTP correlation
+# ---------------------------------------------------------------------------
+
+def block_a(system: pl.DataFrame, weather: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;System-level weather-OTP correlations and regression.&quot;&quot;&quot;
+    print(&quot;\n&quot; + &quot;=&quot; * 60)
+    print(&quot;Block A: System-Level Weather-OTP Correlation&quot;)
+    print(&quot;=&quot; * 60)
+
+    # Join system OTP with weather
+    merged = system.join(weather, on=&quot;month&quot;, how=&quot;inner&quot;).sort(&quot;month&quot;)
+    print(f&quot;\n  {len(merged)} months with both OTP and weather data&quot;)
+
+    otp = merged[&quot;weighted_otp&quot;].to_numpy()
+
+    # --- Raw correlations ---
+    print(&quot;\n  Raw correlations (weather var vs system OTP):&quot;)
+    print(f&quot;  {&#x27;Variable&#x27;:&lt;22s} {&#x27;Pearson r&#x27;:&gt;10s} {&#x27;p&#x27;:&gt;8s} {&#x27;Spearman r&#x27;:&gt;10s} {&#x27;p&#x27;:&gt;8s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*60}&quot;)
+    corr_rows = []
+    for var in WEATHER_VARS:
+        x = merged[var].to_numpy().astype(float)
+        mask = ~np.isnan(x)
+        if mask.sum() &lt; 10:
+            continue
+        r_p, p_p = stats.pearsonr(x[mask], otp[mask])
+        r_s, p_s = stats.spearmanr(x[mask], otp[mask])
+        sig = &quot;*&quot; if p_p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {var:&lt;22s} {r_p:&gt;+10.3f} {p_p:&gt;8.4f} {r_s:&gt;+10.3f} {p_s:&gt;8.4f} {sig}&quot;)
+        corr_rows.append({
+            &quot;variable&quot;: var, &quot;pearson_r&quot;: r_p, &quot;pearson_p&quot;: p_p,
+            &quot;spearman_r&quot;: r_s, &quot;spearman_p&quot;: p_s, &quot;type&quot;: &quot;raw&quot;,
+        })
+
+    # --- Detrended correlations ---
+    print(&quot;\n  Detrending (12-month rolling mean)...&quot;)
+    merged = merged.with_columns(
+        otp_trend=pl.col(&quot;weighted_otp&quot;).rolling_mean(window_size=12, min_samples=6).shift(-6),
+    )
+    for var in WEATHER_VARS:
+        merged = merged.with_columns(
+            pl.col(var).rolling_mean(window_size=12, min_samples=6).shift(-6).alias(f&quot;{var}_trend&quot;),
+        )
+
+    merged = merged.with_columns(
+        otp_detrended=pl.col(&quot;weighted_otp&quot;) - pl.col(&quot;otp_trend&quot;),
+    )
+    for var in WEATHER_VARS:
+        merged = merged.with_columns(
+            (pl.col(var) - pl.col(f&quot;{var}_trend&quot;)).alias(f&quot;{var}_detrended&quot;),
+        )
+
+    # Filter to rows with valid detrended values
+    dt = merged.filter(pl.col(&quot;otp_detrended&quot;).is_not_null())
+
+    print(f&quot;\n  Detrended correlations ({len(dt)} months):&quot;)
+    print(f&quot;  {&#x27;Variable&#x27;:&lt;22s} {&#x27;Pearson r&#x27;:&gt;10s} {&#x27;p&#x27;:&gt;8s} {&#x27;Spearman r&#x27;:&gt;10s} {&#x27;p&#x27;:&gt;8s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*60}&quot;)
+    otp_dt = dt[&quot;otp_detrended&quot;].to_numpy()
+    for var in WEATHER_VARS:
+        col = f&quot;{var}_detrended&quot;
+        x = dt[col].to_numpy().astype(float)
+        mask = ~np.isnan(x) &amp; ~np.isnan(otp_dt)
+        if mask.sum() &lt; 10:
+            continue
+        r_p, p_p = stats.pearsonr(x[mask], otp_dt[mask])
+        r_s, p_s = stats.spearmanr(x[mask], otp_dt[mask])
+        sig = &quot;*&quot; if p_p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {var:&lt;22s} {r_p:&gt;+10.3f} {p_p:&gt;8.4f} {r_s:&gt;+10.3f} {p_s:&gt;8.4f} {sig}&quot;)
+        corr_rows.append({
+            &quot;variable&quot;: var, &quot;pearson_r&quot;: r_p, &quot;pearson_p&quot;: p_p,
+            &quot;spearman_r&quot;: r_s, &quot;spearman_p&quot;: p_s, &quot;type&quot;: &quot;detrended&quot;,
+        })
+
+    # --- Multiple regression: system OTP ~ weather + trend ---
+    print(&quot;\n  Multiple regression: system OTP ~ weather variables + linear trend...&quot;)
+    # Use a subset of weather vars to avoid overfitting (n~72)
+    reg_vars = [&quot;total_precip_mm&quot;, &quot;snow_days&quot;, &quot;mean_tmax_c&quot;, &quot;freeze_days&quot;, &quot;mean_wind_ms&quot;]
+    # Add linear trend
+    trend_idx = np.arange(len(merged))
+
+    y = merged[&quot;weighted_otp&quot;].to_numpy()
+    X_cols = [merged[v].to_numpy().astype(float) for v in reg_vars]
+    X_cols.append(trend_idx)
+    X = np.column_stack(X_cols)
+
+    # Remove rows with NaN
+    mask = ~np.any(np.isnan(X), axis=1)
+    y_clean = y[mask]
+    X_clean = X[mask]
+    names = reg_vars + [&quot;linear_trend&quot;]
+
+    weather_reg = fit_ols(y_clean, X_clean, names)
+    print_model(weather_reg, &quot;Weather + trend model&quot;)
+
+    # Trend-only baseline for F-test
+    X_trend = trend_idx[mask].reshape(-1, 1)
+    trend_only = fit_ols(y_clean, X_trend, [&quot;linear_trend&quot;])
+    f_stat, f_p = f_test_nested(trend_only, weather_reg)
+    print(f&quot;\n  F-test (weather vars joint): F = {f_stat:.3f}, p = {f_p:.4f}&quot;)
+    print(f&quot;  R2 change: {trend_only[&#x27;r_squared&#x27;]:.4f} -&gt; {weather_reg[&#x27;r_squared&#x27;]:.4f} &quot;
+          f&quot;(+{weather_reg[&#x27;r_squared&#x27;] - trend_only[&#x27;r_squared&#x27;]:.4f})&quot;)
+
+    corr_df = pl.DataFrame(corr_rows)
+    corr_df.write_csv(OUT / &quot;weather_otp_correlation.csv&quot;)
+    print(f&quot;\n  Saved {OUT / &#x27;weather_otp_correlation.csv&#x27;}&quot;)
+
+    return merged
+
+
+# ---------------------------------------------------------------------------
+# Block B: Seasonal decomposition test
+# ---------------------------------------------------------------------------
+
+def block_b(merged: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Test whether weather explains the seasonal pattern.&quot;&quot;&quot;
+    print(&quot;\n&quot; + &quot;=&quot; * 60)
+    print(&quot;Block B: Seasonal Decomposition Test&quot;)
+    print(&quot;=&quot; * 60)
+
+    # Prepare data: need month-of-year dummies + weather vars
+    merged = merged.with_columns(
+        month_num=pl.col(&quot;month&quot;).str.slice(5, 2).cast(pl.Int32),
+    )
+
+    y = merged[&quot;weighted_otp&quot;].to_numpy()
+    n = len(y)
+    trend_idx = np.arange(n)
+
+    # Month dummies (drop January as reference)
+    month_nums = merged[&quot;month_num&quot;].to_numpy()
+    month_dummies = np.zeros((n, 11))
+    for i in range(n):
+        m = month_nums[i]
+        if m &gt; 1:
+            month_dummies[i, m - 2] = 1.0
+    month_names = [f&quot;month_{MONTH_LABELS[i]}&quot; for i in range(1, 12)]
+
+    # Model 1: Month dummies + trend only
+    print(&quot;\n  Model 1: Month dummies + linear trend&quot;)
+    X1 = np.column_stack([month_dummies, trend_idx])
+    names1 = month_names + [&quot;linear_trend&quot;]
+    model_month = fit_ols(y, X1, names1)
+    print_model(model_month, &quot;Month-only model&quot;)
+
+    # Model 2: Weather variables + trend only (no month dummies)
+    weather_cols = [&quot;total_precip_mm&quot;, &quot;snow_days&quot;, &quot;mean_tmax_c&quot;, &quot;freeze_days&quot;, &quot;mean_wind_ms&quot;]
+    X_weather = np.column_stack([merged[v].to_numpy().astype(float) for v in weather_cols])
+    X2 = np.column_stack([X_weather, trend_idx])
+    names2 = weather_cols + [&quot;linear_trend&quot;]
+
+    # Remove NaN rows
+    mask = ~np.any(np.isnan(X2), axis=1)
+    model_weather = fit_ols(y[mask], X2[mask], names2)
+    print(f&quot;\n  Model 2: Weather + linear trend&quot;)
+    print_model(model_weather, &quot;Weather-only model&quot;)
+
+    # Model 3: Month dummies + weather + trend
+    X3 = np.column_stack([month_dummies, X_weather, trend_idx])
+    names3 = month_names + weather_cols + [&quot;linear_trend&quot;]
+    mask3 = ~np.any(np.isnan(X3), axis=1)
+    model_both = fit_ols(y[mask3], X3[mask3], names3)
+    print(f&quot;\n  Model 3: Month dummies + weather + linear trend&quot;)
+    print_model(model_both, &quot;Month + weather model&quot;)
+
+    # F-test: does weather add to month dummies?
+    # Realign month-only model to same observations
+    X1_masked = X1[mask3]
+    model_month_masked = fit_ols(y[mask3], X1_masked, names1)
+    f_weather, fp_weather = f_test_nested(model_month_masked, model_both)
+    print(f&quot;\n  F-test (weather added to months): F = {f_weather:.3f}, p = {fp_weather:.4f}&quot;)
+    print(f&quot;  R2 change: {model_month_masked[&#x27;r_squared&#x27;]:.4f} -&gt; {model_both[&#x27;r_squared&#x27;]:.4f} &quot;
+          f&quot;(+{model_both[&#x27;r_squared&#x27;] - model_month_masked[&#x27;r_squared&#x27;]:.4f})&quot;)
+
+    # F-test: do month dummies add to weather?
+    X2_masked = X2[mask3]
+    model_weather_masked = fit_ols(y[mask3], X2_masked, names2)
+    f_months, fp_months = f_test_nested(model_weather_masked, model_both)
+    print(f&quot;\n  F-test (months added to weather): F = {f_months:.3f}, p = {fp_months:.4f}&quot;)
+    print(f&quot;  R2 change: {model_weather_masked[&#x27;r_squared&#x27;]:.4f} -&gt; {model_both[&#x27;r_squared&#x27;]:.4f} &quot;
+          f&quot;(+{model_both[&#x27;r_squared&#x27;] - model_weather_masked[&#x27;r_squared&#x27;]:.4f})&quot;)
+
+    # Check if month dummies remain significant in the combined model
+    sig_months_combined = sum(
+        1 for i, f in enumerate(model_both[&quot;features&quot;])
+        if f.startswith(&quot;month_&quot;) and model_both[&quot;p_values&quot;][i] &lt; 0.05
+    )
+    print(f&quot;\n  Significant month dummies in combined model: {sig_months_combined} of 11&quot;)
+    if sig_months_combined == 0:
+        print(&quot;  =&gt; Weather fully explains the seasonal pattern (month dummies non-significant).&quot;)
+    elif sig_months_combined &lt; 6:
+        print(&quot;  =&gt; Weather partially explains the seasonal pattern.&quot;)
+    else:
+        print(&quot;  =&gt; Weather does NOT explain the seasonal pattern (most month dummies still significant).&quot;)
+
+    # Compute seasonal profile with and without weather adjustment
+    # Weather-adjusted = residuals from weather-only model + grand mean
+    grand_mean = np.mean(y[mask3])
+    weather_residuals = model_weather_masked[&quot;residuals&quot;]
+    adjusted_otp = weather_residuals + grand_mean
+    month_nums_masked = month_nums[mask3]
+
+    seasonal_raw = {}
+    seasonal_adj = {}
+    for m in range(1, 13):
+        idx = month_nums_masked == m
+        if idx.any():
+            seasonal_raw[m] = np.mean(y[mask3][idx])
+            seasonal_adj[m] = np.mean(adjusted_otp[idx])
+
+    print(&quot;\n  Seasonal profile comparison:&quot;)
+    print(f&quot;  {&#x27;Month&#x27;:&lt;6s} {&#x27;Raw OTP&#x27;:&gt;10s} {&#x27;Weather-adj&#x27;:&gt;12s} {&#x27;Diff&#x27;:&gt;8s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*38}&quot;)
+    for m in range(1, 13):
+        if m in seasonal_raw:
+            diff = seasonal_adj[m] - seasonal_raw[m]
+            print(f&quot;  {MONTH_LABELS[m-1]:&lt;6s} {seasonal_raw[m]:&gt;10.1%} {seasonal_adj[m]:&gt;12.1%} {diff:&gt;+8.1%}&quot;)
+
+    return {
+        &quot;model_month&quot;: model_month,
+        &quot;model_weather&quot;: model_weather,
+        &quot;model_both&quot;: model_both,
+        &quot;seasonal_raw&quot;: seasonal_raw,
+        &quot;seasonal_adj&quot;: seasonal_adj,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Block C: Route-level panel regression
+# ---------------------------------------------------------------------------
+
+def block_c(route_otp: pl.DataFrame, weather: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Route-level panel regression with fixed effects.&quot;&quot;&quot;
+    print(&quot;\n&quot; + &quot;=&quot; * 60)
+    print(&quot;Block C: Route-Level Panel Regression&quot;)
+    print(&quot;=&quot; * 60)
+
+    # Join weather to route-month OTP
+    panel = route_otp.join(weather, on=&quot;month&quot;, how=&quot;inner&quot;)
+    print(f&quot;\n  Panel: {len(panel)} route-month observations&quot;)
+    print(f&quot;  Routes: {panel[&#x27;route_id&#x27;].n_unique()}, Months: {panel[&#x27;month&#x27;].n_unique()}&quot;)
+
+    # Demean by route (within-route variation = fixed effects)
+    route_means = panel.group_by(&quot;route_id&quot;).agg(
+        otp_mean=pl.col(&quot;otp&quot;).mean(),
+    )
+    panel = panel.join(route_means, on=&quot;route_id&quot;)
+    panel = panel.with_columns(
+        otp_demeaned=(pl.col(&quot;otp&quot;) - pl.col(&quot;otp_mean&quot;)),
+    )
+
+    # Weather variables (same across routes within a month, so we just demean OTP)
+    y = panel[&quot;otp_demeaned&quot;].to_numpy()
+    weather_cols = [&quot;total_precip_mm&quot;, &quot;snow_days&quot;, &quot;mean_tmax_c&quot;, &quot;freeze_days&quot;, &quot;mean_wind_ms&quot;]
+    X = np.column_stack([panel[v].to_numpy().astype(float) for v in weather_cols])
+
+    mask = ~np.any(np.isnan(X), axis=1) &amp; ~np.isnan(y)
+    y_clean = y[mask]
+    X_clean = X[mask]
+
+    print(f&quot;  Clean observations: {mask.sum()}&quot;)
+
+    fe_model = fit_ols(y_clean, X_clean, weather_cols)
+    print_model(fe_model, &quot;Fixed-effects panel model (route-demeaned)&quot;)
+
+    # Cluster-robust standard errors (by month)
+    # Since weather is constant within month, cluster by month
+    months_arr = panel[&quot;month&quot;].to_numpy()[mask]
+    unique_months = np.unique(months_arr)
+    n_clusters = len(unique_months)
+    k = fe_model[&quot;k&quot;]
+    n = fe_model[&quot;n&quot;]
+
+    # Compute cluster-robust (CR1) standard errors
+    X_with_const = np.column_stack([np.ones(n), X_clean])
+    XtX_inv = np.linalg.pinv(X_with_const.T @ X_with_const)
+    meat = np.zeros((k + 1, k + 1))
+    for m in unique_months:
+        idx = months_arr == m
+        e_g = fe_model[&quot;residuals&quot;][idx]
+        X_g = X_with_const[idx]
+        score_g = X_g.T @ e_g
+        meat += np.outer(score_g, score_g)
+
+    # Small-sample correction
+    correction = n_clusters / (n_clusters - 1) * (n - 1) / (n - k - 1)
+    sandwich = XtX_inv @ meat @ XtX_inv * correction
+    cluster_se = np.sqrt(np.diag(sandwich))
+    cluster_t = np.array(fe_model[&quot;coefficients&quot;]) / cluster_se
+    cluster_p = [2 * (1 - stats.t.cdf(abs(t), df=n_clusters - 1)) for t in cluster_t]
+
+    print(f&quot;\n  Cluster-robust SEs (clustered by month, {n_clusters} clusters):&quot;)
+    print(f&quot;  {&#x27;Feature&#x27;:&lt;22s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Cluster SE&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*54}&quot;)
+    for i, feat in enumerate(fe_model[&quot;features&quot;]):
+        coeff = fe_model[&quot;coefficients&quot;][i]
+        se = cluster_se[i]
+        p = cluster_p[i]
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;22s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {sig}&quot;)
+
+    return {
+        &quot;fe_model&quot;: fe_model,
+        &quot;cluster_se&quot;: cluster_se,
+        &quot;cluster_p&quot;: cluster_p,
+        &quot;n_clusters&quot;: n_clusters,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Charts
+# ---------------------------------------------------------------------------
+
+def chart_timeseries(merged: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Chart 1: Weather time series overlaid with system OTP.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, axes = plt.subplots(3, 1, figsize=(14, 10), sharex=True)
+
+    months = merged[&quot;month&quot;].to_list()
+    x = np.arange(len(months))
+    tick_step = max(1, len(months) // 12)
+    tick_idx = list(range(0, len(months), tick_step))
+
+    otp = merged[&quot;weighted_otp&quot;].to_numpy() * 100
+
+    # Panel 1: Temperature + OTP
+    ax = axes[0]
+    ax.plot(x, otp, color=&quot;#2563eb&quot;, linewidth=1.5, label=&quot;System OTP&quot;)
+    ax.set_ylabel(&quot;OTP (%)&quot;, color=&quot;#2563eb&quot;)
+    ax.tick_params(axis=&quot;y&quot;, labelcolor=&quot;#2563eb&quot;)
+    ax.set_ylim(55, 80)
+
+    ax2 = ax.twinx()
+    tmax = merged[&quot;mean_tmax_c&quot;].to_numpy()
+    tmin = merged[&quot;mean_tmin_c&quot;].to_numpy()
+    ax2.fill_between(x, tmin, tmax, alpha=0.2, color=&quot;#f97316&quot;, label=&quot;Tmin-Tmax range&quot;)
+    ax2.plot(x, tmax, color=&quot;#f97316&quot;, linewidth=0.8, alpha=0.7)
+    ax2.plot(x, tmin, color=&quot;#f97316&quot;, linewidth=0.8, alpha=0.7)
+    ax2.set_ylabel(&quot;Temperature (C)&quot;, color=&quot;#f97316&quot;)
+    ax2.tick_params(axis=&quot;y&quot;, labelcolor=&quot;#f97316&quot;)
+    ax.set_title(&quot;System OTP vs Temperature&quot;)
+    lines1, labels1 = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2, loc=&quot;lower left&quot;, fontsize=8)
+
+    # Panel 2: Precipitation + OTP
+    ax = axes[1]
+    ax.plot(x, otp, color=&quot;#2563eb&quot;, linewidth=1.5, label=&quot;System OTP&quot;)
+    ax.set_ylabel(&quot;OTP (%)&quot;, color=&quot;#2563eb&quot;)
+    ax.tick_params(axis=&quot;y&quot;, labelcolor=&quot;#2563eb&quot;)
+    ax.set_ylim(55, 80)
+
+    ax2 = ax.twinx()
+    precip = merged[&quot;total_precip_mm&quot;].to_numpy()
+    ax2.bar(x, precip, width=0.8, color=&quot;#22c55e&quot;, alpha=0.5, label=&quot;Precipitation (mm)&quot;)
+    ax2.set_ylabel(&quot;Precipitation (mm)&quot;, color=&quot;#22c55e&quot;)
+    ax2.tick_params(axis=&quot;y&quot;, labelcolor=&quot;#22c55e&quot;)
+    ax.set_title(&quot;System OTP vs Precipitation&quot;)
+    lines1, labels1 = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2, loc=&quot;lower left&quot;, fontsize=8)
+
+    # Panel 3: Snow + OTP
+    ax = axes[2]
+    ax.plot(x, otp, color=&quot;#2563eb&quot;, linewidth=1.5, label=&quot;System OTP&quot;)
+    ax.set_ylabel(&quot;OTP (%)&quot;, color=&quot;#2563eb&quot;)
+    ax.tick_params(axis=&quot;y&quot;, labelcolor=&quot;#2563eb&quot;)
+    ax.set_ylim(55, 80)
+
+    ax2 = ax.twinx()
+    snow = merged[&quot;snow_days&quot;].to_numpy()
+    ax2.bar(x, snow, width=0.8, color=&quot;#a855f7&quot;, alpha=0.5, label=&quot;Snow days&quot;)
+    ax2.set_ylabel(&quot;Snow days&quot;, color=&quot;#a855f7&quot;)
+    ax2.tick_params(axis=&quot;y&quot;, labelcolor=&quot;#a855f7&quot;)
+    ax.set_title(&quot;System OTP vs Snow Days&quot;)
+    lines1, labels1 = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2, loc=&quot;lower left&quot;, fontsize=8)
+
+    ax.set_xticks(tick_idx)
+    ax.set_xticklabels([months[i] for i in tick_idx], rotation=45, ha=&quot;right&quot;, fontsize=8)
+
+    fig.suptitle(&quot;Weather Variables vs System OTP (2019-2024)&quot;, fontsize=13)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;weather_otp_timeseries.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;weather_otp_timeseries.png&#x27;}&quot;)
+
+
+def chart_seasonal_adjusted(seasonal_raw: dict, seasonal_adj: dict) -&gt; None:
+    &quot;&quot;&quot;Chart 2: Monthly seasonal profile -- actual vs weather-adjusted.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    months = list(range(1, 13))
+    raw_vals = [seasonal_raw.get(m, float(&quot;nan&quot;)) * 100 for m in months]
+    adj_vals = [seasonal_adj.get(m, float(&quot;nan&quot;)) * 100 for m in months]
+
+    width = 0.35
+    x = np.arange(12)
+    ax.bar(x - width / 2, raw_vals, width, label=&quot;Raw OTP&quot;, color=&quot;#2563eb&quot;, alpha=0.8)
+    ax.bar(x + width / 2, adj_vals, width, label=&quot;Weather-adjusted&quot;, color=&quot;#f97316&quot;, alpha=0.8)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(MONTH_LABELS)
+    ax.set_ylabel(&quot;System OTP (%)&quot;)
+    ax.set_title(&quot;Monthly Seasonal Profile: Raw vs Weather-Adjusted&quot;)
+    ax.legend(fontsize=10)
+
+    # Annotate the difference for Sep and Jan
+    for m_idx, m in enumerate([0, 8]):  # Jan=0, Sep=8
+        diff = adj_vals[m] - raw_vals[m]
+        y_pos = max(raw_vals[m], adj_vals[m]) + 0.5
+        ax.annotate(f&quot;{diff:+.1f}pp&quot;, xy=(m, y_pos), ha=&quot;center&quot;, fontsize=9, color=&quot;#666&quot;)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;seasonal_weather_adjusted.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;seasonal_weather_adjusted.png&#x27;}&quot;)
+
+
+def chart_scatter_matrix(merged: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Chart 3: Scatter matrix of key weather vars vs detrended system OTP.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    key_vars = [&quot;total_precip_mm&quot;, &quot;snow_days&quot;, &quot;mean_tmax_c&quot;, &quot;freeze_days&quot;]
+    n_vars = len(key_vars)
+    fig, axes = plt.subplots(1, n_vars, figsize=(16, 4))
+
+    dt = merged.filter(pl.col(&quot;otp_detrended&quot;).is_not_null())
+    otp_dt = dt[&quot;otp_detrended&quot;].to_numpy() * 100
+
+    for i, var in enumerate(key_vars):
+        ax = axes[i]
+        dt_col = f&quot;{var}_detrended&quot;
+        if dt_col in dt.columns:
+            x = dt[dt_col].to_numpy().astype(float)
+        else:
+            x = dt[var].to_numpy().astype(float)
+
+        mask = ~np.isnan(x) &amp; ~np.isnan(otp_dt)
+        ax.scatter(x[mask], otp_dt[mask], alpha=0.5, s=25, color=&quot;#2563eb&quot;, edgecolors=&quot;white&quot;, linewidth=0.5)
+
+        # Trend line
+        slope, intercept, r, p, _ = stats.linregress(x[mask], otp_dt[mask])
+        x_line = np.array([np.min(x[mask]), np.max(x[mask])])
+        ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5, linestyle=&quot;--&quot;, alpha=0.7)
+        ax.set_xlabel(var.replace(&quot;_&quot;, &quot; &quot;).title())
+        ax.set_title(f&quot;r={r:.3f}, p={p:.3f}&quot;, fontsize=9)
+        if i == 0:
+            ax.set_ylabel(&quot;Detrended OTP (pp)&quot;)
+
+    fig.suptitle(&quot;Detrended Weather Variables vs Detrended System OTP&quot;, fontsize=12)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;weather_scatter_matrix.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;weather_scatter_matrix.png&#x27;}&quot;)
+
+
+def chart_weather_heatmap(weather: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Chart 4: Heatmap of weather variable inter-correlations.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    data = np.column_stack([weather[v].to_numpy().astype(float) for v in WEATHER_VARS])
+    # Remove rows with any NaN
+    mask = ~np.any(np.isnan(data), axis=1)
+    data = data[mask]
+
+    n_vars = len(WEATHER_VARS)
+    corr_matrix = np.corrcoef(data, rowvar=False)
+
+    im = ax.imshow(corr_matrix, cmap=&quot;RdBu_r&quot;, vmin=-1, vmax=1, aspect=&quot;auto&quot;)
+    ax.set_xticks(range(n_vars))
+    ax.set_yticks(range(n_vars))
+    short_names = [v.replace(&quot;_&quot;, &quot;\n&quot;) for v in WEATHER_VARS]
+    ax.set_xticklabels(short_names, fontsize=7, rotation=45, ha=&quot;right&quot;)
+    ax.set_yticklabels(short_names, fontsize=7)
+
+    # Annotate cells
+    for i in range(n_vars):
+        for j in range(n_vars):
+            val = corr_matrix[i, j]
+            color = &quot;white&quot; if abs(val) &gt; 0.6 else &quot;black&quot;
+            ax.text(j, i, f&quot;{val:.2f}&quot;, ha=&quot;center&quot;, va=&quot;center&quot;, fontsize=7, color=color)
+
+    fig.colorbar(im, ax=ax, label=&quot;Pearson Correlation&quot;, shrink=0.8)
+    ax.set_title(&quot;Weather Variable Inter-Correlations&quot;)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;weather_correlation_heatmap.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;weather_correlation_heatmap.png&#x27;}&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Save model comparison CSV
+# ---------------------------------------------------------------------------
+
+def save_model_comparison(block_a_reg: dict, block_b_results: dict, block_c_results: dict) -&gt; None:
+    &quot;&quot;&quot;Save all model results to a single CSV.&quot;&quot;&quot;
+    rows = []
+    models = [
+        (block_b_results[&quot;model_month&quot;], &quot;month_only&quot;),
+        (block_b_results[&quot;model_weather&quot;], &quot;weather_only&quot;),
+        (block_b_results[&quot;model_both&quot;], &quot;month_plus_weather&quot;),
+        (block_c_results[&quot;fe_model&quot;], &quot;panel_fixed_effects&quot;),
+    ]
+    for model, label in models:
+        for i, feat in enumerate(model[&quot;features&quot;]):
+            rows.append({
+                &quot;model&quot;: label,
+                &quot;feature&quot;: feat,
+                &quot;coefficient&quot;: model[&quot;coefficients&quot;][i],
+                &quot;std_error&quot;: model[&quot;std_errors&quot;][i],
+                &quot;p_value&quot;: model[&quot;p_values&quot;][i],
+                &quot;beta_weight&quot;: model[&quot;beta_weights&quot;][i] if model[&quot;beta_weights&quot;][i] is not None else float(&quot;nan&quot;),
+                &quot;r_squared&quot;: model[&quot;r_squared&quot;],
+                &quot;adj_r_squared&quot;: model[&quot;adj_r_squared&quot;],
+                &quot;n&quot;: model[&quot;n&quot;],
+            })
+
+    pl.DataFrame(rows).write_csv(OUT / &quot;model_comparison.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;model_comparison.csv&#x27;}&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, run three analysis blocks, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 28: Weather Impact on OTP&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    system = load_system_otp()
+    weather = load_weather()
+    route_otp = load_route_otp()
+    print(f&quot;  System OTP: {len(system)} months&quot;)
+    print(f&quot;  Weather: {len(weather)} months&quot;)
+    print(f&quot;  Route OTP: {len(route_otp)} route-month observations&quot;)
+
+    # Block A: System-level correlations
+    merged = block_a(system, weather)
+
+    # Block B: Seasonal decomposition
+    block_b_results = block_b(merged)
+
+    # Block C: Route-level panel regression
+    block_c_results = block_c(route_otp, weather)
+
+    # Charts
+    print(&quot;\n&quot; + &quot;=&quot; * 60)
+    print(&quot;Charts&quot;)
+    print(&quot;=&quot; * 60)
+    chart_timeseries(merged)
+    chart_seasonal_adjusted(block_b_results[&quot;seasonal_raw&quot;], block_b_results[&quot;seasonal_adj&quot;])
+    chart_scatter_matrix(merged)
+    chart_weather_heatmap(weather)
+
+    # Save model comparison
+    print(&quot;\nSaving CSVs...&quot;)
+    save_model_comparison(None, block_b_results, block_c_results)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -557,6 +1302,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

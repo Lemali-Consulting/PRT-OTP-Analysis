@@ -18,6 +18,7 @@
     {% if methods_html %}<a href="#methods">Methods</a>{% endif %}
     {% if page.kind == "pipeline" and page_tables_produced %}<a href="#tables-produced">Tables Produced</a>{% endif %}
     {% if page_sources %}<a href="#sources">Sources</a>{% endif %}
+    {% if source_code %}<a href="#source-code">Source Code</a>{% endif %}
   </nav>
 </section>
 
@@ -118,6 +119,20 @@
   <details class="fold">
     <summary><h2>Methods</h2></summary>
     <div class="markdown">{{ methods_html | safe }}</div>
+  </details>
+</section>
+{% endif %}
+
+{% if source_code %}
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">{{ source_code }}</code></pre></td>
+    </tr></table>
+    </div>
   </details>
 </section>
 {% endif %}

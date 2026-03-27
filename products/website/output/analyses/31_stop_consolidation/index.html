@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>31 - Stop Consolidation Candidates</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -298,6 +301,287 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Identify low-usage bus stops that are candidates for consolidation to improve OTP.&quot;&quot;&quot;
+
+import math
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+DATA_DIR = HERE.parents[1] / &quot;data&quot;
+
+USAGE_THRESHOLD = 5      # avg daily ons+offs below this = low-usage
+WALK_DISTANCE_M = 400    # max walk distance to nearest neighbor
+
+
+def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return the distance in metres between two lat/lon points.&quot;&quot;&quot;
+    R = 6_371_000
+    rlat1, rlat2 = math.radians(lat1), math.radians(lat2)
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(rlat1) * math.cos(rlat2) * math.sin(dlon / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def load_stop_usage() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load pre-pandemic weekday stop-route usage from the WPRDC CSV.&quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;])
+    # Keep pre-pandemic weekday rows only
+    df = df.filter(
+        (pl.col(&quot;time_period&quot;) == &quot;Pre-pandemic&quot;)
+        &amp; (pl.col(&quot;serviceday&quot;) == &quot;Weekday&quot;)
+    )
+    # Average across the two pre-pandemic datekeys (201909, 202001)
+    usage = (
+        df.group_by([&quot;stop_id&quot;, &quot;route_name&quot;])
+        .agg(
+            pl.col(&quot;avg_ons&quot;).mean().alias(&quot;avg_ons&quot;),
+            pl.col(&quot;avg_offs&quot;).mean().alias(&quot;avg_offs&quot;),
+            pl.col(&quot;latitude&quot;).first().alias(&quot;lat&quot;),
+            pl.col(&quot;longitude&quot;).first().alias(&quot;lon&quot;),
+            pl.col(&quot;stop_name&quot;).first().alias(&quot;stop_name&quot;),
+        )
+        .with_columns(
+            (pl.col(&quot;avg_ons&quot;) + pl.col(&quot;avg_offs&quot;)).alias(&quot;avg_daily_usage&quot;)
+        )
+    )
+    return usage
+
+
+def load_route_otp() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load average OTP and stop count per route from the database.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp,
+               COUNT(DISTINCT rs.stop_id) AS stop_count
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        LEFT JOIN route_stops rs ON o.route_id = rs.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(DISTINCT o.month) &gt;= 12
+    &quot;&quot;&quot;)
+
+
+def get_otp_slope() -&gt; float:
+    &quot;&quot;&quot;Compute the OTP ~ stop_count regression slope (bus-only) from DB data.&quot;&quot;&quot;
+    df = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.mode,
+               AVG(o.otp) AS avg_otp,
+               COUNT(DISTINCT rs.stop_id) AS stop_count
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        LEFT JOIN route_stops rs ON o.route_id = rs.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(DISTINCT o.month) &gt;= 12
+    &quot;&quot;&quot;)
+    bus = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    lr = stats.linregress(bus[&quot;stop_count&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
+    return lr.slope
+
+
+def find_candidates(usage: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Flag low-usage stops with a same-route neighbor within walk distance.&quot;&quot;&quot;
+    # Mark low-usage
+    usage = usage.with_columns(
+        (pl.col(&quot;avg_daily_usage&quot;) &lt; USAGE_THRESHOLD).alias(&quot;low_usage&quot;)
+    )
+
+    # For each stop-route, find nearest neighbor on the same route
+    rows = usage.to_dicts()
+    # Build route -&gt; list of (stop_id, lat, lon)
+    route_stops: dict[str, list[tuple[str, float, float]]] = {}
+    for r in rows:
+        route_stops.setdefault(r[&quot;route_name&quot;], []).append(
+            (r[&quot;stop_id&quot;], r[&quot;lat&quot;], r[&quot;lon&quot;])
+        )
+
+    nearest_dist = []
+    for r in rows:
+        siblings = route_stops[r[&quot;route_name&quot;]]
+        min_d = float(&quot;inf&quot;)
+        for sid, slat, slon in siblings:
+            if sid == r[&quot;stop_id&quot;]:
+                continue
+            d = haversine_m(r[&quot;lat&quot;], r[&quot;lon&quot;], slat, slon)
+            if d &lt; min_d:
+                min_d = d
+        nearest_dist.append(min_d if min_d != float(&quot;inf&quot;) else None)
+
+    usage = usage.with_columns(
+        pl.Series(&quot;nearest_neighbor_m&quot;, nearest_dist)
+    )
+
+    # Candidate = low usage AND neighbor within walk distance
+    usage = usage.with_columns(
+        (
+            pl.col(&quot;low_usage&quot;)
+            &amp; pl.col(&quot;nearest_neighbor_m&quot;).is_not_null()
+            &amp; (pl.col(&quot;nearest_neighbor_m&quot;) &lt;= WALK_DISTANCE_M)
+        ).alias(&quot;candidate&quot;)
+    )
+    return usage
+
+
+def route_summary(candidates: pl.DataFrame, route_otp: pl.DataFrame, slope: float) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Build per-route consolidation summary with estimated OTP gain (bus-only).&quot;&quot;&quot;
+    # Count candidates per route (using route_name from CSV = route_id in DB)
+    per_route = (
+        candidates.group_by(&quot;route_name&quot;)
+        .agg(
+            pl.col(&quot;candidate&quot;).sum().alias(&quot;n_candidates&quot;),
+            pl.len().alias(&quot;n_stops_csv&quot;),
+        )
+    )
+
+    # CSV route_name (e.g. &quot;69&quot;) corresponds to DB route_id
+    merged = per_route.join(
+        route_otp,
+        left_on=&quot;route_name&quot;,
+        right_on=&quot;route_id&quot;,
+        how=&quot;inner&quot;,
+    )
+
+    # Only apply bus-only regression slope to bus routes; flag non-bus as extrapolation
+    merged = merged.with_columns(
+        (pl.col(&quot;stop_count&quot;) - pl.col(&quot;n_candidates&quot;)).alias(&quot;projected_stops&quot;),
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(-slope * pl.col(&quot;n_candidates&quot;))
+        .otherwise(None)
+        .alias(&quot;est_otp_gain&quot;),
+    )
+
+    return merged.sort(&quot;est_otp_gain&quot;, descending=True)
+
+
+def make_charts(candidates: pl.DataFrame, summary: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate bar chart of OTP gains and scatter map of candidate stops.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # --- Bar chart: top 20 routes by estimated OTP gain ---
+    top = summary.filter(
+        (pl.col(&quot;n_candidates&quot;) &gt; 0) &amp; pl.col(&quot;est_otp_gain&quot;).is_not_null()
+    ).sort(&quot;est_otp_gain&quot;, descending=True).head(20)
+    if len(top) == 0:
+        print(&quot;  No routes with candidates -- skipping bar chart.&quot;)
+        return
+
+    fig, ax = plt.subplots(figsize=(12, 7))
+    labels = top[&quot;route_name&quot;].to_list()
+    gains = [g * 100 for g in top[&quot;est_otp_gain&quot;].to_list()]  # convert to pp
+    n_cands = top[&quot;n_candidates&quot;].to_list()
+    bars = ax.barh(range(len(labels)), gains, color=&quot;#3b82f6&quot;, edgecolor=&quot;white&quot;)
+    ax.set_yticks(range(len(labels)))
+    ax.set_yticklabels([f&quot;{lbl}  ({n} stops)&quot; for lbl, n in zip(labels, n_cands)], fontsize=9)
+    ax.invert_yaxis()
+    ax.set_xlabel(&quot;Estimated OTP Gain (percentage points)&quot;)
+    ax.set_title(&quot;Top 20 Routes: Estimated OTP Improvement from Stop Consolidation&quot;)
+    for bar, val in zip(bars, gains):
+        ax.text(bar.get_width() + 0.05, bar.get_y() + bar.get_height() / 2,
+                f&quot;+{val:.1f} pp&quot;, va=&quot;center&quot;, fontsize=8)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;otp_gain_by_route.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;otp_gain_by_route.png&#x27;}&quot;)
+
+    # --- Scatter map of candidate stops ---
+    cand_only = candidates.filter(pl.col(&quot;candidate&quot;))
+    non_cand = candidates.filter(~pl.col(&quot;candidate&quot;))
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+    ax.scatter(
+        non_cand[&quot;lon&quot;].to_list(), non_cand[&quot;lat&quot;].to_list(),
+        s=4, alpha=0.15, color=&quot;#94a3b8&quot;, label=f&quot;Retained ({len(non_cand):,})&quot;, zorder=1,
+    )
+    sc = ax.scatter(
+        cand_only[&quot;lon&quot;].to_list(), cand_only[&quot;lat&quot;].to_list(),
+        s=12, c=cand_only[&quot;avg_daily_usage&quot;].to_list(), cmap=&quot;YlOrRd_r&quot;,
+        edgecolors=&quot;black&quot;, linewidths=0.3, alpha=0.8,
+        label=f&quot;Candidates ({len(cand_only):,})&quot;, zorder=2,
+    )
+    plt.colorbar(sc, ax=ax, label=&quot;Avg Daily Usage (ons+offs)&quot;, shrink=0.6)
+    ax.set_xlabel(&quot;Longitude&quot;)
+    ax.set_ylabel(&quot;Latitude&quot;)
+    ax.set_title(&quot;Stop Consolidation Candidates (low usage + neighbor &lt; 400 m)&quot;)
+    ax.legend(loc=&quot;upper left&quot;, fontsize=9)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;candidate_map.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;candidate_map.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, find candidates, estimate OTP gains, chart.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 31: Stop Consolidation Candidates&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading stop-level usage (pre-pandemic weekday)...&quot;)
+    usage = load_stop_usage()
+    print(f&quot;  {len(usage):,} stop-route combinations&quot;)
+
+    print(&quot;\nLoading route OTP and stop counts from DB...&quot;)
+    route_otp = load_route_otp()
+    print(f&quot;  {len(route_otp)} routes with OTP data&quot;)
+
+    print(&quot;\nComputing OTP ~ stop_count regression slope (bus-only)...&quot;)
+    slope = get_otp_slope()
+    print(f&quot;  Slope = {slope:.6f} OTP per stop (i.e., {slope * 100:.3f} pp per stop)&quot;)
+
+    print(&quot;\nIdentifying consolidation candidates...&quot;)
+    candidates = find_candidates(usage)
+    n_low = candidates.filter(pl.col(&quot;low_usage&quot;)).shape[0]
+    n_cand = candidates.filter(pl.col(&quot;candidate&quot;)).shape[0]
+    print(f&quot;  {n_low:,} low-usage stop-route pairs (&lt; {USAGE_THRESHOLD} daily ons+offs)&quot;)
+    print(f&quot;  {n_cand:,} consolidation candidates (low usage + neighbor &lt;= {WALK_DISTANCE_M} m)&quot;)
+
+    print(&quot;\nBuilding route summary...&quot;)
+    summary = route_summary(candidates, route_otp, slope)
+    routes_with_cand = summary.filter(pl.col(&quot;n_candidates&quot;) &gt; 0)
+    print(f&quot;  {len(routes_with_cand)} routes have at least one candidate&quot;)
+    if len(routes_with_cand) &gt; 0:
+        total_cand = routes_with_cand[&quot;n_candidates&quot;].sum()
+        avg_gain = routes_with_cand[&quot;est_otp_gain&quot;].mean() * 100
+        max_gain = routes_with_cand[&quot;est_otp_gain&quot;].max() * 100
+        print(f&quot;  Total candidates across routes: {total_cand}&quot;)
+        print(f&quot;  Avg estimated OTP gain: +{avg_gain:.1f} pp&quot;)
+        print(f&quot;  Max estimated OTP gain: +{max_gain:.1f} pp&quot;)
+
+    print(&quot;\nSaving CSVs...&quot;)
+    candidates.write_csv(OUT / &quot;consolidation_candidates.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;consolidation_candidates.csv&#x27;}&quot;)
+    summary.write_csv(OUT / &quot;route_consolidation_summary.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;route_consolidation_summary.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_charts(candidates, summary)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -523,6 +807,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

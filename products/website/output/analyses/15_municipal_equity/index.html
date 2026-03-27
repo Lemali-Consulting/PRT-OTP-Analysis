@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>15: Municipal/County Equity</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -256,6 +259,215 @@
 <li><code>output/pittsburgh_vs_suburban.png</code> -- comparison chart</li>
 </ul>
 </div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Municipal and county equity analysis of on-time performance.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MIN_STOPS = 10
+
+
+def load_data() -&gt; tuple[pl.DataFrame, pl.DataFrame]:
+    &quot;&quot;&quot;Load per-municipality OTP and cross-jurisdictional route data.&quot;&quot;&quot;
+    # Trip-weighted OTP per stop via the routes that serve it
+    stop_otp = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.stop_id, rs.route_id, rs.trips_wd,
+               s.muni, s.county,
+               AVG(o.otp) AS route_avg_otp
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        JOIN otp_monthly o ON rs.route_id = o.route_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.stop_id, rs.route_id, rs.trips_wd, s.muni, s.county
+    &quot;&quot;&quot;)
+
+    # Per-municipality: trip-weighted average OTP
+    muni_otp = (
+        stop_otp
+        .with_columns((pl.col(&quot;route_avg_otp&quot;) * pl.col(&quot;trips_wd&quot;)).alias(&quot;weighted_otp&quot;))
+        .group_by(&quot;muni&quot;, &quot;county&quot;)
+        .agg(
+            (pl.col(&quot;weighted_otp&quot;).sum() / pl.col(&quot;trips_wd&quot;).sum()).alias(&quot;avg_otp&quot;),
+            pl.col(&quot;stop_id&quot;).n_unique().alias(&quot;n_stops&quot;),
+            pl.col(&quot;route_id&quot;).n_unique().alias(&quot;n_routes&quot;),
+            pl.col(&quot;trips_wd&quot;).sum().alias(&quot;total_trips&quot;),
+        )
+        .filter(pl.col(&quot;n_stops&quot;) &gt;= MIN_STOPS)
+        .sort(&quot;avg_otp&quot;, descending=True)
+    )
+
+    # Cross-jurisdictional routes: routes with stops in 2+ municipalities
+    route_munis = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, COUNT(DISTINCT s.muni) AS n_munis
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.route_id
+    &quot;&quot;&quot;)
+    avg_otp_by_route = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+    &quot;&quot;&quot;)
+    cross_jur = route_munis.join(avg_otp_by_route, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    cross_jur = cross_jur.with_columns(
+        pl.when(pl.col(&quot;n_munis&quot;) &gt;= 2)
+        .then(pl.lit(&quot;cross-jurisdictional&quot;))
+        .otherwise(pl.lit(&quot;single-municipality&quot;))
+        .alias(&quot;jurisdiction_type&quot;)
+    )
+
+    return muni_otp, cross_jur
+
+
+def analyze(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Compute summary stats and comparisons.&quot;&quot;&quot;
+    results = {}
+
+    # Pittsburgh vs suburban
+    pgh = muni_otp.filter(pl.col(&quot;muni&quot;) == &quot;Pittsburgh&quot;)
+    suburban = muni_otp.filter(pl.col(&quot;muni&quot;) != &quot;Pittsburgh&quot;)
+
+    if len(pgh) &gt; 0:
+        results[&quot;pgh_otp&quot;] = pgh[&quot;avg_otp&quot;][0]
+        results[&quot;pgh_stops&quot;] = pgh[&quot;n_stops&quot;][0]
+    results[&quot;suburban_median_otp&quot;] = suburban[&quot;avg_otp&quot;].median()
+    results[&quot;suburban_mean_otp&quot;] = suburban[&quot;avg_otp&quot;].mean()
+    results[&quot;n_munis&quot;] = len(muni_otp)
+
+    # Spread
+    results[&quot;best_muni&quot;] = muni_otp.sort(&quot;avg_otp&quot;, descending=True).head(1)[&quot;muni&quot;][0]
+    results[&quot;best_otp&quot;] = muni_otp.sort(&quot;avg_otp&quot;, descending=True).head(1)[&quot;avg_otp&quot;][0]
+    results[&quot;worst_muni&quot;] = muni_otp.sort(&quot;avg_otp&quot;).head(1)[&quot;muni&quot;][0]
+    results[&quot;worst_otp&quot;] = muni_otp.sort(&quot;avg_otp&quot;).head(1)[&quot;avg_otp&quot;][0]
+    results[&quot;spread&quot;] = results[&quot;best_otp&quot;] - results[&quot;worst_otp&quot;]
+
+    # Cross-jurisdictional comparison
+    cross = cross_jur.filter(pl.col(&quot;jurisdiction_type&quot;) == &quot;cross-jurisdictional&quot;)
+    single = cross_jur.filter(pl.col(&quot;jurisdiction_type&quot;) == &quot;single-municipality&quot;)
+    results[&quot;cross_mean_otp&quot;] = cross[&quot;avg_otp&quot;].mean()
+    results[&quot;single_mean_otp&quot;] = single[&quot;avg_otp&quot;].mean()
+    results[&quot;n_cross&quot;] = len(cross)
+    results[&quot;n_single&quot;] = len(single)
+
+    if len(cross) &gt; 2 and len(single) &gt; 2:
+        t, p = stats.ttest_ind(cross[&quot;avg_otp&quot;].to_list(), single[&quot;avg_otp&quot;].to_list(),
+                              equal_var=False)  # Welch&#x27;s t-test: unequal group sizes
+        results[&quot;cross_t&quot;] = t
+        results[&quot;cross_p&quot;] = p
+
+    return results
+
+
+def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) -&gt; None:
+    &quot;&quot;&quot;Generate bar charts for municipality ranking and Pittsburgh comparison.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # Top/bottom municipalities
+    n_show = 10
+    top = muni_otp.sort(&quot;avg_otp&quot;, descending=True).head(n_show)
+    bottom = muni_otp.sort(&quot;avg_otp&quot;).head(n_show)
+    combined = pl.concat([top, bottom.sort(&quot;avg_otp&quot;, descending=True)])
+    # Remove duplicates if muni appears in both
+    combined = combined.unique(subset=[&quot;muni&quot;]).sort(&quot;avg_otp&quot;, descending=True)
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+    munis = combined[&quot;muni&quot;].to_list()
+    otps = combined[&quot;avg_otp&quot;].to_list()
+    colors = [&quot;#22c55e&quot; if v &gt;= 0.70 else &quot;#f59e0b&quot; if v &gt;= 0.65 else &quot;#ef4444&quot; for v in otps]
+    bars = ax.barh(range(len(munis)), otps, color=colors, edgecolor=&quot;white&quot;)
+    ax.set_yticks(range(len(munis)))
+    ax.set_yticklabels(munis, fontsize=8)
+    ax.set_xlabel(&quot;Average OTP&quot;)
+    ax.set_title(f&quot;Top &amp; Bottom Municipalities by OTP (min {MIN_STOPS} stops)&quot;)
+    ax.set_xlim(0.4, 1.0)
+    ax.invert_yaxis()
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;top_bottom_municipalities.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;top_bottom_municipalities.png&#x27;}&quot;)
+
+    # Pittsburgh vs suburban
+    fig, ax = plt.subplots(figsize=(8, 5))
+    categories = [&quot;Pittsburgh&quot;, &quot;Suburban\n(median)&quot;, &quot;Suburban\n(mean)&quot;]
+    values = [
+        results.get(&quot;pgh_otp&quot;, 0),
+        results[&quot;suburban_median_otp&quot;],
+        results[&quot;suburban_mean_otp&quot;],
+    ]
+    colors = [&quot;#3b82f6&quot;, &quot;#22c55e&quot;, &quot;#22c55e&quot;]
+    ax.bar(categories, values, color=colors, edgecolor=&quot;white&quot;, width=0.5)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;Pittsburgh vs Suburban Municipalities&quot;)
+    ax.set_ylim(0.5, 0.85)
+    for i, v in enumerate(values):
+        ax.text(i, v + 0.005, f&quot;{v:.1%}&quot;, ha=&quot;center&quot;, fontsize=10)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;pittsburgh_vs_suburban.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;pittsburgh_vs_suburban.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 15: Municipal/County Equity&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    muni_otp, cross_jur = load_data()
+    print(f&quot;  {len(muni_otp)} municipalities with {MIN_STOPS}+ stops&quot;)
+
+    print(&quot;\nAnalyzing...&quot;)
+    results = analyze(muni_otp, cross_jur)
+    print(f&quot;  Best:  {results[&#x27;best_muni&#x27;]} ({results[&#x27;best_otp&#x27;]:.1%})&quot;)
+    print(f&quot;  Worst: {results[&#x27;worst_muni&#x27;]} ({results[&#x27;worst_otp&#x27;]:.1%})&quot;)
+    print(f&quot;  Spread: {results[&#x27;spread&#x27;]:.1%}&quot;)
+    if &quot;pgh_otp&quot; in results:
+        print(f&quot;  Pittsburgh: {results[&#x27;pgh_otp&#x27;]:.1%} ({results[&#x27;pgh_stops&#x27;]} stops)&quot;)
+    print(f&quot;  Suburban median: {results[&#x27;suburban_median_otp&#x27;]:.1%}&quot;)
+    print(f&quot;  Cross-jurisdictional routes: {results[&#x27;n_cross&#x27;]} &quot;
+          f&quot;(avg OTP={results[&#x27;cross_mean_otp&#x27;]:.1%})&quot;)
+    print(f&quot;  Single-municipality routes: {results[&#x27;n_single&#x27;]} &quot;
+          f&quot;(avg OTP={results[&#x27;single_mean_otp&#x27;]:.1%})&quot;)
+    if &quot;cross_p&quot; in results:
+        print(f&quot;  Difference t-test: t={results[&#x27;cross_t&#x27;]:.3f}, p={results[&#x27;cross_p&#x27;]:.4f}&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    muni_otp.write_csv(OUT / &quot;municipal_otp.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;municipal_otp.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_charts(muni_otp, cross_jur, results)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
   </details>
 </section>
 
@@ -497,6 +709,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>32 - Shelter Equity</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -250,6 +253,283 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Assess whether bus shelters are equitably placed relative to stop-level ridership.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+DATA_DIR = HERE.parents[1] / &quot;data&quot;
+
+
+def load_stop_usage() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load pre-pandemic weekday usage aggregated to the physical-stop level.&quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;])
+
+    # Pre-pandemic weekday only
+    df = df.filter(
+        (pl.col(&quot;time_period&quot;) == &quot;Pre-pandemic&quot;)
+        &amp; (pl.col(&quot;serviceday&quot;) == &quot;Weekday&quot;)
+    )
+
+    # Aggregate to physical stop: sum usage across routes, average across datekeys
+    stop_route = (
+        df.group_by([&quot;stop_id&quot;, &quot;route_name&quot;, &quot;datekey&quot;])
+        .agg(
+            pl.col(&quot;avg_ons&quot;).first(),
+            pl.col(&quot;avg_offs&quot;).first(),
+            pl.col(&quot;stop_name&quot;).first(),
+            pl.col(&quot;latitude&quot;).first().alias(&quot;lat&quot;),
+            pl.col(&quot;longitude&quot;).first().alias(&quot;lon&quot;),
+            pl.col(&quot;shelter&quot;).first(),
+            pl.col(&quot;mode&quot;).first(),
+            pl.col(&quot;stop_type&quot;).first(),
+        )
+    )
+
+    # Average across datekeys, then sum across routes for each physical stop
+    per_stop_route = (
+        stop_route.group_by([&quot;stop_id&quot;, &quot;route_name&quot;])
+        .agg(
+            pl.col(&quot;avg_ons&quot;).mean(),
+            pl.col(&quot;avg_offs&quot;).mean(),
+            pl.col(&quot;stop_name&quot;).first(),
+            pl.col(&quot;lat&quot;).first(),
+            pl.col(&quot;lon&quot;).first(),
+            pl.col(&quot;shelter&quot;).first(),
+            pl.col(&quot;mode&quot;).first(),
+            pl.col(&quot;stop_type&quot;).first(),
+        )
+    )
+
+    per_stop = (
+        per_stop_route.group_by(&quot;stop_id&quot;)
+        .agg(
+            pl.col(&quot;avg_ons&quot;).sum(),
+            pl.col(&quot;avg_offs&quot;).sum(),
+            pl.col(&quot;stop_name&quot;).first(),
+            pl.col(&quot;lat&quot;).first(),
+            pl.col(&quot;lon&quot;).first(),
+            pl.col(&quot;shelter&quot;).first(),
+            pl.col(&quot;mode&quot;).first(),
+            pl.col(&quot;stop_type&quot;).first(),
+        )
+        .with_columns(
+            (pl.col(&quot;avg_ons&quot;) + pl.col(&quot;avg_offs&quot;)).alias(&quot;avg_daily_usage&quot;),
+            pl.when(pl.col(&quot;shelter&quot;).is_not_null() &amp; (pl.col(&quot;shelter&quot;) != &quot;No Shelter&quot;))
+            .then(True)
+            .otherwise(False)
+            .alias(&quot;has_shelter&quot;),
+        )
+    )
+    return per_stop
+
+
+def analyze(df: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Compute shelter equity statistics.&quot;&quot;&quot;
+    results = {}
+
+    sheltered = df.filter(pl.col(&quot;has_shelter&quot;))
+    unsheltered = df.filter(~pl.col(&quot;has_shelter&quot;))
+
+    results[&quot;n_stops&quot;] = len(df)
+    results[&quot;n_sheltered&quot;] = len(sheltered)
+    results[&quot;n_unsheltered&quot;] = len(unsheltered)
+    results[&quot;pct_sheltered&quot;] = len(sheltered) / len(df) * 100
+
+    results[&quot;sheltered_median_usage&quot;] = sheltered[&quot;avg_daily_usage&quot;].median()
+    results[&quot;unsheltered_median_usage&quot;] = unsheltered[&quot;avg_daily_usage&quot;].median()
+    results[&quot;sheltered_mean_usage&quot;] = sheltered[&quot;avg_daily_usage&quot;].mean()
+    results[&quot;unsheltered_mean_usage&quot;] = unsheltered[&quot;avg_daily_usage&quot;].mean()
+
+    # Share of total ridership at sheltered stops
+    total_usage = df[&quot;avg_daily_usage&quot;].sum()
+    results[&quot;sheltered_ridership_share&quot;] = sheltered[&quot;avg_daily_usage&quot;].sum() / total_usage * 100
+
+    # Mann-Whitney U test
+    u_stat, p_val = stats.mannwhitneyu(
+        sheltered[&quot;avg_daily_usage&quot;].drop_nulls().to_list(),
+        unsheltered[&quot;avg_daily_usage&quot;].drop_nulls().to_list(),
+        alternative=&quot;greater&quot;,
+    )
+    results[&quot;mannwhitney_u&quot;] = u_stat
+    results[&quot;mannwhitney_p&quot;] = p_val
+
+    return results
+
+
+def shelter_by_mode(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute shelter coverage rate by mode.&quot;&quot;&quot;
+    return (
+        df.filter(pl.col(&quot;mode&quot;).is_not_null())
+        .group_by(&quot;mode&quot;)
+        .agg(
+            pl.len().alias(&quot;n_stops&quot;),
+            pl.col(&quot;has_shelter&quot;).sum().alias(&quot;n_sheltered&quot;),
+            pl.col(&quot;avg_daily_usage&quot;).mean().alias(&quot;mean_usage&quot;),
+        )
+        .with_columns(
+            (pl.col(&quot;n_sheltered&quot;) / pl.col(&quot;n_stops&quot;) * 100).alias(&quot;pct_sheltered&quot;)
+        )
+        .sort(&quot;pct_sheltered&quot;, descending=True)
+    )
+
+
+def shelter_by_owner(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Break down sheltered stops by owner.&quot;&quot;&quot;
+    return (
+        df.filter(pl.col(&quot;has_shelter&quot;))
+        .group_by(&quot;shelter&quot;)
+        .agg(
+            pl.len().alias(&quot;n_stops&quot;),
+            pl.col(&quot;avg_daily_usage&quot;).sum().alias(&quot;total_usage&quot;),
+            pl.col(&quot;avg_daily_usage&quot;).mean().alias(&quot;mean_usage&quot;),
+        )
+        .sort(&quot;n_stops&quot;, descending=True)
+    )
+
+
+def make_charts(df: pl.DataFrame, mode_df: pl.DataFrame, owner_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate shelter equity charts.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # --- Box plot: ridership by shelter status ---
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    sheltered_usage = df.filter(pl.col(&quot;has_shelter&quot;))[&quot;avg_daily_usage&quot;].drop_nulls().to_list()
+    unsheltered_usage = df.filter(~pl.col(&quot;has_shelter&quot;))[&quot;avg_daily_usage&quot;].drop_nulls().to_list()
+
+    bp = axes[0].boxplot(
+        [unsheltered_usage, sheltered_usage],
+        tick_labels=[&quot;No Shelter&quot;, &quot;Has Shelter&quot;],
+        showfliers=False, patch_artist=True,
+        medianprops=dict(color=&quot;black&quot;, linewidth=2),
+    )
+    bp[&quot;boxes&quot;][0].set_facecolor(&quot;#f87171&quot;)
+    bp[&quot;boxes&quot;][1].set_facecolor(&quot;#34d399&quot;)
+    axes[0].set_ylabel(&quot;Avg Daily Usage (ons + offs)&quot;)
+    axes[0].set_title(&quot;Stop Usage by Shelter Status&quot;)
+
+    # Overlay means
+    means = [np.mean(unsheltered_usage), np.mean(sheltered_usage)]
+    axes[0].scatter([1, 2], means, color=&quot;black&quot;, marker=&quot;D&quot;, s=50, zorder=3, label=&quot;Mean&quot;)
+    axes[0].legend()
+
+    # --- Bar chart: shelter coverage by mode ---
+    modes = mode_df[&quot;mode&quot;].to_list()
+    pcts = mode_df[&quot;pct_sheltered&quot;].to_list()
+    colors = [&quot;#3b82f6&quot;, &quot;#22c55e&quot;, &quot;#f59e0b&quot;, &quot;#9ca3af&quot;]
+    bars = axes[1].bar(modes, pcts, color=colors[:len(modes)], edgecolor=&quot;white&quot;)
+    axes[1].set_ylabel(&quot;% of Stops with Shelter&quot;)
+    axes[1].set_title(&quot;Shelter Coverage by Mode&quot;)
+    axes[1].set_ylim(0, 100)
+    for bar, pct in zip(bars, pcts):
+        axes[1].text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
+                     f&quot;{pct:.0f}%&quot;, ha=&quot;center&quot;, fontsize=10)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;ridership_by_shelter.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;ridership_by_shelter.png&#x27;}&quot;)
+
+    # --- Shelter owner breakdown ---
+    fig, ax = plt.subplots(figsize=(10, 5))
+    owners = owner_df[&quot;shelter&quot;].to_list()
+    counts = owner_df[&quot;n_stops&quot;].to_list()
+    mean_usages = owner_df[&quot;mean_usage&quot;].to_list()
+    ax.barh(range(len(owners)), counts, color=&quot;#3b82f6&quot;, edgecolor=&quot;white&quot;)
+    ax.set_yticks(range(len(owners)))
+    ax.set_yticklabels(owners)
+    ax.invert_yaxis()
+    ax.set_xlabel(&quot;Number of Sheltered Stops&quot;)
+    ax.set_title(&quot;Shelter Count by Owner&quot;)
+    for i, (cnt, mu) in enumerate(zip(counts, mean_usages)):
+        ax.text(cnt + 1, i, f&quot;avg {mu:.0f}/day&quot;, va=&quot;center&quot;, fontsize=9)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;shelter_coverage_by_mode.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;shelter_coverage_by_mode.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze shelter equity, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 32: Shelter Equity&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading stop-level usage (pre-pandemic weekday)...&quot;)
+    df = load_stop_usage()
+    print(f&quot;  {len(df):,} unique physical stops&quot;)
+
+    print(&quot;\nAnalyzing shelter equity...&quot;)
+    results = analyze(df)
+    print(f&quot;  Sheltered: {results[&#x27;n_sheltered&#x27;]:,} ({results[&#x27;pct_sheltered&#x27;]:.1f}%)&quot;)
+    print(f&quot;  Unsheltered: {results[&#x27;n_unsheltered&#x27;]:,}&quot;)
+    print(f&quot;  Median usage -- sheltered: {results[&#x27;sheltered_median_usage&#x27;]:.1f}, unsheltered: {results[&#x27;unsheltered_median_usage&#x27;]:.1f}&quot;)
+    print(f&quot;  Mean usage -- sheltered: {results[&#x27;sheltered_mean_usage&#x27;]:.1f}, unsheltered: {results[&#x27;unsheltered_mean_usage&#x27;]:.1f}&quot;)
+    print(f&quot;  Sheltered stops serve {results[&#x27;sheltered_ridership_share&#x27;]:.1f}% of total ridership&quot;)
+    print(f&quot;  Mann-Whitney U p-value: {results[&#x27;mannwhitney_p&#x27;]:.2e}&quot;)
+
+    print(&quot;\nShelter coverage by mode:&quot;)
+    mode_df = shelter_by_mode(df)
+    for row in mode_df.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;mode&#x27;]:12s}: {row[&#x27;pct_sheltered&#x27;]:.0f}% sheltered ({row[&#x27;n_stops&#x27;]} stops)&quot;)
+
+    print(&quot;\nShelter owner breakdown:&quot;)
+    owner_df = shelter_by_owner(df)
+    for row in owner_df.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;shelter&#x27;]:25s}: {row[&#x27;n_stops&#x27;]:4d} stops, avg {row[&#x27;mean_usage&#x27;]:.0f}/day&quot;)
+
+    print(&quot;\nTop 20 unsheltered stops by usage:&quot;)
+    priority = (
+        df.filter(~pl.col(&quot;has_shelter&quot;))
+        .sort(&quot;avg_daily_usage&quot;, descending=True)
+        .head(20)
+        .select(&quot;stop_id&quot;, &quot;stop_name&quot;, &quot;mode&quot;, &quot;avg_daily_usage&quot;, &quot;lat&quot;, &quot;lon&quot;)
+    )
+    for row in priority.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;stop_id&#x27;]:8s} {row[&#x27;stop_name&#x27;][:40]:40s} {row[&#x27;avg_daily_usage&#x27;]:8.1f}/day&quot;)
+
+    print(&quot;\nSaving CSVs...&quot;)
+    df.write_csv(OUT / &quot;shelter_equity_summary.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;shelter_equity_summary.csv&#x27;}&quot;)
+    unsheltered_priority = (
+        df.filter(~pl.col(&quot;has_shelter&quot;))
+        .sort(&quot;avg_daily_usage&quot;, descending=True)
+        .select(&quot;stop_id&quot;, &quot;stop_name&quot;, &quot;mode&quot;, &quot;stop_type&quot;, &quot;avg_daily_usage&quot;, &quot;avg_ons&quot;, &quot;avg_offs&quot;, &quot;lat&quot;, &quot;lon&quot;)
+    )
+    unsheltered_priority.write_csv(OUT / &quot;unsheltered_priority.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;unsheltered_priority.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_charts(df, mode_df, owner_df)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -382,6 +662,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

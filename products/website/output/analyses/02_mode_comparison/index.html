@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>02 - Mode Comparison</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -312,6 +315,356 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Mode and route-type comparison: BUS vs RAIL, local vs limited vs express, with statistical tests.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+from scipy.stats import mannwhitneyu, ttest_rel
+
+from prt_otp_analysis.common import (
+    classify_bus_route,
+    output_dir,
+    query_to_polars,
+    setup_plotting,
+)
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load OTP data with route metadata, excluding UNKNOWN-mode routes.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp, r.route_name, r.mode,
+               COALESCE(rs_agg.trips_7d, 0) AS trips_7d
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        LEFT JOIN (
+            SELECT route_id, SUM(trips_7d) AS trips_7d
+            FROM route_stops
+            GROUP BY route_id
+        ) rs_agg ON o.route_id = rs_agg.route_id
+        WHERE r.mode != &#x27;UNKNOWN&#x27;
+    &quot;&quot;&quot;)
+
+
+def analyze(df: pl.DataFrame) -&gt; tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, pl.DataFrame, dict]:
+    &quot;&quot;&quot;Compute OTP by mode, by bus subtype, paired-route comparisons, and statistical tests.&quot;&quot;&quot;
+    # Classify bus routes
+    df = df.with_columns(
+        bus_type=pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.String))
+        .otherwise(pl.lit(None)),
+    )
+
+    # Mode-level monthly OTP (unweighted)
+    mode_monthly = (
+        df.group_by([&quot;mode&quot;, &quot;month&quot;])
+        .agg(
+            avg_otp=pl.col(&quot;otp&quot;).mean(),
+            route_count=pl.col(&quot;route_id&quot;).n_unique(),
+        )
+        .sort([&quot;mode&quot;, &quot;month&quot;])
+    )
+
+    # Mode-level monthly OTP (trip-weighted)
+    mode_monthly_weighted = (
+        df.group_by([&quot;mode&quot;, &quot;month&quot;])
+        .agg(
+            weighted_otp=pl.when(pl.col(&quot;trips_7d&quot;).sum() &gt; 0)
+            .then((pl.col(&quot;otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum())
+            .otherwise(pl.col(&quot;otp&quot;).mean()),
+            route_count=pl.col(&quot;route_id&quot;).n_unique(),
+        )
+        .sort([&quot;mode&quot;, &quot;month&quot;])
+    )
+
+    # Bus-subtype monthly OTP
+    bus_monthly = (
+        df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .group_by([&quot;bus_type&quot;, &quot;month&quot;])
+        .agg(avg_otp=pl.col(&quot;otp&quot;).mean(), route_count=pl.col(&quot;route_id&quot;).n_unique())
+        .sort([&quot;bus_type&quot;, &quot;month&quot;])
+    )
+
+    # Paired route comparison: find base routes with L/X counterparts
+    route_ids = df[&quot;route_id&quot;].unique().to_list()
+    pairs = []
+    for rid in route_ids:
+        if rid.endswith(&quot;L&quot;) and rid[:-1] in route_ids:
+            pairs.append((rid[:-1], rid, &quot;local-vs-limited&quot;))
+        elif rid.endswith(&quot;X&quot;) and rid[:-1] in route_ids:
+            pairs.append((rid[:-1], rid, &quot;local-vs-express&quot;))
+
+    pair_rows = []
+    for base_id, variant_id, pair_type in pairs:
+        base = df.filter(pl.col(&quot;route_id&quot;) == base_id).select(&quot;month&quot;, otp_base=pl.col(&quot;otp&quot;))
+        variant = df.filter(pl.col(&quot;route_id&quot;) == variant_id).select(&quot;month&quot;, otp_variant=pl.col(&quot;otp&quot;))
+        joined = base.join(variant, on=&quot;month&quot;)
+        if len(joined) &gt; 0:
+            joined = joined.with_columns(
+                base_id=pl.lit(base_id),
+                variant_id=pl.lit(variant_id),
+                pair_type=pl.lit(pair_type),
+                otp_diff=pl.col(&quot;otp_variant&quot;) - pl.col(&quot;otp_base&quot;),
+            )
+            pair_rows.append(joined)
+
+    paired = pl.concat(pair_rows) if pair_rows else pl.DataFrame()
+
+    # --- Statistical tests ---
+    test_results = {}
+
+    # Mann-Whitney U test: bus vs rail monthly OTP distributions
+    bus_monthly_otp = mode_monthly.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)[&quot;avg_otp&quot;].to_list()
+    rail_monthly_otp = mode_monthly.filter(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;)[&quot;avg_otp&quot;].to_list()
+    if len(bus_monthly_otp) &gt; 0 and len(rail_monthly_otp) &gt; 0:
+        u_stat, u_pval = mannwhitneyu(rail_monthly_otp, bus_monthly_otp, alternative=&quot;two-sided&quot;)
+        test_results[&quot;mann_whitney_u&quot;] = u_stat
+        test_results[&quot;mann_whitney_p&quot;] = u_pval
+        test_results[&quot;bus_n_months&quot;] = len(bus_monthly_otp)
+        test_results[&quot;rail_n_months&quot;] = len(rail_monthly_otp)
+        test_results[&quot;bus_median_otp&quot;] = sorted(bus_monthly_otp)[len(bus_monthly_otp) // 2]
+        test_results[&quot;rail_median_otp&quot;] = sorted(rail_monthly_otp)[len(rail_monthly_otp) // 2]
+
+    # Paired t-test for local vs limited route pairs
+    if len(paired) &gt; 0:
+        pair_labels = paired.select(&quot;base_id&quot;, &quot;variant_id&quot;).unique()
+        pair_means = []
+        for row in pair_labels.iter_rows(named=True):
+            pair_data = paired.filter(
+                (pl.col(&quot;base_id&quot;) == row[&quot;base_id&quot;]) &amp; (pl.col(&quot;variant_id&quot;) == row[&quot;variant_id&quot;])
+            )
+            pair_means.append(pair_data[&quot;otp_diff&quot;].mean())
+
+        test_results[&quot;n_pairs&quot;] = len(pair_means)
+        test_results[&quot;pair_mean_diff&quot;] = sum(pair_means) / len(pair_means) if pair_means else 0
+
+        # Paired t-test on per-month differences across all pairs combined
+        # For each pair, collect the per-month OTP differences
+        all_base_otp = []
+        all_variant_otp = []
+        for row in pair_labels.iter_rows(named=True):
+            pair_data = paired.filter(
+                (pl.col(&quot;base_id&quot;) == row[&quot;base_id&quot;]) &amp; (pl.col(&quot;variant_id&quot;) == row[&quot;variant_id&quot;])
+            )
+            all_base_otp.extend(pair_data[&quot;otp_base&quot;].to_list())
+            all_variant_otp.extend(pair_data[&quot;otp_variant&quot;].to_list())
+
+        if len(all_base_otp) &gt;= 2:
+            t_stat, t_pval = ttest_rel(all_variant_otp, all_base_otp)
+            import numpy as np
+            diffs = [v - b for v, b in zip(all_variant_otp, all_base_otp)]
+            n = len(diffs)
+            mean_diff = np.mean(diffs)
+            se_diff = np.std(diffs, ddof=1) / np.sqrt(n)
+            from scipy.stats import t as t_dist
+            ci_margin = t_dist.ppf(0.975, df=n - 1) * se_diff
+            test_results[&quot;paired_t_stat&quot;] = t_stat
+            test_results[&quot;paired_t_pval&quot;] = t_pval
+            test_results[&quot;paired_mean_diff&quot;] = mean_diff
+            test_results[&quot;paired_ci_lower&quot;] = mean_diff - ci_margin
+            test_results[&quot;paired_ci_upper&quot;] = mean_diff + ci_margin
+            test_results[&quot;paired_n_obs&quot;] = n
+
+    # Trip-weighted mode averages
+    for mode in [&quot;BUS&quot;, &quot;RAIL&quot;]:
+        data = mode_monthly_weighted.filter(pl.col(&quot;mode&quot;) == mode)
+        if len(data) &gt; 0:
+            test_results[f&quot;{mode.lower()}_weighted_avg&quot;] = data[&quot;weighted_otp&quot;].mean()
+
+    return mode_monthly, bus_monthly, paired, mode_monthly_weighted, test_results
+
+
+def make_chart(
+    mode_monthly: pl.DataFrame,
+    bus_monthly: pl.DataFrame,
+    paired: pl.DataFrame,
+) -&gt; None:
+    &quot;&quot;&quot;Generate a 4-panel mode comparison chart.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+
+    mode_colors = {&quot;BUS&quot;: &quot;#3b82f6&quot;, &quot;RAIL&quot;: &quot;#22c55e&quot;, &quot;INCLINE&quot;: &quot;#f59e0b&quot;}
+    bus_type_colors = {&quot;local&quot;: &quot;#3b82f6&quot;, &quot;limited&quot;: &quot;#8b5cf6&quot;, &quot;express&quot;: &quot;#ef4444&quot;, &quot;busway&quot;: &quot;#f59e0b&quot;, &quot;flyer&quot;: &quot;#06b6d4&quot;}
+
+    # Top-left: Mode time series
+    ax = axes[0, 0]
+    for mode in [&quot;BUS&quot;, &quot;RAIL&quot;]:
+        data = mode_monthly.filter(pl.col(&quot;mode&quot;) == mode).sort(&quot;month&quot;)
+        if len(data) == 0:
+            continue
+        months = data[&quot;month&quot;].to_list()
+        vals = data[&quot;avg_otp&quot;].to_list()
+        n_routes = int(data[&quot;route_count&quot;].median())
+        ax.plot(range(len(months)), vals, color=mode_colors[mode], linewidth=1.2,
+                label=f&quot;{mode} (n={n_routes} routes)&quot;)
+        tick_pos = [i for i, m in enumerate(months) if m.endswith(&quot;-01&quot;)]
+        tick_lbl = [months[i][:4] for i in tick_pos]
+        ax.set_xticks(tick_pos)
+        ax.set_xticklabels(tick_lbl)
+    ax.set_title(&quot;OTP by Mode (UNKNOWN excluded)&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.legend(fontsize=8)
+    ax.set_ylim(0, 1)
+
+    # Top-right: Bus subtype time series
+    ax = axes[0, 1]
+    for btype in [&quot;local&quot;, &quot;limited&quot;, &quot;express&quot;, &quot;busway&quot;, &quot;flyer&quot;]:
+        data = bus_monthly.filter(pl.col(&quot;bus_type&quot;) == btype).sort(&quot;month&quot;)
+        if len(data) == 0:
+            continue
+        months = data[&quot;month&quot;].to_list()
+        vals = data[&quot;avg_otp&quot;].to_list()
+        ax.plot(range(len(months)), vals, color=bus_type_colors[btype], linewidth=1.2, label=btype)
+        tick_pos = [i for i, m in enumerate(months) if m.endswith(&quot;-01&quot;)]
+        tick_lbl = [months[i][:4] for i in tick_pos]
+        ax.set_xticks(tick_pos)
+        ax.set_xticklabels(tick_lbl)
+    ax.set_title(&quot;OTP by Bus Type&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.legend(fontsize=8)
+    ax.set_ylim(0, 1)
+
+    # Bottom-left: Paired route comparison
+    ax = axes[1, 0]
+    if len(paired) &gt; 0:
+        pair_labels = paired.select(&quot;base_id&quot;, &quot;variant_id&quot;).unique()
+        for row in pair_labels.iter_rows(named=True):
+            pair_data = paired.filter(
+                (pl.col(&quot;base_id&quot;) == row[&quot;base_id&quot;]) &amp; (pl.col(&quot;variant_id&quot;) == row[&quot;variant_id&quot;])
+            ).sort(&quot;month&quot;)
+            months = pair_data[&quot;month&quot;].to_list()
+            diffs = pair_data[&quot;otp_diff&quot;].to_list()
+            ax.plot(range(len(months)), diffs, linewidth=0.8, alpha=0.7,
+                    label=f&quot;{row[&#x27;base_id&#x27;]} vs {row[&#x27;variant_id&#x27;]}&quot;)
+            tick_pos = [i for i, m in enumerate(months) if m.endswith(&quot;-01&quot;)]
+            tick_lbl = [months[i][:4] for i in tick_pos]
+            ax.set_xticks(tick_pos)
+            ax.set_xticklabels(tick_lbl)
+        ax.axhline(0, color=&quot;black&quot;, linewidth=0.5)
+        ax.legend(fontsize=7, loc=&quot;lower left&quot;)
+    ax.set_title(&quot;Paired Route OTP Difference (variant - base)&quot;)
+    ax.set_ylabel(&quot;OTP Difference&quot;)
+
+    # Bottom-right: Mode gap over time (RAIL - BUS)
+    ax = axes[1, 1]
+    rail = mode_monthly.filter(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;).select(&quot;month&quot;, rail_otp=pl.col(&quot;avg_otp&quot;))
+    bus = mode_monthly.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;).select(&quot;month&quot;, bus_otp=pl.col(&quot;avg_otp&quot;))
+    gap = rail.join(bus, on=&quot;month&quot;).sort(&quot;month&quot;)
+    if len(gap) &gt; 0:
+        gap = gap.with_columns(gap_val=pl.col(&quot;rail_otp&quot;) - pl.col(&quot;bus_otp&quot;))
+        months = gap[&quot;month&quot;].to_list()
+        gap_vals = gap[&quot;gap_val&quot;].to_list()
+        x = list(range(len(months)))
+        colors = [&quot;#22c55e&quot; if v &gt;= 0 else &quot;#ef4444&quot; for v in gap_vals]
+        ax.bar(x, gap_vals, color=colors, width=1.0, alpha=0.7)
+        ax.axhline(0, color=&quot;black&quot;, linewidth=0.5)
+
+        # Trend line
+        n = len(x)
+        x_mean = sum(x) / n
+        y_mean = sum(gap_vals) / n
+        cov_xy = sum((xi - x_mean) * (yi - y_mean) for xi, yi in zip(x, gap_vals)) / n
+        var_x = sum((xi - x_mean) ** 2 for xi in x) / n
+        if var_x &gt; 0:
+            slope = cov_xy / var_x
+            intercept = y_mean - slope * x_mean
+            trend = [slope * xi + intercept for xi in x]
+            ax.plot(x, trend, color=&quot;#1e40af&quot;, linewidth=1.5, linestyle=&quot;--&quot;, label=f&quot;trend (slope={slope:.5f})&quot;)
+            ax.legend(fontsize=8)
+
+        tick_pos = [i for i, m in enumerate(months) if m.endswith(&quot;-01&quot;)]
+        tick_lbl = [months[i][:4] for i in tick_pos]
+        ax.set_xticks(tick_pos)
+        ax.set_xticklabels(tick_lbl)
+    ax.set_title(&quot;RAIL - BUS OTP Gap&quot;)
+    ax.set_ylabel(&quot;OTP Difference&quot;)
+
+    fig.suptitle(&quot;Mode &amp; Route-Type Comparison&quot;, fontsize=13)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;mode_comparison.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;mode_comparison.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 02: Mode Comparison&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    print(f&quot;  {len(df):,} OTP observations loaded&quot;)
+
+    print(&quot;\nAnalyzing...&quot;)
+    mode_monthly, bus_monthly, paired, mode_monthly_weighted, test_results = analyze(df)
+
+    # Summary
+    for mode in [&quot;BUS&quot;, &quot;RAIL&quot;]:
+        data = mode_monthly.filter(pl.col(&quot;mode&quot;) == mode)
+        if len(data) &gt; 0:
+            avg = data[&quot;avg_otp&quot;].mean()
+            print(f&quot;  {mode}: overall avg OTP (unweighted) = {avg:.1%}&quot;)
+        w_key = f&quot;{mode.lower()}_weighted_avg&quot;
+        if w_key in test_results:
+            print(f&quot;  {mode}: overall avg OTP (trip-weighted) = {test_results[w_key]:.1%}&quot;)
+
+    # Mann-Whitney test
+    if &quot;mann_whitney_u&quot; in test_results:
+        print(f&quot;\n  Mann-Whitney U test (RAIL vs BUS monthly OTP):&quot;)
+        print(f&quot;    U = {test_results[&#x27;mann_whitney_u&#x27;]:.1f}, p = {test_results[&#x27;mann_whitney_p&#x27;]:.2e}&quot;)
+        print(f&quot;    RAIL median = {test_results[&#x27;rail_median_otp&#x27;]:.1%}, BUS median = {test_results[&#x27;bus_median_otp&#x27;]:.1%}&quot;)
+
+    if len(paired) &gt; 0:
+        avg_diff = paired[&quot;otp_diff&quot;].mean()
+        print(f&quot;\n  Paired routes: avg OTP diff (variant - base) = {avg_diff:+.4f}&quot;)
+        print(f&quot;  {paired.select(&#x27;base_id&#x27;, &#x27;variant_id&#x27;).unique().height} route pairs found&quot;)
+
+        if &quot;paired_t_stat&quot; in test_results:
+            print(f&quot;  Paired t-test on monthly OTP differences:&quot;)
+            print(f&quot;    t = {test_results[&#x27;paired_t_stat&#x27;]:.3f}, p = {test_results[&#x27;paired_t_pval&#x27;]:.4f}&quot;)
+            print(f&quot;    Mean diff = {test_results[&#x27;paired_mean_diff&#x27;]:.4f}&quot;)
+            print(f&quot;    95% CI: [{test_results[&#x27;paired_ci_lower&#x27;]:.4f}, {test_results[&#x27;paired_ci_upper&#x27;]:.4f}]&quot;)
+            print(f&quot;    n = {test_results[&#x27;paired_n_obs&#x27;]} paired observations across {test_results[&#x27;n_pairs&#x27;]} pairs&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    # Combine mode and bus type data for CSV
+    csv_data = pl.concat([
+        mode_monthly.with_columns(bus_type=pl.lit(None, dtype=pl.String)),
+        bus_monthly.with_columns(mode=pl.lit(&quot;BUS&quot;)),
+    ], how=&quot;diagonal&quot;)
+    csv_data.write_csv(OUT / &quot;mode_comparison.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;mode_comparison.csv&#x27;}&quot;)
+
+    # Save weighted mode data
+    mode_monthly_weighted.write_csv(OUT / &quot;mode_comparison_weighted.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;mode_comparison_weighted.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating chart...&quot;)
+    make_chart(mode_monthly, bus_monthly, paired)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -527,6 +880,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

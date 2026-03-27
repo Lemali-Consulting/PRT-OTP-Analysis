@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>36 - National Ridership Growth (2019 vs 2024)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -224,6 +227,193 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies; rank PRT.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+
+from prt_otp_analysis.common import get_db, output_dir, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+PRT_NTD_ID = 30022
+MIN_MONTHS = 10  # require at least 10 months of data per year
+TOP_N = 150
+
+
+def load_agency_totals(conn) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Sum UPT by agency for 2019 and 2024, requiring MIN_MONTHS months each.&quot;&quot;&quot;
+    rows = conn.execute(&quot;&quot;&quot;
+        SELECT
+            ntd_id,
+            SUBSTR(month, 1, 4) AS year,
+            SUM(upt) AS total_upt,
+            COUNT(CASE WHEN upt IS NOT NULL THEN 1 END) AS n_months
+        FROM ntd_ridership
+        WHERE SUBSTR(month, 1, 4) IN (&#x27;2019&#x27;, &#x27;2024&#x27;)
+        GROUP BY ntd_id, SUBSTR(month, 1, 4)
+    &quot;&quot;&quot;).fetchall()
+
+    df = pl.DataFrame([dict(r) for r in rows])
+
+    # Require minimum months in both years
+    df = df.filter(pl.col(&quot;n_months&quot;) &gt;= MIN_MONTHS)
+
+    # Pivot to wide: one row per agency with upt_2019 and upt_2024
+    wide = df.pivot(on=&quot;year&quot;, index=&quot;ntd_id&quot;, values=&quot;total_upt&quot;)
+    wide = wide.rename({&quot;2019&quot;: &quot;upt_2019&quot;, &quot;2024&quot;: &quot;upt_2024&quot;})
+
+    # Keep only agencies with data in both years
+    wide = wide.filter(
+        pl.col(&quot;upt_2019&quot;).is_not_null() &amp; pl.col(&quot;upt_2024&quot;).is_not_null()
+    )
+
+    return wide
+
+
+def main():
+    plt = setup_plotting()
+    conn = get_db()
+
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 36: National Ridership Growth (2019 vs 2024)&quot;)
+    print(&quot;=&quot; * 60)
+
+    # Load data
+    print(&quot;\n1. Loading agency totals...&quot;)
+    wide = load_agency_totals(conn)
+    print(f&quot;   {len(wide)} agencies with valid data in both 2019 and 2024&quot;)
+
+    # Rank by 2019 UPT and take top N
+    wide = wide.sort(&quot;upt_2019&quot;, descending=True).head(TOP_N)
+    print(f&quot;   Top {TOP_N} by 2019 ridership selected&quot;)
+
+    # Compute percent change
+    wide = wide.with_columns(
+        pct_change=((pl.col(&quot;upt_2024&quot;) - pl.col(&quot;upt_2019&quot;)) / pl.col(&quot;upt_2019&quot;) * 100)
+    )
+
+    # Rank by pct_change (best recovery = rank 1)
+    wide = wide.sort(&quot;pct_change&quot;, descending=True).with_row_index(&quot;rank&quot;, offset=1)
+    wide = wide.with_columns(pl.col(&quot;rank&quot;).cast(pl.Int64))
+
+    # Join agency names
+    name_rows = conn.execute(
+        &quot;SELECT DISTINCT ntd_id, agency_name FROM ntd_agency&quot;
+    ).fetchall()
+    names = pl.DataFrame([dict(r) for r in name_rows])
+    result = wide.join(names, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+    result = result.select(&quot;rank&quot;, &quot;ntd_id&quot;, &quot;agency_name&quot;, &quot;upt_2019&quot;, &quot;upt_2024&quot;, &quot;pct_change&quot;)
+
+    conn.close()
+
+    # Summary statistics
+    pct = result[&quot;pct_change&quot;]
+    median_pct = pct.median()
+    mean_pct = pct.mean()
+    q25 = pct.quantile(0.25)
+    q75 = pct.quantile(0.75)
+    recovered = result.filter(pl.col(&quot;pct_change&quot;) &gt;= 0)
+
+    print(&quot;\n2. Summary statistics:&quot;)
+    print(f&quot;   Median change: {median_pct:.1f}%&quot;)
+    print(f&quot;   Mean change:   {mean_pct:.1f}%&quot;)
+    print(f&quot;   IQR:           {q25:.1f}% to {q75:.1f}%&quot;)
+    print(f&quot;   Recovered to 2019 levels: {len(recovered)} / {TOP_N} ({len(recovered)/TOP_N*100:.0f}%)&quot;)
+
+    # PRT results
+    prt = result.filter(pl.col(&quot;ntd_id&quot;) == PRT_NTD_ID)
+    if len(prt) &gt; 0:
+        prt_row = prt.row(0, named=True)
+        print(f&quot;\n   PRT: rank {prt_row[&#x27;rank&#x27;]}/{TOP_N}, &quot;
+              f&quot;{prt_row[&#x27;pct_change&#x27;]:+.1f}% change &quot;
+              f&quot;({prt_row[&#x27;upt_2019&#x27;]:,.0f} → {prt_row[&#x27;upt_2024&#x27;]:,.0f})&quot;)
+    else:
+        print(&quot;\n   WARNING: PRT not found in top 150&quot;)
+
+    # Save CSV
+    csv_path = OUT / &quot;ridership_growth_data.csv&quot;
+    result.write_csv(csv_path)
+    print(f&quot;\n3. Saved {csv_path}&quot;)
+
+    # --- Chart 1: Histogram ---
+    print(&quot;\n4. Generating histogram...&quot;)
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.hist(pct.to_list(), bins=30, color=&quot;#4878CF&quot;, edgecolor=&quot;white&quot;, alpha=0.8)
+    ax.axvline(median_pct, color=&quot;#333333&quot;, linestyle=&quot;--&quot;, linewidth=1.5, label=f&quot;Median: {median_pct:.1f}%&quot;)
+    ax.axvline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+    if len(prt) &gt; 0:
+        prt_pct = prt_row[&quot;pct_change&quot;]
+        ax.axvline(prt_pct, color=&quot;#E24A33&quot;, linestyle=&quot;-&quot;, linewidth=2.5,
+                   label=f&quot;PRT: {prt_pct:+.1f}%&quot;)
+    ax.set_xlabel(&quot;Ridership Change 2019 → 2024 (%)&quot;)
+    ax.set_ylabel(&quot;Number of Agencies&quot;)
+    ax.set_title(f&quot;Ridership Recovery Distribution — Top {TOP_N} US Transit Agencies&quot;)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;ridership_growth_distribution.png&quot;)
+    plt.close(fig)
+    print(f&quot;   Saved ridership_growth_distribution.png&quot;)
+
+    # --- Chart 2: Horizontal bar ranking ---
+    print(&quot;\n5. Generating ranking bar chart...&quot;)
+    sorted_df = result.sort(&quot;pct_change&quot;)
+    agencies = sorted_df[&quot;agency_name&quot;].to_list()
+    changes = sorted_df[&quot;pct_change&quot;].to_list()
+    ntd_ids = sorted_df[&quot;ntd_id&quot;].to_list()
+    colors = [&quot;#E24A33&quot; if nid == PRT_NTD_ID else &quot;#4878CF&quot; for nid in ntd_ids]
+
+    fig, ax = plt.subplots(figsize=(14, max(30, TOP_N * 0.22)))
+    bars = ax.barh(range(len(agencies)), changes, color=colors, height=0.8)
+    ax.set_yticks(range(len(agencies)))
+    ax.set_yticklabels(agencies, fontsize=6)
+    ax.set_xlabel(&quot;Ridership Change 2019 → 2024 (%)&quot;)
+    ax.set_title(f&quot;Ridership Recovery Ranking — Top {TOP_N} US Transit Agencies&quot;)
+    ax.axvline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+
+    # Highlight PRT label
+    if len(prt) &gt; 0:
+        prt_idx = [i for i, nid in enumerate(ntd_ids) if nid == PRT_NTD_ID]
+        if prt_idx:
+            ax.get_yticklabels()[prt_idx[0]].set_color(&quot;#E24A33&quot;)
+            ax.get_yticklabels()[prt_idx[0]].set_fontweight(&quot;bold&quot;)
+            ax.get_yticklabels()[prt_idx[0]].set_fontsize(7)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;ridership_growth_ranking.png&quot;)
+    plt.close(fig)
+    print(f&quot;   Saved ridership_growth_ranking.png&quot;)
+
+    # Top and bottom 10
+    print(&quot;\n6. Top 10 recoveries:&quot;)
+    for row in result.head(10).iter_rows(named=True):
+        print(f&quot;   {row[&#x27;rank&#x27;]:&gt;3d}. {row[&#x27;agency_name&#x27;]:&lt;50s} {row[&#x27;pct_change&#x27;]:&gt;+7.1f}%&quot;)
+
+    print(&quot;\n   Bottom 10:&quot;)
+    for row in result.tail(10).iter_rows(named=True):
+        print(f&quot;   {row[&#x27;rank&#x27;]:&gt;3d}. {row[&#x27;agency_name&#x27;]:&lt;50s} {row[&#x27;pct_change&#x27;]:&gt;+7.1f}%&quot;)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -372,6 +562,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

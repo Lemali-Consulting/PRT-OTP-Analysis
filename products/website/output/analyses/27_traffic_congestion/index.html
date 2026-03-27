@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>27 - Traffic Congestion and OTP</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -313,6 +316,526 @@
 <li><code>output/partial_residual.png</code> -- partial residual plot for log_aadt</li>
 </ul>
 </div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 27: Test whether PennDOT AADT traffic volume explains OTP variance beyond structural features.&quot;&quot;&quot;
+
+import math
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    classify_bus_route,
+    output_dir,
+    query_to_polars,
+    setup_plotting,
+)
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MIN_MONTHS = 12
+MIN_MATCH_RATE = 0.3
+
+
+# ---------------------------------------------------------------------------
+# Helpers (replicated from Analysis 18/26 to maintain independence)
+# ---------------------------------------------------------------------------
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return the great-circle distance in km between two lat/lon points.&quot;&quot;&quot;
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
+         * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def compute_span(lats: list[float], lons: list[float]) -&gt; float:
+    &quot;&quot;&quot;Return the max pairwise haversine distance (km) among a set of points.&quot;&quot;&quot;
+    max_dist = 0.0
+    n = len(lats)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = haversine_km(lats[i], lons[i], lats[j], lons[j])
+            if d &gt; max_dist:
+                max_dist = d
+    return max_dist
+
+
+def compute_vif(X_raw: np.ndarray, feature_names: list[str]) -&gt; dict[str, float]:
+    &quot;&quot;&quot;Compute Variance Inflation Factor for each predictor.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    vifs = {}
+    for j in range(k):
+        y_j = X_raw[:, j]
+        X_other = np.delete(X_raw, j, axis=1)
+        X_other = np.column_stack([np.ones(n), X_other])
+        beta, _, _, _ = np.linalg.lstsq(X_other, y_j, rcond=None)
+        y_hat = X_other @ beta
+        ss_res = np.sum((y_j - y_hat) ** 2)
+        ss_tot = np.sum((y_j - np.mean(y_j)) ** 2)
+        r2_j = 1 - ss_res / ss_tot if ss_tot &gt; 0 else 0.0
+        vifs[feature_names[j]] = 1.0 / (1.0 - r2_j) if r2_j &lt; 1.0 else float(&quot;inf&quot;)
+    return vifs
+
+
+def fit_ols(y: np.ndarray, X_raw: np.ndarray, feature_names: list[str]) -&gt; dict:
+    &quot;&quot;&quot;Fit OLS regression and return results dict.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    X = np.column_stack([np.ones(n), X_raw])
+
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    y_hat = X @ beta
+    residuals = y - y_hat
+
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    adj_r_squared = 1 - (1 - r_squared) * (n - 1) / (n - k - 1)
+    mse = ss_res / (n - k - 1)
+
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    se = np.sqrt(np.diag(XtX_inv) * mse)
+    t_vals = beta / se
+    p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n - k - 1)) for t in t_vals]
+
+    x_stds = np.std(X_raw, axis=0, ddof=1)
+    y_std = np.std(y, ddof=1)
+    beta_weights = beta[1:] * x_stds / y_std
+
+    return {
+        &quot;r_squared&quot;: r_squared,
+        &quot;adj_r_squared&quot;: adj_r_squared,
+        &quot;ss_res&quot;: ss_res,
+        &quot;n&quot;: n,
+        &quot;k&quot;: k,
+        &quot;features&quot;: [&quot;intercept&quot;] + feature_names,
+        &quot;coefficients&quot;: beta.tolist(),
+        &quot;std_errors&quot;: se.tolist(),
+        &quot;t_values&quot;: t_vals.tolist(),
+        &quot;p_values&quot;: p_vals,
+        &quot;beta_weights&quot;: [None] + beta_weights.tolist(),
+        &quot;y_hat&quot;: y_hat,
+        &quot;residuals&quot;: residuals,
+    }
+
+
+def f_test_nested(base: dict, full: dict) -&gt; tuple[float, float]:
+    &quot;&quot;&quot;F-test comparing nested models. Returns (F_stat, p_value).&quot;&quot;&quot;
+    k_diff = full[&quot;k&quot;] - base[&quot;k&quot;]
+    n = full[&quot;n&quot;]
+    f_stat = ((base[&quot;ss_res&quot;] - full[&quot;ss_res&quot;]) / k_diff) / (full[&quot;ss_res&quot;] / (n - full[&quot;k&quot;] - 1))
+    f_p = 1 - stats.f.cdf(f_stat, k_diff, n - full[&quot;k&quot;] - 1)
+    return f_stat, f_p
+
+
+def print_model(results: dict, label: str) -&gt; None:
+    &quot;&quot;&quot;Print formatted model results.&quot;&quot;&quot;
+    print(f&quot;\n  {label}:&quot;)
+    print(f&quot;  R2 = {results[&#x27;r_squared&#x27;]:.4f}, Adj R2 = {results[&#x27;adj_r_squared&#x27;]:.4f}, &quot;
+          f&quot;n = {results[&#x27;n&#x27;]}, k = {results[&#x27;k&#x27;]}&quot;)
+    print(f&quot;  {&#x27;Feature&#x27;:&lt;20s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Std Err&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s} {&#x27;Beta&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*60}&quot;)
+    for i, feat in enumerate(results[&quot;features&quot;]):
+        coeff = results[&quot;coefficients&quot;][i]
+        se = results[&quot;std_errors&quot;][i]
+        p = results[&quot;p_values&quot;][i]
+        beta = results[&quot;beta_weights&quot;][i]
+        beta_str = f&quot;{beta:&gt;10.4f}&quot; if beta is not None else f&quot;{&#x27;--&#x27;:&gt;10s}&quot;
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;20s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {beta_str} {sig}&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_features() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Assemble structural features + traffic data for the regression model.&quot;&quot;&quot;
+    avg_otp = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp, COUNT(*) AS months
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(*) &gt;= 12
+    &quot;&quot;&quot;)
+
+    stop_counts = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    trips = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id,
+               MAX(trips_wd) AS max_wd,
+               MAX(trips_sa) AS max_sa,
+               MAX(trips_su) AS max_su
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    munis = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, COUNT(DISTINCT s.muni) AS n_munis
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.route_id
+    &quot;&quot;&quot;)
+    stops_by_route = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, s.lat, s.lon
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.lat IS NOT NULL AND s.lon IS NOT NULL
+    &quot;&quot;&quot;)
+    spans = []
+    for route_id in stops_by_route[&quot;route_id&quot;].unique().sort().to_list():
+        subset = stops_by_route.filter(pl.col(&quot;route_id&quot;) == route_id)
+        span_km = compute_span(subset[&quot;lat&quot;].to_list(), subset[&quot;lon&quot;].to_list())
+        spans.append({&quot;route_id&quot;: route_id, &quot;span_km&quot;: span_km})
+    span_df = pl.DataFrame(spans)
+
+    # Traffic data
+    traffic = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, weighted_aadt, max_aadt, median_aadt, p90_aadt,
+               avg_truck_pct, match_rate, n_segments, total_length_ft
+        FROM route_traffic
+    &quot;&quot;&quot;)
+
+    # Assemble
+    df = avg_otp
+    df = df.join(stop_counts, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(trips, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(munis, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(span_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(traffic, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+
+    # Derived features
+    df = df.with_columns(
+        pl.when(pl.col(&quot;max_wd&quot;) &gt; 0)
+        .then((pl.col(&quot;max_sa&quot;) + pl.col(&quot;max_su&quot;)) / (2.0 * pl.col(&quot;max_wd&quot;)))
+        .otherwise(0.0)
+        .alias(&quot;weekend_ratio&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;).then(1.0).otherwise(0.0).alias(&quot;is_rail&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.Utf8))
+        .otherwise(pl.lit(&quot;non_bus&quot;))
+        .alias(&quot;bus_subtype&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;bus_subtype&quot;).is_in([&quot;busway&quot;, &quot;flyer&quot;, &quot;express&quot;, &quot;limited&quot;]))
+        .then(1.0)
+        .otherwise(0.0)
+        .alias(&quot;is_premium_bus&quot;),
+    )
+    df = df.with_columns(
+        pl.col(&quot;weighted_aadt&quot;).log().alias(&quot;log_aadt&quot;),
+    )
+
+    df = df.drop_nulls(subset=[&quot;stop_count&quot;, &quot;span_km&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;])
+
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Charts
+# ---------------------------------------------------------------------------
+
+def make_scatter_chart(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bivariate scatter: AADT vs OTP.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    aadt = df[&quot;weighted_aadt&quot;].to_numpy()
+    otp = df[&quot;avg_otp&quot;].to_numpy()
+    modes = df[&quot;mode&quot;].to_list()
+
+    bus_mask = np.array([m == &quot;BUS&quot; for m in modes])
+    rail_mask = ~bus_mask
+
+    ax.scatter(aadt[bus_mask], otp[bus_mask], alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Bus&quot;, zorder=2)
+    if np.any(rail_mask):
+        ax.scatter(aadt[rail_mask], otp[rail_mask], alpha=0.7, s=50, color=&quot;#dc2626&quot;,
+                   marker=&quot;D&quot;, edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Rail&quot;, zorder=3)
+
+    # Trend line (all routes)
+    log_aadt = np.log(aadt)
+    slope, intercept, r, p, _ = stats.linregress(log_aadt, otp)
+    x_sorted = np.sort(aadt)
+    ax.plot(x_sorted, slope * np.log(x_sorted) + intercept, color=&quot;#e11d48&quot;,
+            linewidth=1.5, linestyle=&quot;--&quot;, alpha=0.7,
+            label=f&quot;log fit: r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.set_xlabel(&quot;Weighted AADT (vehicles/day)&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;Traffic Volume vs On-Time Performance&quot;)
+    ax.legend(fontsize=9)
+    ax.set_xscale(&quot;log&quot;)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;aadt_vs_otp_scatter.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;aadt_vs_otp_scatter.png&#x27;}&quot;)
+
+
+def make_coefficient_chart(base: dict, expanded: dict) -&gt; None:
+    &quot;&quot;&quot;Compare standardized coefficients between base and expanded models.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    base_feats = base[&quot;features&quot;][1:]
+    exp_feats = expanded[&quot;features&quot;][1:]
+    base_betas = {f: b for f, b in zip(base_feats, base[&quot;beta_weights&quot;][1:])}
+    exp_betas = {f: b for f, b in zip(exp_feats, expanded[&quot;beta_weights&quot;][1:])}
+    exp_pvals = {f: p for f, p in zip(exp_feats, expanded[&quot;p_values&quot;][1:])}
+
+    all_feats = exp_feats
+    y_pos = np.arange(len(all_feats))
+    width = 0.35
+
+    base_vals = [base_betas.get(f, 0.0) for f in all_feats]
+    exp_vals = [exp_betas[f] for f in all_feats]
+
+    ax.barh(y_pos + width / 2, base_vals, width, label=&quot;Base (6 features)&quot;,
+            color=&quot;#9ca3af&quot;, alpha=0.7)
+    ax.barh(y_pos - width / 2, exp_vals, width, label=&quot;Expanded (+log_aadt)&quot;,
+            color=&quot;#2563eb&quot;, alpha=0.7)
+
+    for i, f in enumerate(all_feats):
+        p = exp_pvals[f]
+        marker = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        val = exp_vals[i]
+        ax.text(val + 0.01 if val &gt;= 0 else val - 0.01, i - width / 2, marker,
+                ha=&quot;left&quot; if val &gt;= 0 else &quot;right&quot;, va=&quot;center&quot;, fontsize=9)
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(all_feats)
+    ax.axvline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax.set_xlabel(&quot;Standardized Coefficient (Beta Weight)&quot;)
+    ax.set_title(f&quot;Model Comparison: Base R2={base[&#x27;r_squared&#x27;]:.3f} vs &quot;
+                 f&quot;Expanded R2={expanded[&#x27;r_squared&#x27;]:.3f}&quot;)
+    ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+    ax.invert_yaxis()
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;coefficient_comparison.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;coefficient_comparison.png&#x27;}&quot;)
+
+
+def make_partial_residual_chart(df: pl.DataFrame, base: dict) -&gt; None:
+    &quot;&quot;&quot;Partial residual plot: base model residuals vs log_aadt.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    residuals = base[&quot;residuals&quot;]
+    log_aadt = df[&quot;log_aadt&quot;].to_numpy()
+
+    ax.scatter(log_aadt, residuals, alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5)
+
+    slope, intercept, r, p, _ = stats.linregress(log_aadt, residuals)
+    x_line = np.array([log_aadt.min(), log_aadt.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, alpha=0.7, label=f&quot;r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.axhline(0, color=&quot;gray&quot;, linewidth=0.5, alpha=0.5)
+    ax.set_xlabel(&quot;Log(Weighted AADT)&quot;)
+    ax.set_ylabel(&quot;Base Model Residual (OTP)&quot;)
+    ax.set_title(&quot;Partial Residual: Does Traffic Volume Explain Remaining OTP Variance?&quot;)
+    ax.legend(fontsize=9)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;partial_residual.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;partial_residual.png&#x27;}&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load features, fit models, compare, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 27: Traffic Congestion and OTP&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading and assembling features...&quot;)
+    df_all = load_features()
+    print(f&quot;  {len(df_all)} routes with traffic + structural features&quot;)
+
+    # Filter by match rate
+    df = df_all.filter(pl.col(&quot;match_rate&quot;) &gt;= MIN_MATCH_RATE)
+    excluded = df_all.filter(pl.col(&quot;match_rate&quot;) &lt; MIN_MATCH_RATE)
+    n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
+    n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+    print(f&quot;  {len(df)} routes after match_rate &gt;= {MIN_MATCH_RATE} filter ({n_bus} BUS, {n_rail} RAIL)&quot;)
+    if len(excluded) &gt; 0:
+        print(f&quot;  Excluded ({len(excluded)}): &quot;
+              + &quot;, &quot;.join(excluded.sort(&quot;match_rate&quot;)[&quot;route_id&quot;].to_list()))
+
+    print(f&quot;\n  AADT range: {df[&#x27;weighted_aadt&#x27;].min():,.0f} -- {df[&#x27;weighted_aadt&#x27;].max():,.0f}&quot;)
+    print(f&quot;  Log AADT range: {df[&#x27;log_aadt&#x27;].min():.2f} -- {df[&#x27;log_aadt&#x27;].max():.2f}&quot;)
+    print(f&quot;  Median match rate: {df[&#x27;match_rate&#x27;].median():.1%}&quot;)
+
+    y = df[&quot;avg_otp&quot;].to_numpy()
+
+    # --- Model 1: Base (Analysis 18 replication, 6 features) ---
+    base_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
+                     &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+    X_base = np.column_stack([df[f].to_numpy().astype(float) for f in base_features])
+    print(&quot;\nFitting base model (6 features, Analysis 18 replication)...&quot;)
+    base = fit_ols(y, X_base, base_features)
+    print_model(base, &quot;Base model (6 features)&quot;)
+
+    # --- Model 2: Expanded (+ log_aadt) ---
+    exp_features = base_features + [&quot;log_aadt&quot;]
+    X_exp = np.column_stack([df[f].to_numpy().astype(float) for f in exp_features])
+    print(&quot;\nFitting expanded model (+ log_aadt)...&quot;)
+    expanded = fit_ols(y, X_exp, exp_features)
+    print_model(expanded, &quot;Expanded model (+ log_aadt)&quot;)
+
+    # F-test
+    f_stat, f_p = f_test_nested(base, expanded)
+    print(f&quot;\n  F-test for log_aadt: F = {f_stat:.3f}, p = {f_p:.4f}&quot;)
+    print(f&quot;  R2 change: {base[&#x27;r_squared&#x27;]:.4f} -&gt; {expanded[&#x27;r_squared&#x27;]:.4f} &quot;
+          f&quot;(+{expanded[&#x27;r_squared&#x27;] - base[&#x27;r_squared&#x27;]:.4f})&quot;)
+    print(f&quot;  Adj R2 change: {base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {expanded[&#x27;adj_r_squared&#x27;]:.4f} &quot;
+          f&quot;(+{expanded[&#x27;adj_r_squared&#x27;] - base[&#x27;adj_r_squared&#x27;]:.4f})&quot;)
+    if f_p &lt; 0.05:
+        print(&quot;  =&gt; AADT IS significant after controlling for structural features.&quot;)
+    else:
+        print(&quot;  =&gt; AADT is NOT significant after controlling for structural features.&quot;)
+
+    # --- Model 3: Expanded + truck_pct ---
+    truck_df = df.filter(pl.col(&quot;avg_truck_pct&quot;).is_not_null())
+    if len(truck_df) &gt;= 20:
+        y_truck = truck_df[&quot;avg_otp&quot;].to_numpy()
+        truck_features = base_features + [&quot;log_aadt&quot;, &quot;avg_truck_pct&quot;]
+        X_truck = np.column_stack([truck_df[f].to_numpy().astype(float) for f in truck_features])
+        print(f&quot;\nFitting expanded model (+ log_aadt + avg_truck_pct, n={len(truck_df)})...&quot;)
+        truck_model = fit_ols(y_truck, X_truck, truck_features)
+        print_model(truck_model, &quot;Expanded model (+ log_aadt + avg_truck_pct)&quot;)
+
+        # Compare vs base on same sample
+        X_base_truck = np.column_stack([truck_df[f].to_numpy().astype(float) for f in base_features])
+        base_truck = fit_ols(y_truck, X_base_truck, base_features)
+        f2, fp2 = f_test_nested(base_truck, truck_model)
+        print(f&quot;\n  F-test for log_aadt + truck_pct (joint): F = {f2:.3f}, p = {fp2:.4f}&quot;)
+    else:
+        truck_model = None
+        print(f&quot;\n  Skipping truck_pct model (only {len(truck_df)} routes with truck data)&quot;)
+
+    # --- VIF for expanded model ---
+    print(&quot;\n--- VIF (Expanded Model: base + log_aadt) ---&quot;)
+    vifs = compute_vif(X_exp, exp_features)
+    for feat, vif in vifs.items():
+        flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
+        print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
+
+    # --- Correlation: log_aadt vs structural features ---
+    print(&quot;\n--- Correlations: log_aadt vs structural features ---&quot;)
+    for feat in base_features:
+        r, p = stats.pearsonr(df[feat].to_numpy().astype(float), df[&quot;log_aadt&quot;].to_numpy())
+        sig = &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  log_aadt vs {feat:&lt;20s}: r = {r:+.3f}, p = {p:.4f} {sig}&quot;)
+
+    # --- Bus-only subgroup ---
+    bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    y_bus = bus_df[&quot;avg_otp&quot;].to_numpy()
+    bus_base_feats = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_premium_bus&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+    bus_exp_feats = bus_base_feats + [&quot;log_aadt&quot;]
+
+    X_bus_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_base_feats])
+    X_bus_exp = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_exp_feats])
+
+    print(f&quot;\nFitting bus-only base model ({len(bus_df)} routes)...&quot;)
+    bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
+    print_model(bus_base, &quot;Bus-only base (5 features)&quot;)
+
+    print(f&quot;\nFitting bus-only expanded model (+ log_aadt)...&quot;)
+    bus_expanded = fit_ols(y_bus, X_bus_exp, bus_exp_feats)
+    print_model(bus_expanded, &quot;Bus-only expanded (+ log_aadt)&quot;)
+
+    f_bus, fp_bus = f_test_nested(bus_base, bus_expanded)
+    print(f&quot;\n  Bus-only F-test for log_aadt: F = {f_bus:.3f}, p = {fp_bus:.4f}&quot;)
+    print(f&quot;  R2 change: {bus_base[&#x27;r_squared&#x27;]:.4f} -&gt; {bus_expanded[&#x27;r_squared&#x27;]:.4f} &quot;
+          f&quot;(+{bus_expanded[&#x27;r_squared&#x27;] - bus_base[&#x27;r_squared&#x27;]:.4f})&quot;)
+
+    # --- Save outputs ---
+    print(&quot;\nSaving CSVs...&quot;)
+
+    # Model comparison
+    rows = []
+    models = [
+        (base, &quot;base_6feat&quot;),
+        (expanded, &quot;expanded_7feat_aadt&quot;),
+        (bus_base, &quot;bus_base&quot;),
+        (bus_expanded, &quot;bus_expanded_aadt&quot;),
+    ]
+    if truck_model is not None:
+        models.append((truck_model, &quot;expanded_8feat_aadt_truck&quot;))
+    for model, label in models:
+        for i, feat in enumerate(model[&quot;features&quot;]):
+            rows.append({
+                &quot;model&quot;: label,
+                &quot;feature&quot;: feat,
+                &quot;coefficient&quot;: model[&quot;coefficients&quot;][i],
+                &quot;std_error&quot;: model[&quot;std_errors&quot;][i],
+                &quot;p_value&quot;: model[&quot;p_values&quot;][i],
+                &quot;beta_weight&quot;: model[&quot;beta_weights&quot;][i] if model[&quot;beta_weights&quot;][i] is not None else float(&quot;nan&quot;),
+                &quot;r_squared&quot;: model[&quot;r_squared&quot;],
+                &quot;adj_r_squared&quot;: model[&quot;adj_r_squared&quot;],
+                &quot;n&quot;: model[&quot;n&quot;],
+            })
+    pl.DataFrame(rows).write_csv(OUT / &quot;model_comparison.csv&quot;)
+    print(f&quot;  {OUT / &#x27;model_comparison.csv&#x27;}&quot;)
+
+    # VIF table
+    vif_rows = [{&quot;feature&quot;: f, &quot;vif&quot;: v} for f, v in vifs.items()]
+    pl.DataFrame(vif_rows).write_csv(OUT / &quot;vif_table.csv&quot;)
+    print(f&quot;  {OUT / &#x27;vif_table.csv&#x27;}&quot;)
+
+    # Route-level summary
+    summary = df.select([
+        &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;avg_otp&quot;, &quot;weighted_aadt&quot;, &quot;max_aadt&quot;,
+        &quot;median_aadt&quot;, &quot;p90_aadt&quot;, &quot;avg_truck_pct&quot;, &quot;match_rate&quot;, &quot;n_segments&quot;,
+        &quot;stop_count&quot;, &quot;span_km&quot;,
+    ]).sort(&quot;weighted_aadt&quot;, descending=True)
+    summary.write_csv(OUT / &quot;route_traffic_summary.csv&quot;)
+    print(f&quot;  {OUT / &#x27;route_traffic_summary.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_scatter_chart(df)
+    make_coefficient_chart(base, expanded)
+    make_partial_residual_chart(df, base)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
   </details>
 </section>
 
@@ -593,6 +1116,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

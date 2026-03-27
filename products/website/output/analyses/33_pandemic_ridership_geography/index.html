@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>33 - Pandemic Ridership Geography</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -243,6 +246,298 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Map the spatial pattern of stop-level ridership loss and recovery during the pandemic.&quot;&quot;&quot;
+
+import math
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+DATA_DIR = HERE.parents[1] / &quot;data&quot;
+
+# Downtown Pittsburgh centroid
+DT_LAT, DT_LON = 40.4406, -79.9959
+
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return distance in km between two lat/lon points.&quot;&quot;&quot;
+    R = 6371
+    rlat1, rlat2 = math.radians(lat1), math.radians(lat2)
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(rlat1) * math.cos(rlat2) * math.sin(dlon / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def classify_zone(lat: float, lon: float) -&gt; str:
+    &quot;&quot;&quot;Classify a stop into downtown core, inner ring, or outer ring.&quot;&quot;&quot;
+    d = haversine_km(lat, lon, DT_LAT, DT_LON)
+    if d &lt; 2:
+        return &quot;Downtown (&lt; 2 km)&quot;
+    elif d &lt; 8:
+        return &quot;Inner ring (2-8 km)&quot;
+    else:
+        return &quot;Outer ring (&gt; 8 km)&quot;
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load and compute pre/post pandemic usage per physical stop.&quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;])
+
+    # Weekday only
+    df = df.filter(pl.col(&quot;serviceday&quot;) == &quot;Weekday&quot;)
+
+    # Tag period
+    df = df.with_columns(
+        pl.when(pl.col(&quot;time_period&quot;) == &quot;Pre-pandemic&quot;)
+        .then(pl.lit(&quot;pre&quot;))
+        .otherwise(pl.lit(&quot;post&quot;))
+        .alias(&quot;period&quot;)
+    )
+
+    # Aggregate: per stop, per period -- sum across routes, mean across datekeys
+    per_stop_dk = (
+        df.group_by([&quot;stop_id&quot;, &quot;period&quot;, &quot;datekey&quot;])
+        .agg(
+            pl.col(&quot;avg_ons&quot;).sum(),
+            pl.col(&quot;avg_offs&quot;).sum(),
+            pl.col(&quot;stop_name&quot;).first(),
+            pl.col(&quot;latitude&quot;).first().alias(&quot;lat&quot;),
+            pl.col(&quot;longitude&quot;).first().alias(&quot;lon&quot;),
+            pl.col(&quot;mode&quot;).first(),
+        )
+    )
+
+    per_stop_period = (
+        per_stop_dk.group_by([&quot;stop_id&quot;, &quot;period&quot;])
+        .agg(
+            pl.col(&quot;avg_ons&quot;).mean(),
+            pl.col(&quot;avg_offs&quot;).mean(),
+            pl.col(&quot;stop_name&quot;).first(),
+            pl.col(&quot;lat&quot;).first(),
+            pl.col(&quot;lon&quot;).first(),
+            pl.col(&quot;mode&quot;).first(),
+        )
+        .with_columns(
+            (pl.col(&quot;avg_ons&quot;) + pl.col(&quot;avg_offs&quot;)).alias(&quot;avg_daily_usage&quot;)
+        )
+    )
+
+    # Pivot to wide: one row per stop with pre and post columns
+    pre = (
+        per_stop_period.filter(pl.col(&quot;period&quot;) == &quot;pre&quot;)
+        .select(&quot;stop_id&quot;, &quot;stop_name&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;mode&quot;,
+                pl.col(&quot;avg_daily_usage&quot;).alias(&quot;pre_usage&quot;))
+    )
+    post = (
+        per_stop_period.filter(pl.col(&quot;period&quot;) == &quot;post&quot;)
+        .select(&quot;stop_id&quot;, pl.col(&quot;avg_daily_usage&quot;).alias(&quot;post_usage&quot;))
+    )
+
+    merged = pre.join(post, on=&quot;stop_id&quot;, how=&quot;inner&quot;)
+
+    # Compute changes
+    merged = merged.with_columns(
+        (pl.col(&quot;post_usage&quot;) - pl.col(&quot;pre_usage&quot;)).alias(&quot;abs_change&quot;),
+        pl.when(pl.col(&quot;pre_usage&quot;) &gt; 0)
+        .then((pl.col(&quot;post_usage&quot;) - pl.col(&quot;pre_usage&quot;)) / pl.col(&quot;pre_usage&quot;) * 100)
+        .otherwise(None)
+        .alias(&quot;pct_change&quot;),
+    )
+
+    # Classify zones
+    zones = [
+        classify_zone(lat, lon)
+        for lat, lon in zip(merged[&quot;lat&quot;].to_list(), merged[&quot;lon&quot;].to_list())
+    ]
+    merged = merged.with_columns(pl.Series(&quot;zone&quot;, zones))
+
+    # Distance from downtown
+    dists = [
+        haversine_km(lat, lon, DT_LAT, DT_LON)
+        for lat, lon in zip(merged[&quot;lat&quot;].to_list(), merged[&quot;lon&quot;].to_list())
+    ]
+    merged = merged.with_columns(pl.Series(&quot;dist_from_dt_km&quot;, dists))
+
+    return merged
+
+
+def make_charts(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate geographic map and zone summary charts.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # Filter to stops with pre-pandemic usage &gt; 0 for pct_change
+    valid = df.filter(pl.col(&quot;pre_usage&quot;) &gt; 0)
+
+    # --- Geographic scatter map ---
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    pct = np.array(valid[&quot;pct_change&quot;].to_list())
+    # Clip for color scale
+    pct_clipped = np.clip(pct, -100, 50)
+
+    sc = ax.scatter(
+        valid[&quot;lon&quot;].to_list(), valid[&quot;lat&quot;].to_list(),
+        c=pct_clipped, cmap=&quot;RdYlGn&quot;, s=8, alpha=0.6,
+        vmin=-100, vmax=50, edgecolors=&quot;none&quot;,
+    )
+    cbar = plt.colorbar(sc, ax=ax, label=&quot;% Change in Weekday Usage&quot;, shrink=0.6)
+    cbar.set_ticks([-100, -75, -50, -25, 0, 25, 50])
+
+    ax.set_xlabel(&quot;Longitude&quot;)
+    ax.set_ylabel(&quot;Latitude&quot;)
+    ax.set_title(&quot;Pandemic Ridership Change by Stop (Pre-pandemic -&gt; Pandemic)&quot;)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;ridership_change_map.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;ridership_change_map.png&#x27;}&quot;)
+
+    # --- Zone summary + histogram ---
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    # Bar chart by zone
+    zone_order = [&quot;Downtown (&lt; 2 km)&quot;, &quot;Inner ring (2-8 km)&quot;, &quot;Outer ring (&gt; 8 km)&quot;]
+    zone_stats = []
+    for z in zone_order:
+        sub = valid.filter(pl.col(&quot;zone&quot;) == z)
+        zone_stats.append({
+            &quot;zone&quot;: z,
+            &quot;median_pct&quot;: sub[&quot;pct_change&quot;].median(),
+            &quot;mean_pct&quot;: sub[&quot;pct_change&quot;].mean(),
+            &quot;n&quot;: len(sub),
+        })
+
+    colors = [&quot;#ef4444&quot;, &quot;#f59e0b&quot;, &quot;#22c55e&quot;]
+    medians = [s[&quot;median_pct&quot;] for s in zone_stats]
+    labels = [f&quot;{s[&#x27;zone&#x27;]}\n(n={s[&#x27;n&#x27;]:,})&quot; for s in zone_stats]
+    bars = axes[0].bar(labels, medians, color=colors, edgecolor=&quot;white&quot;)
+    for bar, val in zip(bars, medians):
+        axes[0].text(bar.get_x() + bar.get_width() / 2, bar.get_height() - 2,
+                     f&quot;{val:.0f}%&quot;, ha=&quot;center&quot;, va=&quot;top&quot;, fontsize=11, fontweight=&quot;bold&quot;)
+    axes[0].set_ylabel(&quot;Median % Change in Weekday Usage&quot;)
+    axes[0].set_title(&quot;Ridership Change by Distance from Downtown&quot;)
+    axes[0].axhline(0, color=&quot;black&quot;, linewidth=0.5)
+
+    # Histogram of % changes
+    axes[1].hist(pct, bins=50, range=(-100, 100), color=&quot;#3b82f6&quot;, edgecolor=&quot;white&quot;, alpha=0.8)
+    axes[1].axvline(np.median(pct), color=&quot;#ef4444&quot;, linewidth=2, linestyle=&quot;--&quot;,
+                    label=f&quot;Median: {np.median(pct):.0f}%&quot;)
+    axes[1].set_xlabel(&quot;% Change in Weekday Usage&quot;)
+    axes[1].set_ylabel(&quot;Number of Stops&quot;)
+    axes[1].set_title(&quot;Distribution of Stop-Level Ridership Changes&quot;)
+    axes[1].legend()
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;change_by_zone.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;change_by_zone.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze pandemic ridership geography.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 33: Pandemic Ridership Geography&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading and computing stop-level pandemic changes...&quot;)
+    df = load_data()
+    valid = df.filter(pl.col(&quot;pre_usage&quot;) &gt; 0)
+    print(f&quot;  {len(df):,} stops with both pre and post data&quot;)
+    print(f&quot;  {len(valid):,} stops with pre-pandemic usage &gt; 0&quot;)
+
+    print(&quot;\nSystem-wide summary:&quot;)
+    med_pct = valid[&quot;pct_change&quot;].median()
+    mean_pct = valid[&quot;pct_change&quot;].mean()
+    total_pre = df[&quot;pre_usage&quot;].sum()
+    total_post = df[&quot;post_usage&quot;].sum()
+    sys_pct = (total_post - total_pre) / total_pre * 100
+    print(f&quot;  Median stop-level change: {med_pct:.1f}%&quot;)
+    print(f&quot;  Mean stop-level change: {mean_pct:.1f}%&quot;)
+    print(f&quot;  System total: {total_pre:,.0f} -&gt; {total_post:,.0f} ({sys_pct:+.1f}%)&quot;)
+
+    print(&quot;\nBy zone:&quot;)
+    for z in [&quot;Downtown (&lt; 2 km)&quot;, &quot;Inner ring (2-8 km)&quot;, &quot;Outer ring (&gt; 8 km)&quot;]:
+        sub = valid.filter(pl.col(&quot;zone&quot;) == z)
+        pre_sum = sub[&quot;pre_usage&quot;].sum()
+        post_sum = sub[&quot;post_usage&quot;].sum()
+        z_pct = (post_sum - pre_sum) / pre_sum * 100 if pre_sum &gt; 0 else 0
+        print(f&quot;  {z}: median {sub[&#x27;pct_change&#x27;].median():+.0f}%, &quot;
+              f&quot;aggregate {z_pct:+.1f}%, n={len(sub):,}&quot;)
+
+    # Formal tests for zone differences
+    zone_order = [&quot;Downtown (&lt; 2 km)&quot;, &quot;Inner ring (2-8 km)&quot;, &quot;Outer ring (&gt; 8 km)&quot;]
+    zone_groups = [
+        valid.filter(pl.col(&quot;zone&quot;) == z)[&quot;pct_change&quot;].drop_nulls().to_list()
+        for z in zone_order
+    ]
+    if all(len(g) &gt;= 3 for g in zone_groups):
+        h_stat, kw_p = stats.kruskal(*zone_groups)
+        print(f&quot;\n  Kruskal-Wallis (zones): H={h_stat:.2f}, p={kw_p:.4f}&quot;)
+        if kw_p &lt; 0.05:
+            # Pairwise Mann-Whitney with Bonferroni correction (3 pairs)
+            pairs = [(0, 1), (0, 2), (1, 2)]
+            print(&quot;  Pairwise Mann-Whitney (Bonferroni-corrected, 3 tests):&quot;)
+            for i, j in pairs:
+                u_stat, mw_p = stats.mannwhitneyu(zone_groups[i], zone_groups[j], alternative=&quot;two-sided&quot;)
+                adj_p = min(mw_p * 3, 1.0)
+                sig = &quot;*&quot; if adj_p &lt; 0.05 else &quot;&quot;
+                print(f&quot;    {zone_order[i]} vs {zone_order[j]}: U={u_stat:.0f}, p={adj_p:.4f} {sig}&quot;)
+
+    print(&quot;\nBy mode:&quot;)
+    for mode in valid[&quot;mode&quot;].unique().drop_nulls().sort().to_list():
+        sub = valid.filter(pl.col(&quot;mode&quot;) == mode)
+        print(f&quot;  {mode:12s}: median {sub[&#x27;pct_change&#x27;].median():+.0f}%, n={len(sub):,}&quot;)
+
+    # Formal test for mode differences
+    mode_groups = []
+    mode_names = []
+    for mode in valid[&quot;mode&quot;].unique().drop_nulls().sort().to_list():
+        vals = valid.filter(pl.col(&quot;mode&quot;) == mode)[&quot;pct_change&quot;].drop_nulls().to_list()
+        if len(vals) &gt;= 3:
+            mode_groups.append(vals)
+            mode_names.append(mode)
+    if len(mode_groups) &gt;= 2:
+        h_stat, kw_p = stats.kruskal(*mode_groups)
+        print(f&quot;  Kruskal-Wallis (modes): H={h_stat:.2f}, p={kw_p:.4f}&quot;)
+
+    print(&quot;\nTop 10 stops with largest absolute loss:&quot;)
+    biggest_loss = valid.sort(&quot;abs_change&quot;).head(10)
+    for row in biggest_loss.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;stop_name&#x27;][:40]:40s} {row[&#x27;pre_usage&#x27;]:8.0f} -&gt; {row[&#x27;post_usage&#x27;]:8.0f} ({row[&#x27;pct_change&#x27;]:+.0f}%)&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    df.write_csv(OUT / &quot;pandemic_change_by_stop.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;pandemic_change_by_stop.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_charts(df)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -375,6 +670,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

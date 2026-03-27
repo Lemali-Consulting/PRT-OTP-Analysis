@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>14: COVID Recovery Trajectories</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -330,6 +333,259 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;COVID recovery analysis: which routes recovered and which didn&#x27;t?&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    classify_bus_route,
+    output_dir,
+    query_to_polars,
+    setup_plotting,
+)
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+PRE_COVID_START = &quot;2019-01&quot;
+PRE_COVID_END = &quot;2020-02&quot;
+MIN_MONTHS = 6
+
+
+def load_data() -&gt; tuple[pl.DataFrame, str, str]:
+    &quot;&quot;&quot;Compute pre-COVID baseline and current OTP for each route.&quot;&quot;&quot;
+    otp = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode, o.month, o.otp
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+    &quot;&quot;&quot;)
+    stop_counts = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops
+        GROUP BY route_id
+    &quot;&quot;&quot;)
+
+    # Find the last 12 months in the dataset
+    all_months = sorted(otp[&quot;month&quot;].unique().to_list())
+    current_months = all_months[-12:]
+    current_start = current_months[0]
+    current_end = current_months[-1]
+
+    # Pre-COVID baseline
+    baseline = (
+        otp.filter((pl.col(&quot;month&quot;) &gt;= PRE_COVID_START) &amp; (pl.col(&quot;month&quot;) &lt;= PRE_COVID_END))
+        .group_by(&quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;)
+        .agg(
+            pl.col(&quot;otp&quot;).mean().alias(&quot;baseline_otp&quot;),
+            pl.col(&quot;otp&quot;).len().alias(&quot;baseline_months&quot;),
+        )
+        .filter(pl.col(&quot;baseline_months&quot;) &gt;= MIN_MONTHS)
+    )
+
+    # Current period
+    current = (
+        otp.filter(pl.col(&quot;month&quot;) &gt;= current_start)
+        .group_by(&quot;route_id&quot;)
+        .agg(
+            pl.col(&quot;otp&quot;).mean().alias(&quot;current_otp&quot;),
+            pl.col(&quot;otp&quot;).len().alias(&quot;current_months&quot;),
+        )
+        .filter(pl.col(&quot;current_months&quot;) &gt;= MIN_MONTHS)
+    )
+
+    df = baseline.join(current, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    df = df.join(stop_counts, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.with_columns(
+        (pl.col(&quot;current_otp&quot;) - pl.col(&quot;baseline_otp&quot;)).alias(&quot;recovery_delta&quot;),
+        (pl.col(&quot;current_otp&quot;) / pl.col(&quot;baseline_otp&quot;)).alias(&quot;recovery_ratio&quot;),
+    )
+    # Add bus subtype
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.Utf8))
+        .otherwise(pl.col(&quot;mode&quot;).str.to_lowercase())
+        .alias(&quot;subtype&quot;)
+    )
+    return df.sort(&quot;recovery_delta&quot;), current_start, current_end
+
+
+def analyze(df: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Compute summary statistics on recovery, including regression-to-the-mean test.&quot;&quot;&quot;
+    results = {}
+    results[&quot;n_routes&quot;] = len(df)
+    results[&quot;median_delta&quot;] = df[&quot;recovery_delta&quot;].median()
+    results[&quot;mean_delta&quot;] = df[&quot;recovery_delta&quot;].mean()
+    results[&quot;n_improved&quot;] = len(df.filter(pl.col(&quot;recovery_delta&quot;) &gt; 0))
+    results[&quot;n_declined&quot;] = len(df.filter(pl.col(&quot;recovery_delta&quot;) &lt; 0))
+
+    # Correlation: stop count vs recovery delta (bus only)
+    bus = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;).drop_nulls(&quot;stop_count&quot;)
+    if len(bus) &gt; 5:
+        r, p = stats.pearsonr(bus[&quot;stop_count&quot;].to_list(), bus[&quot;recovery_delta&quot;].to_list())
+        results[&quot;stops_recovery_r&quot;] = r
+        results[&quot;stops_recovery_p&quot;] = p
+
+    # Regression-to-the-mean test: baseline vs delta
+    r, p = stats.pearsonr(df[&quot;baseline_otp&quot;].to_list(), df[&quot;recovery_delta&quot;].to_list())
+    results[&quot;rtm_r&quot;] = r
+    results[&quot;rtm_p&quot;] = p
+
+    # Kruskal-Wallis test across subtypes (non-parametric, handles unequal groups)
+    subtypes = sorted(df[&quot;subtype&quot;].unique().to_list())
+    groups = []
+    for st in subtypes:
+        vals = df.filter(pl.col(&quot;subtype&quot;) == st)[&quot;recovery_delta&quot;].to_list()
+        if len(vals) &gt;= 3:
+            groups.append(vals)
+    if len(groups) &gt;= 2:
+        h, p = stats.kruskal(*groups)
+        results[&quot;kruskal_h&quot;] = h
+        results[&quot;kruskal_p&quot;] = p
+
+    return results
+
+
+def make_charts(df: pl.DataFrame, results: dict) -&gt; None:
+    &quot;&quot;&quot;Generate recovery distribution, subtype box plot, and RTM scatter.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # Recovery distribution histogram
+    fig, ax = plt.subplots(figsize=(10, 6))
+    deltas = df[&quot;recovery_delta&quot;].to_list()
+    ax.hist(deltas, bins=25, color=&quot;#3b82f6&quot;, edgecolor=&quot;white&quot;, alpha=0.8)
+    ax.axvline(0, color=&quot;#dc2626&quot;, linewidth=1.5, linestyle=&quot;--&quot;, label=&quot;No change&quot;)
+    ax.axvline(results[&quot;median_delta&quot;], color=&quot;#16a34a&quot;, linewidth=1.5, linestyle=&quot;--&quot;,
+               label=f&quot;Median ({results[&#x27;median_delta&#x27;]:+.1%})&quot;)
+    ax.set_xlabel(&quot;OTP Change (Current - Pre-COVID)&quot;)
+    ax.set_ylabel(&quot;Number of Routes&quot;)
+    ax.set_title(&quot;Distribution of OTP Recovery from Pre-COVID Baseline&quot;)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;recovery_distribution.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;recovery_distribution.png&#x27;}&quot;)
+
+    # Recovery by subtype box plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+    subtypes = sorted(df[&quot;subtype&quot;].unique().to_list())
+    box_data = []
+    box_labels = []
+    for st in subtypes:
+        vals = df.filter(pl.col(&quot;subtype&quot;) == st)[&quot;recovery_delta&quot;].to_list()
+        if len(vals) &gt;= 3:
+            box_data.append(vals)
+            box_labels.append(f&quot;{st}\n(n={len(vals)})&quot;)
+
+    bp = ax.boxplot(box_data, tick_labels=box_labels, patch_artist=True)
+    colors = [&quot;#3b82f6&quot;, &quot;#22c55e&quot;, &quot;#f59e0b&quot;, &quot;#ef4444&quot;, &quot;#8b5cf6&quot;, &quot;#06b6d4&quot;]
+    for patch, color in zip(bp[&quot;boxes&quot;], colors):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.6)
+    ax.axhline(0, color=&quot;#dc2626&quot;, linewidth=1, linestyle=&quot;--&quot;, alpha=0.5)
+    ax.set_ylabel(&quot;OTP Change (Current - Pre-COVID)&quot;)
+    ax.set_title(&quot;COVID Recovery by Route Type&quot;)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;recovery_by_mode.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;recovery_by_mode.png&#x27;}&quot;)
+
+    # Regression-to-the-mean scatter
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.scatter(df[&quot;baseline_otp&quot;].to_list(), df[&quot;recovery_delta&quot;].to_list(),
+               s=30, alpha=0.6, color=&quot;#3b82f6&quot;, edgecolors=&quot;white&quot;, linewidths=0.5)
+    ax.axhline(0, color=&quot;#dc2626&quot;, linewidth=1, linestyle=&quot;--&quot;, alpha=0.5)
+    import numpy as np
+    x = np.array(df[&quot;baseline_otp&quot;].to_list())
+    y = np.array(df[&quot;recovery_delta&quot;].to_list())
+    slope, intercept = np.polyfit(x, y, 1)
+    x_line = np.array([x.min(), x.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#1e40af&quot;, linewidth=1.5, linestyle=&quot;--&quot;,
+            label=f&quot;r={results[&#x27;rtm_r&#x27;]:.3f}, p={results[&#x27;rtm_p&#x27;]:.3f}&quot;)
+    ax.set_xlabel(&quot;Pre-COVID Baseline OTP&quot;)
+    ax.set_ylabel(&quot;OTP Change (Current - Baseline)&quot;)
+    ax.set_title(&quot;Regression to the Mean Test&quot;)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;regression_to_mean.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;regression_to_mean.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 14: COVID Recovery Trajectories&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df, current_start, current_end = load_data()
+    print(f&quot;  {len(df)} routes with both pre-COVID and current data&quot;)
+    print(f&quot;  Pre-COVID period: {PRE_COVID_START} to {PRE_COVID_END}&quot;)
+    print(f&quot;  Current period:   {current_start} to {current_end}&quot;)
+
+    print(&quot;\nAnalyzing recovery...&quot;)
+    results = analyze(df)
+    print(f&quot;  Improved: {results[&#x27;n_improved&#x27;]} routes&quot;)
+    print(f&quot;  Declined: {results[&#x27;n_declined&#x27;]} routes&quot;)
+    print(f&quot;  Median delta: {results[&#x27;median_delta&#x27;]:+.1%}&quot;)
+    print(f&quot;  Mean delta:   {results[&#x27;mean_delta&#x27;]:+.1%}&quot;)
+    if &quot;stops_recovery_r&quot; in results:
+        print(f&quot;  Stop count vs recovery (bus): r = {results[&#x27;stops_recovery_r&#x27;]:.4f} &quot;
+              f&quot;(p = {results[&#x27;stops_recovery_p&#x27;]:.4f})&quot;)
+    print(f&quot;\n  Regression-to-the-mean test:&quot;)
+    print(f&quot;    Baseline vs delta: r = {results[&#x27;rtm_r&#x27;]:.4f} (p = {results[&#x27;rtm_p&#x27;]:.4f})&quot;)
+    if results[&#x27;rtm_p&#x27;] &lt; 0.05:
+        print(f&quot;    WARNING: Significant RTM detected -- routes with extreme baselines regress toward the mean.&quot;)
+    else:
+        print(f&quot;    No significant RTM detected.&quot;)
+    if &quot;kruskal_h&quot; in results:
+        print(f&quot;  Kruskal-Wallis test across subtypes: H = {results[&#x27;kruskal_h&#x27;]:.3f}, &quot;
+              f&quot;p = {results[&#x27;kruskal_p&#x27;]:.4f}&quot;)
+
+    # Top/bottom routes
+    print(&quot;\nMost improved:&quot;)
+    top = df.sort(&quot;recovery_delta&quot;, descending=True).head(5)
+    for row in top.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;route_id&#x27;]:&gt;5s} - {row[&#x27;route_name&#x27;]:&lt;30s} &quot;
+              f&quot;Baseline={row[&#x27;baseline_otp&#x27;]:.1%} -&gt; Current={row[&#x27;current_otp&#x27;]:.1%} &quot;
+              f&quot;({row[&#x27;recovery_delta&#x27;]:+.1%})&quot;)
+
+    print(&quot;\nMost declined:&quot;)
+    bottom = df.sort(&quot;recovery_delta&quot;).head(5)
+    for row in bottom.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;route_id&#x27;]:&gt;5s} - {row[&#x27;route_name&#x27;]:&lt;30s} &quot;
+              f&quot;Baseline={row[&#x27;baseline_otp&#x27;]:.1%} -&gt; Current={row[&#x27;current_otp&#x27;]:.1%} &quot;
+              f&quot;({row[&#x27;recovery_delta&#x27;]:+.1%})&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    df.write_csv(OUT / &quot;covid_recovery.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;covid_recovery.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_charts(df, results)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -545,6 +801,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

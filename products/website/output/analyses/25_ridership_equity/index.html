@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>25 - Ridership Concentration & Equity</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -266,6 +269,333 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 25: Measure ridership concentration on low-OTP routes using Lorenz curves and Gini coefficients.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MIN_MONTHS = 12
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load route-level average OTP, ridership, and mode.&quot;&quot;&quot;
+    df = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp,
+               r.avg_riders,
+               rt.mode
+        FROM otp_monthly o
+        JOIN ridership_monthly r
+            ON o.route_id = r.route_id AND o.month = r.month
+            AND r.day_type = &#x27;WEEKDAY&#x27;
+        JOIN routes rt ON o.route_id = rt.route_id
+        WHERE r.avg_riders IS NOT NULL
+    &quot;&quot;&quot;)
+
+    # Filter to routes with enough paired months
+    route_counts = df.group_by(&quot;route_id&quot;).agg(pl.col(&quot;month&quot;).count().alias(&quot;n&quot;))
+    keep = route_counts.filter(pl.col(&quot;n&quot;) &gt;= MIN_MONTHS)[&quot;route_id&quot;].to_list()
+    df = df.filter(pl.col(&quot;route_id&quot;).is_in(keep))
+
+    return df
+
+
+def route_summary(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute route-level average OTP and average ridership.&quot;&quot;&quot;
+    return (
+        df.group_by(&quot;route_id&quot;, &quot;mode&quot;)
+        .agg(
+            avg_otp=pl.col(&quot;otp&quot;).mean(),
+            avg_riders=pl.col(&quot;avg_riders&quot;).mean(),
+            n_months=pl.col(&quot;month&quot;).count(),
+        )
+        .sort(&quot;avg_otp&quot;)  # worst to best
+    )
+
+
+def compute_lorenz(routes: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Compute Lorenz curve data and Gini-like concentration index.
+
+    Routes are sorted worst-to-best by OTP.  The Lorenz curve plots
+    cumulative route share (x) vs cumulative ridership share (y).
+    If riders concentrate on low-OTP routes, the curve bows above
+    the diagonal.
+    &quot;&quot;&quot;
+    routes = routes.sort(&quot;avg_otp&quot;)  # worst to best
+    riders = routes[&quot;avg_riders&quot;].to_numpy()
+    total = riders.sum()
+
+    n = len(riders)
+    cum_route_share = np.arange(1, n + 1) / n
+    cum_rider_share = np.cumsum(riders) / total
+
+    # Gini-like index: area between curve and diagonal
+    # Positive = riders concentrate on low-OTP routes
+    # Use trapezoidal integration
+    area_under_curve = np.trapezoid(cum_rider_share, cum_route_share)
+    area_under_diagonal = 0.5  # triangle
+    gini = 2 * (area_under_curve - area_under_diagonal)
+
+    # Find OTP threshold below which 50% of ridership is carried
+    otp_vals = routes[&quot;avg_otp&quot;].to_list()
+    idx_50 = np.searchsorted(cum_rider_share, 0.5)
+    if idx_50 &lt; n:
+        otp_at_50 = otp_vals[idx_50]
+    else:
+        otp_at_50 = otp_vals[-1]
+
+    # Routes needed for 50% of ridership
+    routes_for_50 = int(idx_50 + 1)
+
+    return {
+        &quot;cum_route_share&quot;: np.concatenate([[0], cum_route_share]),
+        &quot;cum_rider_share&quot;: np.concatenate([[0], cum_rider_share]),
+        &quot;gini&quot;: gini,
+        &quot;otp_at_50_pct&quot;: otp_at_50,
+        &quot;routes_for_50_pct&quot;: routes_for_50,
+        &quot;n_routes&quot;: n,
+        &quot;otp_values&quot;: otp_vals,
+    }
+
+
+def compute_quintiles(routes: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Divide routes into OTP quintiles and compute summary stats.&quot;&quot;&quot;
+    routes = routes.sort(&quot;avg_otp&quot;)
+    n = len(routes)
+    quintile_size = n // 5
+    remainder = n % 5
+
+    # Assign quintile labels (Q1 = worst, Q5 = best)
+    labels = []
+    for q in range(1, 6):
+        size = quintile_size + (1 if q &lt;= remainder else 0)
+        labels.extend([f&quot;Q{q}&quot;] * size)
+
+    routes = routes.with_columns(
+        pl.Series(&quot;quintile&quot;, labels),
+    )
+
+    summary = (
+        routes.group_by(&quot;quintile&quot;)
+        .agg(
+            n_routes=pl.col(&quot;route_id&quot;).count(),
+            avg_otp=pl.col(&quot;avg_otp&quot;).mean(),
+            min_otp=pl.col(&quot;avg_otp&quot;).min(),
+            max_otp=pl.col(&quot;avg_otp&quot;).max(),
+            total_riders=pl.col(&quot;avg_riders&quot;).sum(),
+            avg_riders=pl.col(&quot;avg_riders&quot;).mean(),
+        )
+        .sort(&quot;quintile&quot;)
+    )
+
+    # Add ridership share
+    total = summary[&quot;total_riders&quot;].sum()
+    summary = summary.with_columns(
+        (pl.col(&quot;total_riders&quot;) / total * 100).alias(&quot;ridership_share_pct&quot;),
+    )
+
+    return summary
+
+
+def make_lorenz_chart(lorenz_all: dict, lorenz_bus: dict) -&gt; None:
+    &quot;&quot;&quot;Plot Lorenz curves for all routes and bus-only.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    for ax, lorenz, title in [
+        (ax1, lorenz_all, f&quot;All Routes (n={lorenz_all[&#x27;n_routes&#x27;]})&quot;),
+        (ax2, lorenz_bus, f&quot;Bus Only (n={lorenz_bus[&#x27;n_routes&#x27;]})&quot;),
+    ]:
+        ax.plot(
+            lorenz[&quot;cum_route_share&quot;], lorenz[&quot;cum_rider_share&quot;],
+            color=&quot;#2563eb&quot;, linewidth=2.0, label=&quot;Actual&quot;, zorder=3,
+        )
+        ax.plot([0, 1], [0, 1], color=&quot;gray&quot;, linestyle=&quot;--&quot;, linewidth=1.0,
+                label=&quot;Perfect equality&quot;, alpha=0.6)
+        ax.fill_between(
+            lorenz[&quot;cum_route_share&quot;], lorenz[&quot;cum_rider_share&quot;],
+            lorenz[&quot;cum_route_share&quot;],
+            alpha=0.15, color=&quot;#2563eb&quot;,
+        )
+
+        # Mark 50% ridership point
+        idx_50 = np.searchsorted(lorenz[&quot;cum_rider_share&quot;], 0.5)
+        if idx_50 &lt; len(lorenz[&quot;cum_route_share&quot;]):
+            x50 = lorenz[&quot;cum_route_share&quot;][idx_50]
+            ax.axhline(0.5, color=&quot;#e11d48&quot;, linestyle=&quot;:&quot;, alpha=0.4)
+            ax.axvline(x50, color=&quot;#e11d48&quot;, linestyle=&quot;:&quot;, alpha=0.4)
+            ax.plot(x50, 0.5, &quot;o&quot;, color=&quot;#e11d48&quot;, markersize=6, zorder=4)
+            ax.annotate(
+                f&quot;50% riders\n({lorenz[&#x27;routes_for_50_pct&#x27;]}/{lorenz[&#x27;n_routes&#x27;]} routes&quot;
+                f&quot;\nOTP &lt; {lorenz[&#x27;otp_at_50_pct&#x27;]:.1%})&quot;,
+                xy=(x50, 0.5), xytext=(x50 + 0.12, 0.35),
+                fontsize=8, color=&quot;#e11d48&quot;,
+                arrowprops=dict(arrowstyle=&quot;-&gt;&quot;, color=&quot;#e11d48&quot;, lw=1.0),
+            )
+
+        ax.set_xlabel(&quot;Cumulative Share of Routes (worst OTP -&gt; best)&quot;)
+        ax.set_ylabel(&quot;Cumulative Share of Ridership&quot;)
+        ax.set_title(f&quot;{title}\nGini = {lorenz[&#x27;gini&#x27;]:.3f}&quot;)
+        ax.legend(loc=&quot;upper left&quot;, fontsize=9)
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_aspect(&quot;equal&quot;)
+
+    fig.suptitle(&quot;Ridership Concentration on Low-OTP Routes&quot;, fontsize=13, y=1.02)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;ridership_lorenz.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;ridership_lorenz.png&#x27;}&quot;)
+
+
+def make_quintile_chart(quintiles_all: pl.DataFrame, quintiles_bus: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bar chart of ridership share and average OTP by quintile.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    for ax, quintiles, title in [
+        (axes[0], quintiles_all, &quot;All Routes&quot;),
+        (axes[1], quintiles_bus, &quot;Bus Only&quot;),
+    ]:
+        qs = quintiles[&quot;quintile&quot;].to_list()
+        ridership_share = quintiles[&quot;ridership_share_pct&quot;].to_list()
+        avg_otp = [v * 100 for v in quintiles[&quot;avg_otp&quot;].to_list()]
+
+        x = np.arange(len(qs))
+        width = 0.35
+
+        bars1 = ax.bar(x - width / 2, ridership_share, width, label=&quot;Ridership Share (%)&quot;,
+                        color=&quot;#2563eb&quot;, alpha=0.7)
+        ax.set_ylabel(&quot;Ridership Share (%)&quot;, color=&quot;#2563eb&quot;)
+        ax.set_xlabel(&quot;OTP Quintile (Q1=worst, Q5=best)&quot;)
+        ax.set_title(title)
+        ax.set_xticks(x)
+        ax.set_xticklabels(qs)
+
+        # Add OTP values on secondary axis
+        ax2 = ax.twinx()
+        bars2 = ax2.bar(x + width / 2, avg_otp, width, label=&quot;Avg OTP (%)&quot;,
+                         color=&quot;#e11d48&quot;, alpha=0.7)
+        ax2.set_ylabel(&quot;Average OTP (%)&quot;, color=&quot;#e11d48&quot;)
+        ax2.set_ylim(50, 90)
+
+        # Add value labels
+        for bar, val in zip(bars1, ridership_share):
+            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
+                    f&quot;{val:.1f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8, color=&quot;#2563eb&quot;)
+        for bar, val in zip(bars2, avg_otp):
+            ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
+                     f&quot;{val:.1f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8, color=&quot;#e11d48&quot;)
+
+        # Combined legend
+        lines = [bars1, bars2]
+        labels = [&quot;Ridership Share&quot;, &quot;Avg OTP&quot;]
+        ax.legend(lines, labels, loc=&quot;upper left&quot;, fontsize=8)
+
+    fig.suptitle(&quot;Ridership and OTP by Quintile&quot;, fontsize=13, y=1.02)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;quintile_summary.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;quintile_summary.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, compute Lorenz/Gini, quintiles, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 25: Ridership Concentration &amp; Equity&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    n_routes = df[&quot;route_id&quot;].n_unique()
+    print(f&quot;  {len(df):,} route-month observations ({n_routes} routes)&quot;)
+
+    print(&quot;\nComputing route-level summaries...&quot;)
+    routes_all = route_summary(df)
+    routes_bus = routes_all.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    print(f&quot;  All routes: {len(routes_all)}, Bus only: {len(routes_bus)}&quot;)
+
+    # Lorenz curves
+    print(&quot;\nComputing Lorenz curves...&quot;)
+    lorenz_all = compute_lorenz(routes_all)
+    lorenz_bus = compute_lorenz(routes_bus)
+
+    print(f&quot;\n  All routes:&quot;)
+    print(f&quot;    Gini concentration index: {lorenz_all[&#x27;gini&#x27;]:.3f}&quot;)
+    print(f&quot;    50% of ridership carried by {lorenz_all[&#x27;routes_for_50_pct&#x27;]}/{lorenz_all[&#x27;n_routes&#x27;]} &quot;
+          f&quot;routes (OTP &lt; {lorenz_all[&#x27;otp_at_50_pct&#x27;]:.1%})&quot;)
+    print(f&quot;  Bus only:&quot;)
+    print(f&quot;    Gini concentration index: {lorenz_bus[&#x27;gini&#x27;]:.3f}&quot;)
+    print(f&quot;    50% of ridership carried by {lorenz_bus[&#x27;routes_for_50_pct&#x27;]}/{lorenz_bus[&#x27;n_routes&#x27;]} &quot;
+          f&quot;routes (OTP &lt; {lorenz_bus[&#x27;otp_at_50_pct&#x27;]:.1%})&quot;)
+
+    # Quintiles
+    print(&quot;\nComputing quintile breakdowns...&quot;)
+    quintiles_all = compute_quintiles(routes_all)
+    quintiles_bus = compute_quintiles(routes_bus)
+
+    print(&quot;\n  All routes quintiles:&quot;)
+    print(f&quot;  {&#x27;Quintile&#x27;:&lt;10} {&#x27;Routes&#x27;:&gt;7} {&#x27;Avg OTP&#x27;:&gt;9} {&#x27;OTP Range&#x27;:&gt;18} {&#x27;Ridership%&#x27;:&gt;11}&quot;)
+    for row in quintiles_all.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;quintile&#x27;]:&lt;10} {row[&#x27;n_routes&#x27;]:&gt;7} {row[&#x27;avg_otp&#x27;]:&gt;9.1%} &quot;
+              f&quot;{row[&#x27;min_otp&#x27;]:&gt;8.1%} - {row[&#x27;max_otp&#x27;]:.1%} {row[&#x27;ridership_share_pct&#x27;]:&gt;10.1f}%&quot;)
+
+    print(&quot;\n  Bus-only quintiles:&quot;)
+    print(f&quot;  {&#x27;Quintile&#x27;:&lt;10} {&#x27;Routes&#x27;:&gt;7} {&#x27;Avg OTP&#x27;:&gt;9} {&#x27;OTP Range&#x27;:&gt;18} {&#x27;Ridership%&#x27;:&gt;11}&quot;)
+    for row in quintiles_bus.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;quintile&#x27;]:&lt;10} {row[&#x27;n_routes&#x27;]:&gt;7} {row[&#x27;avg_otp&#x27;]:&gt;9.1%} &quot;
+              f&quot;{row[&#x27;min_otp&#x27;]:&gt;8.1%} - {row[&#x27;max_otp&#x27;]:.1%} {row[&#x27;ridership_share_pct&#x27;]:&gt;10.1f}%&quot;)
+
+    # Equity metrics CSV
+    print(&quot;\nSaving CSV...&quot;)
+    metrics = pl.DataFrame([
+        {&quot;metric&quot;: &quot;gini_all&quot;, &quot;value&quot;: lorenz_all[&quot;gini&quot;]},
+        {&quot;metric&quot;: &quot;gini_bus&quot;, &quot;value&quot;: lorenz_bus[&quot;gini&quot;]},
+        {&quot;metric&quot;: &quot;otp_at_50pct_all&quot;, &quot;value&quot;: lorenz_all[&quot;otp_at_50_pct&quot;]},
+        {&quot;metric&quot;: &quot;otp_at_50pct_bus&quot;, &quot;value&quot;: lorenz_bus[&quot;otp_at_50_pct&quot;]},
+        {&quot;metric&quot;: &quot;routes_for_50pct_all&quot;, &quot;value&quot;: float(lorenz_all[&quot;routes_for_50_pct&quot;])},
+        {&quot;metric&quot;: &quot;routes_for_50pct_bus&quot;, &quot;value&quot;: float(lorenz_bus[&quot;routes_for_50_pct&quot;])},
+        {&quot;metric&quot;: &quot;n_routes_all&quot;, &quot;value&quot;: float(lorenz_all[&quot;n_routes&quot;])},
+        {&quot;metric&quot;: &quot;n_routes_bus&quot;, &quot;value&quot;: float(lorenz_bus[&quot;n_routes&quot;])},
+    ])
+    metrics.write_csv(OUT / &quot;equity_metrics.csv&quot;)
+    print(f&quot;  {OUT / &#x27;equity_metrics.csv&#x27;}&quot;)
+
+    # Also save quintile detail
+    quintiles_all.with_columns(pl.lit(&quot;all&quot;).alias(&quot;subset&quot;)).vstack(
+        quintiles_bus.with_columns(pl.lit(&quot;bus&quot;).alias(&quot;subset&quot;))
+    ).write_csv(OUT / &quot;quintile_detail.csv&quot;)
+    print(f&quot;  {OUT / &#x27;quintile_detail.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_lorenz_chart(lorenz_all, lorenz_bus)
+    make_quintile_chart(quintiles_all, quintiles_bus)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -471,6 +801,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

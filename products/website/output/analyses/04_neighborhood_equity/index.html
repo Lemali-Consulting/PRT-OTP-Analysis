@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>04 - Neighborhood Equity</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -458,6 +461,416 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Neighborhood equity analysis: OTP aggregated by geography.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MIN_MONTHS = 12  # minimum months of OTP data per route
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load route-level average OTP joined with route-stop-neighborhood data.
+
+    Pre-aggregates OTP to one row per route (AVG across months) before joining
+    to route_stops, so each route contributes one weight regardless of how many
+    months of data it has. Also filters NULL trips_7d and requires MIN_MONTHS.
+    &quot;&quot;&quot;
+    return query_to_polars(f&quot;&quot;&quot;
+        WITH route_avg AS (
+            SELECT route_id, AVG(otp) AS avg_otp
+            FROM otp_monthly
+            GROUP BY route_id
+            HAVING COUNT(*) &gt;= {MIN_MONTHS}
+        )
+        SELECT rs.route_id, rs.stop_id, s.hood, s.muni, s.county,
+               ra.avg_otp, rs.trips_7d
+        FROM route_stops rs
+        JOIN route_avg ra ON rs.route_id = ra.route_id
+        LEFT JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE rs.trips_7d IS NOT NULL
+    &quot;&quot;&quot;)
+
+
+def load_monthly_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load per-month OTP with route-stop-neighborhood data for time series.
+
+    Uses the same pre-aggregation-then-join pattern per month to avoid
+    giving extra weight to routes with more months.
+    &quot;&quot;&quot;
+    return query_to_polars(f&quot;&quot;&quot;
+        WITH route_month_count AS (
+            SELECT route_id
+            FROM otp_monthly
+            GROUP BY route_id
+            HAVING COUNT(*) &gt;= {MIN_MONTHS}
+        )
+        SELECT rs.route_id, rs.stop_id, s.hood,
+               o.month, o.otp, rs.trips_7d
+        FROM route_stops rs
+        JOIN route_month_count rmc ON rs.route_id = rmc.route_id
+        JOIN otp_monthly o ON rs.route_id = o.route_id
+        LEFT JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE rs.trips_7d IS NOT NULL
+          AND s.hood IS NOT NULL
+          AND s.hood != &#x27;0&#x27;
+          AND s.hood != &#x27;&#x27;
+    &quot;&quot;&quot;)
+
+
+def load_route_modes() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load route mode information for bus-only stratification.&quot;&quot;&quot;
+    return query_to_polars(&quot;SELECT route_id, mode FROM routes&quot;)
+
+
+def analyze(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute per-neighborhood weighted and unweighted OTP from route-level averages.&quot;&quot;&quot;
+    # Filter to valid neighborhoods
+    hood_df = df.filter(
+        pl.col(&quot;hood&quot;).is_not_null()
+        &amp; (pl.col(&quot;hood&quot;) != &quot;0&quot;)
+        &amp; (pl.col(&quot;hood&quot;) != &quot;&quot;)
+    )
+
+    # Per-neighborhood weighted OTP (weighted by trips_7d)
+    hood_summary = (
+        hood_df.group_by([&quot;hood&quot;, &quot;muni&quot;, &quot;county&quot;])
+        .agg(
+            weighted_otp=(pl.col(&quot;avg_otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum(),
+            route_count=pl.col(&quot;route_id&quot;).n_unique(),
+            stop_count=pl.col(&quot;stop_id&quot;).n_unique(),
+            total_trips_7d=pl.col(&quot;trips_7d&quot;).sum(),
+        )
+        .sort(&quot;weighted_otp&quot;)
+    )
+
+    # Unweighted OTP: one value per route per neighborhood (deduplicate across stops)
+    route_hood = (
+        hood_df.group_by([&quot;hood&quot;, &quot;route_id&quot;])
+        .agg(avg_otp=pl.col(&quot;avg_otp&quot;).first())
+    )
+    hood_unweighted = (
+        route_hood.group_by(&quot;hood&quot;)
+        .agg(unweighted_otp=pl.col(&quot;avg_otp&quot;).mean())
+    )
+
+    hood_summary = hood_summary.join(hood_unweighted, on=&quot;hood&quot;, how=&quot;left&quot;)
+    hood_summary = hood_summary.with_columns(
+        otp_gap=(pl.col(&quot;weighted_otp&quot;) - pl.col(&quot;unweighted_otp&quot;)),
+    ).sort(&quot;weighted_otp&quot;)
+
+    return hood_summary
+
+
+def analyze_bus_only(df: pl.DataFrame, route_modes: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute per-neighborhood weighted OTP for bus routes only.&quot;&quot;&quot;
+    # Filter to valid neighborhoods and BUS mode
+    bus_df = (
+        df.join(route_modes, on=&quot;route_id&quot;, how=&quot;left&quot;)
+        .filter(
+            pl.col(&quot;hood&quot;).is_not_null()
+            &amp; (pl.col(&quot;hood&quot;) != &quot;0&quot;)
+            &amp; (pl.col(&quot;hood&quot;) != &quot;&quot;)
+            &amp; (pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        )
+    )
+
+    hood_bus = (
+        bus_df.group_by([&quot;hood&quot;, &quot;muni&quot;, &quot;county&quot;])
+        .agg(
+            bus_weighted_otp=(pl.col(&quot;avg_otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum(),
+            bus_route_count=pl.col(&quot;route_id&quot;).n_unique(),
+        )
+        .sort(&quot;bus_weighted_otp&quot;)
+    )
+
+    return hood_bus
+
+
+def analyze_quintile_ts(monthly_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute quintile time series from monthly data.&quot;&quot;&quot;
+    # Per-neighborhood-month weighted OTP (deduplicate route OTP across stops first)
+    hood_month = (
+        monthly_df.group_by([&quot;hood&quot;, &quot;month&quot;])
+        .agg(
+            weighted_otp=(pl.col(&quot;otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum(),
+        )
+    )
+
+    # Rolling 12-month OTP per neighborhood for quintile assignment
+    hood_month = hood_month.sort([&quot;hood&quot;, &quot;month&quot;])
+    hood_month = hood_month.with_columns(
+        rolling_otp=pl.col(&quot;weighted_otp&quot;)
+        .rolling_mean(window_size=12, min_samples=6)
+        .over(&quot;hood&quot;),
+    )
+
+    # Assign quintiles per month based on trailing performance (avoids look-ahead bias)
+    hood_month_ranked = hood_month.filter(pl.col(&quot;rolling_otp&quot;).is_not_null())
+    hood_month_ranked = hood_month_ranked.with_columns(
+        quintile=(
+            ((pl.col(&quot;rolling_otp&quot;).rank().over(&quot;month&quot;) - 1)
+             / pl.col(&quot;rolling_otp&quot;).count().over(&quot;month&quot;) * 5)
+            .cast(pl.Int32).clip(0, 4) + 1
+        ),
+    )
+
+    quintile_ts = (
+        hood_month_ranked.group_by([&quot;quintile&quot;, &quot;month&quot;])
+        .agg(avg_otp=pl.col(&quot;weighted_otp&quot;).mean())
+        .sort([&quot;quintile&quot;, &quot;month&quot;])
+    )
+
+    return quintile_ts
+
+
+def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate neighborhood equity charts.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+
+    # Top: Best and worst 15 neighborhoods
+    n_show = 15
+    bottom = hood_summary.sort(&quot;weighted_otp&quot;).head(n_show)
+    top = hood_summary.sort(&quot;weighted_otp&quot;, descending=True).head(n_show).sort(&quot;weighted_otp&quot;)
+    combined = pl.concat([bottom, top])
+
+    labels = combined[&quot;hood&quot;].to_list()
+    values = combined[&quot;weighted_otp&quot;].to_list()
+    colors = [&quot;#ef4444&quot; if v &lt; combined[&quot;weighted_otp&quot;].median() else &quot;#22c55e&quot; for v in values]
+
+    y_pos = range(len(labels))
+    ax1.barh(y_pos, values, color=colors)
+    ax1.set_yticks(y_pos)
+    ax1.set_yticklabels(labels, fontsize=7)
+    ax1.set_xlabel(&quot;Weighted Average OTP&quot;)
+    ax1.set_title(f&quot;Bottom {n_show} &amp; Top {n_show} Neighborhoods by OTP&quot;)
+    ax1.set_xlim(0, 1)
+
+    # Bottom: All quintile time series (shows spread, not just the gap)
+    quintile_colors = {1: &quot;#ef4444&quot;, 2: &quot;#f59e0b&quot;, 3: &quot;#9ca3af&quot;, 4: &quot;#60a5fa&quot;, 5: &quot;#22c55e&quot;}
+    quintile_labels = {1: &quot;Q1 (worst)&quot;, 2: &quot;Q2&quot;, 3: &quot;Q3&quot;, 4: &quot;Q4&quot;, 5: &quot;Q5 (best)&quot;}
+
+    months_all = sorted(quintile_ts[&quot;month&quot;].unique().to_list())
+    tick_pos = [i for i, m in enumerate(months_all) if m.endswith(&quot;-01&quot;)]
+    tick_lbl = [months_all[i][:4] for i in tick_pos]
+
+    for q in [1, 2, 3, 4, 5]:
+        q_data = quintile_ts.filter(pl.col(&quot;quintile&quot;) == q).sort(&quot;month&quot;)
+        months = q_data[&quot;month&quot;].to_list()
+        vals = q_data[&quot;avg_otp&quot;].to_list()
+        x = [months_all.index(m) for m in months]
+        lw = 1.8 if q in (1, 5) else 0.8
+        alpha = 1.0 if q in (1, 5) else 0.5
+        ax2.plot(x, vals, color=quintile_colors[q], linewidth=lw, alpha=alpha,
+                 label=quintile_labels[q])
+
+    # Shade between Q1 and Q5
+    q1_data = quintile_ts.filter(pl.col(&quot;quintile&quot;) == 1).sort(&quot;month&quot;)
+    q5_data = quintile_ts.filter(pl.col(&quot;quintile&quot;) == 5).sort(&quot;month&quot;)
+    shared = q1_data.select(&quot;month&quot;).join(q5_data.select(&quot;month&quot;), on=&quot;month&quot;)
+    shared_months = shared[&quot;month&quot;].to_list()
+    q1_vals = q1_data.filter(pl.col(&quot;month&quot;).is_in(shared_months)).sort(&quot;month&quot;)[&quot;avg_otp&quot;].to_list()
+    q5_vals = q5_data.filter(pl.col(&quot;month&quot;).is_in(shared_months)).sort(&quot;month&quot;)[&quot;avg_otp&quot;].to_list()
+    shared_x = [months_all.index(m) for m in shared_months]
+    ax2.fill_between(shared_x, q1_vals, q5_vals, alpha=0.1, color=&quot;#7c3aed&quot;)
+
+    ax2.set_ylabel(&quot;Average OTP&quot;)
+    ax2.set_title(&quot;OTP by Neighborhood Quintile Over Time&quot;)
+    ax2.set_xticks(tick_pos)
+    ax2.set_xticklabels(tick_lbl)
+    ax2.set_xlabel(&quot;Month&quot;)
+    ax2.legend(fontsize=8, loc=&quot;lower left&quot;)
+    ax2.set_ylim(0, 1)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;neighborhood_equity.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;neighborhood_equity.png&#x27;}&quot;)
+
+
+def make_comparison_chart(hood_summary: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate weighted vs unweighted OTP comparison chart.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    weighted = hood_summary[&quot;weighted_otp&quot;].to_list()
+    unweighted = hood_summary[&quot;unweighted_otp&quot;].to_list()
+    trips = hood_summary[&quot;total_trips_7d&quot;].to_list()
+
+    # Left: scatter of weighted vs unweighted, sized by total trips
+    max_trips = max(trips)
+    sizes = [20 + 80 * (t / max_trips) for t in trips]
+    ax1.scatter(unweighted, weighted, s=sizes, alpha=0.5, c=&quot;#6366f1&quot;, edgecolors=&quot;white&quot;, linewidths=0.3)
+
+    # Diagonal reference line
+    ax1.plot([0, 1], [0, 1], color=&quot;#9ca3af&quot;, linestyle=&quot;--&quot;, linewidth=1, zorder=0)
+    ax1.set_xlabel(&quot;Unweighted OTP (equal weight per route)&quot;)
+    ax1.set_ylabel(&quot;Weighted OTP (weighted by trip frequency)&quot;)
+    ax1.set_title(&quot;Weighted vs Unweighted OTP by Neighborhood&quot;)
+    ax1.set_xlim(0, 1)
+    ax1.set_ylim(0, 1)
+    ax1.set_aspect(&quot;equal&quot;)
+
+    # Annotate the 5 neighborhoods with largest absolute gap
+    sorted_by_gap = hood_summary.with_columns(abs_gap=pl.col(&quot;otp_gap&quot;).abs()).sort(&quot;abs_gap&quot;, descending=True)
+    for row in sorted_by_gap.head(5).iter_rows(named=True):
+        ax1.annotate(
+            row[&quot;hood&quot;], (row[&quot;unweighted_otp&quot;], row[&quot;weighted_otp&quot;]),
+            fontsize=6, alpha=0.8,
+            xytext=(4, 4), textcoords=&quot;offset points&quot;,
+        )
+
+    # Right: top/bottom 15 neighborhoods by gap (weighted - unweighted)
+    n_show = 15
+    biggest_positive = hood_summary.sort(&quot;otp_gap&quot;, descending=True).head(n_show)
+    biggest_negative = hood_summary.sort(&quot;otp_gap&quot;).head(n_show)
+    combined = pl.concat([biggest_negative, biggest_positive.sort(&quot;otp_gap&quot;)])
+
+    gap_labels = combined[&quot;hood&quot;].to_list()
+    gap_vals = combined[&quot;otp_gap&quot;].to_list()
+    gap_colors = [&quot;#ef4444&quot; if g &lt; 0 else &quot;#22c55e&quot; for g in gap_vals]
+
+    y_pos = range(len(gap_labels))
+    ax2.barh(y_pos, gap_vals, color=gap_colors)
+    ax2.set_yticks(y_pos)
+    ax2.set_yticklabels(gap_labels, fontsize=6)
+    ax2.set_xlabel(&quot;OTP Gap (weighted - unweighted)&quot;)
+    ax2.set_title(&quot;Frequency Weighting Effect by Neighborhood&quot;)
+    ax2.axvline(0, color=&quot;#9ca3af&quot;, linewidth=0.8)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;weighted_vs_unweighted_otp.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;weighted_vs_unweighted_otp.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 04: Neighborhood Equity&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    print(f&quot;  {len(df):,} route-stop records loaded (route-level avg OTP, {MIN_MONTHS}+ months, non-null trips_7d)&quot;)
+    print(f&quot;  {df.filter(pl.col(&#x27;hood&#x27;).is_not_null() &amp; (pl.col(&#x27;hood&#x27;) != &#x27;0&#x27;) &amp; (pl.col(&#x27;hood&#x27;) != &#x27;&#x27;))[&#x27;hood&#x27;].n_unique()} neighborhoods represented&quot;)
+
+    # Check how many stops lack neighborhood data
+    total_stops = query_to_polars(&quot;SELECT COUNT(*) AS n FROM stops&quot;)[&quot;n&quot;][0]
+    hood_stops = query_to_polars(
+        &quot;SELECT COUNT(*) AS n FROM stops WHERE hood IS NOT NULL AND hood != &#x27;0&#x27; AND hood != &#x27;&#x27;&quot;
+    )[&quot;n&quot;][0]
+    print(f&quot;  {total_stops - hood_stops} of {total_stops} stops excluded (missing/invalid neighborhood)&quot;)
+
+    print(&quot;\nAnalyzing (all modes, pooled)...&quot;)
+    hood_summary = analyze(df)
+    print(f&quot;  {len(hood_summary)} neighborhoods ranked&quot;)
+
+    best = hood_summary.sort(&quot;weighted_otp&quot;, descending=True).head(3)
+    worst = hood_summary.sort(&quot;weighted_otp&quot;).head(3)
+    print(&quot;\n  Top 3 neighborhoods (weighted):&quot;)
+    for row in best.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;hood&#x27;]} ({row[&#x27;muni&#x27;]}): {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
+    print(&quot;  Bottom 3 neighborhoods (weighted):&quot;)
+    for row in worst.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;hood&#x27;]} ({row[&#x27;muni&#x27;]}): {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
+
+    # Route count range across neighborhoods
+    min_routes = hood_summary[&quot;route_count&quot;].min()
+    max_routes = hood_summary[&quot;route_count&quot;].max()
+    print(f&quot;\n  Route count per neighborhood: {min_routes} to {max_routes}&quot;)
+
+    # Frequency-weighting effect summary
+    gaps = hood_summary[&quot;otp_gap&quot;]
+    print(f&quot;\n  Frequency-weighting effect (weighted - unweighted):&quot;)
+    print(f&quot;    Mean gap:   {gaps.mean():+.2%}&quot;)
+    print(f&quot;    Median gap: {gaps.median():+.2%}&quot;)
+    print(f&quot;    Range:      {gaps.min():+.2%} to {gaps.max():+.2%}&quot;)
+    biggest = hood_summary.with_columns(abs_gap=pl.col(&quot;otp_gap&quot;).abs()).sort(&quot;abs_gap&quot;, descending=True).head(3)
+    print(&quot;  Largest divergences:&quot;)
+    for row in biggest.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;hood&#x27;]}: weighted={row[&#x27;weighted_otp&#x27;]:.1%}, &quot;
+              f&quot;unweighted={row[&#x27;unweighted_otp&#x27;]:.1%}, gap={row[&#x27;otp_gap&#x27;]:+.2%}&quot;)
+
+    # Bus-only stratification
+    print(&quot;\nAnalyzing (bus only)...&quot;)
+    route_modes = load_route_modes()
+    hood_bus = analyze_bus_only(df, route_modes)
+    print(f&quot;  {len(hood_bus)} neighborhoods with bus service&quot;)
+
+    # Join bus OTP to main summary for comparison
+    hood_summary = hood_summary.join(
+        hood_bus.select(&quot;hood&quot;, &quot;bus_weighted_otp&quot;, &quot;bus_route_count&quot;),
+        on=&quot;hood&quot;,
+        how=&quot;left&quot;,
+    )
+
+    bus_best = hood_bus.sort(&quot;bus_weighted_otp&quot;, descending=True).head(3)
+    bus_worst = hood_bus.sort(&quot;bus_weighted_otp&quot;).head(3)
+    print(&quot;  Top 3 (bus only):&quot;)
+    for row in bus_best.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;hood&#x27;]} ({row[&#x27;muni&#x27;]}): {row[&#x27;bus_weighted_otp&#x27;]:.1%}&quot;)
+    print(&quot;  Bottom 3 (bus only):&quot;)
+    for row in bus_worst.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;hood&#x27;]} ({row[&#x27;muni&#x27;]}): {row[&#x27;bus_weighted_otp&#x27;]:.1%}&quot;)
+
+    # Check for Simpson&#x27;s paradox: do rankings change between pooled and bus-only?
+    both = hood_summary.filter(pl.col(&quot;bus_weighted_otp&quot;).is_not_null())
+    diff = both.with_columns(
+        rank_diff=(
+            pl.col(&quot;weighted_otp&quot;).rank(descending=True) - pl.col(&quot;bus_weighted_otp&quot;).rank(descending=True)
+        ).abs()
+    )
+    big_shifts = diff.filter(pl.col(&quot;rank_diff&quot;) &gt; 10).sort(&quot;rank_diff&quot;, descending=True)
+    if len(big_shifts) &gt; 0:
+        print(f&quot;\n  {len(big_shifts)} neighborhoods shift 10+ rank positions between pooled and bus-only&quot;)
+    else:
+        print(&quot;\n  No neighborhoods shift more than 10 rank positions between pooled and bus-only&quot;)
+
+    # Quintile time series
+    print(&quot;\nLoading monthly data for time series...&quot;)
+    monthly_df = load_monthly_data()
+    print(f&quot;  {len(monthly_df):,} route-stop-month records loaded&quot;)
+
+    print(&quot;Analyzing quintile time series...&quot;)
+    quintile_ts = analyze_quintile_ts(monthly_df)
+
+    print(&quot;\nSaving CSV...&quot;)
+    hood_summary.write_csv(OUT / &quot;neighborhood_otp.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;neighborhood_otp.csv&#x27;}&quot;)
+    hood_bus.write_csv(OUT / &quot;neighborhood_otp_bus_only.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;neighborhood_otp_bus_only.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_chart(hood_summary, quintile_ts)
+    make_comparison_chart(hood_summary)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -684,6 +1097,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

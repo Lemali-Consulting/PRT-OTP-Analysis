@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>35 - Boarding/Alighting Flow Analysis</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -238,6 +241,250 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analyze net boarding-alighting flows by stop to identify trip generators and attractors.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+
+from prt_otp_analysis.common import output_dir, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+DATA_DIR = HERE.parents[1] / &quot;data&quot;
+
+
+def load_stop_flows() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load pre-pandemic weekday boardings/alightings aggregated to physical-stop level.&quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;])
+
+    df = df.filter(
+        (pl.col(&quot;time_period&quot;) == &quot;Pre-pandemic&quot;)
+        &amp; (pl.col(&quot;serviceday&quot;) == &quot;Weekday&quot;)
+    )
+
+    # Average across datekeys per stop-route, then sum across routes per physical stop
+    per_stop_route = (
+        df.group_by([&quot;stop_id&quot;, &quot;route_name&quot;])
+        .agg(
+            pl.col(&quot;avg_ons&quot;).mean().alias(&quot;avg_ons&quot;),
+            pl.col(&quot;avg_offs&quot;).mean().alias(&quot;avg_offs&quot;),
+            pl.col(&quot;stop_name&quot;).first(),
+            pl.col(&quot;latitude&quot;).first().alias(&quot;lat&quot;),
+            pl.col(&quot;longitude&quot;).first().alias(&quot;lon&quot;),
+            pl.col(&quot;direction&quot;).first(),
+            pl.col(&quot;mode&quot;).first(),
+        )
+    )
+
+    per_stop = (
+        per_stop_route.group_by(&quot;stop_id&quot;)
+        .agg(
+            pl.col(&quot;avg_ons&quot;).sum(),
+            pl.col(&quot;avg_offs&quot;).sum(),
+            pl.col(&quot;stop_name&quot;).first(),
+            pl.col(&quot;lat&quot;).first(),
+            pl.col(&quot;lon&quot;).first(),
+            pl.col(&quot;direction&quot;).first(),
+            pl.col(&quot;mode&quot;).first(),
+        )
+        .with_columns(
+            (pl.col(&quot;avg_ons&quot;) - pl.col(&quot;avg_offs&quot;)).alias(&quot;net_flow&quot;),
+            (pl.col(&quot;avg_ons&quot;) + pl.col(&quot;avg_offs&quot;)).alias(&quot;total_usage&quot;),
+        )
+        .with_columns(
+            pl.when(pl.col(&quot;net_flow&quot;) &gt; 0)
+            .then(pl.lit(&quot;Generator&quot;))
+            .when(pl.col(&quot;net_flow&quot;) &lt; 0)
+            .then(pl.lit(&quot;Attractor&quot;))
+            .otherwise(pl.lit(&quot;Balanced&quot;))
+            .alias(&quot;flow_type&quot;),
+            pl.when(pl.col(&quot;avg_offs&quot;) &gt; 0)
+            .then(pl.col(&quot;avg_ons&quot;) / pl.col(&quot;avg_offs&quot;))
+            .otherwise(None)
+            .alias(&quot;on_off_ratio&quot;),
+        )
+    )
+    return per_stop
+
+
+def load_directional_flows() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load direction-level boarding/alighting summary.&quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;])
+
+    df = df.filter(
+        (pl.col(&quot;time_period&quot;) == &quot;Pre-pandemic&quot;)
+        &amp; (pl.col(&quot;serviceday&quot;) == &quot;Weekday&quot;)
+        &amp; pl.col(&quot;direction&quot;).is_not_null()
+    )
+
+    # Average across datekeys per stop-route-direction first, then sum to direction level
+    per_stop_route = (
+        df.group_by([&quot;stop_id&quot;, &quot;route_name&quot;, &quot;direction&quot;])
+        .agg(
+            pl.col(&quot;avg_ons&quot;).mean().alias(&quot;avg_ons&quot;),
+            pl.col(&quot;avg_offs&quot;).mean().alias(&quot;avg_offs&quot;),
+        )
+    )
+
+    return (
+        per_stop_route.group_by(&quot;direction&quot;)
+        .agg(
+            pl.col(&quot;avg_ons&quot;).sum().alias(&quot;total_ons&quot;),
+            pl.col(&quot;avg_offs&quot;).sum().alias(&quot;total_offs&quot;),
+            pl.len().alias(&quot;n_records&quot;),
+        )
+        .with_columns(
+            (pl.col(&quot;total_ons&quot;) - pl.col(&quot;total_offs&quot;)).alias(&quot;net_flow&quot;),
+            pl.when(pl.col(&quot;total_offs&quot;) &gt; 0)
+            .then(pl.col(&quot;total_ons&quot;) / pl.col(&quot;total_offs&quot;))
+            .otherwise(None)
+            .alias(&quot;on_off_ratio&quot;),
+        )
+    )
+
+
+def make_charts(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate net flow map and top generators/attractors bar chart.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # Filter to stops with meaningful usage
+    active = df.filter(pl.col(&quot;total_usage&quot;) &gt; 1)
+
+    # --- Net flow geographic map ---
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    net = np.array(active[&quot;net_flow&quot;].to_list())
+    # Clamp for color scale
+    net_clipped = np.clip(net, -200, 200)
+    sizes = np.clip(np.abs(net) * 0.05, 3, 30)
+
+    sc = ax.scatter(
+        active[&quot;lon&quot;].to_list(), active[&quot;lat&quot;].to_list(),
+        c=net_clipped, cmap=&quot;RdBu&quot;, s=sizes, alpha=0.6,
+        vmin=-200, vmax=200, edgecolors=&quot;none&quot;,
+    )
+    cbar = plt.colorbar(sc, ax=ax, label=&quot;Net Flow (ons - offs)&quot;, shrink=0.6)
+    ax.set_xlabel(&quot;Longitude&quot;)
+    ax.set_ylabel(&quot;Latitude&quot;)
+    ax.set_title(&quot;Stop Net Flow: Generators (blue) vs Attractors (red)&quot;)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;net_flow_map.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;net_flow_map.png&#x27;}&quot;)
+
+    # --- Top generators and attractors ---
+    fig, axes = plt.subplots(1, 2, figsize=(16, 8))
+
+    # Top generators (highest net flow)
+    top_gen = df.sort(&quot;net_flow&quot;, descending=True).head(15)
+    names = [n[:35] for n in top_gen[&quot;stop_name&quot;].to_list()]
+    vals = top_gen[&quot;net_flow&quot;].to_list()
+    axes[0].barh(range(len(names)), vals, color=&quot;#3b82f6&quot;, edgecolor=&quot;white&quot;)
+    axes[0].set_yticks(range(len(names)))
+    axes[0].set_yticklabels(names, fontsize=8)
+    axes[0].invert_yaxis()
+    axes[0].set_xlabel(&quot;Net Flow (avg daily ons - offs)&quot;)
+    axes[0].set_title(&quot;Top 15 Trip Generators\n(more boardings than alightings)&quot;)
+    for i, v in enumerate(vals):
+        axes[0].text(v + 5, i, f&quot;+{v:.0f}&quot;, va=&quot;center&quot;, fontsize=8)
+
+    # Top attractors (lowest net flow)
+    top_attr = df.sort(&quot;net_flow&quot;).head(15)
+    names = [n[:35] for n in top_attr[&quot;stop_name&quot;].to_list()]
+    vals = top_attr[&quot;net_flow&quot;].to_list()
+    axes[1].barh(range(len(names)), [abs(v) for v in vals], color=&quot;#ef4444&quot;, edgecolor=&quot;white&quot;)
+    axes[1].set_yticks(range(len(names)))
+    axes[1].set_yticklabels(names, fontsize=8)
+    axes[1].invert_yaxis()
+    axes[1].set_xlabel(&quot;Net Flow magnitude (avg daily offs - ons)&quot;)
+    axes[1].set_title(&quot;Top 15 Trip Attractors\n(more alightings than boardings)&quot;)
+    for i, v in enumerate(vals):
+        axes[1].text(abs(v) + 5, i, f&quot;{v:.0f}&quot;, va=&quot;center&quot;, fontsize=8)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;top_generators_attractors.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;top_generators_attractors.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze boarding/alighting flows, chart.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 35: Boarding/Alighting Flow Analysis&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading stop-level flows (pre-pandemic weekday)...&quot;)
+    df = load_stop_flows()
+    print(f&quot;  {len(df):,} unique physical stops&quot;)
+
+    n_gen = len(df.filter(pl.col(&quot;flow_type&quot;) == &quot;Generator&quot;))
+    n_attr = len(df.filter(pl.col(&quot;flow_type&quot;) == &quot;Attractor&quot;))
+    n_bal = len(df.filter(pl.col(&quot;flow_type&quot;) == &quot;Balanced&quot;))
+    print(f&quot;\nFlow classification:&quot;)
+    print(f&quot;  Generators: {n_gen:,} ({n_gen / len(df) * 100:.0f}%)&quot;)
+    print(f&quot;  Attractors: {n_attr:,} ({n_attr / len(df) * 100:.0f}%)&quot;)
+    print(f&quot;  Balanced:   {n_bal:,} ({n_bal / len(df) * 100:.0f}%)&quot;)
+
+    total_ons = df[&quot;avg_ons&quot;].sum()
+    total_offs = df[&quot;avg_offs&quot;].sum()
+    print(f&quot;\nSystem totals:&quot;)
+    print(f&quot;  Total boardings: {total_ons:,.0f}/day&quot;)
+    print(f&quot;  Total alightings: {total_offs:,.0f}/day&quot;)
+    print(f&quot;  System on/off ratio: {total_ons / total_offs:.3f}&quot;)
+
+    print(&quot;\nTop 10 generators (net boardings):&quot;)
+    for row in df.sort(&quot;net_flow&quot;, descending=True).head(10).iter_rows(named=True):
+        print(f&quot;  {row[&#x27;stop_name&#x27;][:40]:40s}  net +{row[&#x27;net_flow&#x27;]:,.0f}/day  (ons={row[&#x27;avg_ons&#x27;]:,.0f}, offs={row[&#x27;avg_offs&#x27;]:,.0f})&quot;)
+
+    print(&quot;\nTop 10 attractors (net alightings):&quot;)
+    for row in df.sort(&quot;net_flow&quot;).head(10).iter_rows(named=True):
+        print(f&quot;  {row[&#x27;stop_name&#x27;][:40]:40s}  net {row[&#x27;net_flow&#x27;]:,.0f}/day  (ons={row[&#x27;avg_ons&#x27;]:,.0f}, offs={row[&#x27;avg_offs&#x27;]:,.0f})&quot;)
+
+    print(&quot;\nDirectional analysis:&quot;)
+    dir_flows = load_directional_flows()
+    for row in dir_flows.sort(&quot;direction&quot;).iter_rows(named=True):
+        print(f&quot;  {row[&#x27;direction&#x27;]:10s}: ons={row[&#x27;total_ons&#x27;]:,.0f}, offs={row[&#x27;total_offs&#x27;]:,.0f}, &quot;
+              f&quot;ratio={row[&#x27;on_off_ratio&#x27;]:.2f}, net={row[&#x27;net_flow&#x27;]:+,.0f}&quot;)
+
+    print(&quot;\nOn/off ratio distribution:&quot;)
+    valid_ratio = df.filter(pl.col(&quot;on_off_ratio&quot;).is_not_null() &amp; pl.col(&quot;on_off_ratio&quot;).is_finite())
+    print(f&quot;  Median on/off ratio: {valid_ratio[&#x27;on_off_ratio&#x27;].median():.2f}&quot;)
+    print(f&quot;  Mean on/off ratio: {valid_ratio[&#x27;on_off_ratio&#x27;].mean():.2f}&quot;)
+    pct_gen = len(valid_ratio.filter(pl.col(&quot;on_off_ratio&quot;) &gt; 1.5)) / len(valid_ratio) * 100
+    pct_attr = len(valid_ratio.filter(pl.col(&quot;on_off_ratio&quot;) &lt; 0.67)) / len(valid_ratio) * 100
+    print(f&quot;  Strong generators (ratio &gt; 1.5): {pct_gen:.1f}% of stops&quot;)
+    print(f&quot;  Strong attractors (ratio &lt; 0.67): {pct_attr:.1f}% of stops&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    df.write_csv(OUT / &quot;stop_net_flow.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;stop_net_flow.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_charts(df)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -360,6 +607,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

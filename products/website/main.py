@@ -1015,6 +1015,15 @@ pre.mermaid {
 }
 .glossary-usage-cell a { font-weight: 600; }
 .glossary-unused { color: var(--line); }
+/* Source code viewer */
+.code-scroll { max-height: 600px; overflow: auto; background: #faf8f5; border-radius: var(--radius); border: 1px solid var(--line); }
+.code-table { border-collapse: collapse; width: 100%; }
+.code-table td { vertical-align: top; padding: 0; border: none; }
+.code-table .line-numbers { width: 1px; white-space: nowrap; padding: 1rem 0.75rem 1rem 1rem; text-align: right; user-select: none; -webkit-user-select: none; color: #999; border-right: 1px solid var(--line); font-size: 0.85em; line-height: 1.5; position: sticky; left: 0; background: #faf8f5; }
+.code-table .line-numbers span { display: block; }
+.code-table .code-content { padding: 1rem 1rem 1rem 0.75rem; }
+.code-table pre { margin: 0; padding: 0; background: transparent; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.85em; line-height: 1.5; }
+.code-table pre code.hljs { background: transparent; padding: 0; }
 @media (max-width: 760px) {
   .glossary-table th:nth-child(3),
   .glossary-table td:nth-child(3) { display: none; }
@@ -1234,6 +1243,8 @@ def main() -> None:
         mermaid = build_mermaid_page(page, table_lookup, table_upstream)
         coverage_text = coverage_text_for_page(page, table_coverage)
         neighbors = prev_next.get(page.slug, {"prev": None, "next": None})
+        source_code_path = PROJECT_ROOT / page.rel_dir / "main.py"
+        source_code = html_lib.escape(source_code_path.read_text(encoding="utf-8")) if source_code_path.exists() else ""
 
         html = env.get_template("page.html").render(
             root="../../",
@@ -1247,6 +1258,7 @@ def main() -> None:
             page_tables_produced=page_tables_produced,
             page_sources=sources,
             mermaid_diagram=mermaid,
+            source_code=source_code,
             prev_page=neighbors["prev"],
             next_page=neighbors["next"],
         )

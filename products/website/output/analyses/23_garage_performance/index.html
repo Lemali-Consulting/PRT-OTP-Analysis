@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>23 - Garage-Level Performance</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -411,6 +414,451 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 23: Compare OTP and ridership across PRT garages to surface operational differences.&quot;&quot;&quot;
+
+import math
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MIN_MONTHS = 12
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load OTP joined with garage assignment and ridership.&quot;&quot;&quot;
+    df = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp,
+               r.avg_riders, r.current_garage,
+               rt.mode
+        FROM otp_monthly o
+        JOIN ridership_monthly r
+            ON o.route_id = r.route_id AND o.month = r.month
+            AND r.day_type = &#x27;WEEKDAY&#x27;
+        JOIN routes rt ON o.route_id = rt.route_id
+        WHERE r.current_garage IS NOT NULL
+    &quot;&quot;&quot;)
+
+    # Filter to routes with enough data
+    route_counts = df.group_by(&quot;route_id&quot;).agg(pl.col(&quot;month&quot;).count().alias(&quot;n&quot;))
+    keep = route_counts.filter(pl.col(&quot;n&quot;) &gt;= MIN_MONTHS)[&quot;route_id&quot;].to_list()
+    df = df.filter(pl.col(&quot;route_id&quot;).is_in(keep))
+
+    return df
+
+
+def route_level_summary(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute route-level average OTP and ridership with garage assignment.&quot;&quot;&quot;
+    # Take the most common garage per route to handle potential reassignments
+    garage_per_route = (
+        df.group_by(&quot;route_id&quot;, &quot;current_garage&quot;)
+        .agg(n=pl.len())
+        .sort(&quot;n&quot;, descending=True)
+        .group_by(&quot;route_id&quot;)
+        .first()
+        .select(&quot;route_id&quot;, &quot;current_garage&quot;)
+    )
+    mode_per_route = df.select(&quot;route_id&quot;, &quot;mode&quot;).unique(subset=[&quot;route_id&quot;])
+
+    route_agg = (
+        df.group_by(&quot;route_id&quot;)
+        .agg(
+            avg_otp=pl.col(&quot;otp&quot;).mean(),
+            avg_riders=pl.col(&quot;avg_riders&quot;).mean(),
+            n_months=pl.col(&quot;month&quot;).count(),
+        )
+    )
+    result = route_agg.join(garage_per_route, on=&quot;route_id&quot;).join(mode_per_route, on=&quot;route_id&quot;)
+    assert result[&quot;route_id&quot;].n_unique() == len(result), (
+        &quot;route_level_summary produced duplicate route_ids — a route may have changed garages&quot;
+    )
+    return result.sort(&quot;current_garage&quot;, &quot;avg_otp&quot;)
+
+
+def garage_summary(route_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute garage-level summary statistics.&quot;&quot;&quot;
+    return (
+        route_df.group_by(&quot;current_garage&quot;)
+        .agg(
+            n_routes=pl.col(&quot;route_id&quot;).count(),
+            mean_otp=pl.col(&quot;avg_otp&quot;).mean(),
+            median_otp=pl.col(&quot;avg_otp&quot;).median(),
+            std_otp=pl.col(&quot;avg_otp&quot;).std(),
+            min_otp=pl.col(&quot;avg_otp&quot;).min(),
+            max_otp=pl.col(&quot;avg_otp&quot;).max(),
+            total_riders=pl.col(&quot;avg_riders&quot;).sum(),
+            weighted_otp=(
+                (pl.col(&quot;avg_otp&quot;) * pl.col(&quot;avg_riders&quot;)).sum() / pl.col(&quot;avg_riders&quot;).sum()
+            ),
+        )
+        .sort(&quot;mean_otp&quot;, descending=True)
+    )
+
+
+def monthly_by_garage(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute monthly ridership-weighted OTP per garage.&quot;&quot;&quot;
+    return (
+        df.group_by(&quot;current_garage&quot;, &quot;month&quot;)
+        .agg(
+            weighted_otp=(
+                (pl.col(&quot;otp&quot;) * pl.col(&quot;avg_riders&quot;)).sum() / pl.col(&quot;avg_riders&quot;).sum()
+            ),
+            unweighted_otp=pl.col(&quot;otp&quot;).mean(),
+            total_riders=pl.col(&quot;avg_riders&quot;).sum(),
+            n_routes=pl.col(&quot;route_id&quot;).n_unique(),
+        )
+        .sort(&quot;current_garage&quot;, &quot;month&quot;)
+    )
+
+
+def statistical_tests(route_df: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Run Kruskal-Wallis and pairwise Mann-Whitney tests across garages.&quot;&quot;&quot;
+    results = {}
+
+    # All routes
+    garages = sorted(route_df[&quot;current_garage&quot;].unique().to_list())
+    groups = []
+    garage_names = []
+    for g in garages:
+        vals = route_df.filter(pl.col(&quot;current_garage&quot;) == g)[&quot;avg_otp&quot;].to_list()
+        if len(vals) &gt;= 3:
+            groups.append(vals)
+            garage_names.append(g)
+
+    if len(groups) &gt;= 2:
+        h, p = stats.kruskal(*groups)
+        results[&quot;kruskal_h_all&quot;] = h
+        results[&quot;kruskal_p_all&quot;] = p
+        results[&quot;garages_tested_all&quot;] = garage_names
+
+    # Bus-only
+    bus_df = route_df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    bus_groups = []
+    bus_names = []
+    for g in garages:
+        vals = bus_df.filter(pl.col(&quot;current_garage&quot;) == g)[&quot;avg_otp&quot;].to_list()
+        if len(vals) &gt;= 3:
+            bus_groups.append(vals)
+            bus_names.append(g)
+
+    if len(bus_groups) &gt;= 2:
+        h, p = stats.kruskal(*bus_groups)
+        results[&quot;kruskal_h_bus&quot;] = h
+        results[&quot;kruskal_p_bus&quot;] = p
+        results[&quot;garages_tested_bus&quot;] = bus_names
+
+    return results
+
+
+def make_trend_chart(monthly: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Plot monthly ridership-weighted OTP by garage.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    garage_colors = {
+        &quot;Ross&quot;: &quot;#2563eb&quot;,
+        &quot;Collier&quot;: &quot;#16a34a&quot;,
+        &quot;East Liberty&quot;: &quot;#e11d48&quot;,
+        &quot;West Mifflin&quot;: &quot;#f59e0b&quot;,
+        &quot;South Hills Village&quot;: &quot;#8b5cf6&quot;,
+        &quot;Incline&quot;: &quot;#9ca3af&quot;,
+    }
+
+    # Build x-axis from all months
+    all_months = sorted(monthly[&quot;month&quot;].unique().to_list())
+    month_to_x = {m: i for i, m in enumerate(all_months)}
+    tick_positions = [i for i, m in enumerate(all_months) if m.endswith(&quot;-01&quot;)]
+    tick_labels = [all_months[i][:4] for i in tick_positions]
+
+    for garage in sorted(monthly[&quot;current_garage&quot;].unique().to_list()):
+        gdf = monthly.filter(pl.col(&quot;current_garage&quot;) == garage).sort(&quot;month&quot;)
+        months = gdf[&quot;month&quot;].to_list()
+        x = [month_to_x[m] for m in months]
+        y = gdf[&quot;weighted_otp&quot;].to_list()
+        color = garage_colors.get(garage, &quot;#9ca3af&quot;)
+        ax.plot(x, y, color=color, linewidth=1.5, label=garage, alpha=0.8)
+
+    if &quot;2020-03&quot; in all_months:
+        covid_idx = month_to_x[&quot;2020-03&quot;]
+        ax.axvline(covid_idx, color=&quot;#ef4444&quot;, linestyle=&quot;:&quot;, alpha=0.5)
+
+    ax.set_ylabel(&quot;Ridership-Weighted OTP&quot;)
+    ax.set_xlabel(&quot;Month&quot;)
+    ax.set_title(&quot;Monthly OTP by Garage (Ridership-Weighted)&quot;)
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels)
+    ax.legend(loc=&quot;lower left&quot;, fontsize=8)
+    ax.set_ylim(0.45, 0.90)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;garage_otp_trend.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;garage_otp_trend.png&#x27;}&quot;)
+
+
+def make_boxplot(route_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Box plot of route-level OTP by garage, all routes and bus-only.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    garage_colors = [&quot;#2563eb&quot;, &quot;#16a34a&quot;, &quot;#e11d48&quot;, &quot;#f59e0b&quot;, &quot;#8b5cf6&quot;, &quot;#9ca3af&quot;]
+
+    for ax, title, filt in [
+        (ax1, &quot;All Routes&quot;, route_df),
+        (ax2, &quot;Bus Only&quot;, route_df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)),
+    ]:
+        garages = sorted(filt[&quot;current_garage&quot;].unique().to_list())
+        data = []
+        labels = []
+        for g in garages:
+            vals = filt.filter(pl.col(&quot;current_garage&quot;) == g)[&quot;avg_otp&quot;].to_list()
+            if len(vals) &gt;= 2:
+                data.append(vals)
+                labels.append(f&quot;{g}\n(n={len(vals)})&quot;)
+
+        bp = ax.boxplot(data, tick_labels=labels, patch_artist=True)
+        for patch, color in zip(bp[&quot;boxes&quot;], garage_colors):
+            patch.set_facecolor(color)
+            patch.set_alpha(0.6)
+        ax.set_ylabel(&quot;Route-Level Average OTP&quot;)
+        ax.set_title(title)
+        ax.tick_params(axis=&quot;x&quot;, labelsize=8)
+
+    fig.suptitle(&quot;OTP Distribution by Garage&quot;, fontsize=13, y=1.02)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;garage_boxplot.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;garage_boxplot.png&#x27;}&quot;)
+
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return the great-circle distance in km between two lat/lon points.&quot;&quot;&quot;
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
+         * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def compute_span(lats: list[float], lons: list[float]) -&gt; float:
+    &quot;&quot;&quot;Return the max pairwise haversine distance (km) among a set of points.&quot;&quot;&quot;
+    max_dist = 0.0
+    n = len(lats)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = haversine_km(lats[i], lons[i], lats[j], lons[j])
+            if d &gt; max_dist:
+                max_dist = d
+    return max_dist
+
+
+def fit_ols(y: np.ndarray, X_raw: np.ndarray, feature_names: list[str]) -&gt; dict:
+    &quot;&quot;&quot;Fit OLS regression and return results dict.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    X = np.column_stack([np.ones(n), X_raw])
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    y_hat = X @ beta
+    residuals = y - y_hat
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    adj_r_squared = 1 - (1 - r_squared) * (n - 1) / (n - k - 1)
+    mse = ss_res / (n - k - 1)
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    se = np.sqrt(np.diag(XtX_inv) * mse)
+    t_vals = beta / se
+    p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n - k - 1)) for t in t_vals]
+    return {
+        &quot;r_squared&quot;: r_squared,
+        &quot;adj_r_squared&quot;: adj_r_squared,
+        &quot;n&quot;: n, &quot;k&quot;: k,
+        &quot;features&quot;: [&quot;intercept&quot;] + feature_names,
+        &quot;coefficients&quot;: beta.tolist(),
+        &quot;std_errors&quot;: se.tolist(),
+        &quot;p_values&quot;: p_vals,
+    }
+
+
+def load_structural_features() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load route-level structural features (stop count, span) for the controlled model.&quot;&quot;&quot;
+    stop_counts = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    stops_by_route = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, s.lat, s.lon
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.lat IS NOT NULL AND s.lon IS NOT NULL
+    &quot;&quot;&quot;)
+    spans = []
+    for route_id in stops_by_route[&quot;route_id&quot;].unique().sort().to_list():
+        subset = stops_by_route.filter(pl.col(&quot;route_id&quot;) == route_id)
+        span_km = compute_span(subset[&quot;lat&quot;].to_list(), subset[&quot;lon&quot;].to_list())
+        spans.append({&quot;route_id&quot;: route_id, &quot;span_km&quot;: span_km})
+    span_df = pl.DataFrame(spans)
+
+    return stop_counts.join(span_df, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+
+
+def controlled_garage_test(route_df: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Fit OLS models with and without garage dummies, controlling for stop count, span, and mode.&quot;&quot;&quot;
+    struct = load_structural_features()
+    df = route_df.join(struct, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;).then(1.0).otherwise(0.0).alias(&quot;is_rail&quot;),
+    )
+
+    # Bus-only analysis (drop rail and South Hills Village)
+    bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;).drop_nulls(subset=[&quot;stop_count&quot;, &quot;span_km&quot;])
+
+    # Reference garage = East Liberty (largest, excluded from dummies)
+    bus_garages = sorted(set(bus_df[&quot;current_garage&quot;].to_list()) - {&quot;East Liberty&quot;})
+    for g in bus_garages:
+        col_name = f&quot;garage_{g.replace(&#x27; &#x27;, &#x27;_&#x27;)}&quot;
+        bus_df = bus_df.with_columns(
+            pl.when(pl.col(&quot;current_garage&quot;) == g).then(1.0).otherwise(0.0).alias(col_name),
+        )
+
+    y = bus_df[&quot;avg_otp&quot;].to_numpy()
+
+    # Model 1: structural only (stop_count, span_km)
+    base_features = [&quot;stop_count&quot;, &quot;span_km&quot;]
+    X_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in base_features])
+    base_results = fit_ols(y, X_base, base_features)
+
+    # Model 2: structural + garage dummies
+    garage_cols = [f&quot;garage_{g.replace(&#x27; &#x27;, &#x27;_&#x27;)}&quot; for g in bus_garages]
+    full_features = base_features + garage_cols
+    X_full = np.column_stack([bus_df[f].to_numpy().astype(float) for f in full_features])
+    full_results = fit_ols(y, X_full, full_features)
+
+    # F-test for garage dummies (nested model comparison)
+    n = len(y)
+    k_base = len(base_features)
+    k_full = len(full_features)
+    k_diff = k_full - k_base
+    ss_res_base = np.sum((y - np.mean(y)) ** 2) * (1 - base_results[&quot;r_squared&quot;])
+    ss_res_full = np.sum((y - np.mean(y)) ** 2) * (1 - full_results[&quot;r_squared&quot;])
+    f_stat = ((ss_res_base - ss_res_full) / k_diff) / (ss_res_full / (n - k_full - 1))
+    f_p = 1 - stats.f.cdf(f_stat, k_diff, n - k_full - 1)
+
+    return {
+        &quot;base_results&quot;: base_results,
+        &quot;full_results&quot;: full_results,
+        &quot;f_stat&quot;: f_stat,
+        &quot;f_p&quot;: f_p,
+        &quot;k_diff&quot;: k_diff,
+        &quot;n_bus&quot;: n,
+        &quot;bus_garages&quot;: bus_garages,
+        &quot;garage_cols&quot;: garage_cols,
+    }
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load, summarize, test, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 23: Garage-Level Performance&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    n_routes = df[&quot;route_id&quot;].n_unique()
+    print(f&quot;  {len(df):,} route-month observations ({n_routes} routes)&quot;)
+
+    print(&quot;\nComputing route-level summaries...&quot;)
+    route_df = route_level_summary(df)
+    gsummary = garage_summary(route_df)
+
+    print(&quot;\n  Garage summary:&quot;)
+    print(f&quot;  {&#x27;Garage&#x27;:&lt;22} {&#x27;Routes&#x27;:&gt;6} {&#x27;Mean OTP&#x27;:&gt;9} {&#x27;Wt OTP&#x27;:&gt;9} {&#x27;Riders&#x27;:&gt;10}&quot;)
+    for row in gsummary.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;current_garage&#x27;]:&lt;22} {row[&#x27;n_routes&#x27;]:&gt;6} &quot;
+              f&quot;{row[&#x27;mean_otp&#x27;]:&gt;9.1%} {row[&#x27;weighted_otp&#x27;]:&gt;9.1%} &quot;
+              f&quot;{row[&#x27;total_riders&#x27;]:&gt;10,.0f}&quot;)
+
+    print(&quot;\nStatistical tests...&quot;)
+    test_results = statistical_tests(route_df)
+
+    if &quot;kruskal_h_all&quot; in test_results:
+        print(f&quot;  Kruskal-Wallis (all routes): H = {test_results[&#x27;kruskal_h_all&#x27;]:.3f}, &quot;
+              f&quot;p = {test_results[&#x27;kruskal_p_all&#x27;]:.4f}&quot;)
+        print(f&quot;    Garages tested: {test_results[&#x27;garages_tested_all&#x27;]}&quot;)
+
+    if &quot;kruskal_h_bus&quot; in test_results:
+        print(f&quot;  Kruskal-Wallis (bus only):   H = {test_results[&#x27;kruskal_h_bus&#x27;]:.3f}, &quot;
+              f&quot;p = {test_results[&#x27;kruskal_p_bus&#x27;]:.4f}&quot;)
+        print(f&quot;    Garages tested: {test_results[&#x27;garages_tested_bus&#x27;]}&quot;)
+
+    print(&quot;\nControlled analysis (OLS with structural controls)...&quot;)
+    ctrl = controlled_garage_test(route_df)
+    base = ctrl[&quot;base_results&quot;]
+    full = ctrl[&quot;full_results&quot;]
+    print(f&quot;\n  Bus-only models (n = {ctrl[&#x27;n_bus&#x27;]}, reference garage = East Liberty):&quot;)
+    print(f&quot;  Base model (stop_count + span): R² = {base[&#x27;r_squared&#x27;]:.4f}, &quot;
+          f&quot;Adj R² = {base[&#x27;adj_r_squared&#x27;]:.4f}&quot;)
+    print(f&quot;  Full model (+ garage dummies):  R² = {full[&#x27;r_squared&#x27;]:.4f}, &quot;
+          f&quot;Adj R² = {full[&#x27;adj_r_squared&#x27;]:.4f}&quot;)
+    print(f&quot;  R² change: +{full[&#x27;r_squared&#x27;] - base[&#x27;r_squared&#x27;]:.4f}&quot;)
+    print(f&quot;\n  F-test for garage dummies: F = {ctrl[&#x27;f_stat&#x27;]:.3f}, &quot;
+          f&quot;p = {ctrl[&#x27;f_p&#x27;]:.4f} (df = {ctrl[&#x27;k_diff&#x27;]}, {ctrl[&#x27;n_bus&#x27;] - full[&#x27;k&#x27;] - 1})&quot;)
+    if ctrl[&#x27;f_p&#x27;] &lt; 0.05:
+        print(&quot;  =&gt; Garage dummies ARE significant after controlling for route structure.&quot;)
+    else:
+        print(&quot;  =&gt; Garage dummies are NOT significant after controlling for route structure.&quot;)
+
+    # Print garage coefficients
+    print(f&quot;\n  {&#x27;Feature&#x27;:&lt;25s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Std Err&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*55}&quot;)
+    for i, feat in enumerate(full[&quot;features&quot;]):
+        coeff = full[&quot;coefficients&quot;][i]
+        se = full[&quot;std_errors&quot;][i]
+        p = full[&quot;p_values&quot;][i]
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;25s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {sig}&quot;)
+
+    print(&quot;\nComputing monthly trends...&quot;)
+    monthly = monthly_by_garage(df)
+
+    print(&quot;\nSaving CSVs...&quot;)
+    gsummary.write_csv(OUT / &quot;garage_summary.csv&quot;)
+    print(f&quot;  {OUT / &#x27;garage_summary.csv&#x27;}&quot;)
+    route_df.write_csv(OUT / &quot;garage_route_detail.csv&quot;)
+    print(f&quot;  {OUT / &#x27;garage_route_detail.csv&#x27;}&quot;)
+    monthly.write_csv(OUT / &quot;garage_monthly.csv&quot;)
+    print(f&quot;  {OUT / &#x27;garage_monthly.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_trend_chart(monthly)
+    make_boxplot(route_df)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -688,6 +1136,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

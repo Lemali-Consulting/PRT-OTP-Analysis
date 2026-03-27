@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>37 - Peer City Ridership Comparison</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -247,6 +250,280 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Compare Pittsburgh&#x27;s ridership trajectory to 7 peer cities using NTD monthly data.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+
+from prt_otp_analysis.common import get_db, output_dir, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+# Peer agencies: NTD ID -&gt; short label
+PEERS = {
+    30022: &quot;Pittsburgh&quot;,
+    30034: &quot;Baltimore&quot;,
+    50015: &quot;Cleveland&quot;,
+    80006: &quot;Denver&quot;,
+    70006: &quot;St. Louis&quot;,
+    20004: &quot;Buffalo&quot;,
+    8: &quot;Portland&quot;,
+    50027: &quot;Minneapolis&quot;,
+}
+
+# NTD mode codes for bus vs rail breakdown
+BUS_MODES = {&quot;MB&quot;, &quot;CB&quot;, &quot;RB&quot;, &quot;TB&quot;}  # motorbus, commuter bus, rapid bus, trolleybus
+RAIL_MODES = {&quot;LR&quot;, &quot;HR&quot;, &quot;CR&quot;, &quot;SR&quot;, &quot;MG&quot;, &quot;YR&quot;}  # light/heavy/commuter/streetcar rail
+
+
+def load_monthly(conn) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load monthly UPT for peer agencies, Jan 2019–Dec 2025.&quot;&quot;&quot;
+    id_list = &quot;,&quot;.join(str(i) for i in PEERS)
+    rows = conn.execute(f&quot;&quot;&quot;
+        SELECT ntd_id, mode, month, SUM(upt) AS upt
+        FROM ntd_ridership
+        WHERE ntd_id IN ({id_list})
+          AND month &gt;= &#x27;2019-01&#x27; AND month &lt;= &#x27;2025-12&#x27;
+        GROUP BY ntd_id, mode, month
+    &quot;&quot;&quot;).fetchall()
+    return pl.DataFrame([dict(r) for r in rows])
+
+
+def main():
+    plt = setup_plotting()
+    conn = get_db()
+
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 37: Peer City Ridership Comparison&quot;)
+    print(&quot;=&quot; * 60)
+
+    # Load data
+    print(&quot;\n1. Loading monthly data for peer agencies...&quot;)
+    monthly = load_monthly(conn)
+    conn.close()
+    print(f&quot;   {len(monthly)} rows loaded&quot;)
+
+    # Add city label
+    peer_map = pl.DataFrame({
+        &quot;ntd_id&quot;: list(PEERS.keys()),
+        &quot;city&quot;: list(PEERS.values()),
+    })
+    monthly = monthly.join(peer_map, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+
+    # --- All-mode totals ---
+    print(&quot;\n2. Computing indexed ridership...&quot;)
+    totals = (
+        monthly.group_by(&quot;ntd_id&quot;, &quot;city&quot;, &quot;month&quot;)
+        .agg(upt=pl.col(&quot;upt&quot;).sum())
+        .sort(&quot;ntd_id&quot;, &quot;month&quot;)
+    )
+
+    # Compute 2019 monthly average per agency
+    baseline = (
+        totals.filter(pl.col(&quot;month&quot;).str.starts_with(&quot;2019&quot;))
+        .group_by(&quot;ntd_id&quot;)
+        .agg(avg_2019=pl.col(&quot;upt&quot;).mean())
+    )
+    indexed = totals.join(baseline, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+    indexed = indexed.with_columns(
+        index=(pl.col(&quot;upt&quot;) / pl.col(&quot;avg_2019&quot;) * 100)
+    )
+
+    # Save CSV
+    csv_data = indexed.select(&quot;city&quot;, &quot;month&quot;, &quot;upt&quot;, &quot;index&quot;).sort(&quot;city&quot;, &quot;month&quot;)
+    csv_data.write_csv(OUT / &quot;peer_ridership_data.csv&quot;)
+    print(f&quot;   Saved peer_ridership_data.csv&quot;)
+
+    # Recovery summary: 2024 average vs 2019 average
+    print(&quot;\n3. Computing recovery metrics...&quot;)
+    recovery = (
+        totals.filter(pl.col(&quot;month&quot;).str.starts_with(&quot;2024&quot;))
+        .group_by(&quot;ntd_id&quot;, &quot;city&quot;)
+        .agg(avg_2024=pl.col(&quot;upt&quot;).mean())
+        .join(baseline, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+        .with_columns(
+            recovery_pct=(pl.col(&quot;avg_2024&quot;) / pl.col(&quot;avg_2019&quot;) * 100)
+        )
+        .sort(&quot;recovery_pct&quot;, descending=True)
+    )
+    recovery.select(&quot;city&quot;, &quot;avg_2019&quot;, &quot;avg_2024&quot;, &quot;recovery_pct&quot;).write_csv(
+        OUT / &quot;peer_recovery_summary.csv&quot;
+    )
+    print(f&quot;   Saved peer_recovery_summary.csv&quot;)
+
+    for row in recovery.iter_rows(named=True):
+        marker = &quot; &lt;&lt;&lt;&quot; if row[&quot;ntd_id&quot;] == 30022 else &quot;&quot;
+        print(f&quot;   {row[&#x27;city&#x27;]:&lt;15s} {row[&#x27;recovery_pct&#x27;]:&gt;6.1f}%{marker}&quot;)
+
+    # --- Chart 1: Indexed time series ---
+    print(&quot;\n4. Generating indexed ridership chart...&quot;)
+    fig, ax = plt.subplots(figsize=(14, 7))
+
+    # Define color cycle — PRT gets a distinct color
+    colors = {
+        &quot;Pittsburgh&quot;: &quot;#E24A33&quot;,
+        &quot;Baltimore&quot;: &quot;#4878CF&quot;,
+        &quot;Cleveland&quot;: &quot;#6ACC65&quot;,
+        &quot;Denver&quot;: &quot;#D65F5F&quot;,
+        &quot;St. Louis&quot;: &quot;#B47CC7&quot;,
+        &quot;Buffalo&quot;: &quot;#C4AD66&quot;,
+        &quot;Portland&quot;: &quot;#77BEDB&quot;,
+        &quot;Minneapolis&quot;: &quot;#FFB347&quot;,
+    }
+
+    for city in sorted(PEERS.values()):
+        city_data = indexed.filter(pl.col(&quot;city&quot;) == city).sort(&quot;month&quot;)
+        months = city_data[&quot;month&quot;].to_list()
+        vals = city_data[&quot;index&quot;].to_list()
+        lw = 2.5 if city == &quot;Pittsburgh&quot; else 1.2
+        alpha = 1.0 if city == &quot;Pittsburgh&quot; else 0.7
+        ax.plot(range(len(months)), vals, label=city, color=colors[city],
+                linewidth=lw, alpha=alpha)
+
+    # X-axis: show Jan of each year
+    all_months = sorted(indexed[&quot;month&quot;].unique().to_list())
+    jan_ticks = [i for i, m in enumerate(all_months) if m.endswith(&quot;-01&quot;)]
+    jan_labels = [all_months[i][:4] for i in jan_ticks]
+    ax.set_xticks(jan_ticks)
+    ax.set_xticklabels(jan_labels)
+
+    ax.axhline(100, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+    ax.set_ylabel(&quot;Indexed Ridership (2019 avg = 100)&quot;)
+    ax.set_title(&quot;Peer City Ridership Trajectories (2019–2025)&quot;)
+    ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;peer_ridership_indexed.png&quot;)
+    plt.close(fig)
+    print(f&quot;   Saved peer_ridership_indexed.png&quot;)
+
+    # --- Chart 2: Recovery bar chart ---
+    print(&quot;\n5. Generating recovery bar chart...&quot;)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    rec_sorted = recovery.sort(&quot;recovery_pct&quot;, descending=True)
+    cities = rec_sorted[&quot;city&quot;].to_list()
+    pcts = rec_sorted[&quot;recovery_pct&quot;].to_list()
+    bar_colors = [&quot;#E24A33&quot; if c == &quot;Pittsburgh&quot; else &quot;#4878CF&quot; for c in cities]
+
+    bars = ax.bar(range(len(cities)), pcts, color=bar_colors, edgecolor=&quot;white&quot;)
+    ax.set_xticks(range(len(cities)))
+    ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
+    ax.axhline(100, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1, label=&quot;2019 level&quot;)
+    ax.set_ylabel(&quot;Recovery (% of 2019 avg)&quot;)
+    ax.set_title(&quot;2024 Ridership Recovery vs 2019 — Peer Cities&quot;)
+    for i, (city, pct) in enumerate(zip(cities, pcts)):
+        ax.text(i, pct + 1, f&quot;{pct:.0f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=9)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;peer_recovery_bar.png&quot;)
+    plt.close(fig)
+    print(f&quot;   Saved peer_recovery_bar.png&quot;)
+
+    # --- Chart 3: Mode breakdown (bus vs rail) ---
+    print(&quot;\n6. Generating mode breakdown chart...&quot;)
+
+    # Classify modes and compute recovery per peer per mode-group
+    monthly_classified = monthly.with_columns(
+        mode_group=pl.when(pl.col(&quot;mode&quot;).is_in(BUS_MODES)).then(pl.lit(&quot;Bus&quot;))
+        .when(pl.col(&quot;mode&quot;).is_in(RAIL_MODES)).then(pl.lit(&quot;Rail&quot;))
+        .otherwise(pl.lit(&quot;Other&quot;))
+    )
+
+    mode_totals = (
+        monthly_classified
+        .filter(pl.col(&quot;mode_group&quot;).is_in([&quot;Bus&quot;, &quot;Rail&quot;]))
+        .group_by(&quot;ntd_id&quot;, &quot;city&quot;, &quot;mode_group&quot;, &quot;month&quot;)
+        .agg(upt=pl.col(&quot;upt&quot;).sum())
+    )
+
+    mode_2019 = (
+        mode_totals.filter(pl.col(&quot;month&quot;).str.starts_with(&quot;2019&quot;))
+        .group_by(&quot;ntd_id&quot;, &quot;city&quot;, &quot;mode_group&quot;)
+        .agg(avg_2019=pl.col(&quot;upt&quot;).mean())
+    )
+    mode_2024 = (
+        mode_totals.filter(pl.col(&quot;month&quot;).str.starts_with(&quot;2024&quot;))
+        .group_by(&quot;ntd_id&quot;, &quot;city&quot;, &quot;mode_group&quot;)
+        .agg(avg_2024=pl.col(&quot;upt&quot;).mean())
+    )
+    mode_recovery = (
+        mode_2019.join(mode_2024, on=[&quot;ntd_id&quot;, &quot;city&quot;, &quot;mode_group&quot;], how=&quot;inner&quot;)
+        .with_columns(recovery_pct=(pl.col(&quot;avg_2024&quot;) / pl.col(&quot;avg_2019&quot;) * 100))
+        .sort(&quot;city&quot;, &quot;mode_group&quot;)
+    )
+
+    # Only keep cities with both bus and rail
+    cities_both = (
+        mode_recovery.group_by(&quot;city&quot;)
+        .agg(n_modes=pl.col(&quot;mode_group&quot;).n_unique())
+        .filter(pl.col(&quot;n_modes&quot;) == 2)[&quot;city&quot;]
+        .to_list()
+    )
+
+    if cities_both:
+        mode_plot = mode_recovery.filter(pl.col(&quot;city&quot;).is_in(cities_both))
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        cities_order = sorted(cities_both)
+        x = range(len(cities_order))
+        width = 0.35
+
+        bus_vals = []
+        rail_vals = []
+        for city in cities_order:
+            city_data = mode_plot.filter(pl.col(&quot;city&quot;) == city)
+            bus_row = city_data.filter(pl.col(&quot;mode_group&quot;) == &quot;Bus&quot;)
+            rail_row = city_data.filter(pl.col(&quot;mode_group&quot;) == &quot;Rail&quot;)
+            bus_vals.append(bus_row[&quot;recovery_pct&quot;][0] if len(bus_row) &gt; 0 else 0)
+            rail_vals.append(rail_row[&quot;recovery_pct&quot;][0] if len(rail_row) &gt; 0 else 0)
+
+        ax.bar([i - width / 2 for i in x], bus_vals, width, label=&quot;Bus&quot;, color=&quot;#4878CF&quot;)
+        ax.bar([i + width / 2 for i in x], rail_vals, width, label=&quot;Rail&quot;, color=&quot;#E24A33&quot;)
+        ax.set_xticks(list(x))
+        ax.set_xticklabels(cities_order, rotation=35, ha=&quot;right&quot;)
+        ax.axhline(100, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+        ax.set_ylabel(&quot;Recovery (% of 2019 avg)&quot;)
+        ax.set_title(&quot;2024 Bus vs Rail Recovery — Peer Cities&quot;)
+        ax.legend()
+
+        for i, (b, r) in enumerate(zip(bus_vals, rail_vals)):
+            ax.text(i - width / 2, b + 1, f&quot;{b:.0f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+            ax.text(i + width / 2, r + 1, f&quot;{r:.0f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+
+        fig.tight_layout()
+        fig.savefig(OUT / &quot;peer_mode_breakdown.png&quot;)
+        plt.close(fig)
+        print(f&quot;   Saved peer_mode_breakdown.png&quot;)
+        print(f&quot;   Cities with bus+rail: {cities_both}&quot;)
+    else:
+        print(&quot;   No cities with both bus and rail data — skipping mode breakdown chart&quot;)
+
+    # Print mode recovery details
+    print(&quot;\n   Mode recovery details:&quot;)
+    for row in mode_recovery.iter_rows(named=True):
+        marker = &quot; &lt;&lt;&lt;&quot; if row[&quot;ntd_id&quot;] == 30022 else &quot;&quot;
+        print(f&quot;   {row[&#x27;city&#x27;]:&lt;15s} {row[&#x27;mode_group&#x27;]:&lt;6s} {row[&#x27;recovery_pct&#x27;]:&gt;6.1f}%{marker}&quot;)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -372,6 +649,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

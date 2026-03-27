@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>19 - Ridership-Weighted OTP</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -258,6 +261,205 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 19: Compare system OTP under three weighting schemes -- unweighted, trip-weighted, and ridership-weighted.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MIN_MONTHS = 12
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load OTP joined with weekday ridership and trip weights, restricted to the overlap period.&quot;&quot;&quot;
+    df = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp,
+               r.avg_riders,
+               COALESCE(rs.trips_7d, 0) AS trips_7d
+        FROM otp_monthly o
+        JOIN ridership_monthly r
+            ON o.route_id = r.route_id AND o.month = r.month
+            AND r.day_type = &#x27;WEEKDAY&#x27;
+        LEFT JOIN (
+            SELECT route_id, SUM(trips_7d) AS trips_7d
+            FROM route_stops
+            GROUP BY route_id
+        ) rs ON o.route_id = rs.route_id
+    &quot;&quot;&quot;)
+
+    # Filter to routes with at least MIN_MONTHS of paired data
+    route_counts = df.group_by(&quot;route_id&quot;).agg(pl.col(&quot;month&quot;).count().alias(&quot;n&quot;))
+    keep = route_counts.filter(pl.col(&quot;n&quot;) &gt;= MIN_MONTHS)[&quot;route_id&quot;].to_list()
+    df = df.filter(pl.col(&quot;route_id&quot;).is_in(keep))
+
+    return df
+
+
+def compute_monthly(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute three monthly OTP series: unweighted, trip-weighted, ridership-weighted.&quot;&quot;&quot;
+    monthly = (
+        df.group_by(&quot;month&quot;)
+        .agg(
+            unweighted_otp=pl.col(&quot;otp&quot;).mean(),
+            trip_weighted_otp=pl.when(pl.col(&quot;trips_7d&quot;).sum() &gt; 0)
+            .then((pl.col(&quot;otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum())
+            .otherwise(pl.col(&quot;otp&quot;).mean()),
+            ridership_weighted_otp=(
+                (pl.col(&quot;otp&quot;) * pl.col(&quot;avg_riders&quot;)).sum() / pl.col(&quot;avg_riders&quot;).sum()
+            ),
+            route_count=pl.col(&quot;route_id&quot;).n_unique(),
+            total_riders=pl.col(&quot;avg_riders&quot;).sum(),
+        )
+        .sort(&quot;month&quot;)
+    )
+    return monthly
+
+
+def compute_summary(monthly: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute summary statistics for each weighting scheme.&quot;&quot;&quot;
+    rows = []
+    for col in [&quot;unweighted_otp&quot;, &quot;trip_weighted_otp&quot;, &quot;ridership_weighted_otp&quot;]:
+        s = monthly[col]
+        rows.append({
+            &quot;weighting&quot;: col.replace(&quot;_otp&quot;, &quot;&quot;),
+            &quot;mean&quot;: s.mean(),
+            &quot;median&quot;: s.median(),
+            &quot;std&quot;: s.std(),
+            &quot;min&quot;: s.min(),
+            &quot;max&quot;: s.max(),
+        })
+    return pl.DataFrame(rows)
+
+
+def statistical_test(monthly: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Test whether ridership-weighted OTP differs from trip-weighted OTP.&quot;&quot;&quot;
+    trip = monthly[&quot;trip_weighted_otp&quot;].to_numpy()
+    rider = monthly[&quot;ridership_weighted_otp&quot;].to_numpy()
+
+    # Paired t-test
+    t_stat, t_p = stats.ttest_rel(trip, rider)
+
+    # Wilcoxon signed-rank (non-parametric)
+    w_stat, w_p = stats.wilcoxon(trip, rider)
+
+    mean_diff = (rider - trip).mean()
+
+    return {
+        &quot;mean_difference&quot;: mean_diff,
+        &quot;paired_t_stat&quot;: t_stat,
+        &quot;paired_t_p&quot;: t_p,
+        &quot;wilcoxon_stat&quot;: w_stat,
+        &quot;wilcoxon_p&quot;: w_p,
+        &quot;n_months&quot;: len(trip),
+    }
+
+
+def make_chart(monthly: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Plot three OTP series over time.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    months = monthly[&quot;month&quot;].to_list()
+    x = range(len(months))
+    tick_positions = [i for i, m in enumerate(months) if m.endswith(&quot;-01&quot;)]
+    tick_labels = [months[i][:4] for i in tick_positions]
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    ax.plot(x, monthly[&quot;unweighted_otp&quot;].to_list(),
+            color=&quot;#9ca3af&quot;, linewidth=1, linestyle=&quot;--&quot;, label=&quot;Unweighted (all routes equal)&quot;)
+    ax.plot(x, monthly[&quot;trip_weighted_otp&quot;].to_list(),
+            color=&quot;#2563eb&quot;, linewidth=1.5, label=&quot;Trip-weighted (scheduled frequency)&quot;)
+    ax.plot(x, monthly[&quot;ridership_weighted_otp&quot;].to_list(),
+            color=&quot;#e11d48&quot;, linewidth=1.5, label=&quot;Ridership-weighted (avg daily riders)&quot;)
+
+    # Shade gap between trip-weighted and ridership-weighted
+    trip = monthly[&quot;trip_weighted_otp&quot;].to_list()
+    rider = monthly[&quot;ridership_weighted_otp&quot;].to_list()
+    ax.fill_between(x, trip, rider, alpha=0.15, color=&quot;#e11d48&quot;, label=&quot;Trip vs ridership gap&quot;)
+
+    # COVID marker
+    if &quot;2020-03&quot; in months:
+        covid_idx = months.index(&quot;2020-03&quot;)
+        ax.axvline(covid_idx, color=&quot;#ef4444&quot;, linestyle=&quot;:&quot;, alpha=0.7)
+        ax.text(covid_idx + 0.5, ax.get_ylim()[1] * 0.98, &quot;COVID&quot;,
+                color=&quot;#ef4444&quot;, fontsize=8, va=&quot;top&quot;)
+
+    ax.set_ylabel(&quot;On-Time Performance&quot;)
+    ax.set_xlabel(&quot;Month&quot;)
+    ax.set_title(&quot;PRT System OTP: Three Weighting Schemes (2019\u20132024)&quot;)
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels)
+    ax.legend(loc=&quot;lower left&quot;, fontsize=8)
+    ax.set_ylim(0.5, 0.85)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;ridership_weighted_otp_trend.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;ridership_weighted_otp_trend.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, compute weighted OTP series, test, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 19: Ridership-Weighted OTP&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    n_routes = df[&quot;route_id&quot;].n_unique()
+    print(f&quot;  {len(df):,} route-month observations ({n_routes} routes)&quot;)
+
+    print(&quot;\nComputing monthly OTP series...&quot;)
+    monthly = compute_monthly(df)
+    print(f&quot;  {len(monthly)} months computed&quot;)
+
+    print(&quot;\nSummary statistics:&quot;)
+    summary = compute_summary(monthly)
+    for row in summary.iter_rows(named=True):
+        print(f&quot;  {row[&#x27;weighting&#x27;]:30s}  mean={row[&#x27;mean&#x27;]:.3%}  &quot;
+              f&quot;median={row[&#x27;median&#x27;]:.3%}  std={row[&#x27;std&#x27;]:.3%}&quot;)
+
+    print(&quot;\nStatistical test (ridership-weighted vs trip-weighted):&quot;)
+    test = statistical_test(monthly)
+    print(f&quot;  Mean difference: {test[&#x27;mean_difference&#x27;]:+.4%}&quot;)
+    print(f&quot;  Paired t-test:   t={test[&#x27;paired_t_stat&#x27;]:.3f}, p={test[&#x27;paired_t_p&#x27;]:.4f}&quot;)
+    print(f&quot;  Wilcoxon test:   W={test[&#x27;wilcoxon_stat&#x27;]:.0f}, p={test[&#x27;wilcoxon_p&#x27;]:.4f}&quot;)
+    print(f&quot;  N months:        {test[&#x27;n_months&#x27;]}&quot;)
+
+    print(&quot;\nSaving CSVs...&quot;)
+    monthly.write_csv(OUT / &quot;weighting_comparison.csv&quot;)
+    print(f&quot;  {OUT / &#x27;weighting_comparison.csv&#x27;}&quot;)
+    summary.write_csv(OUT / &quot;summary_stats.csv&quot;)
+    print(f&quot;  {OUT / &#x27;summary_stats.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating chart...&quot;)
+    make_chart(monthly)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -463,6 +665,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

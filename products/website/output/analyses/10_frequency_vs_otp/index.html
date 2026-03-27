@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>10: Trip Frequency vs OTP</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -234,6 +237,145 @@
 <li><code>output/frequency_vs_otp.png</code> -- scatter plot with correlation</li>
 </ul>
 </div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Correlation analysis of weekday trip frequency versus on-time performance.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load per-route peak trip frequency, average OTP, and mode.&quot;&quot;&quot;
+    frequency = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, MAX(trips_wd) AS max_trips_wd
+        FROM route_stops
+        WHERE trips_wd IS NOT NULL
+        GROUP BY route_id
+    &quot;&quot;&quot;)
+    avg_otp = query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp, COUNT(*) AS months
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(*) &gt;= 12
+    &quot;&quot;&quot;)
+    return avg_otp.join(frequency, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+
+
+def analyze(df: pl.DataFrame) -&gt; tuple[pl.DataFrame, dict]:
+    &quot;&quot;&quot;Compute Pearson and Spearman correlations, overall and bus-only.&quot;&quot;&quot;
+    results = {}
+
+    # All routes
+    r_all, p_all = stats.pearsonr(df[&quot;max_trips_wd&quot;].to_list(), df[&quot;avg_otp&quot;].to_list())
+    results[&quot;all_pearson_r&quot;] = r_all
+    results[&quot;all_pearson_p&quot;] = p_all
+
+    # Bus only
+    bus = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    r_bus, p_bus = stats.pearsonr(bus[&quot;max_trips_wd&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
+    rho_bus, p_rho = stats.spearmanr(bus[&quot;max_trips_wd&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
+    results[&quot;bus_pearson_r&quot;] = r_bus
+    results[&quot;bus_pearson_p&quot;] = p_bus
+    results[&quot;bus_spearman_r&quot;] = rho_bus
+    results[&quot;bus_spearman_p&quot;] = p_rho
+    results[&quot;bus_n&quot;] = len(bus)
+
+    return df, results
+
+
+def make_chart(df: pl.DataFrame, results: dict) -&gt; None:
+    &quot;&quot;&quot;Generate scatter plot of trip frequency vs OTP with bus-only trendline.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    mode_colors = {&quot;BUS&quot;: &quot;#3b82f6&quot;, &quot;RAIL&quot;: &quot;#22c55e&quot;, &quot;INCLINE&quot;: &quot;#f59e0b&quot;, &quot;UNKNOWN&quot;: &quot;#9ca3af&quot;}
+
+    for mode, color in mode_colors.items():
+        subset = df.filter(pl.col(&quot;mode&quot;) == mode)
+        if len(subset) == 0:
+            continue
+        ax.scatter(
+            subset[&quot;max_trips_wd&quot;].to_list(),
+            subset[&quot;avg_otp&quot;].to_list(),
+            color=color, label=mode, s=40, alpha=0.7, edgecolors=&quot;white&quot;, linewidths=0.5,
+        )
+
+    # Bus-only regression line
+    bus = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    x_vals = bus[&quot;max_trips_wd&quot;].to_list()
+    y_vals = bus[&quot;avg_otp&quot;].to_list()
+    if len(x_vals) &gt; 1:
+        reg = stats.linregress(x_vals, y_vals)
+        x_line = [min(x_vals), max(x_vals)]
+        y_line = [reg.slope * xi + reg.intercept for xi in x_line]
+        r_bus = results[&quot;bus_pearson_r&quot;]
+        p_bus = results[&quot;bus_pearson_p&quot;]
+        ax.plot(x_line, y_line, color=&quot;#1e40af&quot;, linewidth=1.5, linestyle=&quot;--&quot;,
+                label=f&quot;BUS trend (r={r_bus:.3f}, p={p_bus:.3f})&quot;)
+
+    ax.set_xlabel(&quot;Peak Weekday Trips (max across stops)&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;Trip Frequency vs On-Time Performance by Route&quot;)
+    ax.legend(fontsize=9)
+    ax.set_ylim(0, 1)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;frequency_vs_otp.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;frequency_vs_otp.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 10: Trip Frequency vs OTP&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    print(f&quot;  {len(df)} routes with both frequency and OTP data&quot;)
+
+    print(&quot;\nAnalyzing...&quot;)
+    df, results = analyze(df)
+    print(f&quot;  All routes:  Pearson r = {results[&#x27;all_pearson_r&#x27;]:.4f} (p = {results[&#x27;all_pearson_p&#x27;]:.4f})&quot;)
+    print(f&quot;  Bus only:    Pearson r = {results[&#x27;bus_pearson_r&#x27;]:.4f} (p = {results[&#x27;bus_pearson_p&#x27;]:.4f})&quot;)
+    print(f&quot;               Spearman r = {results[&#x27;bus_spearman_r&#x27;]:.4f} (p = {results[&#x27;bus_spearman_p&#x27;]:.4f})&quot;)
+    print(f&quot;               n = {results[&#x27;bus_n&#x27;]} bus routes&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    df.write_csv(OUT / &quot;frequency_otp.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;frequency_otp.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating chart...&quot;)
+    make_chart(df, results)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
   </details>
 </section>
 
@@ -444,6 +586,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

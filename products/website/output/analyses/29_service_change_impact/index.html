@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>29 - Service Change Impact on OTP</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2016-11 to 2025-11 (from otp_monthly, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -272,6 +275,281 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 29: Do schedule changes (pick period transitions) correlate with OTP shifts?&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+WINDOW = 3  # months before/after a schedule change to average
+
+
+def load_data() -&gt; tuple[pl.DataFrame, pl.DataFrame]:
+    &quot;&quot;&quot;Load scheduled trips (WEEKDAY) and OTP for the overlap period.&quot;&quot;&quot;
+    sched = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, month, daily_trips, pick_id
+        FROM scheduled_trips_monthly
+        WHERE day_type = &#x27;WEEKDAY&#x27;
+        ORDER BY route_id, month
+    &quot;&quot;&quot;)
+    otp = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, month, otp
+        FROM otp_monthly
+        ORDER BY route_id, month
+    &quot;&quot;&quot;)
+    return sched, otp
+
+
+def _is_consecutive_month(prev: str, curr: str) -&gt; bool:
+    &quot;&quot;&quot;Return True if curr is exactly one calendar month after prev (YYYY-MM strings).&quot;&quot;&quot;
+    py, pm = int(prev[:4]), int(prev[5:7])
+    cy, cm = int(curr[:4]), int(curr[5:7])
+    expected_y, expected_m = (py, pm + 1) if pm &lt; 12 else (py + 1, 1)
+    return cy == expected_y and cm == expected_m
+
+
+def detect_change_events(sched: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Find months where a route&#x27;s pick_id changes from the prior consecutive month.&quot;&quot;&quot;
+    df = sched.sort([&quot;route_id&quot;, &quot;month&quot;])
+
+    df = df.with_columns(
+        prev_pick=pl.col(&quot;pick_id&quot;).shift(1).over(&quot;route_id&quot;),
+        prev_trips=pl.col(&quot;daily_trips&quot;).shift(1).over(&quot;route_id&quot;),
+        prev_month=pl.col(&quot;month&quot;).shift(1).over(&quot;route_id&quot;),
+    )
+
+    # A change event occurs when pick_id differs from the previous month
+    # AND the months are consecutive (no gap)
+    events = df.filter(
+        pl.col(&quot;prev_pick&quot;).is_not_null() &amp; (pl.col(&quot;pick_id&quot;) != pl.col(&quot;prev_pick&quot;))
+    )
+
+    # Filter to consecutive months only to avoid spurious gap-spanning events
+    consecutive_mask = [
+        _is_consecutive_month(prev, curr)
+        for prev, curr in zip(events[&quot;prev_month&quot;].to_list(), events[&quot;month&quot;].to_list())
+    ]
+    events = events.filter(pl.Series(consecutive_mask))
+
+    events = events.select(
+        &quot;route_id&quot;,
+        pl.col(&quot;month&quot;).alias(&quot;change_month&quot;),
+        pl.col(&quot;prev_pick&quot;).alias(&quot;old_pick&quot;),
+        pl.col(&quot;pick_id&quot;).alias(&quot;new_pick&quot;),
+        pl.col(&quot;prev_trips&quot;).alias(&quot;trips_before&quot;),
+        pl.col(&quot;daily_trips&quot;).alias(&quot;trips_after&quot;),
+    ).with_columns(
+        trip_delta=(pl.col(&quot;trips_after&quot;) - pl.col(&quot;trips_before&quot;)),
+    )
+
+    return events
+
+
+def compute_otp_deltas(events: pl.DataFrame, otp: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;For each change event, compute mean OTP in the window before/after.&quot;&quot;&quot;
+    all_months = sorted(otp[&quot;month&quot;].unique().to_list())
+    month_idx = {m: i for i, m in enumerate(all_months)}
+
+    results = []
+    for row in events.iter_rows(named=True):
+        route = row[&quot;route_id&quot;]
+        change_m = row[&quot;change_month&quot;]
+        if change_m not in month_idx:
+            continue
+
+        ci = month_idx[change_m]
+
+        # Months before (excluding the change month itself)
+        before_months = [all_months[j] for j in range(max(0, ci - WINDOW), ci)]
+        # Months after (including the change month)
+        after_months = [all_months[j] for j in range(ci, min(len(all_months), ci + WINDOW))]
+
+        route_otp = otp.filter(pl.col(&quot;route_id&quot;) == route)
+
+        otp_before = route_otp.filter(pl.col(&quot;month&quot;).is_in(before_months))[&quot;otp&quot;]
+        otp_after = route_otp.filter(pl.col(&quot;month&quot;).is_in(after_months))[&quot;otp&quot;]
+
+        if len(otp_before) &lt; 2 or len(otp_after) &lt; 2:
+            continue
+
+        results.append({
+            **row,
+            &quot;otp_before&quot;: otp_before.mean(),
+            &quot;otp_after&quot;: otp_after.mean(),
+            &quot;otp_delta&quot;: otp_after.mean() - otp_before.mean(),
+            &quot;n_before&quot;: len(otp_before),
+            &quot;n_after&quot;: len(otp_after),
+        })
+
+    return pl.DataFrame(results)
+
+
+def classify_events(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Classify events as increase, cut, or neutral based on trip delta.&quot;&quot;&quot;
+    return df.with_columns(
+        event_type=pl.when(pl.col(&quot;trip_delta&quot;) &gt; 0).then(pl.lit(&quot;increase&quot;))
+        .when(pl.col(&quot;trip_delta&quot;) &lt; 0).then(pl.lit(&quot;cut&quot;))
+        .otherwise(pl.lit(&quot;neutral&quot;)),
+        is_covid=pl.col(&quot;change_month&quot;).is_in([&quot;2020-03&quot;, &quot;2020-04&quot;]),
+    )
+
+
+def make_chart(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter plot: trip change vs OTP change, colored by COVID status.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    non_covid = df.filter(~pl.col(&quot;is_covid&quot;))
+    covid = df.filter(pl.col(&quot;is_covid&quot;))
+
+    ax.scatter(
+        non_covid[&quot;trip_delta&quot;].to_list(),
+        non_covid[&quot;otp_delta&quot;].to_list(),
+        alpha=0.4, s=30, color=&quot;#2563eb&quot;, label=f&quot;Non-COVID (n={len(non_covid)})&quot;,
+    )
+    if len(covid) &gt; 0:
+        ax.scatter(
+            covid[&quot;trip_delta&quot;].to_list(),
+            covid[&quot;otp_delta&quot;].to_list(),
+            alpha=0.7, s=60, color=&quot;#ef4444&quot;, marker=&quot;x&quot;,
+            label=f&quot;COVID period (n={len(covid)})&quot;,
+        )
+
+    ax.axhline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax.axvline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax.set_xlabel(&quot;Change in Daily Trips&quot;)
+    ax.set_ylabel(&quot;Change in OTP (3-month mean after - before)&quot;)
+    ax.set_title(&quot;Service Change Impact on OTP&quot;)
+    ax.legend(fontsize=9)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;service_change_impact.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;service_change_impact.png&#x27;}&quot;)
+
+
+def summarize(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Summary statistics by event type.&quot;&quot;&quot;
+    summary = (
+        df.group_by(&quot;event_type&quot;)
+        .agg(
+            n=pl.col(&quot;otp_delta&quot;).count(),
+            mean_otp_delta=pl.col(&quot;otp_delta&quot;).mean(),
+            median_otp_delta=pl.col(&quot;otp_delta&quot;).median(),
+            std_otp_delta=pl.col(&quot;otp_delta&quot;).std(),
+            mean_trip_delta=pl.col(&quot;trip_delta&quot;).mean(),
+        )
+        .sort(&quot;event_type&quot;)
+    )
+    return summary
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: detect schedule change events and measure OTP impact.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 29: Service Change Impact on OTP&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    sched, otp = load_data()
+    print(f&quot;  Scheduled trips: {len(sched):,} rows ({sched[&#x27;route_id&#x27;].n_unique()} routes)&quot;)
+    print(f&quot;  OTP: {len(otp):,} rows&quot;)
+
+    print(&quot;\nDetecting schedule change events...&quot;)
+    events = detect_change_events(sched)
+    print(f&quot;  {len(events)} pick_id change events detected&quot;)
+    print(f&quot;  Across {events[&#x27;route_id&#x27;].n_unique()} routes&quot;)
+
+    print(&quot;\nComputing OTP deltas ({}-month window)...&quot;.format(WINDOW))
+    df = compute_otp_deltas(events, otp)
+    print(f&quot;  {len(df)} events with sufficient OTP data&quot;)
+
+    df = classify_events(df)
+
+    # Overall stats
+    otp_deltas = df[&quot;otp_delta&quot;].to_list()
+    t_stat, p_val = stats.ttest_1samp(otp_deltas, 0)
+    print(f&quot;\n  Overall OTP delta: mean={df[&#x27;otp_delta&#x27;].mean():.4f}, median={df[&#x27;otp_delta&#x27;].median():.4f}&quot;)
+    print(f&quot;  One-sample t-test (H0: delta=0): t={t_stat:.2f}, p={p_val:.4f}&quot;)
+    print(f&quot;    (NOTE: naive t-test treats {len(otp_deltas)} events as independent)&quot;)
+
+    # Route-clustered test: average within route first, then test route means
+    route_means = (
+        df.group_by(&quot;route_id&quot;)
+        .agg(
+            mean_delta=pl.col(&quot;otp_delta&quot;).mean(),
+            n_events=pl.len(),
+        )
+    )
+    route_deltas = route_means[&quot;mean_delta&quot;].to_numpy()
+    n_routes = len(route_deltas)
+    t_clust, p_clust = stats.ttest_1samp(route_deltas, 0)
+    print(f&quot;  Route-clustered t-test (n={n_routes} route means): t={t_clust:.2f}, p={p_clust:.4f}&quot;)
+
+    # By event type
+    summary = summarize(df)
+    print(&quot;\n  By event type:&quot;)
+    for row in summary.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;event_type&#x27;]:&gt;10s}: n={row[&#x27;n&#x27;]:3d}, mean_otp_delta={row[&#x27;mean_otp_delta&#x27;]:+.4f}, &quot;
+              f&quot;mean_trip_delta={row[&#x27;mean_trip_delta&#x27;]:+.1f}&quot;)
+
+    # Kruskal-Wallis across event types
+    groups = []
+    for et in [&quot;cut&quot;, &quot;increase&quot;, &quot;neutral&quot;]:
+        g = df.filter(pl.col(&quot;event_type&quot;) == et)[&quot;otp_delta&quot;].to_list()
+        if len(g) &gt;= 2:
+            groups.append(g)
+    if len(groups) &gt;= 2:
+        h_stat, kw_p = stats.kruskal(*groups)
+        print(f&quot;\n  Kruskal-Wallis (event types): H={h_stat:.2f}, p={kw_p:.4f}&quot;)
+
+    # COVID vs non-COVID
+    non_covid = df.filter(~pl.col(&quot;is_covid&quot;))
+    covid = df.filter(pl.col(&quot;is_covid&quot;))
+    print(f&quot;\n  Non-COVID events: n={len(non_covid)}, mean delta={non_covid[&#x27;otp_delta&#x27;].mean():.4f}&quot;)
+    if len(covid) &gt; 0:
+        print(f&quot;  COVID events: n={len(covid)}, mean delta={covid[&#x27;otp_delta&#x27;].mean():.4f}&quot;)
+
+    # Correlation: trip_delta vs otp_delta
+    r, r_p = stats.pearsonr(df[&quot;trip_delta&quot;].to_list(), otp_deltas)
+    rho, rho_p = stats.spearmanr(df[&quot;trip_delta&quot;].to_list(), otp_deltas)
+    print(f&quot;\n  Trip delta vs OTP delta: Pearson r={r:.3f} (p={r_p:.4f}), Spearman rho={rho:.3f} (p={rho_p:.4f})&quot;)
+
+    print(&quot;\nSaving outputs...&quot;)
+    df.write_csv(OUT / &quot;service_change_events.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;service_change_events.csv&#x27;}&quot;)
+    summary.write_csv(OUT / &quot;service_change_summary.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;service_change_summary.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating chart...&quot;)
+    make_chart(df)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -454,6 +732,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>01 - System-Wide OTP Trend</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2016-11 to 2025-11 (from otp_monthly, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -269,6 +272,218 @@
 <li><code>output/system_trend.png</code> -- time series chart with all-mode and bus-only overlays; shaded region marks time-varying weight period</li>
 </ul>
 </div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;System-wide OTP trend analysis: weighted and unweighted monthly averages, with bus-only stratification.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+
+def load_data() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load OTP data with time-varying trip weights and mode.
+
+    Uses scheduled_trips_monthly (WEEKDAY daily_trips) for Jan 2019 -- Mar 2021,
+    then falls back to MAX(trips_7d)/7 from route_stops for later months.
+    This fixes Methodology Issues #1 (SUM conflation) and #2 (static weights).
+    &quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp,
+               st.daily_trips AS sched_trips,
+               rs_agg.max_trips_daily,
+               COALESCE(st.daily_trips, rs_agg.max_trips_daily, 0) AS trips_weight,
+               r.mode
+        FROM otp_monthly o
+        LEFT JOIN scheduled_trips_monthly st
+            ON o.route_id = st.route_id
+            AND o.month = st.month
+            AND st.day_type = &#x27;WEEKDAY&#x27;
+        LEFT JOIN (
+            SELECT route_id, MAX(trips_7d) / 7.0 AS max_trips_daily
+            FROM route_stops
+            GROUP BY route_id
+        ) rs_agg ON o.route_id = rs_agg.route_id
+        LEFT JOIN routes r ON o.route_id = r.route_id
+    &quot;&quot;&quot;)
+
+
+def _compute_monthly(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute weighted and unweighted monthly OTP with year-over-year change.&quot;&quot;&quot;
+    monthly = (
+        df.group_by(&quot;month&quot;)
+        .agg(
+            weighted_otp=pl.when(pl.col(&quot;trips_weight&quot;).sum() &gt; 0)
+            .then((pl.col(&quot;otp&quot;) * pl.col(&quot;trips_weight&quot;)).sum() / pl.col(&quot;trips_weight&quot;).sum())
+            .otherwise(pl.col(&quot;otp&quot;).mean()),
+            unweighted_otp=pl.col(&quot;otp&quot;).mean(),
+            route_count=pl.col(&quot;route_id&quot;).n_unique(),
+            pct_time_varying=(pl.col(&quot;sched_trips&quot;).is_not_null().sum().cast(pl.Float64)
+                              / pl.col(&quot;route_id&quot;).count() * 100),
+        )
+        .sort(&quot;month&quot;)
+    )
+    # Year-over-year change (current month minus same month 12 periods ago)
+    monthly = monthly.with_columns(
+        yoy_change=pl.col(&quot;weighted_otp&quot;) - pl.col(&quot;weighted_otp&quot;).shift(12),
+    )
+    return monthly
+
+
+def analyze(df: pl.DataFrame) -&gt; tuple[pl.DataFrame, pl.DataFrame]:
+    &quot;&quot;&quot;Compute monthly system OTP for all modes and bus-only.&quot;&quot;&quot;
+    all_monthly = _compute_monthly(df)
+    bus_monthly = _compute_monthly(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+    return all_monthly, bus_monthly
+
+
+def make_chart(all_df: pl.DataFrame, bus_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Generate the system trend time series chart with bus-only overlay.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    months = all_df[&quot;month&quot;].to_list()
+    weighted = all_df[&quot;weighted_otp&quot;].to_list()
+    unweighted = all_df[&quot;unweighted_otp&quot;].to_list()
+    bus_weighted = bus_df[&quot;weighted_otp&quot;].to_list()
+    bus_unweighted = bus_df[&quot;unweighted_otp&quot;].to_list()
+
+    x = range(len(months))
+    tick_positions = [i for i, m in enumerate(months) if m.endswith(&quot;-01&quot;)]
+    tick_labels = [months[i][:4] for i in tick_positions]
+
+    # Map bus months to all-mode x-axis positions for alignment
+    bus_months = bus_df[&quot;month&quot;].to_list()
+    month_to_x = {m: i for i, m in enumerate(months)}
+    bus_x = [month_to_x[m] for m in bus_months if m in month_to_x]
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8), height_ratios=[3, 1])
+
+    # Shade the time-varying weight region (scheduled trips overlap)
+    overlap_start = next((i for i, m in enumerate(months) if m &gt;= &quot;2019-01&quot;), None)
+    overlap_end = next((i for i, m in enumerate(months) if m &gt; &quot;2021-03&quot;), len(months))
+    if overlap_start is not None:
+        ax1.axvspan(overlap_start, overlap_end, alpha=0.08, color=&quot;#2563eb&quot;,
+                    label=&quot;Time-varying weights&quot;)
+
+    # Top panel: OTP time series
+    ax1.plot(x, weighted, color=&quot;#2563eb&quot;, linewidth=1.5, label=&quot;All modes weighted&quot;)
+    ax1.plot(
+        x, unweighted, color=&quot;#9ca3af&quot;, linewidth=1, linestyle=&quot;--&quot;, label=&quot;All modes unweighted&quot;
+    )
+    ax1.plot(bus_x, bus_weighted, color=&quot;#e11d48&quot;, linewidth=1.5, label=&quot;Bus-only weighted&quot;)
+    ax1.plot(
+        bus_x, bus_unweighted, color=&quot;#f9a8d4&quot;, linewidth=1, linestyle=&quot;--&quot;,
+        label=&quot;Bus-only unweighted&quot;,
+    )
+
+    # COVID annotation
+    if &quot;2020-03&quot; in months:
+        covid_idx = months.index(&quot;2020-03&quot;)
+        ax1.axvline(covid_idx, color=&quot;#ef4444&quot;, linestyle=&quot;:&quot;, alpha=0.7)
+        ax1.text(
+            covid_idx + 0.5, ax1.get_ylim()[1] * 0.98, &quot;COVID&quot;,
+            color=&quot;#ef4444&quot;, fontsize=8, va=&quot;top&quot;,
+        )
+
+    ax1.set_ylabel(&quot;On-Time Performance&quot;)
+    ax1.set_title(&quot;PRT System-Wide On-Time Performance (2019\u20132025)&quot;)
+    ax1.set_xticks(tick_positions)
+    ax1.set_xticklabels(tick_labels)
+    ax1.legend(loc=&quot;lower left&quot;, fontsize=8)
+    ax1.set_ylim(0, 1)
+
+    # Bottom panel: Year-over-year change
+    yoy = all_df[&quot;yoy_change&quot;].to_list()
+    colors = [&quot;#22c55e&quot; if v is not None and v &gt;= 0 else &quot;#ef4444&quot; for v in yoy]
+    yoy_clean = [v if v is not None else 0 for v in yoy]
+    ax2.bar(x, yoy_clean, color=colors, width=1.0, alpha=0.7)
+    ax2.axhline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax2.set_ylabel(&quot;YoY Change&quot;)
+    ax2.set_xlabel(&quot;Month&quot;)
+    ax2.set_xticks(tick_positions)
+    ax2.set_xticklabels(tick_labels)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;system_trend.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;system_trend.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 01: System-Wide OTP Trend&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading data...&quot;)
+    df = load_data()
+    print(f&quot;  {len(df):,} OTP observations loaded&quot;)
+
+    # Weight source diagnostics
+    has_sched = df.filter(pl.col(&quot;sched_trips&quot;).is_not_null())
+    has_static = df.filter(pl.col(&quot;sched_trips&quot;).is_null() &amp; (pl.col(&quot;trips_weight&quot;) &gt; 0))
+    has_none = df.filter(pl.col(&quot;trips_weight&quot;) == 0)
+    print(f&quot;  Weight sources: {len(has_sched):,} time-varying, {len(has_static):,} static fallback, {len(has_none):,} zero-weight&quot;)
+
+    if len(has_sched) &gt; 0:
+        sched_months = has_sched[&quot;month&quot;].unique().sort()
+        print(f&quot;  Time-varying range: {sched_months[0]} to {sched_months[-1]} ({len(sched_months)} months)&quot;)
+
+    print(&quot;\nAnalyzing...&quot;)
+    all_result, bus_result = analyze(df)
+    print(f&quot;  {len(all_result)} months computed (all modes)&quot;)
+    print(f&quot;  {len(bus_result)} months computed (bus only)&quot;)
+
+    # Print summary
+    latest = all_result.tail(1)
+    earliest = all_result.head(1)
+    print(f&quot;  Period: {earliest[&#x27;month&#x27;][0]} to {latest[&#x27;month&#x27;][0]}&quot;)
+    print(f&quot;  Latest all-mode weighted OTP: {latest[&#x27;weighted_otp&#x27;][0]:.1%}&quot;)
+
+    bus_latest = bus_result.tail(1)
+    print(f&quot;  Latest bus-only weighted OTP: {bus_latest[&#x27;weighted_otp&#x27;][0]:.1%}&quot;)
+
+    # Route count range
+    min_rc = all_result[&quot;route_count&quot;].min()
+    max_rc = all_result[&quot;route_count&quot;].max()
+    print(f&quot;  Route count range: {min_rc}--{max_rc}&quot;)
+
+    # Zero-weight routes
+    zero_routes = sorted(df.filter(pl.col(&quot;trips_weight&quot;) == 0)[&quot;route_id&quot;].unique().to_list())
+    if zero_routes:
+        print(f&quot;  Routes with zero weight (excluded from weighted avg): {zero_routes}&quot;)
+
+    print(&quot;\nSaving CSVs...&quot;)
+    all_result.write_csv(OUT / &quot;system_trend.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;system_trend.csv&#x27;}&quot;)
+    bus_result.write_csv(OUT / &quot;system_trend_bus_only.csv&quot;)
+    print(f&quot;  Saved to {OUT / &#x27;system_trend_bus_only.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating chart...&quot;)
+    make_chart(all_result, bus_result)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
   </details>
 </section>
 
@@ -498,6 +713,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

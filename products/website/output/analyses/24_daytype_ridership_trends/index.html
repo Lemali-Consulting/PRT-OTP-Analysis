@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>24 - Weekday vs Weekend Ridership Trends</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -259,6 +262,361 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 24: Compare weekday, Saturday, and Sunday ridership trends and correlate weekend share with OTP.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+
+def load_ridership() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load all ridership data across day types.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, month, day_type, avg_riders, day_count
+        FROM ridership_monthly
+        WHERE avg_riders IS NOT NULL AND day_count IS NOT NULL
+    &quot;&quot;&quot;)
+
+
+def load_otp() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load OTP data for correlation analysis.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, month, otp
+        FROM otp_monthly
+    &quot;&quot;&quot;)
+
+
+def system_monthly(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute system-wide total monthly riders by day type.&quot;&quot;&quot;
+    return (
+        df.with_columns(
+            (pl.col(&quot;avg_riders&quot;) * pl.col(&quot;day_count&quot;)).alias(&quot;total_riders&quot;),
+        )
+        .group_by(&quot;month&quot;, &quot;day_type&quot;)
+        .agg(
+            total_riders=pl.col(&quot;total_riders&quot;).sum(),
+            avg_riders_sum=pl.col(&quot;avg_riders&quot;).sum(),
+            n_routes=pl.col(&quot;route_id&quot;).n_unique(),
+        )
+        .sort(&quot;month&quot;, &quot;day_type&quot;)
+    )
+
+
+def index_to_baseline(monthly: pl.DataFrame, baseline_month: str = &quot;2019-01&quot;) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Index each day type series to baseline_month = 100.&quot;&quot;&quot;
+    baseline = (
+        monthly.filter(pl.col(&quot;month&quot;) == baseline_month)
+        .select(&quot;day_type&quot;, pl.col(&quot;total_riders&quot;).alias(&quot;baseline_riders&quot;))
+    )
+    return (
+        monthly.join(baseline, on=&quot;day_type&quot;, how=&quot;left&quot;)
+        .with_columns(
+            (pl.col(&quot;total_riders&quot;) / pl.col(&quot;baseline_riders&quot;) * 100).alias(&quot;indexed&quot;),
+        )
+    )
+
+
+def weekend_share_monthly(monthly: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute weekend ridership share per month.&quot;&quot;&quot;
+    pivoted = (
+        monthly.group_by(&quot;month&quot;)
+        .agg(
+            weekday=pl.col(&quot;total_riders&quot;).filter(pl.col(&quot;day_type&quot;) == &quot;WEEKDAY&quot;).sum(),
+            saturday=pl.col(&quot;total_riders&quot;).filter(pl.col(&quot;day_type&quot;) == &quot;SAT.&quot;).sum(),
+            sunday=pl.col(&quot;total_riders&quot;).filter(pl.col(&quot;day_type&quot;) == &quot;SUN.&quot;).sum(),
+        )
+        .with_columns(
+            total=pl.col(&quot;weekday&quot;) + pl.col(&quot;saturday&quot;) + pl.col(&quot;sunday&quot;),
+        )
+        .with_columns(
+            weekend_share=(pl.col(&quot;saturday&quot;) + pl.col(&quot;sunday&quot;)) / pl.col(&quot;total&quot;),
+            sat_share=pl.col(&quot;saturday&quot;) / pl.col(&quot;total&quot;),
+            sun_share=pl.col(&quot;sunday&quot;) / pl.col(&quot;total&quot;),
+        )
+        .sort(&quot;month&quot;)
+    )
+    return pivoted
+
+
+def route_weekend_share(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute per-route average weekend-to-weekday ridership ratio.
+
+    For each route-month where all three day types are present, compute:
+      weekend_ratio = (SAT avg_riders + SUN avg_riders) / WEEKDAY avg_riders
+    Then average across months.
+    &quot;&quot;&quot;
+    # Pivot to get all three day types per route-month
+    wide = (
+        df.pivot(on=&quot;day_type&quot;, index=[&quot;route_id&quot;, &quot;month&quot;], values=&quot;avg_riders&quot;)
+    )
+    # Only keep rows where all three day types are present
+    required = [&quot;WEEKDAY&quot;, &quot;SAT.&quot;, &quot;SUN.&quot;]
+    for col in required:
+        if col not in wide.columns:
+            return pl.DataFrame()
+    wide = wide.drop_nulls(subset=required)
+    wide = wide.filter(pl.col(&quot;WEEKDAY&quot;) &gt; 0)
+
+    wide = wide.with_columns(
+        weekend_ratio=(
+            (pl.col(&quot;SAT.&quot;) + pl.col(&quot;SUN.&quot;)) / pl.col(&quot;WEEKDAY&quot;)
+        ),
+    )
+
+    route_avg = (
+        wide.group_by(&quot;route_id&quot;)
+        .agg(
+            avg_weekend_ratio=pl.col(&quot;weekend_ratio&quot;).mean(),
+            n_months=pl.col(&quot;month&quot;).count(),
+        )
+        .filter(pl.col(&quot;n_months&quot;) &gt;= 6)  # require at least 6 months with all day types
+        .sort(&quot;avg_weekend_ratio&quot;, descending=True)
+    )
+    return route_avg
+
+
+def correlate_weekend_otp(route_wkend: pl.DataFrame, otp_df: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Correlate route-level weekend share with average OTP.&quot;&quot;&quot;
+    if len(route_wkend) == 0:
+        return {&quot;n&quot;: 0, &quot;error&quot;: &quot;no routes with weekend data&quot;}
+    route_otp = (
+        otp_df.group_by(&quot;route_id&quot;)
+        .agg(avg_otp=pl.col(&quot;otp&quot;).mean())
+    )
+    merged = route_wkend.join(route_otp, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    if len(merged) &lt; 10:
+        return {&quot;n&quot;: len(merged), &quot;error&quot;: &quot;too few routes&quot;}
+
+    x = merged[&quot;avg_weekend_ratio&quot;].to_list()
+    y = merged[&quot;avg_otp&quot;].to_list()
+
+    r_pearson, p_pearson = stats.pearsonr(x, y)
+    r_spearman, p_spearman = stats.spearmanr(x, y)
+
+    return {
+        &quot;n&quot;: len(merged),
+        &quot;r_pearson&quot;: r_pearson,
+        &quot;p_pearson&quot;: p_pearson,
+        &quot;r_spearman&quot;: r_spearman,
+        &quot;p_spearman&quot;: p_spearman,
+        &quot;merged&quot;: merged,
+    }
+
+
+def make_trend_chart(monthly_idx: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Plot indexed ridership by day type over time.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    day_type_styles = {
+        &quot;WEEKDAY&quot;: {&quot;color&quot;: &quot;#2563eb&quot;, &quot;label&quot;: &quot;Weekday&quot;},
+        &quot;SAT.&quot;: {&quot;color&quot;: &quot;#16a34a&quot;, &quot;label&quot;: &quot;Saturday&quot;},
+        &quot;SUN.&quot;: {&quot;color&quot;: &quot;#e11d48&quot;, &quot;label&quot;: &quot;Sunday/Holiday&quot;},
+    }
+
+    all_months = sorted(monthly_idx[&quot;month&quot;].unique().to_list())
+    month_to_x = {m: i for i, m in enumerate(all_months)}
+    tick_positions = [i for i, m in enumerate(all_months) if m.endswith(&quot;-01&quot;)]
+    tick_labels = [all_months[i][:4] for i in tick_positions]
+
+    for day_type, style in day_type_styles.items():
+        sub = monthly_idx.filter(pl.col(&quot;day_type&quot;) == day_type).sort(&quot;month&quot;)
+        if len(sub) == 0:
+            continue
+        x = [month_to_x[m] for m in sub[&quot;month&quot;].to_list()]
+        y = sub[&quot;indexed&quot;].to_list()
+        ax.plot(x, y, color=style[&quot;color&quot;], linewidth=1.8, label=style[&quot;label&quot;], alpha=0.85)
+
+    ax.axhline(100, color=&quot;gray&quot;, linestyle=&quot;--&quot;, alpha=0.4, linewidth=0.8)
+
+    if &quot;2020-03&quot; in all_months:
+        covid_idx = month_to_x[&quot;2020-03&quot;]
+        ax.axvline(covid_idx, color=&quot;#ef4444&quot;, linestyle=&quot;:&quot;, alpha=0.5, label=&quot;COVID (Mar 2020)&quot;)
+
+    ax.set_ylabel(&quot;Indexed Ridership (Jan 2019 = 100)&quot;)
+    ax.set_xlabel(&quot;Month&quot;)
+    ax.set_title(&quot;System-Wide Ridership by Day Type (Indexed to Jan 2019)&quot;)
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels)
+    ax.legend(loc=&quot;upper right&quot;, fontsize=9)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;daytype_ridership_trend.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;daytype_ridership_trend.png&#x27;}&quot;)
+
+
+def make_weekend_share_chart(wk_share: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Plot weekend ridership share over time.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(12, 5))
+
+    all_months = sorted(wk_share[&quot;month&quot;].to_list())
+    month_to_x = {m: i for i, m in enumerate(all_months)}
+    tick_positions = [i for i, m in enumerate(all_months) if m.endswith(&quot;-01&quot;)]
+    tick_labels = [all_months[i][:4] for i in tick_positions]
+
+    x = [month_to_x[m] for m in wk_share[&quot;month&quot;].to_list()]
+    y_total = wk_share[&quot;weekend_share&quot;].to_list()
+    y_sat = wk_share[&quot;sat_share&quot;].to_list()
+    y_sun = wk_share[&quot;sun_share&quot;].to_list()
+
+    ax.plot(x, y_total, color=&quot;#2563eb&quot;, linewidth=2.0, label=&quot;Weekend (Sat + Sun)&quot;, alpha=0.85)
+    ax.plot(x, y_sat, color=&quot;#16a34a&quot;, linewidth=1.2, label=&quot;Saturday only&quot;, alpha=0.7, linestyle=&quot;--&quot;)
+    ax.plot(x, y_sun, color=&quot;#e11d48&quot;, linewidth=1.2, label=&quot;Sunday only&quot;, alpha=0.7, linestyle=&quot;--&quot;)
+
+    if &quot;2020-03&quot; in all_months:
+        covid_idx = month_to_x[&quot;2020-03&quot;]
+        ax.axvline(covid_idx, color=&quot;#ef4444&quot;, linestyle=&quot;:&quot;, alpha=0.5)
+
+    ax.set_ylabel(&quot;Share of Total Ridership&quot;)
+    ax.set_xlabel(&quot;Month&quot;)
+    ax.set_title(&quot;Weekend Ridership Share Over Time&quot;)
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels)
+    ax.legend(loc=&quot;upper left&quot;, fontsize=9)
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f&quot;{v:.0%}&quot;))
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;weekend_share_trend.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;weekend_share_trend.png&#x27;}&quot;)
+
+
+def make_scatter_chart(merged: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter plot of weekend ratio vs route-level OTP.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    x = merged[&quot;avg_weekend_ratio&quot;].to_list()
+    y = merged[&quot;avg_otp&quot;].to_list()
+
+    ax.scatter(x, y, alpha=0.5, s=30, color=&quot;#2563eb&quot;, edgecolors=&quot;white&quot;, linewidth=0.5)
+
+    # Trend line
+    slope, intercept, _, _, _ = stats.linregress(x, y)
+    x_line = [min(x), max(x)]
+    y_line = [slope * xi + intercept for xi in x_line]
+    ax.plot(x_line, y_line, color=&quot;#e11d48&quot;, linewidth=1.5, linestyle=&quot;--&quot;, alpha=0.7)
+
+    ax.set_xlabel(&quot;Average Weekend-to-Weekday Ridership Ratio&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;Weekend Ridership Ratio vs On-Time Performance&quot;)
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f&quot;{v:.0%}&quot;))
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;weekend_share_vs_otp.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;weekend_share_vs_otp.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load data, compute trends, correlate, chart, and save.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 24: Weekday vs Weekend Ridership Trends&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading ridership data...&quot;)
+    ride_df = load_ridership()
+    print(f&quot;  {len(ride_df):,} rows, {ride_df[&#x27;route_id&#x27;].n_unique()} routes, &quot;
+          f&quot;{ride_df[&#x27;day_type&#x27;].n_unique()} day types&quot;)
+    print(f&quot;  Day types: {sorted(ride_df[&#x27;day_type&#x27;].unique().to_list())}&quot;)
+    print(f&quot;  Month range: {ride_df[&#x27;month&#x27;].min()} to {ride_df[&#x27;month&#x27;].max()}&quot;)
+
+    print(&quot;\nComputing system-wide monthly ridership by day type...&quot;)
+    monthly = system_monthly(ride_df)
+
+    # Summary stats by day type
+    print(&quot;\n  Day type summary (total monthly riders, averaged across months):&quot;)
+    for dt in sorted(monthly[&quot;day_type&quot;].unique().to_list()):
+        sub = monthly.filter(pl.col(&quot;day_type&quot;) == dt)
+        avg = sub[&quot;total_riders&quot;].mean()
+        print(f&quot;    {dt:&lt;12s}: {avg:&gt;12,.0f} avg monthly riders&quot;)
+
+    print(&quot;\nIndexing to Jan 2019 baseline...&quot;)
+    monthly_idx = index_to_baseline(monthly, &quot;2019-01&quot;)
+
+    # Latest index values
+    latest_month = monthly_idx[&quot;month&quot;].max()
+    print(f&quot;\n  Latest month ({latest_month}) indexed values:&quot;)
+    latest = monthly_idx.filter(pl.col(&quot;month&quot;) == latest_month)
+    for row in latest.iter_rows(named=True):
+        print(f&quot;    {row[&#x27;day_type&#x27;]:&lt;12s}: {row[&#x27;indexed&#x27;]:&gt;6.1f}&quot;)
+
+    print(&quot;\nComputing weekend ridership share...&quot;)
+    wk_share = weekend_share_monthly(monthly)
+
+    # Pre-COVID vs latest weekend share
+    pre_covid_avg = wk_share.filter(
+        (pl.col(&quot;month&quot;) &gt;= &quot;2019-01&quot;) &amp; (pl.col(&quot;month&quot;) &lt;= &quot;2020-02&quot;)
+    )[&quot;weekend_share&quot;].mean()
+    post_2023_avg = wk_share.filter(pl.col(&quot;month&quot;) &gt;= &quot;2023-01&quot;)[&quot;weekend_share&quot;].mean()
+    print(f&quot;\n  Weekend share (pre-COVID, 2019-01 to 2020-02): {pre_covid_avg:.1%}&quot;)
+    print(f&quot;  Weekend share (2023-01 to latest):             {post_2023_avg:.1%}&quot;)
+    print(f&quot;  Change: {post_2023_avg - pre_covid_avg:+.1%}&quot;)
+
+    print(&quot;\nComputing per-route weekend-to-weekday ratio...&quot;)
+    route_wkend = route_weekend_share(ride_df)
+    print(f&quot;  {len(route_wkend)} routes with 6+ months of all three day types&quot;)
+
+    if len(route_wkend) &gt; 0:
+        print(f&quot;  Median weekend ratio: {route_wkend[&#x27;avg_weekend_ratio&#x27;].median():.3f}&quot;)
+        print(f&quot;  Range: {route_wkend[&#x27;avg_weekend_ratio&#x27;].min():.3f} -- &quot;
+              f&quot;{route_wkend[&#x27;avg_weekend_ratio&#x27;].max():.3f}&quot;)
+
+        # Top/bottom 5
+        print(&quot;\n  Top 5 weekend-heavy routes:&quot;)
+        for row in route_wkend.head(5).iter_rows(named=True):
+            print(f&quot;    {row[&#x27;route_id&#x27;]:&lt;8s} ratio={row[&#x27;avg_weekend_ratio&#x27;]:.3f}&quot;)
+        print(&quot;  Bottom 5 weekend-heavy routes:&quot;)
+        for row in route_wkend.tail(5).iter_rows(named=True):
+            print(f&quot;    {row[&#x27;route_id&#x27;]:&lt;8s} ratio={row[&#x27;avg_weekend_ratio&#x27;]:.3f}&quot;)
+
+    print(&quot;\nCorrelating weekend share with OTP...&quot;)
+    otp_df = load_otp()
+    corr = correlate_weekend_otp(route_wkend, otp_df)
+    if &quot;error&quot; not in corr:
+        print(f&quot;  n = {corr[&#x27;n&#x27;]} routes&quot;)
+        print(f&quot;  Pearson  r = {corr[&#x27;r_pearson&#x27;]:.3f}, p = {corr[&#x27;p_pearson&#x27;]:.4f}&quot;)
+        print(f&quot;  Spearman r = {corr[&#x27;r_spearman&#x27;]:.3f}, p = {corr[&#x27;p_spearman&#x27;]:.4f}&quot;)
+    else:
+        print(f&quot;  {corr[&#x27;error&#x27;]}&quot;)
+
+    print(&quot;\nSaving CSV...&quot;)
+    monthly.write_csv(OUT / &quot;daytype_summary.csv&quot;)
+    print(f&quot;  {OUT / &#x27;daytype_summary.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating charts...&quot;)
+    make_trend_chart(monthly_idx)
+    make_weekend_share_chart(wk_share)
+    if &quot;merged&quot; in corr:
+        make_scatter_chart(corr[&quot;merged&quot;])
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -433,6 +791,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

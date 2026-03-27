@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>38 - Downtown Recovery Gap</h1>
   <p class="lede">Ridership & Recovery</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -207,6 +210,349 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Test whether downtown-dependent routes explain Pittsburgh&#x27;s poor ridership recovery.&quot;&quot;&quot;
+
+import math
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import get_db, output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+DATA_DIR = HERE.parents[1] / &quot;data&quot;
+
+# Downtown Pittsburgh centroid (matches analysis 33)
+DT_LAT, DT_LON = 40.4406, -79.9959
+DT_RADIUS_KM = 2.0
+
+BASELINE_YEAR = &quot;2019&quot;
+
+
+def haversine_km(lat: float, lon: float) -&gt; float:
+    &quot;&quot;&quot;Return distance in km from downtown centroid.&quot;&quot;&quot;
+    R = 6371
+    rlat1, rlat2 = math.radians(DT_LAT), math.radians(lat)
+    dlat = math.radians(lat - DT_LAT)
+    dlon = math.radians(lon - DT_LON)
+    a = math.sin(dlat / 2) ** 2 + math.cos(rlat1) * math.cos(rlat2) * math.sin(dlon / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def compute_downtown_scores() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute downtown-dependence score for each route using stop-level data.&quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;])
+
+    # Pre-pandemic weekday boardings by stop and route
+    pre = df.filter(
+        (pl.col(&quot;time_period&quot;) == &quot;Pre-pandemic&quot;)
+        &amp; (pl.col(&quot;serviceday&quot;) == &quot;Weekday&quot;)
+    )
+    stop_route = (
+        pre.group_by([&quot;stop_id&quot;, &quot;route_name&quot;, &quot;latitude&quot;, &quot;longitude&quot;])
+        .agg(pl.col(&quot;avg_ons&quot;).mean().alias(&quot;avg_boardings&quot;))
+        .drop_nulls(subset=[&quot;latitude&quot;, &quot;longitude&quot;, &quot;avg_boardings&quot;])
+    )
+
+    # Classify stops as downtown or not
+    dists = [
+        haversine_km(lat, lon)
+        for lat, lon in zip(
+            stop_route[&quot;latitude&quot;].to_list(), stop_route[&quot;longitude&quot;].to_list()
+        )
+    ]
+    stop_route = stop_route.with_columns(
+        pl.Series(&quot;dist_km&quot;, dists),
+    ).with_columns(
+        (pl.col(&quot;dist_km&quot;) &lt; DT_RADIUS_KM).alias(&quot;is_downtown&quot;),
+    )
+
+    # Downtown boardings share per route
+    stop_route = stop_route.with_columns(
+        (pl.col(&quot;avg_boardings&quot;) * pl.col(&quot;is_downtown&quot;).cast(pl.Float64)).alias(
+            &quot;dt_boardings&quot;
+        )
+    )
+    route_scores = (
+        stop_route.group_by(&quot;route_name&quot;)
+        .agg(
+            pl.col(&quot;avg_boardings&quot;).sum().alias(&quot;total_boardings&quot;),
+            pl.col(&quot;dt_boardings&quot;).sum().alias(&quot;dt_boardings&quot;),
+            pl.col(&quot;stop_id&quot;).n_unique().alias(&quot;n_stops&quot;),
+        )
+        .with_columns(
+            (pl.col(&quot;dt_boardings&quot;) / pl.col(&quot;total_boardings&quot;)).alias(&quot;dt_share&quot;)
+        )
+        .rename({&quot;route_name&quot;: &quot;route_id&quot;})
+        .sort(&quot;dt_share&quot;, descending=True)
+    )
+    return route_scores
+
+
+def load_ridership() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load monthly weekday ridership from database.&quot;&quot;&quot;
+    return query_to_polars(
+        &quot;SELECT route_id, month, avg_riders, route_name &quot;
+        &quot;FROM ridership_monthly WHERE day_type = &#x27;WEEKDAY&#x27;&quot;
+    )
+
+
+def compute_recovery(
+    ridership: pl.DataFrame, route_scores: pl.DataFrame
+) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute 2019-indexed ridership and merge with downtown scores.&quot;&quot;&quot;
+    # Compute 2019 baseline per route
+    baseline = (
+        ridership.filter(pl.col(&quot;month&quot;).str.starts_with(BASELINE_YEAR))
+        .group_by(&quot;route_id&quot;)
+        .agg(pl.col(&quot;avg_riders&quot;).mean().alias(&quot;baseline_2019&quot;))
+    )
+
+    # Join baseline and compute index
+    df = ridership.join(baseline, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    df = df.filter(pl.col(&quot;baseline_2019&quot;) &gt; 0).with_columns(
+        (pl.col(&quot;avg_riders&quot;) / pl.col(&quot;baseline_2019&quot;) * 100).alias(&quot;indexed&quot;)
+    )
+
+    # Merge downtown scores
+    df = df.join(
+        route_scores.select(&quot;route_id&quot;, &quot;dt_share&quot;, &quot;total_boardings&quot;),
+        on=&quot;route_id&quot;,
+        how=&quot;inner&quot;,
+    )
+    return df
+
+
+def assign_terciles(route_scores: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Assign downtown-dependence terciles.&quot;&quot;&quot;
+    thirds = route_scores[&quot;dt_share&quot;].quantile(1 / 3), route_scores[&quot;dt_share&quot;].quantile(2 / 3)
+    return route_scores.with_columns(
+        pl.when(pl.col(&quot;dt_share&quot;) &lt;= thirds[0])
+        .then(pl.lit(&quot;Low&quot;))
+        .when(pl.col(&quot;dt_share&quot;) &lt;= thirds[1])
+        .then(pl.lit(&quot;Medium&quot;))
+        .otherwise(pl.lit(&quot;High&quot;))
+        .alias(&quot;dt_tercile&quot;)
+    )
+
+
+def plot_trajectories(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Plot recovery trajectories by downtown-dependence tercile.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    # Aggregate: ridership-weighted mean index per tercile per month
+    monthly = (
+        df.group_by([&quot;month&quot;, &quot;dt_tercile&quot;])
+        .agg(
+            (pl.col(&quot;indexed&quot;) * pl.col(&quot;avg_riders&quot;)).sum().alias(&quot;weighted_sum&quot;),
+            pl.col(&quot;avg_riders&quot;).sum().alias(&quot;total_riders&quot;),
+            pl.col(&quot;route_id&quot;).n_unique().alias(&quot;n_routes&quot;),
+        )
+        .with_columns(
+            (pl.col(&quot;weighted_sum&quot;) / pl.col(&quot;total_riders&quot;)).alias(&quot;weighted_index&quot;)
+        )
+        .sort(&quot;month&quot;)
+    )
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    colors = {&quot;High&quot;: &quot;#dc2626&quot;, &quot;Medium&quot;: &quot;#f59e0b&quot;, &quot;Low&quot;: &quot;#2563eb&quot;}
+    for tercile in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
+        sub = monthly.filter(pl.col(&quot;dt_tercile&quot;) == tercile).sort(&quot;month&quot;)
+        n = sub[&quot;n_routes&quot;].max()
+        ax.plot(
+            sub[&quot;month&quot;].to_list(),
+            sub[&quot;weighted_index&quot;].to_list(),
+            label=f&quot;{tercile} downtown dependence (n={n})&quot;,
+            color=colors[tercile],
+            linewidth=2,
+        )
+
+    ax.axhline(100, color=&quot;gray&quot;, linewidth=0.8, linestyle=&quot;--&quot;, alpha=0.5)
+    ax.axvspan(&quot;2020-03&quot;, &quot;2020-06&quot;, alpha=0.08, color=&quot;gray&quot;, label=&quot;Initial lockdown&quot;)
+
+    # Thin x-axis labels
+    ticks = [m for m in monthly[&quot;month&quot;].unique().sort().to_list() if m.endswith(&quot;-01&quot;)]
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([m[:4] for m in ticks], rotation=0)
+
+    ax.set_ylabel(&quot;Indexed weekday ridership (2019 = 100)&quot;)
+    ax.set_xlabel(&quot;&quot;)
+    ax.set_title(&quot;Ridership Recovery by Downtown Dependence&quot;)
+    ax.legend(loc=&quot;lower right&quot;)
+    ax.set_ylim(0, 130)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;recovery_trajectories.png&quot;, dpi=150, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;recovery_trajectories.png&#x27;}&quot;)
+
+
+def plot_scatter(route_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter plot of downtown share vs 2024 recovery.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    x = route_df[&quot;dt_share&quot;].to_numpy() * 100
+    y = route_df[&quot;recovery_2024&quot;].to_numpy()
+    sizes = np.clip(route_df[&quot;baseline_2019&quot;].to_numpy() / 100, 10, 200)
+
+    ax.scatter(x, y, s=sizes, alpha=0.5, color=&quot;#3b82f6&quot;, edgecolors=&quot;white&quot;, linewidth=0.5)
+
+    # Regression line
+    mask = np.isfinite(x) &amp; np.isfinite(y)
+    if mask.sum() &gt; 5:
+        rho, p_val = stats.spearmanr(x[mask], y[mask])
+        slope, intercept = np.polyfit(x[mask], y[mask], 1)
+        x_line = np.linspace(x[mask].min(), x[mask].max(), 100)
+        ax.plot(x_line, slope * x_line + intercept, color=&quot;#dc2626&quot;, linewidth=1.5,
+                linestyle=&quot;--&quot;, label=f&quot;Spearman ρ = {rho:.2f} (p = {p_val:.3f})&quot;)
+
+    ax.axhline(100, color=&quot;gray&quot;, linewidth=0.8, linestyle=&quot;--&quot;, alpha=0.5)
+    ax.set_xlabel(&quot;Downtown boardings share (% of route total)&quot;)
+    ax.set_ylabel(&quot;2024 ridership as % of 2019&quot;)
+    ax.set_title(&quot;Downtown Dependence vs. Ridership Recovery&quot;)
+    ax.legend()
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;scatter_dt_share_vs_recovery.png&quot;, dpi=150, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Saved {OUT / &#x27;scatter_dt_share_vs_recovery.png&#x27;}&quot;)
+
+
+def run_tests(route_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Kruskal-Wallis and pairwise Mann-Whitney tests on recovery by tercile.&quot;&quot;&quot;
+    results = []
+
+    groups = {}
+    for t in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
+        vals = route_df.filter(pl.col(&quot;dt_tercile&quot;) == t)[&quot;recovery_2024&quot;].drop_nulls().to_list()
+        groups[t] = vals
+
+    if all(len(v) &gt;= 3 for v in groups.values()):
+        h_stat, kw_p = stats.kruskal(*groups.values())
+        results.append({
+            &quot;test&quot;: &quot;Kruskal-Wallis&quot;,
+            &quot;comparison&quot;: &quot;High vs Medium vs Low&quot;,
+            &quot;statistic&quot;: round(h_stat, 3),
+            &quot;p_value&quot;: round(kw_p, 4),
+            &quot;significant&quot;: kw_p &lt; 0.05,
+        })
+
+        pairs = [(&quot;High&quot;, &quot;Medium&quot;), (&quot;High&quot;, &quot;Low&quot;), (&quot;Medium&quot;, &quot;Low&quot;)]
+        for a, b in pairs:
+            u_stat, mw_p = stats.mannwhitneyu(groups[a], groups[b], alternative=&quot;two-sided&quot;)
+            adj_p = min(mw_p * 3, 1.0)
+            results.append({
+                &quot;test&quot;: &quot;Mann-Whitney (Bonferroni)&quot;,
+                &quot;comparison&quot;: f&quot;{a} vs {b}&quot;,
+                &quot;statistic&quot;: round(u_stat, 1),
+                &quot;p_value&quot;: round(adj_p, 4),
+                &quot;significant&quot;: adj_p &lt; 0.05,
+            })
+
+    return pl.DataFrame(results)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 38: Downtown Recovery Gap&quot;)
+    print(&quot;=&quot; * 60)
+
+    # Step 1: Downtown-dependence scores
+    print(&quot;\nComputing downtown-dependence scores from stop-level data...&quot;)
+    route_scores = compute_downtown_scores()
+    route_scores = assign_terciles(route_scores)
+    print(f&quot;  {len(route_scores)} routes scored&quot;)
+    for t in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
+        sub = route_scores.filter(pl.col(&quot;dt_tercile&quot;) == t)
+        print(f&quot;  {t:6s}: n={len(sub)}, median dt_share={sub[&#x27;dt_share&#x27;].median():.1%}&quot;)
+
+    # Step 2: Load ridership and compute recovery
+    print(&quot;\nLoading monthly ridership...&quot;)
+    ridership = load_ridership()
+    df = compute_recovery(ridership, route_scores)
+    # Merge tercile labels
+    df = df.join(
+        route_scores.select(&quot;route_id&quot;, &quot;dt_tercile&quot;), on=&quot;route_id&quot;, how=&quot;left&quot;
+    )
+    print(f&quot;  {df[&#x27;route_id&#x27;].n_unique()} routes with both ridership and downtown scores&quot;)
+
+    # Step 3: Compute 2024 recovery ratio per route
+    recovery_2024 = (
+        df.filter(pl.col(&quot;month&quot;).str.starts_with(&quot;2024&quot;))
+        .group_by(&quot;route_id&quot;)
+        .agg(pl.col(&quot;indexed&quot;).mean().alias(&quot;recovery_2024&quot;))
+    )
+    route_df = route_scores.join(recovery_2024, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    # Also get baseline for scatter sizing
+    baseline = (
+        ridership.filter(pl.col(&quot;month&quot;).str.starts_with(BASELINE_YEAR))
+        .group_by(&quot;route_id&quot;)
+        .agg(pl.col(&quot;avg_riders&quot;).mean().alias(&quot;baseline_2019&quot;))
+    )
+    route_df = route_df.join(baseline, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+
+    print(&quot;\nRecovery by tercile (2024 avg as % of 2019):&quot;)
+    for t in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
+        sub = route_df.filter(pl.col(&quot;dt_tercile&quot;) == t)
+        med = sub[&quot;recovery_2024&quot;].median()
+        mean = sub[&quot;recovery_2024&quot;].mean()
+        print(f&quot;  {t:6s}: median={med:.1f}%, mean={mean:.1f}%, n={len(sub)}&quot;)
+
+    # Step 4: Statistical tests
+    print(&quot;\nStatistical tests:&quot;)
+    test_results = run_tests(route_df)
+    for row in test_results.iter_rows(named=True):
+        sig = &quot;*&quot; if row[&quot;significant&quot;] else &quot;&quot;
+        print(f&quot;  {row[&#x27;test&#x27;]:30s} {row[&#x27;comparison&#x27;]:25s} &quot;
+              f&quot;stat={row[&#x27;statistic&#x27;]:.3f}, p={row[&#x27;p_value&#x27;]:.4f} {sig}&quot;)
+
+    # Spearman correlation (continuous)
+    x = route_df[&quot;dt_share&quot;].to_numpy()
+    y = route_df[&quot;recovery_2024&quot;].to_numpy()
+    mask = np.isfinite(x) &amp; np.isfinite(y)
+    rho, p_val = stats.spearmanr(x[mask], y[mask])
+    print(f&quot;\n  Spearman (dt_share vs recovery): ρ={rho:.3f}, p={p_val:.4f}&quot;)
+
+    # Step 5: Charts
+    print(&quot;\nGenerating charts...&quot;)
+    plot_trajectories(df)
+    plot_scatter(route_df)
+
+    # Step 6: Save CSV
+    route_df.sort(&quot;dt_share&quot;, descending=True).write_csv(
+        OUT / &quot;route_downtown_scores.csv&quot;
+    )
+    test_results.write_csv(OUT / &quot;statistical_tests.csv&quot;)
+    print(f&quot;  Saved {OUT / &#x27;route_downtown_scores.csv&#x27;}&quot;)
+    print(f&quot;  Saved {OUT / &#x27;statistical_tests.csv&#x27;}&quot;)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 
@@ -287,6 +633,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });

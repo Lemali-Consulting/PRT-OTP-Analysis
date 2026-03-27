@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="../../style.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
 </head>
 <body>
   <div class="bg-layer bg-layer-one"></div>
@@ -34,7 +36,7 @@
   <h1>30 - Service Level vs OTP Longitudinal</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2016-11 to 2025-11 (from otp_monthly, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-27 19:41 UTC · Commit 4ce1877</p>
+  <p class="lede">Built 2026-03-27 19:46 UTC · Commit 4cbb45b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -46,6 +48,7 @@
     <a href="#methods">Methods</a>
     
     <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
   </nav>
 </section>
 
@@ -264,6 +267,218 @@
 
 
 
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 30: Within-route panel -- does changing trip frequency predict OTP changes?&quot;&quot;&quot;
+
+from pathlib import Path
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+
+def load_panel() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load the route-month panel: OTP joined with scheduled trips for the overlap period.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT o.route_id, o.month, o.otp,
+               st.daily_trips,
+               r.mode
+        FROM otp_monthly o
+        INNER JOIN scheduled_trips_monthly st
+            ON o.route_id = st.route_id
+            AND o.month = st.month
+            AND st.day_type = &#x27;WEEKDAY&#x27;
+        LEFT JOIN routes r ON o.route_id = r.route_id
+        ORDER BY o.route_id, o.month
+    &quot;&quot;&quot;)
+
+
+def compute_deltas(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute month-over-month changes within each route.&quot;&quot;&quot;
+    df = df.sort([&quot;route_id&quot;, &quot;month&quot;])
+
+    df = df.with_columns(
+        prev_otp=pl.col(&quot;otp&quot;).shift(1).over(&quot;route_id&quot;),
+        prev_trips=pl.col(&quot;daily_trips&quot;).shift(1).over(&quot;route_id&quot;),
+        prev_month=pl.col(&quot;month&quot;).shift(1).over(&quot;route_id&quot;),
+    )
+
+    # Only keep rows where previous month exists (within same route)
+    df = df.filter(pl.col(&quot;prev_otp&quot;).is_not_null())
+
+    df = df.with_columns(
+        delta_otp=pl.col(&quot;otp&quot;) - pl.col(&quot;prev_otp&quot;),
+        delta_trips=pl.col(&quot;daily_trips&quot;) - pl.col(&quot;prev_trips&quot;),
+    )
+
+    return df
+
+
+def detrend(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Remove system-wide monthly trend from delta_otp.&quot;&quot;&quot;
+    monthly_mean = (
+        df.group_by(&quot;month&quot;)
+        .agg(system_delta_otp=pl.col(&quot;delta_otp&quot;).mean())
+    )
+    df = df.join(monthly_mean, on=&quot;month&quot;)
+    df = df.with_columns(
+        detrended_delta_otp=pl.col(&quot;delta_otp&quot;) - pl.col(&quot;system_delta_otp&quot;),
+    )
+    return df
+
+
+def run_regression(x: list[float], y: list[float]) -&gt; dict:
+    &quot;&quot;&quot;OLS regression of y on x, returning slope, intercept, r, p, se.&quot;&quot;&quot;
+    result = stats.linregress(x, y)
+    return {
+        &quot;slope&quot;: result.slope,
+        &quot;intercept&quot;: result.intercept,
+        &quot;r&quot;: result.rvalue,
+        &quot;p&quot;: result.pvalue,
+        &quot;se&quot;: result.stderr,
+        &quot;n&quot;: len(x),
+    }
+
+
+def make_chart(df: pl.DataFrame, reg: dict) -&gt; None:
+    &quot;&quot;&quot;Scatter: delta_trips vs detrended delta_otp with regression line.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    x = df[&quot;delta_trips&quot;].to_numpy()
+    y = df[&quot;detrended_delta_otp&quot;].to_numpy()
+
+    # Color by pre/post COVID
+    pre_covid = df.filter(pl.col(&quot;month&quot;) &lt; &quot;2020-03&quot;)
+    post_covid = df.filter(pl.col(&quot;month&quot;) &gt;= &quot;2020-03&quot;)
+
+    ax.scatter(
+        pre_covid[&quot;delta_trips&quot;].to_list(),
+        pre_covid[&quot;detrended_delta_otp&quot;].to_list(),
+        alpha=0.25, s=15, color=&quot;#2563eb&quot;, label=f&quot;Pre-COVID (n={len(pre_covid)})&quot;,
+    )
+    ax.scatter(
+        post_covid[&quot;delta_trips&quot;].to_list(),
+        post_covid[&quot;detrended_delta_otp&quot;].to_list(),
+        alpha=0.25, s=15, color=&quot;#e11d48&quot;, label=f&quot;Post-COVID (n={len(post_covid)})&quot;,
+    )
+
+    # Regression line
+    x_line = np.linspace(x.min(), x.max(), 100)
+    y_line = reg[&quot;slope&quot;] * x_line + reg[&quot;intercept&quot;]
+    ax.plot(x_line, y_line, color=&quot;black&quot;, linewidth=1.5,
+            label=f&quot;OLS: slope={reg[&#x27;slope&#x27;]:.5f}, p={reg[&#x27;p&#x27;]:.3f}&quot;)
+
+    ax.axhline(0, color=&quot;gray&quot;, linewidth=0.5)
+    ax.axvline(0, color=&quot;gray&quot;, linewidth=0.5)
+    ax.set_xlabel(&quot;Month-over-Month Change in Daily Trips&quot;)
+    ax.set_ylabel(&quot;Detrended Month-over-Month Change in OTP&quot;)
+    ax.set_title(&quot;Service Level vs OTP: Within-Route Longitudinal Panel&quot;)
+    ax.legend(fontsize=9)
+
+    fig.tight_layout()
+    fig.savefig(OUT / &quot;service_level_scatter.png&quot;, bbox_inches=&quot;tight&quot;)
+    plt.close(fig)
+    print(f&quot;  Chart saved to {OUT / &#x27;service_level_scatter.png&#x27;}&quot;)
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: build panel, compute deltas, regress, and chart.&quot;&quot;&quot;
+    print(&quot;=&quot; * 60)
+    print(&quot;Analysis 30: Service Level vs OTP Longitudinal&quot;)
+    print(&quot;=&quot; * 60)
+
+    print(&quot;\nLoading panel data...&quot;)
+    panel = load_panel()
+    print(f&quot;  {len(panel):,} route-month observations&quot;)
+    print(f&quot;  {panel[&#x27;route_id&#x27;].n_unique()} routes, months: {panel[&#x27;month&#x27;].min()} to {panel[&#x27;month&#x27;].max()}&quot;)
+
+    print(&quot;\nComputing month-over-month deltas...&quot;)
+    df = compute_deltas(panel)
+    print(f&quot;  {len(df):,} delta observations (after dropping first month per route)&quot;)
+
+    print(&quot;\nDetrending (removing system-wide monthly mean delta)...&quot;)
+    df = detrend(df)
+
+    # Save panel
+    df.select(
+        &quot;route_id&quot;, &quot;month&quot;, &quot;mode&quot;, &quot;otp&quot;, &quot;daily_trips&quot;,
+        &quot;delta_otp&quot;, &quot;delta_trips&quot;, &quot;detrended_delta_otp&quot;,
+    ).write_csv(OUT / &quot;service_level_panel.csv&quot;)
+    print(f&quot;  Panel saved to {OUT / &#x27;service_level_panel.csv&#x27;}&quot;)
+
+    # --- All routes ---
+    print(&quot;\n--- All routes ---&quot;)
+    x_all = df[&quot;delta_trips&quot;].to_list()
+    y_all = df[&quot;detrended_delta_otp&quot;].to_list()
+
+    reg_all = run_regression(x_all, y_all)
+    print(f&quot;  OLS: slope={reg_all[&#x27;slope&#x27;]:.5f} (SE={reg_all[&#x27;se&#x27;]:.5f}), r={reg_all[&#x27;r&#x27;]:.3f}, p={reg_all[&#x27;p&#x27;]:.4f}, n={reg_all[&#x27;n&#x27;]}&quot;)
+
+    r_s, p_s = stats.spearmanr(x_all, y_all)
+    print(f&quot;  Spearman: rho={r_s:.3f}, p={p_s:.4f}&quot;)
+
+    # --- Bus only ---
+    bus = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    print(f&quot;\n--- Bus only (n={len(bus)}) ---&quot;)
+    x_bus = bus[&quot;delta_trips&quot;].to_list()
+    y_bus = bus[&quot;detrended_delta_otp&quot;].to_list()
+
+    reg_bus = run_regression(x_bus, y_bus)
+    print(f&quot;  OLS: slope={reg_bus[&#x27;slope&#x27;]:.5f} (SE={reg_bus[&#x27;se&#x27;]:.5f}), r={reg_bus[&#x27;r&#x27;]:.3f}, p={reg_bus[&#x27;p&#x27;]:.4f}, n={reg_bus[&#x27;n&#x27;]}&quot;)
+
+    r_sb, p_sb = stats.spearmanr(x_bus, y_bus)
+    print(f&quot;  Spearman: rho={r_sb:.3f}, p={p_sb:.4f}&quot;)
+
+    # --- Pre vs post COVID ---
+    pre = df.filter(pl.col(&quot;month&quot;) &lt; &quot;2020-03&quot;)
+    post = df.filter(pl.col(&quot;month&quot;) &gt;= &quot;2020-03&quot;)
+    print(f&quot;\n--- Pre-COVID (n={len(pre)}) ---&quot;)
+    if len(pre) &gt; 10:
+        reg_pre = run_regression(pre[&quot;delta_trips&quot;].to_list(), pre[&quot;detrended_delta_otp&quot;].to_list())
+        print(f&quot;  OLS: slope={reg_pre[&#x27;slope&#x27;]:.5f}, r={reg_pre[&#x27;r&#x27;]:.3f}, p={reg_pre[&#x27;p&#x27;]:.4f}&quot;)
+
+    print(f&quot;\n--- Post-COVID (n={len(post)}) ---&quot;)
+    if len(post) &gt; 10:
+        reg_post = run_regression(post[&quot;delta_trips&quot;].to_list(), post[&quot;detrended_delta_otp&quot;].to_list())
+        print(f&quot;  OLS: slope={reg_post[&#x27;slope&#x27;]:.5f}, r={reg_post[&#x27;r&#x27;]:.3f}, p={reg_post[&#x27;p&#x27;]:.4f}&quot;)
+
+    # Summary CSV
+    summary = pl.DataFrame([
+        {&quot;group&quot;: &quot;all&quot;, &quot;n&quot;: reg_all[&quot;n&quot;], &quot;slope&quot;: reg_all[&quot;slope&quot;], &quot;se&quot;: reg_all[&quot;se&quot;],
+         &quot;pearson_r&quot;: reg_all[&quot;r&quot;], &quot;pearson_p&quot;: reg_all[&quot;p&quot;], &quot;spearman_rho&quot;: r_s, &quot;spearman_p&quot;: p_s},
+        {&quot;group&quot;: &quot;bus_only&quot;, &quot;n&quot;: reg_bus[&quot;n&quot;], &quot;slope&quot;: reg_bus[&quot;slope&quot;], &quot;se&quot;: reg_bus[&quot;se&quot;],
+         &quot;pearson_r&quot;: reg_bus[&quot;r&quot;], &quot;pearson_p&quot;: reg_bus[&quot;p&quot;], &quot;spearman_rho&quot;: r_sb, &quot;spearman_p&quot;: p_sb},
+    ])
+    summary.write_csv(OUT / &quot;service_level_summary.csv&quot;)
+    print(f&quot;\n  Summary saved to {OUT / &#x27;service_level_summary.csv&#x27;}&quot;)
+
+    print(&quot;\nGenerating chart...&quot;)
+    make_chart(df, reg_all)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
 
 
 <section class="panel" id="sources">
@@ -477,6 +692,24 @@
           node.dataset.loaded = "1";
         } catch (err) {
           body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
         }
       });
     });
