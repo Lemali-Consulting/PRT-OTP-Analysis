@@ -41,18 +41,13 @@
 
 <section class="panel">
 <h2 id="analyses">Analyses</h2>
-{% for grp in analyses|groupby("group") %}
-  <div class="analysis-group" data-group="{{ grp.grouper or 'Ungrouped' }}">
-  <h3>{{ grp.grouper or "Ungrouped" }}</h3>
-  <div class="card-grid">
-  {% for a in grp.list %}
-    <article class="card filter-card" data-kind="analysis" data-group="{{ a.group or 'Ungrouped' }}" data-output-kinds="{{ a.output_kinds|join(',') }}" data-text="{{ (a.title ~ ' ' ~ a.description)|lower }}">
-      <h3><a href="{{ a.path }}">{{ a.title }}</a></h3>
-      <p>{{ a.description }}</p>
-    </article>
-  {% endfor %}
-  </div>
-  </div>
+<div class="card-grid">
+{% for a in analyses %}
+  <article class="card filter-card" data-kind="analysis" data-group="{{ a.group or 'Ungrouped' }}" data-output-kinds="{{ a.output_kinds|join(',') }}" data-text="{{ (a.title ~ ' ' ~ a.description)|lower }}">
+    <h3><a href="{{ a.path }}">{{ a.title }}</a></h3>
+    <p>{{ a.description }}</p>
+  </article>
 {% endfor %}
+</div>
 </section>
 {% endblock %}
