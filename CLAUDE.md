@@ -13,6 +13,24 @@
 - When updating an analysis, be sure to update the corresponding local FINDINGS.md and METHODS.md, if applicable.
     - If the local FINDINGS.md is modified, be sure to modify the root-level FINDINGS.md as well
 
+## Interpreting results
+- **Surprising findings are a data quality signal first, a discovery second.** When an analysis produces a result that contradicts well-established transit knowledge (e.g., "ridership increased during COVID lockdowns"), treat it as a reason to audit the upstream data and joins before writing it up as a finding. Check whether the numbers pass basic common sense — compare against PRT's published reports, NTD data, or peer agencies.
+- Do not frame data errors as novel insights. If a result is surprising, say so and investigate, rather than explaining it away.
+
+## SOURCES.yaml conventions
+- The `description` field in `SOURCES.yaml` is the single source of truth for website cards and the analysis index. Do not duplicate findings in README.md — keep README.md as a 2-3 sentence description of what the analysis does, not what it found.
+- **Summary style**: Write for a reader who has no context — a community member skimming the website. Lead with the key finding in plain language, include one or two numbers. Avoid jargon like "OTP", "headway", or "VIF" without explanation. Good: "Routes in lower-income neighborhoods run late 23% more often than the system average." Bad: "OTP gap of 4.2pp between Q1 and Q4 income quartiles (p<0.01)."
+
+## Naming conventions
+- **DataFrame variables must end with `_df`** (e.g., `route_df`, `otp_df`, `stops_df`). This distinguishes them from scalars, lists, numpy arrays, and other lowercase variables that share the same scope. The only exception is the generic `df` when a function operates on a single DataFrame passed as a parameter.
+
+## Type hinting conventions
+- Use `Literal` for string params with a fixed set of valid values.
+- Parameterize `dict`, `list`, `tuple` in function signatures — no bare generics.
+- Use `TypeAlias` when the same composite type appears 3+ times in a file.
+- Skip typing `plt`/`ax`/`gdf` pass-through params — these are module or third-party objects where importing the type adds noise.
+- For complex nested return types, use a brief docstring instead of deeply nested generics.
+
 ## Analysis validation checklist
 Before writing FINDINGS.md or reporting results, complete every applicable item. Document what was checked in a `## Validation` section at the bottom of FINDINGS.md.
 
@@ -54,3 +72,21 @@ Before writing FINDINGS.md or reporting results, complete every applicable item.
 - Use a concise, descriptive commit message summarizing what was done.
 - Stage only the files you changed; do not use `git add -A` or `git add .`.
 - After committing, push to the remote.
+
+## Devcontainer Safety
+
+When running inside a devcontainer, killing processes carelessly will bring down the entire container and destroy your session.
+
+- **NEVER** use broad process-killing commands: `pkill -f`, `killall`, `kill -9 -1`, or `fuser -k` with port wildcards
+- **To free a port**, identify the exact PID first, verify it is not a critical process, then kill only that PID:
+  ```bash
+  # 1. Find the PID
+  lsof -ti :<PORT>
+  # 2. Check what it is before killing
+  ps -p <PID> -o pid,comm,args
+  # 3. Kill only if it's your application process
+  kill <PID>
+  ```
+- **NEVER kill PID 1** — it is the container init process
+- **NEVER kill the VS Code server** or any process with `vscode-server` in its command line
+- If a port is in use and you can't identify the process, ask the user rather than force-killing
