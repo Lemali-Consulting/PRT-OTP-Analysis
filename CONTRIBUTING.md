@@ -19,6 +19,7 @@ analyses/
 │   ├── README.md          # 2-3 sentence summary
 │   ├── METHODS.md         # What question, what approach, what data, what output
 │   ├── FINDINGS.md        # What the analysis found (written after running)
+│   ├── ASSUMPTIONS.yaml   # (Optional) Documented assumptions
 │   ├── main.py            # Entry point (docstring at top)
 │   └── output/            # Generated artifacts (charts, CSVs, tables)
 │       └── README.md
@@ -66,6 +67,23 @@ analyses/
    - **Discussion** -- interpretation of what the numbers mean, why they look the way they do, and what they do *not* mean
    - **Caveats** -- limitations, data gaps, and reasons to be cautious about the findings
 6. **Generated output goes in `output/`.** Charts (`.png`), summary data (`.csv`), printed tables -- all in the `output/` subdirectory. Never commit large binary files; `.gitignore` them if needed.
+
+## Assumptions Tracking
+
+Each pipeline step and analysis may include an `ASSUMPTIONS.yaml` file that documents what the code relies on that could silently produce wrong results if violated. This makes methodological sensitivities surfaceable to both humans reviewing the work and agents running audits.
+
+Each assumption has:
+
+- **id** -- short identifier
+- **claim** -- what is assumed, in plain language
+- **risk** -- high / medium / low (how wrong could results be if this fails?)
+- **testable** -- whether the assumption can be verified programmatically
+- **tested** -- whether a test currently exists
+- **test** or **test_idea** -- what the test is or could be
+- **affects** -- what downstream outputs depend on this assumption
+- **caveat** (optional) -- known limitations even when the assumption holds
+
+When adding a new analysis or pipeline step, create an `ASSUMPTIONS.yaml` alongside METHODS.md. When modifying code, check whether any assumptions need updating.
 
 ## Numbering
 

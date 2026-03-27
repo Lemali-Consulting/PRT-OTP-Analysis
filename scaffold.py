@@ -530,6 +530,30 @@ Generated artifacts for this analysis. Contents are gitignored; rerun main.py to
 """
 
 
+def render_analysis_sources(number, title):
+    """Render an analysis SOURCES.yaml."""
+    return f"""\
+kind: analysis
+title: "{number} - {title}"
+tables: []
+files: []
+analyses: []
+description: "TODO: one-sentence description of this analysis."
+dependencies: []
+outputs: []
+"""
+
+
+def render_analysis_assumptions(title):
+    """Render an analysis ASSUMPTIONS.yaml."""
+    return f"""\
+# Assumptions for {title}
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions: []
+"""
+
+
 def render_test_smoke(cfg):
     """Render tests/test_smoke.py using string.Template."""
     return Template("""\
@@ -1030,6 +1054,8 @@ def cmd_add(args):
         "README.md": render_analysis_readme(number, title, summary),
         "METHODS.md": render_analysis_methods(title),
         "FINDINGS.md": render_analysis_findings(title),
+        "SOURCES.yaml": render_analysis_sources(number, title),
+        "ASSUMPTIONS.yaml": render_analysis_assumptions(title),
         "main.py": render_analysis_main(number, title, cfg["package"]),
         "output/README.md": render_analysis_output_readme(),
     }
