@@ -16,4 +16,3 @@ data/noaa-weather/*.csv
 data/wprdc-schedule/*.csv
 nul
 .devcontainer/.env.secrets
-external/dissertation-data/
