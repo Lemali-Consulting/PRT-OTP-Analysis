@@ -22,6 +22,7 @@ Pittsburgh Regional Transit (PRT) on-time performance and system data, normalize
 | `ntd_agency`     | 2,340   | Dimension: NTD agency-mode-TOS combos    |
 | `ntd_ridership`  | 673,920 | Fact: monthly UPT by agency/mode/TOS     |
 | `ntd_annual_service` | 90,057 | Fact: annual VRH/VRM/UPT/VOMS by agency |
+| `otp_null_classification` | 1,064 | Ref: why each missing OTP value is null |
 
 ### `routes`
 
@@ -147,6 +148,24 @@ Route codes are extracted from `routes_by_month.csv` by splitting on `" - "` (fi
 | `MONONGAHELA INCLINE` -> `MI` | Name used in OTP data maps to system code |
 | `37`, `42`, `P2`, `RLSH`, `SWL` | In OTP data only (historical/temporary routes) |
 | `DQI`, `Y1`, `Y45`--`Y49` | In current system only (no OTP data) |
+
+### `otp_null_classification`
+
+Classification of every route-month in the OTP date range that lacks an OTP value, cross-referenced against scheduled trips and ridership data.
+
+| Column    | Type    | Description                                              |
+|-----------|---------|----------------------------------------------------------|
+| `route_id`| TEXT PK | References `routes.route_id`                             |
+| `month`   | TEXT PK | `"2019-01"` through `"2025-11"`                          |
+| `reason`  | TEXT    | `unreported` / `not_operating` / `no_coverage`           |
+| `evidence`| TEXT    | `schedule` / `ridership` / `both` / `none`               |
+
+Primary key: `(route_id, month)`. Only rows *missing* from `otp_monthly` appear here. Built by `src/prt_otp_analysis/otp_null_classification.py`.
+
+**Reason definitions:**
+- `unreported`: evidence the route was operating (schedule or ridership data exists) but OTP was not reported
+- `not_operating`: within temporal coverage of at least one cross-reference source, but no evidence the route operated
+- `no_coverage`: month falls outside both the schedule data range (through 2021-03) and ridership data range (through 2024-10)
 
 ## Source Files
 

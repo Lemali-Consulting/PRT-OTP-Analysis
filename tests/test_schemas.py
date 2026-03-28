@@ -8,6 +8,7 @@ from prt_otp_analysis.common.schemas import (
     NTD_ANNUAL_SERVICE,
     NTD_RIDERSHIP,
     OTP_MONTHLY,
+    OTP_NULL_CLASSIFICATION,
     ROUTE_STOPS,
     ROUTES,
     STOP_REFERENCE,
@@ -130,7 +131,7 @@ class TestAllSchemas:
 
     @pytest.mark.parametrize("schema", [
         ROUTES, STOPS, ROUTE_STOPS, STOP_REFERENCE,
-        OTP_MONTHLY, NTD_AGENCY, NTD_RIDERSHIP, NTD_ANNUAL_SERVICE,
+        OTP_MONTHLY, OTP_NULL_CLASSIFICATION, NTD_AGENCY, NTD_RIDERSHIP, NTD_ANNUAL_SERVICE,
     ])
     def test_schema_has_name_and_columns(self, schema):
         assert isinstance(schema.name, str)
@@ -140,7 +141,7 @@ class TestAllSchemas:
 
     @pytest.mark.parametrize("schema", [
         ROUTES, STOPS, ROUTE_STOPS, STOP_REFERENCE,
-        OTP_MONTHLY, NTD_AGENCY, NTD_RIDERSHIP, NTD_ANNUAL_SERVICE,
+        OTP_MONTHLY, OTP_NULL_CLASSIFICATION, NTD_AGENCY, NTD_RIDERSHIP, NTD_ANNUAL_SERVICE,
     ])
     def test_nullable_is_subset_of_columns(self, schema):
         assert schema.nullable <= set(schema.columns)

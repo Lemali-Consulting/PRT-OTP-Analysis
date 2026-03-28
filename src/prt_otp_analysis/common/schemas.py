@@ -131,6 +131,17 @@ NTD_ANNUAL_SERVICE = Schema(
 )
 
 
+OTP_NULL_CLASSIFICATION = Schema(
+    name="otp_null_classification",
+    columns={
+        "route_id": pl.Utf8,
+        "month": pl.Utf8,
+        "reason": pl.Utf8,
+        "evidence": pl.Utf8,
+    },
+)
+
+
 def validate(
     df: pl.DataFrame,
     schema: Schema,

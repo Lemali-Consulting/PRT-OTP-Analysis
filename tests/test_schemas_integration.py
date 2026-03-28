@@ -8,6 +8,7 @@ from prt_otp_analysis.common.schemas import (
     NTD_ANNUAL_SERVICE,
     NTD_RIDERSHIP,
     OTP_MONTHLY,
+    OTP_NULL_CLASSIFICATION,
     ROUTE_STOPS,
     ROUTES,
     STOP_REFERENCE,
@@ -18,6 +19,7 @@ from prt_otp_analysis.common.schemas import (
 ALL_TABLE_SCHEMAS = [
     ROUTES, STOPS, ROUTE_STOPS, STOP_REFERENCE,
     OTP_MONTHLY, NTD_AGENCY, NTD_RIDERSHIP, NTD_ANNUAL_SERVICE,
+    OTP_NULL_CLASSIFICATION,
 ]
 
 
