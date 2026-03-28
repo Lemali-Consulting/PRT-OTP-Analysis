@@ -10,6 +10,10 @@ from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
 
+# Weekend-to-weekday service ratio boundaries for tier classification.
+WEEKEND_RATIO_LOW = 0.3   # below = weekday-heavy
+WEEKEND_RATIO_HIGH = 0.7  # above = weekend-heavy
+
 
 def load_data() -> pl.DataFrame:
     """Load per-route service profile and average OTP."""
@@ -39,10 +43,13 @@ def load_data() -> pl.DataFrame:
     )
 
     # Classify service profile
+    wkday_label = f"weekday-heavy (<{WEEKEND_RATIO_LOW})"
+    balanced_label = f"balanced ({WEEKEND_RATIO_LOW}-{WEEKEND_RATIO_HIGH})"
+    wkend_label = f"weekend-heavy (>{WEEKEND_RATIO_HIGH})"
     df = df.with_columns(
-        pl.when(pl.col("weekend_ratio") < 0.3).then(pl.lit("weekday-heavy (<0.3)"))
-        .when(pl.col("weekend_ratio") <= 0.7).then(pl.lit("balanced (0.3-0.7)"))
-        .otherwise(pl.lit("weekend-heavy (>0.7)"))
+        pl.when(pl.col("weekend_ratio") < WEEKEND_RATIO_LOW).then(pl.lit(wkday_label))
+        .when(pl.col("weekend_ratio") <= WEEKEND_RATIO_HIGH).then(pl.lit(balanced_label))
+        .otherwise(pl.lit(wkend_label))
         .alias("service_tier")
     )
 
@@ -73,7 +80,7 @@ def analyze(df: pl.DataFrame) -> dict:
     results["n_bus"] = len(bus_wd)
 
     # Tier stats
-    for tier_label in ["weekday-heavy (<0.3)", "balanced (0.3-0.7)", "weekend-heavy (>0.7)"]:
+    for tier_label in [f"weekday-heavy (<{WEEKEND_RATIO_LOW})", f"balanced ({WEEKEND_RATIO_LOW}-{WEEKEND_RATIO_HIGH})", f"weekend-heavy (>{WEEKEND_RATIO_HIGH})"]:
         subset = df.filter(pl.col("service_tier") == tier_label)
         key = tier_label.split(" ")[0]
         results[f"{key}_n"] = len(subset)
@@ -110,7 +117,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
 
     # Box plot by service tier
     fig, ax = plt.subplots(figsize=(8, 6))
-    tiers = ["weekday-heavy (<0.3)", "balanced (0.3-0.7)", "weekend-heavy (>0.7)"]
+    tiers = [f"weekday-heavy (<{WEEKEND_RATIO_LOW})", f"balanced ({WEEKEND_RATIO_LOW}-{WEEKEND_RATIO_HIGH})", f"weekend-heavy (>{WEEKEND_RATIO_HIGH})"]
     box_data = []
     box_labels = []
     for tier in tiers:

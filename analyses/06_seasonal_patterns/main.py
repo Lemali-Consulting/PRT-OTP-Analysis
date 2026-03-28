@@ -9,6 +9,10 @@ from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
 
+# OTP color-scale bounds for the seasonal heatmap.
+OTP_HEATMAP_VMIN = 0.3
+OTP_HEATMAP_VMAX = 1.0
+
 MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 MIN_YEARS = 3  # minimum years of data for route-level seasonal amplitude
@@ -187,7 +191,7 @@ def make_chart(
     import numpy as np
     matrix_arr = np.array(matrix, dtype=float).T  # routes x months
 
-    im = ax.imshow(matrix_arr, aspect="auto", cmap="RdYlGn", vmin=0.3, vmax=1.0)
+    im = ax.imshow(matrix_arr, aspect="auto", cmap="RdYlGn", vmin=OTP_HEATMAP_VMIN, vmax=OTP_HEATMAP_VMAX)
     ax.set_xticks(range(len(month_cols)))
     ax.set_xticklabels([MONTH_LABELS[int(c) - 1] for c in month_cols], fontsize=8)
     ax.set_yticks(range(len(route_labels)))

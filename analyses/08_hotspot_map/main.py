@@ -10,6 +10,10 @@ from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
+
+# OTP color-scale bounds for geographic maps.
+OTP_MAP_VMIN = 0.5
+OTP_MAP_VMAX = 0.9
 GTFS = Path(__file__).resolve().parent.parent.parent / "data" / "GTFS"
 
 
@@ -83,7 +87,7 @@ def make_chart(df: pl.DataFrame) -> None:
     lat = df["lat"].to_list()
     otp = df["weighted_otp"].to_list()
 
-    norm = Normalize(vmin=0.5, vmax=0.9)
+    norm = Normalize(vmin=OTP_MAP_VMIN, vmax=OTP_MAP_VMAX)
     sc = ax.scatter(
         lon, lat, c=otp, cmap="RdYlGn", norm=norm,
         s=4, alpha=0.6, edgecolors="none",
@@ -165,7 +169,7 @@ def make_interactive_map(
 
     colormap = LinearColormap(
         colors=["#d73027", "#fee08b", "#1a9850"],  # red -> yellow -> green
-        vmin=0.5, vmax=0.9,
+        vmin=OTP_MAP_VMIN, vmax=OTP_MAP_VMAX,
         caption="Route-Weighted OTP",
     )
 

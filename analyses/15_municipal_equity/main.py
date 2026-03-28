@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, output_dir, query_to_polars, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -122,7 +122,7 @@ def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) 
     fig, ax = plt.subplots(figsize=(12, 8))
     munis = combined["muni"].to_list()
     otps = combined["avg_otp"].to_list()
-    colors = ["#22c55e" if v >= 0.70 else "#f59e0b" if v >= 0.65 else "#ef4444" for v in otps]
+    colors = ["#22c55e" if v >= OTP_GOOD_THRESHOLD else "#f59e0b" if v >= OTP_WARNING_THRESHOLD else "#ef4444" for v in otps]
     bars = ax.barh(range(len(munis)), otps, color=colors, edgecolor="white")
     ax.set_yticks(range(len(munis)))
     ax.set_yticklabels(munis, fontsize=8)

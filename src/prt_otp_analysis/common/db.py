@@ -13,6 +13,15 @@ DB_PATH = DATA_DIR / "prt.db"
 PRE_COVID_BASELINE_YEAR = "2019"
 PRE_COVID_BASELINE_MONTH = "2019-01"
 
+# OTP performance thresholds used for color-coding and classification.
+# 70% is PRT's target; 65% marks the boundary between warning and poor.
+OTP_GOOD_THRESHOLD = 0.70
+OTP_WARNING_THRESHOLD = 0.65
+
+# Standard confidence-interval constants (two-tailed 95%).
+Z_CRITICAL_95 = 1.96
+CONFIDENCE_95_PERCENTILE = 0.975
+
 # Peer agencies for cross-city comparisons: NTD ID -> short city label.
 PEERS: dict[int, str] = {
     30022: "Pittsburgh",

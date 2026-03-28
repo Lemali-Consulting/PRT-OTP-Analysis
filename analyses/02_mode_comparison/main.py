@@ -6,6 +6,7 @@ import polars as pl
 from scipy.stats import mannwhitneyu, ttest_rel
 
 from prt_otp_analysis.common import (
+    CONFIDENCE_95_PERCENTILE,
     classify_bus_route,
     output_dir,
     query_to_polars,
@@ -143,7 +144,7 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame,
             mean_diff = np.mean(diffs)
             se_diff = np.std(diffs, ddof=1) / np.sqrt(n)
             from scipy.stats import t as t_dist
-            ci_margin = t_dist.ppf(0.975, df=n - 1) * se_diff
+            ci_margin = t_dist.ppf(CONFIDENCE_95_PERCENTILE, df=n - 1) * se_diff
             test_results["paired_t_stat"] = t_stat
             test_results["paired_t_pval"] = t_pval
             test_results["paired_mean_diff"] = mean_diff

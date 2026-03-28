@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import Z_CRITICAL_95, output_dir, query_to_polars, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -104,8 +104,8 @@ def analyze(otp: pl.DataFrame, stop_counts: pl.DataFrame) -> pl.DataFrame:
         # Convert to per-year units
         slope_yr = slope_per_month * 12
         stderr_yr = stderr_per_month * 12
-        ci_lo = slope_yr - 1.96 * stderr_yr
-        ci_hi = slope_yr + 1.96 * stderr_yr
+        ci_lo = slope_yr - Z_CRITICAL_95 * stderr_yr
+        ci_hi = slope_yr + Z_CRITICAL_95 * stderr_yr
         # Significant if 95% CI excludes zero
         significant = (ci_lo > 0) or (ci_hi < 0)
 

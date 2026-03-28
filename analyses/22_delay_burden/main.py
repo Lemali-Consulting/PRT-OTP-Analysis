@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, output_dir, query_to_polars, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -120,7 +120,7 @@ def make_top10_chart(ranking: pl.DataFrame) -> None:
     values = [v / 1_000_000 for v in top10["total_late"].to_list()]  # millions
     otp_vals = top10["avg_otp"].to_list()
 
-    colors = ["#e11d48" if o < 0.65 else "#f59e0b" if o < 0.70 else "#3b82f6" for o in otp_vals]
+    colors = ["#e11d48" if o < OTP_WARNING_THRESHOLD else "#f59e0b" if o < OTP_GOOD_THRESHOLD else "#3b82f6" for o in otp_vals]
     bars = ax.barh(range(len(labels)), values, color=colors, edgecolor="white", alpha=0.8)
 
     # Annotate with OTP
