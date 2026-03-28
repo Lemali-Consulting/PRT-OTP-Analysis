@@ -1,11 +1,11 @@
-"""Shared utilities for analysis scripts: DB access, paths, and constants."""
+"""Database access, project paths, constants, and data classification helpers."""
 
 import sqlite3
 from pathlib import Path
 
 import polars as pl
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = PROJECT_ROOT / "data"
 DB_PATH = DATA_DIR / "prt.db"
 
@@ -46,24 +46,6 @@ def query_to_polars(sql: str, params: tuple = ()) -> pl.DataFrame:
         return pl.DataFrame([dict(row) for row in rows])
     finally:
         conn.close()
-
-
-def setup_plotting():
-    """Configure matplotlib defaults for consistent chart styling and return plt."""
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-    plt.rcParams.update({
-        "figure.figsize": (12, 6),
-        "figure.dpi": 150,
-        "axes.grid": True,
-        "grid.alpha": 0.3,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "font.size": 10,
-    })
-    return plt
 
 
 def classify_bus_route(route_id: str) -> str:
