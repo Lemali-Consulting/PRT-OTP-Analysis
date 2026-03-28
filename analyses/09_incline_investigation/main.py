@@ -147,19 +147,15 @@ def main() -> None:
     if len(route_stops) > 0:
         # Select compatible columns
         rs_summary = route_stops.select("route_id", "stop_id", "stop_name", "direction", "trips_wd", "trips_7d")
-        rs_summary.write_csv(OUT / "incline_route_stops.csv")
-        print(f"  Route stops saved to {OUT / 'incline_route_stops.csv'}")
+        save_csv(rs_summary, OUT / "incline_route_stops.csv")
     if len(stop_ref) > 0:
-        stop_ref.write_csv(OUT / "incline_stop_reference.csv")
-        print(f"  Stop reference saved to {OUT / 'incline_stop_reference.csv'}")
+        save_csv(stop_ref, OUT / "incline_stop_reference.csv")
 
     if len(otp) > 0:
-        otp.write_csv(OUT / "incline_report.csv")
-        print(f"  OTP data saved to {OUT / 'incline_report.csv'}")
+        save_csv(otp, OUT / "incline_report.csv")
     else:
         # Write empty CSV with headers
-        pl.DataFrame({"route_id": [], "month": [], "otp": []}).write_csv(OUT / "incline_report.csv")
-        print(f"  Empty OTP CSV saved to {OUT / 'incline_report.csv'}")
+        save_csv(pl.DataFrame({"route_id": [], "month": [], "otp": []}), OUT / "incline_report.csv")
 
     print_done()
 
