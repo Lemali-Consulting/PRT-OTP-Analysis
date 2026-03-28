@@ -10,8 +10,10 @@ tables:
   - ntd_annual_service
 files: []
 analyses:
-  - 36_national_ridership_growth
-  - 37_peer_city_ridership
+  - id: 36
+    relationship: uses same top-150 agency size filter and peer city set for national comparison.
+  - id: 37
+    relationship: complements demand-side peer comparison with supply-side VRH analysis.
 dependencies:
   - polars
   - matplotlib
