@@ -7,7 +7,7 @@ import polars as pl
 from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
 from scipy.spatial.distance import squareform
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -141,10 +141,7 @@ def make_dendrogram(linkage_matrix: np.ndarray, route_ids: list[str],
     dendrogram(linkage_matrix, labels=labels, leaf_rotation=90, leaf_font_size=7, ax=ax)
     ax.set_title("Route OTP Clustering (Average Linkage on Detrended Correlation Distance)")
     ax.set_ylabel("Distance (1 - r)")
-    fig.tight_layout()
-    fig.savefig(OUT / "dendrogram.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'dendrogram.png'}")
+    save_chart(fig, OUT / "dendrogram.png")
 
 
 def make_heatmap(corr: np.ndarray, route_ids: list[str], labels: np.ndarray) -> None:
@@ -166,17 +163,12 @@ def make_heatmap(corr: np.ndarray, route_ids: list[str], labels: np.ndarray) -> 
     ax.set_yticklabels([sorted_ids[i] for i in tick_positions], fontsize=6)
 
     fig.colorbar(im, ax=ax, label="Pearson r (detrended)", shrink=0.8)
-    fig.tight_layout()
-    fig.savefig(OUT / "correlation_heatmap.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'correlation_heatmap.png'}")
+    save_chart(fig, OUT / "correlation_heatmap.png")
 
 
 def main() -> None:
     """Entry point: load, detrend, correlate, cluster, and visualize."""
-    print("=" * 60)
-    print("Analysis 13: Cross-Route Correlation Clustering")
-    print("=" * 60)
+    print_header(13, "Cross-Route Correlation Clustering")
 
     print("\nLoading data...")
     otp, stop_counts = load_data()
@@ -225,15 +217,13 @@ def main() -> None:
         print(f"  Cluster {c}: {n} routes, avg OTP={avg:.1%}, "
               f"primary mode={top_mode}, avg stops={avg_stops:.0f}")
 
-    print("\nSaving CSV...")
-    membership.write_csv(OUT / "cluster_membership.csv")
-    print(f"  Saved to {OUT / 'cluster_membership.csv'}")
+    save_csv(membership, OUT / "cluster_membership.csv")
 
     print("\nGenerating charts...")
     make_dendrogram(linkage_matrix, route_ids, route_meta)
     make_heatmap(corr, route_ids, labels)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

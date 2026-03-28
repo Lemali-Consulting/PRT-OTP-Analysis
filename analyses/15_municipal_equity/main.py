@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -30,13 +30,12 @@ def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
     # Per-municipality: trip-weighted average OTP
     muni_otp = (
         stop_otp
-        .with_columns((pl.col("route_avg_otp") * pl.col("trips_wd")).alias("weighted_otp"))
         .group_by("muni", "county")
         .agg(
-            (pl.col("weighted_otp").sum() / pl.col("trips_wd").sum()).alias("avg_otp"),
-            pl.col("stop_id").n_unique().alias("n_stops"),
-            pl.col("route_id").n_unique().alias("n_routes"),
-            pl.col("trips_wd").sum().alias("total_trips"),
+            avg_otp=weighted_mean("route_avg_otp", "trips_wd"),
+            n_stops=pl.col("stop_id").n_unique(),
+            n_routes=pl.col("route_id").n_unique(),
+            total_trips=pl.col("trips_wd").sum(),
         )
         .filter(pl.col("n_stops") >= MIN_STOPS)
         .sort("avg_otp", descending=True)
@@ -130,10 +129,7 @@ def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) 
     ax.set_title(f"Top & Bottom Municipalities by OTP (min {MIN_STOPS} stops)")
     ax.set_xlim(0.4, 1.0)
     ax.invert_yaxis()
-    fig.tight_layout()
-    fig.savefig(OUT / "top_bottom_municipalities.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'top_bottom_municipalities.png'}")
+    save_chart(fig, OUT / "top_bottom_municipalities.png")
 
     # Pittsburgh vs suburban
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -150,17 +146,12 @@ def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) 
     ax.set_ylim(0.5, 0.85)
     for i, v in enumerate(values):
         ax.text(i, v + 0.005, f"{v:.1%}", ha="center", fontsize=10)
-    fig.tight_layout()
-    fig.savefig(OUT / "pittsburgh_vs_suburban.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'pittsburgh_vs_suburban.png'}")
+    save_chart(fig, OUT / "pittsburgh_vs_suburban.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 15: Municipal/County Equity")
-    print("=" * 60)
+    print_header(15, "Municipal/County Equity")
 
     print("\nLoading data...")
     muni_otp, cross_jur = load_data()
@@ -181,14 +172,12 @@ def main() -> None:
     if "cross_p" in results:
         print(f"  Difference t-test: t={results['cross_t']:.3f}, p={results['cross_p']:.4f}")
 
-    print("\nSaving CSV...")
-    muni_otp.write_csv(OUT / "municipal_otp.csv")
-    print(f"  Saved to {OUT / 'municipal_otp.csv'}")
+    save_csv(muni_otp, OUT / "municipal_otp.csv")
 
     print("\nGenerating charts...")
     make_charts(muni_otp, cross_jur, results)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ import folium
 import polars as pl
 from branca.colormap import LinearColormap
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -52,7 +52,7 @@ def analyze(df: pl.DataFrame) -> pl.DataFrame:
     stop_otp_raw = (
         df.group_by(["stop_id", "lat", "lon", "hood", "muni"])
         .agg(
-            weighted_otp=(pl.col("avg_otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
+            weighted_otp=weighted_mean("avg_otp", "trips_7d"),
             route_count=pl.col("route_id").n_unique(),
             total_trips_7d=pl.col("trips_7d").sum(),
         )
@@ -101,10 +101,7 @@ def make_chart(df: pl.DataFrame) -> None:
     ax.set_title(f"PRT Route-Weighted OTP at Stop (unweighted stop avg: {system_avg:.1%})")
     ax.set_aspect("equal")
 
-    fig.tight_layout()
-    fig.savefig(OUT / "hotspot_map.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'hotspot_map.png'}")
+    save_chart(fig, OUT / "hotspot_map.png")
 
 
 def load_route_shapes() -> dict[str, list[tuple[float, float]]]:
@@ -246,9 +243,7 @@ def make_interactive_map(
 
 def main() -> None:
     """Entry point: load data, compute stop OTP, map, and save."""
-    print("=" * 60)
-    print("Analysis 08: Hot-Spot Map")
-    print("=" * 60)
+    print_header(8, "Hot-Spot Map")
 
     print("\nLoading data...")
     raw = load_data()
@@ -272,8 +267,8 @@ def main() -> None:
         print(f"    {row['stop_id']} ({hood}, {modes}): {row['weighted_otp']:.1%}")
 
     print("\nSaving CSV...")
-    stop_otp.drop("modes").write_csv(OUT / "hotspot_map.csv")
-    print(f"  Saved to {OUT / 'hotspot_map.csv'}")
+    stop_otp_out = stop_otp.drop("modes")
+    save_csv(stop_otp_out, OUT / "hotspot_map.csv")
 
     print("\nGenerating chart...")
     make_chart(stop_otp)
@@ -286,7 +281,7 @@ def main() -> None:
     print("\nGenerating interactive map...")
     make_interactive_map(stop_otp, route_shapes, route_otp)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

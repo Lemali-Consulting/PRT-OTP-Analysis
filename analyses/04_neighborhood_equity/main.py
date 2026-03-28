@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -79,7 +79,7 @@ def analyze(df: pl.DataFrame) -> pl.DataFrame:
     hood_summary = (
         hood_df.group_by(["hood", "muni", "county"])
         .agg(
-            weighted_otp=(pl.col("avg_otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
+            weighted_otp=weighted_mean("avg_otp", "trips_7d"),
             route_count=pl.col("route_id").n_unique(),
             stop_count=pl.col("stop_id").n_unique(),
             total_trips_7d=pl.col("trips_7d").sum(),
@@ -121,7 +121,7 @@ def analyze_bus_only(df: pl.DataFrame, route_modes: pl.DataFrame) -> pl.DataFram
     hood_bus = (
         bus_df.group_by(["hood", "muni", "county"])
         .agg(
-            bus_weighted_otp=(pl.col("avg_otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
+            bus_weighted_otp=weighted_mean("avg_otp", "trips_7d"),
             bus_route_count=pl.col("route_id").n_unique(),
         )
         .sort("bus_weighted_otp")
@@ -136,7 +136,7 @@ def analyze_quintile_ts(monthly_df: pl.DataFrame) -> pl.DataFrame:
     hood_month = (
         monthly_df.group_by(["hood", "month"])
         .agg(
-            weighted_otp=(pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum(),
+            weighted_otp=weighted_mean("otp", "trips_7d"),
         )
     )
 
@@ -226,10 +226,7 @@ def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -> None:
     ax2.legend(fontsize=8, loc="lower left")
     ax2.set_ylim(0, 1)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "neighborhood_equity.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'neighborhood_equity.png'}")
+    save_chart(fig, OUT / "neighborhood_equity.png")
 
 
 def make_comparison_chart(hood_summary: pl.DataFrame) -> None:
@@ -282,17 +279,12 @@ def make_comparison_chart(hood_summary: pl.DataFrame) -> None:
     ax2.set_title("Frequency Weighting Effect by Neighborhood")
     ax2.axvline(0, color="#9ca3af", linewidth=0.8)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "weighted_vs_unweighted_otp.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'weighted_vs_unweighted_otp.png'}")
+    save_chart(fig, OUT / "weighted_vs_unweighted_otp.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 04: Neighborhood Equity")
-    print("=" * 60)
+    print_header(4, "Neighborhood Equity")
 
     print("\nLoading data...")
     df = load_data()
@@ -380,16 +372,14 @@ def main() -> None:
     quintile_ts = analyze_quintile_ts(monthly_df)
 
     print("\nSaving CSV...")
-    hood_summary.write_csv(OUT / "neighborhood_otp.csv")
-    print(f"  Saved to {OUT / 'neighborhood_otp.csv'}")
-    hood_bus.write_csv(OUT / "neighborhood_otp_bus_only.csv")
-    print(f"  Saved to {OUT / 'neighborhood_otp_bus_only.csv'}")
+    save_csv(hood_summary, OUT / "neighborhood_otp.csv")
+    save_csv(hood_bus, OUT / "neighborhood_otp_bus_only.csv")
 
     print("\nGenerating charts...")
     make_chart(hood_summary, quintile_ts)
     make_comparison_chart(hood_summary)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

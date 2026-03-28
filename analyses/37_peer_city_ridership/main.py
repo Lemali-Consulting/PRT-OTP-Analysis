@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_MONTH, PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
+from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_MONTH, PRE_COVID_BASELINE_YEAR, get_db, output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -31,9 +31,7 @@ def main():
     plt = setup_plotting()
     conn = get_db()
 
-    print("=" * 60)
-    print("Analysis 37: Peer City Ridership Comparison")
-    print("=" * 60)
+    print_header(37, "Peer City Ridership Comparison")
 
     # Load data
     print("\n1. Loading monthly data for peer agencies...")
@@ -69,8 +67,7 @@ def main():
 
     # Save CSV
     csv_data = indexed.select("city", "month", "upt", "index").sort("city", "month")
-    csv_data.write_csv(OUT / "peer_ridership_data.csv")
-    print(f"   Saved peer_ridership_data.csv")
+    save_csv(csv_data, OUT / "peer_ridership_data.csv")
 
     # Recovery summary: 2024 average vs 2019 average
     print("\n3. Computing recovery metrics...")
@@ -84,10 +81,8 @@ def main():
         )
         .sort("recovery_pct", descending=True)
     )
-    recovery.select("city", "avg_2019", "avg_2024", "recovery_pct").write_csv(
-        OUT / "peer_recovery_summary.csv"
-    )
-    print(f"   Saved peer_recovery_summary.csv")
+    recovery_summary_df = recovery.select("city", "avg_2019", "avg_2024", "recovery_pct")
+    save_csv(recovery_summary_df, OUT / "peer_recovery_summary.csv")
 
     for row in recovery.iter_rows(named=True):
         marker = " <<<" if row["ntd_id"] == 30022 else ""
@@ -129,10 +124,7 @@ def main():
     ax.set_ylabel("Indexed Ridership (2019 avg = 100)")
     ax.set_title("Peer City Ridership Trajectories (2019–2025)")
     ax.legend(loc="lower right", fontsize=9)
-    fig.tight_layout()
-    fig.savefig(OUT / "peer_ridership_indexed.png")
-    plt.close(fig)
-    print(f"   Saved peer_ridership_indexed.png")
+    save_chart(fig, OUT / "peer_ridership_indexed.png")
 
     # --- Chart 2: Recovery bar chart ---
     print("\n5. Generating recovery bar chart...")
@@ -151,10 +143,7 @@ def main():
     for i, (city, pct) in enumerate(zip(cities, pcts)):
         ax.text(i, pct + 1, f"{pct:.0f}%", ha="center", va="bottom", fontsize=9)
     ax.legend()
-    fig.tight_layout()
-    fig.savefig(OUT / "peer_recovery_bar.png")
-    plt.close(fig)
-    print(f"   Saved peer_recovery_bar.png")
+    save_chart(fig, OUT / "peer_recovery_bar.png")
 
     # --- Chart 3: Mode breakdown (bus vs rail) ---
     print("\n6. Generating mode breakdown chart...")
@@ -227,10 +216,7 @@ def main():
             ax.text(i - width / 2, b + 1, f"{b:.0f}%", ha="center", va="bottom", fontsize=8)
             ax.text(i + width / 2, r + 1, f"{r:.0f}%", ha="center", va="bottom", fontsize=8)
 
-        fig.tight_layout()
-        fig.savefig(OUT / "peer_mode_breakdown.png")
-        plt.close(fig)
-        print(f"   Saved peer_mode_breakdown.png")
+        save_chart(fig, OUT / "peer_mode_breakdown.png")
         print(f"   Cities with bus+rail: {cities_both}")
     else:
         print("   No cities with both bus and rail data — skipping mode breakdown chart")
@@ -241,7 +227,7 @@ def main():
         marker = " <<<" if row["ntd_id"] == 30022 else ""
         print(f"   {row['city']:<15s} {row['mode_group']:<6s} {row['recovery_pct']:>6.1f}%{marker}")
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

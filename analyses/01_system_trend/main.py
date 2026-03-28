@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -42,9 +42,7 @@ def _compute_monthly(df: pl.DataFrame) -> pl.DataFrame:
     monthly = (
         df.group_by("month")
         .agg(
-            weighted_otp=pl.when(pl.col("trips_weight").sum() > 0)
-            .then((pl.col("otp") * pl.col("trips_weight")).sum() / pl.col("trips_weight").sum())
-            .otherwise(pl.col("otp").mean()),
+            weighted_otp=weighted_mean("otp", "trips_weight", safe=True),
             unweighted_otp=pl.col("otp").mean(),
             route_count=pl.col("route_id").n_unique(),
             pct_time_varying=(pl.col("sched_trips").is_not_null().sum().cast(pl.Float64)
@@ -132,17 +130,12 @@ def make_chart(all_df: pl.DataFrame, bus_df: pl.DataFrame) -> None:
     ax2.set_xticks(tick_positions)
     ax2.set_xticklabels(tick_labels)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "system_trend.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'system_trend.png'}")
+    save_chart(fig, OUT / "system_trend.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 01: System-Wide OTP Trend")
-    print("=" * 60)
+    print_header(1, "System-Wide OTP Trend")
 
     print("\nLoading data...")
     df = load_data()
@@ -183,15 +176,13 @@ def main() -> None:
         print(f"  Routes with zero weight (excluded from weighted avg): {zero_routes}")
 
     print("\nSaving CSVs...")
-    all_result.write_csv(OUT / "system_trend.csv")
-    print(f"  Saved to {OUT / 'system_trend.csv'}")
-    bus_result.write_csv(OUT / "system_trend_bus_only.csv")
-    print(f"  Saved to {OUT / 'system_trend_bus_only.csv'}")
+    save_csv(all_result, OUT / "system_trend.csv")
+    save_csv(bus_result, OUT / "system_trend_bus_only.csv")
 
     print("\nGenerating chart...")
     make_chart(all_result, bus_result)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

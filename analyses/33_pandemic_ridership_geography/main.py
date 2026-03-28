@@ -7,7 +7,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -146,10 +146,7 @@ def make_charts(df: pl.DataFrame) -> None:
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
     ax.set_title("Pandemic Ridership Change by Stop (Pre-pandemic -> Pandemic)")
-    fig.tight_layout()
-    fig.savefig(OUT / "ridership_change_map.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'ridership_change_map.png'}")
+    save_chart(fig, OUT / "ridership_change_map.png")
 
     # --- Zone summary + histogram ---
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -186,17 +183,12 @@ def make_charts(df: pl.DataFrame) -> None:
     axes[1].set_title("Distribution of Stop-Level Ridership Changes")
     axes[1].legend()
 
-    fig.tight_layout()
-    fig.savefig(OUT / "change_by_zone.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'change_by_zone.png'}")
+    save_chart(fig, OUT / "change_by_zone.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze pandemic ridership geography."""
-    print("=" * 60)
-    print("Analysis 33: Pandemic Ridership Geography")
-    print("=" * 60)
+    print_header(33, "Pandemic Ridership Geography")
 
     print("\nLoading and computing stop-level pandemic changes...")
     df = load_data()
@@ -265,13 +257,12 @@ def main() -> None:
         print(f"  {row['stop_name'][:40]:40s} {row['pre_usage']:8.0f} -> {row['post_usage']:8.0f} ({row['pct_change']:+.0f}%)")
 
     print("\nSaving CSV...")
-    df.write_csv(OUT / "pandemic_change_by_stop.csv")
-    print(f"  Saved {OUT / 'pandemic_change_by_stop.csv'}")
+    save_csv(df, OUT / "pandemic_change_by_stop.csv")
 
     print("\nGenerating charts...")
     make_charts(df)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -77,9 +77,7 @@ def garage_summary(route_df: pl.DataFrame) -> pl.DataFrame:
             min_otp=pl.col("avg_otp").min(),
             max_otp=pl.col("avg_otp").max(),
             total_riders=pl.col("avg_riders").sum(),
-            weighted_otp=(
-                (pl.col("avg_otp") * pl.col("avg_riders")).sum() / pl.col("avg_riders").sum()
-            ),
+            weighted_otp=weighted_mean("avg_otp", "avg_riders"),
         )
         .sort("mean_otp", descending=True)
     )
@@ -90,9 +88,7 @@ def monthly_by_garage(df: pl.DataFrame) -> pl.DataFrame:
     return (
         df.group_by("current_garage", "month")
         .agg(
-            weighted_otp=(
-                (pl.col("otp") * pl.col("avg_riders")).sum() / pl.col("avg_riders").sum()
-            ),
+            weighted_otp=weighted_mean("otp", "avg_riders"),
             unweighted_otp=pl.col("otp").mean(),
             total_riders=pl.col("avg_riders").sum(),
             n_routes=pl.col("route_id").n_unique(),
@@ -180,10 +176,7 @@ def make_trend_chart(monthly: pl.DataFrame) -> None:
     ax.legend(loc="lower left", fontsize=8)
     ax.set_ylim(0.45, 0.90)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "garage_otp_trend.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'garage_otp_trend.png'}")
+    save_chart(fig, OUT / "garage_otp_trend.png")
 
 
 def make_boxplot(route_df: pl.DataFrame) -> None:
@@ -215,10 +208,7 @@ def make_boxplot(route_df: pl.DataFrame) -> None:
         ax.tick_params(axis="x", labelsize=8)
 
     fig.suptitle("OTP Distribution by Garage", fontsize=13, y=1.02)
-    fig.tight_layout()
-    fig.savefig(OUT / "garage_boxplot.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'garage_boxplot.png'}")
+    save_chart(fig, OUT / "garage_boxplot.png")
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -349,9 +339,7 @@ def controlled_garage_test(route_df: pl.DataFrame) -> dict:
 
 def main() -> None:
     """Entry point: load, summarize, test, chart, and save."""
-    print("=" * 60)
-    print("Analysis 23: Garage-Level Performance")
-    print("=" * 60)
+    print_header(23, "Garage-Level Performance")
 
     print("\nLoading data...")
     df = load_data()
@@ -413,18 +401,15 @@ def main() -> None:
     monthly = monthly_by_garage(df)
 
     print("\nSaving CSVs...")
-    gsummary.write_csv(OUT / "garage_summary.csv")
-    print(f"  {OUT / 'garage_summary.csv'}")
-    route_df.write_csv(OUT / "garage_route_detail.csv")
-    print(f"  {OUT / 'garage_route_detail.csv'}")
-    monthly.write_csv(OUT / "garage_monthly.csv")
-    print(f"  {OUT / 'garage_monthly.csv'}")
+    save_csv(gsummary, OUT / "garage_summary.csv")
+    save_csv(route_df, OUT / "garage_route_detail.csv")
+    save_csv(monthly, OUT / "garage_monthly.csv")
 
     print("\nGenerating charts...")
     make_trend_chart(monthly)
     make_boxplot(route_df)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

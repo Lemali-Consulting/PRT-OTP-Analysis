@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -131,11 +131,11 @@ def main() -> None:
     df = detrend(df)
 
     # Save panel
-    df.select(
+    panel_df = df.select(
         "route_id", "month", "mode", "otp", "daily_trips",
         "delta_otp", "delta_trips", "detrended_delta_otp",
-    ).write_csv(OUT / "service_level_panel.csv")
-    print(f"  Panel saved to {OUT / 'service_level_panel.csv'}")
+    )
+    save_csv(panel_df, OUT / "service_level_panel.csv")
 
     # --- All routes ---
     print("\n--- All routes ---")
@@ -182,8 +182,7 @@ def main() -> None:
         {"group": "bus_only", "n": reg_bus["n"], "slope": reg_bus["slope"], "se": reg_bus["se"],
          "pearson_r": reg_bus["r"], "pearson_p": reg_bus["p"], "spearman_rho": r_sb, "spearman_p": p_sb},
     ])
-    summary.write_csv(OUT / "service_level_summary.csv")
-    print(f"\n  Summary saved to {OUT / 'service_level_summary.csv'}")
+    save_csv(summary, OUT / "service_level_summary.csv")
 
     print("\nGenerating chart...")
     make_chart(df, reg_all)

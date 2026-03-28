@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, get_db, output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -48,9 +48,7 @@ def main():
     plt = setup_plotting()
     conn = get_db()
 
-    print("=" * 60)
-    print("Analysis 36: National Ridership Growth (2019 vs 2024)")
-    print("=" * 60)
+    print_header(36, "National Ridership Growth (2019 vs 2024)")
 
     # Load data
     print("\n1. Loading agency totals...")
@@ -105,9 +103,8 @@ def main():
         print("\n   WARNING: PRT not found in top 150")
 
     # Save CSV
-    csv_path = OUT / "ridership_growth_data.csv"
-    result.write_csv(csv_path)
-    print(f"\n3. Saved {csv_path}")
+    print()
+    save_csv(result, OUT / "ridership_growth_data.csv")
 
     # --- Chart 1: Histogram ---
     print("\n4. Generating histogram...")
@@ -123,10 +120,7 @@ def main():
     ax.set_ylabel("Number of Agencies")
     ax.set_title(f"Ridership Recovery Distribution — Top {TOP_N} US Transit Agencies")
     ax.legend()
-    fig.tight_layout()
-    fig.savefig(OUT / "ridership_growth_distribution.png")
-    plt.close(fig)
-    print(f"   Saved ridership_growth_distribution.png")
+    save_chart(fig, OUT / "ridership_growth_distribution.png")
 
     # --- Chart 2: Horizontal bar ranking ---
     print("\n5. Generating ranking bar chart...")
@@ -152,10 +146,7 @@ def main():
             ax.get_yticklabels()[prt_idx[0]].set_fontweight("bold")
             ax.get_yticklabels()[prt_idx[0]].set_fontsize(7)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "ridership_growth_ranking.png")
-    plt.close(fig)
-    print(f"   Saved ridership_growth_ranking.png")
+    save_chart(fig, OUT / "ridership_growth_ranking.png")
 
     # Top and bottom 10
     print("\n6. Top 10 recoveries:")
@@ -166,7 +157,7 @@ def main():
     for row in result.tail(10).iter_rows(named=True):
         print(f"   {row['rank']:>3d}. {row['agency_name']:<50s} {row['pct_change']:>+7.1f}%")
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

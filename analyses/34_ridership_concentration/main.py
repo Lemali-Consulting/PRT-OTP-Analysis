@@ -2,27 +2,14 @@
 
 from pathlib import Path
 
-import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import correlate, gini, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
 DATA_DIR = HERE.parents[1] / "data"
-
-
-def gini(values: list[float]) -> float:
-    """Compute the Gini coefficient for a list of non-negative values."""
-    arr = np.array(values, dtype=float)
-    arr = arr[~np.isnan(arr)]
-    if len(arr) < 2 or arr.sum() == 0:
-        return float("nan")
-    arr = np.sort(arr)
-    n = len(arr)
-    index = np.arange(1, n + 1)
-    return (2 * np.sum(index * arr) - (n + 1) * np.sum(arr)) / (n * np.sum(arr))
 
 
 def load_stop_usage() -> pl.DataFrame:

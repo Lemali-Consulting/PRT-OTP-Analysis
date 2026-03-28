@@ -9,8 +9,13 @@ from prt_otp_analysis.common import (
     CONFIDENCE_95_PERCENTILE,
     classify_bus_route,
     output_dir,
+    print_done,
+    print_header,
     query_to_polars,
+    save_chart,
+    save_csv,
     setup_plotting,
+    weighted_mean,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -56,9 +61,7 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame,
     mode_monthly_weighted = (
         df.group_by(["mode", "month"])
         .agg(
-            weighted_otp=pl.when(pl.col("trips_7d").sum() > 0)
-            .then((pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum())
-            .otherwise(pl.col("otp").mean()),
+            weighted_otp=weighted_mean("otp", "trips_7d", safe=True),
             route_count=pl.col("route_id").n_unique(),
         )
         .sort(["mode", "month"])
@@ -267,17 +270,12 @@ def make_chart(
     ax.set_ylabel("OTP Difference")
 
     fig.suptitle("Mode & Route-Type Comparison", fontsize=13)
-    fig.tight_layout()
-    fig.savefig(OUT / "mode_comparison.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'mode_comparison.png'}")
+    save_chart(fig, OUT / "mode_comparison.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 02: Mode Comparison")
-    print("=" * 60)
+    print_header(2, "Mode Comparison")
 
     print("\nLoading data...")
     df = load_data()
@@ -320,17 +318,15 @@ def main() -> None:
         mode_monthly.with_columns(bus_type=pl.lit(None, dtype=pl.String)),
         bus_monthly.with_columns(mode=pl.lit("BUS")),
     ], how="diagonal")
-    csv_data.write_csv(OUT / "mode_comparison.csv")
-    print(f"  Saved to {OUT / 'mode_comparison.csv'}")
+    save_csv(csv_data, OUT / "mode_comparison.csv")
 
     # Save weighted mode data
-    mode_monthly_weighted.write_csv(OUT / "mode_comparison_weighted.csv")
-    print(f"  Saved to {OUT / 'mode_comparison_weighted.csv'}")
+    save_csv(mode_monthly_weighted, OUT / "mode_comparison_weighted.csv")
 
     print("\nGenerating chart...")
     make_chart(mode_monthly, bus_monthly, paired)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

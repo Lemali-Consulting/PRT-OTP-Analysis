@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -240,10 +240,8 @@ def main() -> None:
     print(f"\n  Trip delta vs OTP delta: Pearson r={trip_otp_corr['pearson_r']:.3f} (p={trip_otp_corr['pearson_p']:.4f}), Spearman rho={trip_otp_corr['spearman_r']:.3f} (p={trip_otp_corr['spearman_p']:.4f})")
 
     print("\nSaving outputs...")
-    df.write_csv(OUT / "service_change_events.csv")
-    print(f"  Saved {OUT / 'service_change_events.csv'}")
-    summary.write_csv(OUT / "service_change_summary.csv")
-    print(f"  Saved {OUT / 'service_change_summary.csv'}")
+    save_csv(df, OUT / "service_change_events.csv")
+    save_csv(summary, OUT / "service_change_summary.csv")
 
     print("\nGenerating chart...")
     make_chart(df)

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
+from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_YEAR, get_db, output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -49,9 +49,7 @@ def main():
     plt = setup_plotting()
     conn = get_db()
 
-    print("=" * 60)
-    print("Analysis 39: National Service Cuts (2019 vs 2023)")
-    print("=" * 60)
+    print_header(39, "National Service Cuts (2019 vs 2023)")
 
     # Load data
     print("\n1. Loading service data...")
@@ -107,9 +105,8 @@ def main():
         prt_row = None
 
     # Save CSV
-    csv_path = OUT / "service_cuts_data.csv"
-    result.write_csv(csv_path)
-    print(f"\n3. Saved {csv_path}")
+    print()
+    save_csv(result, OUT / "service_cuts_data.csv")
 
     # --- Chart 1: VRH change histogram ---
     print("\n4. Generating VRH change histogram...")
@@ -126,10 +123,7 @@ def main():
     ax.set_ylabel("Number of Agencies")
     ax.set_title(f"Service Change Distribution — Top {TOP_N} US Transit Agencies")
     ax.legend()
-    fig.tight_layout()
-    fig.savefig(OUT / "service_cuts_distribution.png")
-    plt.close(fig)
-    print("   Saved service_cuts_distribution.png")
+    save_chart(fig, OUT / "service_cuts_distribution.png")
 
     # --- Chart 2: Ranking bar chart ---
     print("\n5. Generating ranking bar chart...")
@@ -154,10 +148,7 @@ def main():
             ax.get_yticklabels()[prt_idx[0]].set_fontweight("bold")
             ax.get_yticklabels()[prt_idx[0]].set_fontsize(7)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "service_cuts_ranking.png")
-    plt.close(fig)
-    print("   Saved service_cuts_ranking.png")
+    save_chart(fig, OUT / "service_cuts_ranking.png")
 
     # --- Chart 3: Peer city VRH vs UPT change ---
     print("\n6. Generating peer city comparison...")
@@ -197,10 +188,7 @@ def main():
             ax.text(i + width / 2, u - 2 if u < 0 else u + 1,
                     f"{u:+.0f}%", ha="center", va="top" if u < 0 else "bottom", fontsize=8)
 
-        fig.tight_layout()
-        fig.savefig(OUT / "peer_service_vs_ridership.png")
-        plt.close(fig)
-        print("   Saved peer_service_vs_ridership.png")
+        save_chart(fig, OUT / "peer_service_vs_ridership.png")
 
         print("\n   Peer city details:")
         for row in peer_data.iter_rows(named=True):
@@ -272,10 +260,7 @@ def main():
     ax.set_title("Supply vs Demand: Service Cuts vs Ridership Loss")
     ax.legend(loc="upper left")
     ax.set_aspect("equal", adjustable="datalim")
-    fig.tight_layout()
-    fig.savefig(OUT / "supply_vs_demand_scatter.png")
-    plt.close(fig)
-    print("   Saved supply_vs_demand_scatter.png")
+    save_chart(fig, OUT / "supply_vs_demand_scatter.png")
 
     # Quadrant summary
     above_diag = scatter_data.filter(
@@ -296,7 +281,7 @@ def main():
     for row in result.tail(10).iter_rows(named=True):
         print(f"   {row['rank']:>3d}. {row['agency_name']:<50s} VRH: {row['vrh_pct_change']:>+7.1f}%")
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

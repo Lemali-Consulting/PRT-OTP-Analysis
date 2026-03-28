@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -127,17 +127,12 @@ def make_chart(full_df: pl.DataFrame, anomalies: pl.DataFrame) -> None:
 
     axes[-1].set_xlabel("Month")
     fig.suptitle("Routes with Most OTP Anomalies", fontsize=13, y=1.01)
-    fig.tight_layout()
-    fig.savefig(OUT / "anomaly_profiles.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'anomaly_profiles.png'}")
+    save_chart(fig, OUT / "anomaly_profiles.png")
 
 
 def main() -> None:
     """Entry point: load data, detect anomalies, chart, and save."""
-    print("=" * 60)
-    print("Analysis 05: Anomaly Investigation")
-    print("=" * 60)
+    print_header(5, "Anomaly Investigation")
 
     print("\nLoading data...")
     df = load_data()
@@ -207,16 +202,16 @@ def main() -> None:
         print(f"    {row['route_id']} - {row['route_name']}")
 
     print("\nSaving CSV...")
-    anomalies.select(
+    anomalies_out = anomalies.select(
         "route_id", "route_name", "mode", "month", "otp",
         "rolling_mean", "rolling_std", "z_score", "known_event",
-    ).write_csv(OUT / "anomalies.csv")
-    print(f"  Saved to {OUT / 'anomalies.csv'}")
+    )
+    save_csv(anomalies_out, OUT / "anomalies.csv")
 
     print("\nGenerating chart...")
     make_chart(full_df, anomalies)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -128,10 +128,7 @@ def make_charts(df: pl.DataFrame) -> None:
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
     ax.set_title("Stop Net Flow: Generators (blue) vs Attractors (red)")
-    fig.tight_layout()
-    fig.savefig(OUT / "net_flow_map.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'net_flow_map.png'}")
+    save_chart(fig, OUT / "net_flow_map.png")
 
     # --- Top generators and attractors ---
     fig, axes = plt.subplots(1, 2, figsize=(16, 8))
@@ -162,17 +159,12 @@ def make_charts(df: pl.DataFrame) -> None:
     for i, v in enumerate(vals):
         axes[1].text(abs(v) + 5, i, f"{v:.0f}", va="center", fontsize=8)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "top_generators_attractors.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'top_generators_attractors.png'}")
+    save_chart(fig, OUT / "top_generators_attractors.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze boarding/alighting flows, chart."""
-    print("=" * 60)
-    print("Analysis 35: Boarding/Alighting Flow Analysis")
-    print("=" * 60)
+    print_header(35, "Boarding/Alighting Flow Analysis")
 
     print("\nLoading stop-level flows (pre-pandemic weekday)...")
     df = load_stop_flows()
@@ -217,13 +209,12 @@ def main() -> None:
     print(f"  Strong attractors (ratio < 0.67): {pct_attr:.1f}% of stops")
 
     print("\nSaving CSV...")
-    df.write_csv(OUT / "stop_net_flow.csv")
-    print(f"  Saved {OUT / 'stop_net_flow.csv'}")
+    save_csv(df, OUT / "stop_net_flow.csv")
 
     print("\nGenerating charts...")
     make_charts(df)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

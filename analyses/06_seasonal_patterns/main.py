@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -68,9 +68,7 @@ def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]
     system_monthly = (
         df_balanced.group_by("month")
         .agg(
-            weighted_otp=pl.when(pl.col("trips_7d").sum() > 0)
-            .then((pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum())
-            .otherwise(pl.col("otp").mean()),
+            weighted_otp=weighted_mean("otp", "trips_7d", safe=True),
         )
         .sort("month")
     )
@@ -210,17 +208,12 @@ def make_chart(
     ax.set_ylim(0, 1)
 
     fig.suptitle("Seasonal Patterns in PRT On-Time Performance", fontsize=13)
-    fig.tight_layout()
-    fig.savefig(OUT / "seasonal_patterns.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'seasonal_patterns.png'}")
+    save_chart(fig, OUT / "seasonal_patterns.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze seasonal patterns, chart, and save."""
-    print("=" * 60)
-    print("Analysis 06: Seasonal Patterns")
-    print("=" * 60)
+    print_header(6, "Seasonal Patterns")
 
     print("\nLoading data...")
     df = load_data()
@@ -244,13 +237,12 @@ def main() -> None:
         print(f"    {row['route_id']} - {row['route_name']}: amplitude = {row['seasonal_amplitude']:.3f}")
 
     print("\nSaving CSV...")
-    route_amplitude.write_csv(OUT / "seasonal_patterns.csv")
-    print(f"  Saved to {OUT / 'seasonal_patterns.csv'}")
+    save_csv(route_amplitude, OUT / "seasonal_patterns.csv")
 
     print("\nGenerating chart...")
     make_chart(system_seasonal, route_seasonal, route_amplitude)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

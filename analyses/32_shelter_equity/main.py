@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -179,10 +179,7 @@ def make_charts(df: pl.DataFrame, mode_df: pl.DataFrame, owner_df: pl.DataFrame)
         axes[1].text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
                      f"{pct:.0f}%", ha="center", fontsize=10)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "ridership_by_shelter.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'ridership_by_shelter.png'}")
+    save_chart(fig, OUT / "ridership_by_shelter.png")
 
     # --- Shelter owner breakdown ---
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -197,17 +194,12 @@ def make_charts(df: pl.DataFrame, mode_df: pl.DataFrame, owner_df: pl.DataFrame)
     ax.set_title("Shelter Count by Owner")
     for i, (cnt, mu) in enumerate(zip(counts, mean_usages)):
         ax.text(cnt + 1, i, f"avg {mu:.0f}/day", va="center", fontsize=9)
-    fig.tight_layout()
-    fig.savefig(OUT / "shelter_coverage_by_mode.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'shelter_coverage_by_mode.png'}")
+    save_chart(fig, OUT / "shelter_coverage_by_mode.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze shelter equity, chart, and save."""
-    print("=" * 60)
-    print("Analysis 32: Shelter Equity")
-    print("=" * 60)
+    print_header(32, "Shelter Equity")
 
     print("\nLoading stop-level usage (pre-pandemic weekday)...")
     df = load_stop_usage()
@@ -243,20 +235,18 @@ def main() -> None:
         print(f"  {row['stop_id']:8s} {row['stop_name'][:40]:40s} {row['avg_daily_usage']:8.1f}/day")
 
     print("\nSaving CSVs...")
-    df.write_csv(OUT / "shelter_equity_summary.csv")
-    print(f"  Saved {OUT / 'shelter_equity_summary.csv'}")
+    save_csv(df, OUT / "shelter_equity_summary.csv")
     unsheltered_priority = (
         df.filter(~pl.col("has_shelter"))
         .sort("avg_daily_usage", descending=True)
         .select("stop_id", "stop_name", "mode", "stop_type", "avg_daily_usage", "avg_ons", "avg_offs", "lat", "lon")
     )
-    unsheltered_priority.write_csv(OUT / "unsheltered_priority.csv")
-    print(f"  Saved {OUT / 'unsheltered_priority.csv'}")
+    save_csv(unsheltered_priority, OUT / "unsheltered_priority.csv")
 
     print("\nGenerating charts...")
     make_charts(df, mode_df, owner_df)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -44,12 +44,8 @@ def compute_monthly(df: pl.DataFrame) -> pl.DataFrame:
         df.group_by("month")
         .agg(
             unweighted_otp=pl.col("otp").mean(),
-            trip_weighted_otp=pl.when(pl.col("trips_7d").sum() > 0)
-            .then((pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum())
-            .otherwise(pl.col("otp").mean()),
-            ridership_weighted_otp=(
-                (pl.col("otp") * pl.col("avg_riders")).sum() / pl.col("avg_riders").sum()
-            ),
+            trip_weighted_otp=weighted_mean("otp", "trips_7d", safe=True),
+            ridership_weighted_otp=weighted_mean("otp", "avg_riders"),
             route_count=pl.col("route_id").n_unique(),
             total_riders=pl.col("avg_riders").sum(),
         )
@@ -135,17 +131,12 @@ def make_chart(monthly: pl.DataFrame) -> None:
     ax.legend(loc="lower left", fontsize=8)
     ax.set_ylim(0.5, 0.85)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "ridership_weighted_otp_trend.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'ridership_weighted_otp_trend.png'}")
+    save_chart(fig, OUT / "ridership_weighted_otp_trend.png")
 
 
 def main() -> None:
     """Entry point: load data, compute weighted OTP series, test, chart, and save."""
-    print("=" * 60)
-    print("Analysis 19: Ridership-Weighted OTP")
-    print("=" * 60)
+    print_header(19, "Ridership-Weighted OTP")
 
     print("\nLoading data...")
     df = load_data()
@@ -170,15 +161,13 @@ def main() -> None:
     print(f"  N months:        {test['n_months']}")
 
     print("\nSaving CSVs...")
-    monthly.write_csv(OUT / "weighting_comparison.csv")
-    print(f"  {OUT / 'weighting_comparison.csv'}")
-    summary.write_csv(OUT / "summary_stats.csv")
-    print(f"  {OUT / 'summary_stats.csv'}")
+    save_csv(monthly, OUT / "weighting_comparison.csv")
+    save_csv(summary, OUT / "summary_stats.csv")
 
     print("\nGenerating chart...")
     make_chart(monthly)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

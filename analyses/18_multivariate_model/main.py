@@ -10,7 +10,11 @@ from scipy import stats
 from prt_otp_analysis.common import (
     classify_bus_route,
     output_dir,
+    print_done,
+    print_header,
     query_to_polars,
+    save_chart,
+    save_csv,
     setup_plotting,
 )
 
@@ -218,10 +222,7 @@ def make_charts(df: pl.DataFrame, results: dict, y_hat: np.ndarray) -> None:
                 ha="left" if b >= 0 else "right", va="center", fontsize=10)
 
     ax.invert_yaxis()
-    fig.tight_layout()
-    fig.savefig(OUT / "coefficient_plot.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'coefficient_plot.png'}")
+    save_chart(fig, OUT / "coefficient_plot.png")
 
     # Predicted vs actual
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -236,17 +237,12 @@ def make_charts(df: pl.DataFrame, results: dict, y_hat: np.ndarray) -> None:
     ax.set_xlim(lims)
     ax.set_ylim(lims)
     ax.set_aspect("equal")
-    fig.tight_layout()
-    fig.savefig(OUT / "predicted_vs_actual.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'predicted_vs_actual.png'}")
+    save_chart(fig, OUT / "predicted_vs_actual.png")
 
 
 def main() -> None:
     """Entry point: load features, fit models, report, and visualize."""
-    print("=" * 60)
-    print("Analysis 18: Multivariate OTP Model")
-    print("=" * 60)
+    print_header(18, "Multivariate OTP Model")
 
     print("\nLoading and assembling features...")
     df = load_features()
@@ -295,13 +291,12 @@ def main() -> None:
         "p_value": full_results["p_values"],
         "beta_weight": [b if b is not None else float("nan") for b in full_results["beta_weights"]],
     })
-    coeff_df.write_csv(OUT / "model_coefficients.csv")
-    print(f"\n  Saved to {OUT / 'model_coefficients.csv'}")
+    save_csv(coeff_df, OUT / "model_coefficients.csv")
 
     print("\nGenerating charts...")
     make_charts(df, full_results, y_hat_full)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

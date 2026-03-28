@@ -7,7 +7,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -183,10 +183,7 @@ def make_charts(candidates: pl.DataFrame, summary: pl.DataFrame) -> None:
     for bar, val in zip(bars, gains):
         ax.text(bar.get_width() + 0.05, bar.get_y() + bar.get_height() / 2,
                 f"+{val:.1f} pp", va="center", fontsize=8)
-    fig.tight_layout()
-    fig.savefig(OUT / "otp_gain_by_route.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'otp_gain_by_route.png'}")
+    save_chart(fig, OUT / "otp_gain_by_route.png")
 
     # --- Scatter map of candidate stops ---
     cand_only = candidates.filter(pl.col("candidate"))
@@ -208,17 +205,12 @@ def make_charts(candidates: pl.DataFrame, summary: pl.DataFrame) -> None:
     ax.set_ylabel("Latitude")
     ax.set_title("Stop Consolidation Candidates (low usage + neighbor < 400 m)")
     ax.legend(loc="upper left", fontsize=9)
-    fig.tight_layout()
-    fig.savefig(OUT / "candidate_map.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'candidate_map.png'}")
+    save_chart(fig, OUT / "candidate_map.png")
 
 
 def main() -> None:
     """Entry point: load data, find candidates, estimate OTP gains, chart."""
-    print("=" * 60)
-    print("Analysis 31: Stop Consolidation Candidates")
-    print("=" * 60)
+    print_header(31, "Stop Consolidation Candidates")
 
     print("\nLoading stop-level usage (pre-pandemic weekday)...")
     usage = load_stop_usage()
@@ -252,15 +244,13 @@ def main() -> None:
         print(f"  Max estimated OTP gain: +{max_gain:.1f} pp")
 
     print("\nSaving CSVs...")
-    candidates.write_csv(OUT / "consolidation_candidates.csv")
-    print(f"  Saved {OUT / 'consolidation_candidates.csv'}")
-    summary.write_csv(OUT / "route_consolidation_summary.csv")
-    print(f"  Saved {OUT / 'route_consolidation_summary.csv'}")
+    save_csv(candidates, OUT / "consolidation_candidates.csv")
+    save_csv(summary, OUT / "route_consolidation_summary.csv")
 
     print("\nGenerating charts...")
     make_charts(candidates, summary)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

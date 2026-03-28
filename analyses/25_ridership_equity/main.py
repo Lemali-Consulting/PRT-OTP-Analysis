@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -177,10 +177,7 @@ def make_lorenz_chart(lorenz_all: dict, lorenz_bus: dict) -> None:
         ax.set_aspect("equal")
 
     fig.suptitle("Ridership Concentration on Low-OTP Routes", fontsize=13, y=1.02)
-    fig.tight_layout()
-    fig.savefig(OUT / "ridership_lorenz.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'ridership_lorenz.png'}")
+    save_chart(fig, OUT / "ridership_lorenz.png")
 
 
 def make_quintile_chart(quintiles_all: pl.DataFrame, quintiles_bus: pl.DataFrame) -> None:
@@ -228,17 +225,12 @@ def make_quintile_chart(quintiles_all: pl.DataFrame, quintiles_bus: pl.DataFrame
         ax.legend(lines, labels, loc="upper left", fontsize=8)
 
     fig.suptitle("Ridership and OTP by Quintile", fontsize=13, y=1.02)
-    fig.tight_layout()
-    fig.savefig(OUT / "quintile_summary.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'quintile_summary.png'}")
+    save_chart(fig, OUT / "quintile_summary.png")
 
 
 def main() -> None:
     """Entry point: load data, compute Lorenz/Gini, quintiles, chart, and save."""
-    print("=" * 60)
-    print("Analysis 25: Ridership Concentration & Equity")
-    print("=" * 60)
+    print_header(25, "Ridership Concentration & Equity")
 
     print("\nLoading data...")
     df = load_data()
@@ -293,20 +285,19 @@ def main() -> None:
         {"metric": "n_routes_all", "value": float(lorenz_all["n_routes"])},
         {"metric": "n_routes_bus", "value": float(lorenz_bus["n_routes"])},
     ])
-    metrics.write_csv(OUT / "equity_metrics.csv")
-    print(f"  {OUT / 'equity_metrics.csv'}")
+    save_csv(metrics, OUT / "equity_metrics.csv")
 
     # Also save quintile detail
-    quintiles_all.with_columns(pl.lit("all").alias("subset")).vstack(
+    quintile_detail_df = quintiles_all.with_columns(pl.lit("all").alias("subset")).vstack(
         quintiles_bus.with_columns(pl.lit("bus").alias("subset"))
-    ).write_csv(OUT / "quintile_detail.csv")
-    print(f"  {OUT / 'quintile_detail.csv'}")
+    )
+    save_csv(quintile_detail_df, OUT / "quintile_detail.csv")
 
     print("\nGenerating charts...")
     make_lorenz_chart(lorenz_all, lorenz_bus)
     make_quintile_chart(quintiles_all, quintiles_bus)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars
+from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_csv
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -116,9 +116,7 @@ def investigate() -> str:
 
 def main() -> None:
     """Entry point: investigate the Incline data and produce a report."""
-    print("=" * 60)
-    print("Analysis 09: Incline Investigation")
-    print("=" * 60)
+    print_header(9, "Incline Investigation")
 
     print("\nInvestigating...")
     report = investigate()
@@ -163,7 +161,7 @@ def main() -> None:
         pl.DataFrame({"route_id": [], "month": [], "otp": []}).write_csv(OUT / "incline_report.csv")
         print(f"  Empty OTP CSV saved to {OUT / 'incline_report.csv'}")
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

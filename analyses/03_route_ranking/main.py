@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import Z_CRITICAL_95, output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import Z_CRITICAL_95, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -228,17 +228,12 @@ def make_chart(df: pl.DataFrame) -> None:
     legend_patches = [Patch(facecolor=c, label=m) for m, c in mode_colors.items() if m != "UNKNOWN"]
     axes[0].legend(handles=legend_patches, loc="lower right", fontsize=8)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "top_bottom_routes.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'top_bottom_routes.png'}")
+    save_chart(fig, OUT / "top_bottom_routes.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 03: Route Ranking")
-    print("=" * 60)
+    print_header(3, "Route Ranking")
 
     print("\nLoading data...")
     otp, stop_counts = load_data()
@@ -271,13 +266,12 @@ def main() -> None:
         print(f"  Mode {mode}: {mode_count} routes ranked")
 
     print("\nSaving CSV...")
-    result.write_csv(OUT / "route_ranking.csv")
-    print(f"  Saved to {OUT / 'route_ranking.csv'}")
+    save_csv(result, OUT / "route_ranking.csv")
 
     print("\nGenerating chart...")
     make_chart(result)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":
