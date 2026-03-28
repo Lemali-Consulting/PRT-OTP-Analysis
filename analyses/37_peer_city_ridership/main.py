@@ -4,22 +4,10 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
+from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_MONTH, PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
-
-# Peer agencies: NTD ID -> short label
-PEERS = {
-    30022: "Pittsburgh",
-    30034: "Baltimore",
-    50015: "Cleveland",
-    80006: "Denver",
-    70006: "St. Louis",
-    20004: "Buffalo",
-    8: "Portland",
-    50027: "Minneapolis",
-}
 
 # NTD mode codes for bus vs rail breakdown
 BUS_MODES = {"MB", "CB", "RB", "TB"}  # motorbus, commuter bus, rapid bus, trolleybus

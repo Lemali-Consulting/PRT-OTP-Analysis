@@ -3,6 +3,7 @@
 from prt_otp_analysis.common.db import (
     DATA_DIR,
     DB_PATH,
+    PEERS,
     PRE_COVID_BASELINE_MONTH,
     PRE_COVID_BASELINE_YEAR,
     PROJECT_ROOT,
@@ -16,6 +17,7 @@ from prt_otp_analysis.common.plotting import setup_plotting
 __all__ = [
     "DATA_DIR",
     "DB_PATH",
+    "PEERS",
     "PRE_COVID_BASELINE_MONTH",
     "PRE_COVID_BASELINE_YEAR",
     "PROJECT_ROOT",

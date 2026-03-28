@@ -4,25 +4,13 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
+from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
 
 PRT_NTD_ID = 30022
 TOP_N = 150
-
-# Peer agencies from Analysis 37
-PEERS = {
-    30022: "Pittsburgh",
-    30034: "Baltimore",
-    50015: "Cleveland",
-    80006: "Denver",
-    70006: "St. Louis",
-    20004: "Buffalo",
-    8: "Portland",
-    50027: "Minneapolis",
-}
 
 
 def load_service_data(conn) -> pl.DataFrame:

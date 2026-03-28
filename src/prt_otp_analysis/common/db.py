@@ -13,6 +13,18 @@ DB_PATH = DATA_DIR / "prt.db"
 PRE_COVID_BASELINE_YEAR = "2019"
 PRE_COVID_BASELINE_MONTH = "2019-01"
 
+# Peer agencies for cross-city comparisons: NTD ID -> short city label.
+PEERS: dict[int, str] = {
+    30022: "Pittsburgh",
+    30034: "Baltimore",
+    50015: "Cleveland",
+    80006: "Denver",
+    70006: "St. Louis",
+    20004: "Buffalo",
+    8: "Portland",
+    50027: "Minneapolis",
+}
+
 
 def get_db() -> sqlite3.Connection:
     """Return a read-only connection to the PRT database."""
