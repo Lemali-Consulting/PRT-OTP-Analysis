@@ -6,7 +6,7 @@ import folium
 import polars as pl
 from branca.colormap import LinearColormap
 
-from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -243,41 +243,41 @@ def make_interactive_map(
 @run_analysis(8, "Hot-Spot Map")
 def main() -> None:
     """Entry point: load data, compute stop OTP, map, and save."""
-    print("\nLoading data...")
-    raw = load_data()
-    print(f"  {len(raw):,} route-stop records loaded")
+    with phase("Loading data"):
+        raw = load_data()
+        print(f"  {len(raw):,} route-stop records loaded")
 
-    print("\nAnalyzing...")
-    stop_otp = analyze(raw)
-    print(f"  {len(stop_otp):,} stops with OTP computed")
+    with phase("Analyzing"):
+        stop_otp = analyze(raw)
+        print(f"  {len(stop_otp):,} stops with OTP computed")
 
-    best = stop_otp.sort("weighted_otp", descending=True).head(3)
-    worst = stop_otp.sort("weighted_otp").head(3)
-    print("\n  Best-performing stops (route-weighted OTP):")
-    for row in best.iter_rows(named=True):
-        hood = row["hood"] if row["hood"] and row["hood"] != "0" else "N/A"
-        modes = ", ".join(sorted(row["modes"])) if row.get("modes") else "N/A"
-        print(f"    {row['stop_id']} ({hood}, {modes}): {row['weighted_otp']:.1%}")
-    print("  Worst-performing stops (route-weighted OTP):")
-    for row in worst.iter_rows(named=True):
-        hood = row["hood"] if row["hood"] and row["hood"] != "0" else "N/A"
-        modes = ", ".join(sorted(row["modes"])) if row.get("modes") else "N/A"
-        print(f"    {row['stop_id']} ({hood}, {modes}): {row['weighted_otp']:.1%}")
+        best = stop_otp.sort("weighted_otp", descending=True).head(3)
+        worst = stop_otp.sort("weighted_otp").head(3)
+        print("\n  Best-performing stops (route-weighted OTP):")
+        for row in best.iter_rows(named=True):
+            hood = row["hood"] if row["hood"] and row["hood"] != "0" else "N/A"
+            modes = ", ".join(sorted(row["modes"])) if row.get("modes") else "N/A"
+            print(f"    {row['stop_id']} ({hood}, {modes}): {row['weighted_otp']:.1%}")
+        print("  Worst-performing stops (route-weighted OTP):")
+        for row in worst.iter_rows(named=True):
+            hood = row["hood"] if row["hood"] and row["hood"] != "0" else "N/A"
+            modes = ", ".join(sorted(row["modes"])) if row.get("modes") else "N/A"
+            print(f"    {row['stop_id']} ({hood}, {modes}): {row['weighted_otp']:.1%}")
 
-    print("\nSaving CSV...")
-    stop_otp_out = stop_otp.drop("modes")
-    save_csv(stop_otp_out, OUT / "hotspot_map.csv")
+    with phase("Saving CSV"):
+        stop_otp_out = stop_otp.drop("modes")
+        save_csv(stop_otp_out, OUT / "hotspot_map.csv")
 
-    print("\nGenerating chart...")
-    make_chart(stop_otp)
+    with phase("Generating chart"):
+        make_chart(stop_otp)
 
-    print("\nLoading GTFS route shapes...")
-    route_shapes = load_route_shapes()
-    route_otp = load_route_otp()
-    print(f"  {len(route_shapes)} route shapes loaded")
+    with phase("Loading GTFS route shapes"):
+        route_shapes = load_route_shapes()
+        route_otp = load_route_otp()
+        print(f"  {len(route_shapes)} route shapes loaded")
 
-    print("\nGenerating interactive map...")
-    make_interactive_map(stop_otp, route_shapes, route_otp)
+    with phase("Generating interactive map"):
+        make_interactive_map(stop_otp, route_shapes, route_otp)
 
 
 if __name__ == "__main__":

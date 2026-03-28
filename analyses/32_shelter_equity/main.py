@@ -4,7 +4,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import DATA_DIR, analysis_dir, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, phase, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -197,50 +197,50 @@ def make_charts(df: pl.DataFrame, mode_df: pl.DataFrame, owner_df: pl.DataFrame)
 def main() -> None:
     """Entry point: load data, analyze shelter equity, chart, and save."""
 
-    print("\nLoading stop-level usage (pre-pandemic weekday)...")
-    df = load_stop_usage()
-    print(f"  {len(df):,} unique physical stops")
+    with phase("Loading stop-level usage (pre-pandemic weekday)"):
+        df = load_stop_usage()
+        print(f"  {len(df):,} unique physical stops")
 
-    print("\nAnalyzing shelter equity...")
-    results = analyze(df)
-    print(f"  Sheltered: {results['n_sheltered']:,} ({results['pct_sheltered']:.1f}%)")
-    print(f"  Unsheltered: {results['n_unsheltered']:,}")
-    print(f"  Median usage -- sheltered: {results['sheltered_median_usage']:.1f}, unsheltered: {results['unsheltered_median_usage']:.1f}")
-    print(f"  Mean usage -- sheltered: {results['sheltered_mean_usage']:.1f}, unsheltered: {results['unsheltered_mean_usage']:.1f}")
-    print(f"  Sheltered stops serve {results['sheltered_ridership_share']:.1f}% of total ridership")
-    print(f"  Mann-Whitney U p-value: {results['mannwhitney_p']:.2e}")
+    with phase("Analyzing shelter equity"):
+        results = analyze(df)
+        print(f"  Sheltered: {results['n_sheltered']:,} ({results['pct_sheltered']:.1f}%)")
+        print(f"  Unsheltered: {results['n_unsheltered']:,}")
+        print(f"  Median usage -- sheltered: {results['sheltered_median_usage']:.1f}, unsheltered: {results['unsheltered_median_usage']:.1f}")
+        print(f"  Mean usage -- sheltered: {results['sheltered_mean_usage']:.1f}, unsheltered: {results['unsheltered_mean_usage']:.1f}")
+        print(f"  Sheltered stops serve {results['sheltered_ridership_share']:.1f}% of total ridership")
+        print(f"  Mann-Whitney U p-value: {results['mannwhitney_p']:.2e}")
 
-    print("\nShelter coverage by mode:")
-    mode_df = shelter_by_mode(df)
-    for row in mode_df.iter_rows(named=True):
-        print(f"  {row['mode']:12s}: {row['pct_sheltered']:.0f}% sheltered ({row['n_stops']} stops)")
+        print("\nShelter coverage by mode:")
+        mode_df = shelter_by_mode(df)
+        for row in mode_df.iter_rows(named=True):
+            print(f"  {row['mode']:12s}: {row['pct_sheltered']:.0f}% sheltered ({row['n_stops']} stops)")
 
-    print("\nShelter owner breakdown:")
-    owner_df = shelter_by_owner(df)
-    for row in owner_df.iter_rows(named=True):
-        print(f"  {row['shelter']:25s}: {row['n_stops']:4d} stops, avg {row['mean_usage']:.0f}/day")
+        print("\nShelter owner breakdown:")
+        owner_df = shelter_by_owner(df)
+        for row in owner_df.iter_rows(named=True):
+            print(f"  {row['shelter']:25s}: {row['n_stops']:4d} stops, avg {row['mean_usage']:.0f}/day")
 
-    print("\nTop 20 unsheltered stops by usage:")
-    priority = (
-        df.filter(~pl.col("has_shelter"))
-        .sort("avg_daily_usage", descending=True)
-        .head(20)
-        .select("stop_id", "stop_name", "mode", "avg_daily_usage", "lat", "lon")
-    )
-    for row in priority.iter_rows(named=True):
-        print(f"  {row['stop_id']:8s} {row['stop_name'][:40]:40s} {row['avg_daily_usage']:8.1f}/day")
+        print("\nTop 20 unsheltered stops by usage:")
+        priority = (
+            df.filter(~pl.col("has_shelter"))
+            .sort("avg_daily_usage", descending=True)
+            .head(20)
+            .select("stop_id", "stop_name", "mode", "avg_daily_usage", "lat", "lon")
+        )
+        for row in priority.iter_rows(named=True):
+            print(f"  {row['stop_id']:8s} {row['stop_name'][:40]:40s} {row['avg_daily_usage']:8.1f}/day")
 
-    print("\nSaving CSVs...")
-    save_csv(df, OUT / "shelter_equity_summary.csv")
-    unsheltered_priority = (
-        df.filter(~pl.col("has_shelter"))
-        .sort("avg_daily_usage", descending=True)
-        .select("stop_id", "stop_name", "mode", "stop_type", "avg_daily_usage", "avg_ons", "avg_offs", "lat", "lon")
-    )
-    save_csv(unsheltered_priority, OUT / "unsheltered_priority.csv")
+    with phase("Saving CSVs"):
+        save_csv(df, OUT / "shelter_equity_summary.csv")
+        unsheltered_priority = (
+            df.filter(~pl.col("has_shelter"))
+            .sort("avg_daily_usage", descending=True)
+            .select("stop_id", "stop_name", "mode", "stop_type", "avg_daily_usage", "avg_ons", "avg_offs", "lat", "lon")
+        )
+        save_csv(unsheltered_priority, OUT / "unsheltered_priority.csv")
 
-    print("\nGenerating charts...")
-    make_charts(df, mode_df, owner_df)
+    with phase("Generating charts"):
+        make_charts(df, mode_df, owner_df)
 
 
 if __name__ == "__main__":

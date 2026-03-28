@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -339,73 +339,73 @@ def controlled_garage_test(route_df: pl.DataFrame) -> dict:
 def main() -> None:
     """Entry point: load, summarize, test, chart, and save."""
 
-    print("\nLoading data...")
-    df = load_data()
-    n_routes = df["route_id"].n_unique()
-    print(f"  {len(df):,} route-month observations ({n_routes} routes)")
+    with phase("Loading data"):
+        df = load_data()
+        n_routes = df["route_id"].n_unique()
+        print(f"  {len(df):,} route-month observations ({n_routes} routes)")
 
-    print("\nComputing route-level summaries...")
-    route_df = route_level_summary(df)
-    gsummary = garage_summary(route_df)
+    with phase("Computing route-level summaries"):
+        route_df = route_level_summary(df)
+        gsummary = garage_summary(route_df)
 
-    print("\n  Garage summary:")
-    print(f"  {'Garage':<22} {'Routes':>6} {'Mean OTP':>9} {'Wt OTP':>9} {'Riders':>10}")
-    for row in gsummary.iter_rows(named=True):
-        print(f"  {row['current_garage']:<22} {row['n_routes']:>6} "
-              f"{row['mean_otp']:>9.1%} {row['weighted_otp']:>9.1%} "
-              f"{row['total_riders']:>10,.0f}")
+        print("\n  Garage summary:")
+        print(f"  {'Garage':<22} {'Routes':>6} {'Mean OTP':>9} {'Wt OTP':>9} {'Riders':>10}")
+        for row in gsummary.iter_rows(named=True):
+            print(f"  {row['current_garage']:<22} {row['n_routes']:>6} "
+                  f"{row['mean_otp']:>9.1%} {row['weighted_otp']:>9.1%} "
+                  f"{row['total_riders']:>10,.0f}")
 
-    print("\nStatistical tests...")
-    test_results = statistical_tests(route_df)
+    with phase("Statistical tests"):
+        test_results = statistical_tests(route_df)
 
-    if "kruskal_h_all" in test_results:
-        print(f"  Kruskal-Wallis (all routes): H = {test_results['kruskal_h_all']:.3f}, "
-              f"p = {test_results['kruskal_p_all']:.4f}")
-        print(f"    Garages tested: {test_results['garages_tested_all']}")
+        if "kruskal_h_all" in test_results:
+            print(f"  Kruskal-Wallis (all routes): H = {test_results['kruskal_h_all']:.3f}, "
+                  f"p = {test_results['kruskal_p_all']:.4f}")
+            print(f"    Garages tested: {test_results['garages_tested_all']}")
 
-    if "kruskal_h_bus" in test_results:
-        print(f"  Kruskal-Wallis (bus only):   H = {test_results['kruskal_h_bus']:.3f}, "
-              f"p = {test_results['kruskal_p_bus']:.4f}")
-        print(f"    Garages tested: {test_results['garages_tested_bus']}")
+        if "kruskal_h_bus" in test_results:
+            print(f"  Kruskal-Wallis (bus only):   H = {test_results['kruskal_h_bus']:.3f}, "
+                  f"p = {test_results['kruskal_p_bus']:.4f}")
+            print(f"    Garages tested: {test_results['garages_tested_bus']}")
 
-    print("\nControlled analysis (OLS with structural controls)...")
-    ctrl = controlled_garage_test(route_df)
-    base = ctrl["base_results"]
-    full = ctrl["full_results"]
-    print(f"\n  Bus-only models (n = {ctrl['n_bus']}, reference garage = East Liberty):")
-    print(f"  Base model (stop_count + span): R² = {base['r_squared']:.4f}, "
-          f"Adj R² = {base['adj_r_squared']:.4f}")
-    print(f"  Full model (+ garage dummies):  R² = {full['r_squared']:.4f}, "
-          f"Adj R² = {full['adj_r_squared']:.4f}")
-    print(f"  R² change: +{full['r_squared'] - base['r_squared']:.4f}")
-    print(f"\n  F-test for garage dummies: F = {ctrl['f_stat']:.3f}, "
-          f"p = {ctrl['f_p']:.4f} (df = {ctrl['k_diff']}, {ctrl['n_bus'] - full['k'] - 1})")
-    if ctrl['f_p'] < 0.05:
-        print("  => Garage dummies ARE significant after controlling for route structure.")
-    else:
-        print("  => Garage dummies are NOT significant after controlling for route structure.")
+    with phase("Controlled analysis (OLS with structural controls)"):
+        ctrl = controlled_garage_test(route_df)
+        base = ctrl["base_results"]
+        full = ctrl["full_results"]
+        print(f"\n  Bus-only models (n = {ctrl['n_bus']}, reference garage = East Liberty):")
+        print(f"  Base model (stop_count + span): R² = {base['r_squared']:.4f}, "
+              f"Adj R² = {base['adj_r_squared']:.4f}")
+        print(f"  Full model (+ garage dummies):  R² = {full['r_squared']:.4f}, "
+              f"Adj R² = {full['adj_r_squared']:.4f}")
+        print(f"  R² change: +{full['r_squared'] - base['r_squared']:.4f}")
+        print(f"\n  F-test for garage dummies: F = {ctrl['f_stat']:.3f}, "
+              f"p = {ctrl['f_p']:.4f} (df = {ctrl['k_diff']}, {ctrl['n_bus'] - full['k'] - 1})")
+        if ctrl['f_p'] < 0.05:
+            print("  => Garage dummies ARE significant after controlling for route structure.")
+        else:
+            print("  => Garage dummies are NOT significant after controlling for route structure.")
 
-    # Print garage coefficients
-    print(f"\n  {'Feature':<25s} {'Coeff':>10s} {'Std Err':>10s} {'p-value':>10s}")
-    print(f"  {'-'*55}")
-    for i, feat in enumerate(full["features"]):
-        coeff = full["coefficients"][i]
-        se = full["std_errors"][i]
-        p = full["p_values"][i]
-        sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else ""
-        print(f"  {feat:<25s} {coeff:>10.6f} {se:>10.6f} {p:>10.4f} {sig}")
+        # Print garage coefficients
+        print(f"\n  {'Feature':<25s} {'Coeff':>10s} {'Std Err':>10s} {'p-value':>10s}")
+        print(f"  {'-'*55}")
+        for i, feat in enumerate(full["features"]):
+            coeff = full["coefficients"][i]
+            se = full["std_errors"][i]
+            p = full["p_values"][i]
+            sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else ""
+            print(f"  {feat:<25s} {coeff:>10.6f} {se:>10.6f} {p:>10.4f} {sig}")
 
-    print("\nComputing monthly trends...")
-    monthly = monthly_by_garage(df)
+    with phase("Computing monthly trends"):
+        monthly = monthly_by_garage(df)
 
-    print("\nSaving CSVs...")
-    save_csv(gsummary, OUT / "garage_summary.csv")
-    save_csv(route_df, OUT / "garage_route_detail.csv")
-    save_csv(monthly, OUT / "garage_monthly.csv")
+    with phase("Saving CSVs"):
+        save_csv(gsummary, OUT / "garage_summary.csv")
+        save_csv(route_df, OUT / "garage_route_detail.csv")
+        save_csv(monthly, OUT / "garage_monthly.csv")
 
-    print("\nGenerating charts...")
-    make_trend_chart(monthly)
-    make_boxplot(route_df)
+    with phase("Generating charts"):
+        make_trend_chart(monthly)
+        make_boxplot(route_df)
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
 import numpy as np
 import polars as pl
 
-from prt_otp_analysis.common import DATA_DIR, analysis_dir, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, phase, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -162,9 +162,9 @@ def make_charts(df: pl.DataFrame) -> None:
 def main() -> None:
     """Entry point: load data, analyze boarding/alighting flows, chart."""
 
-    print("\nLoading stop-level flows (pre-pandemic weekday)...")
-    df = load_stop_flows()
-    print(f"  {len(df):,} unique physical stops")
+    with phase("Loading stop-level flows (pre-pandemic weekday)"):
+        df = load_stop_flows()
+        print(f"  {len(df):,} unique physical stops")
 
     n_gen = len(df.filter(pl.col("flow_type") == "Generator"))
     n_attr = len(df.filter(pl.col("flow_type") == "Attractor"))
@@ -204,11 +204,11 @@ def main() -> None:
     print(f"  Strong generators (ratio > 1.5): {pct_gen:.1f}% of stops")
     print(f"  Strong attractors (ratio < 0.67): {pct_attr:.1f}% of stops")
 
-    print("\nSaving CSV...")
-    save_csv(df, OUT / "stop_net_flow.csv")
+    with phase("Saving CSV"):
+        save_csv(df, OUT / "stop_net_flow.csv")
 
-    print("\nGenerating charts...")
-    make_charts(df)
+    with phase("Generating charts"):
+        make_charts(df)
 
 
 if __name__ == "__main__":

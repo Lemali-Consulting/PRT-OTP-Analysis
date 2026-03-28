@@ -75,3 +75,24 @@ class TestRunAnalysis:
             pass
 
         assert my_main.__name__ == "my_main"
+
+
+class TestPhase:
+    """Tests for the phase() context manager."""
+
+    def test_prints_label_with_ellipsis(self) -> None:
+        """phase() prints a newline, the label, and '...' on entry."""
+        buf = io.StringIO()
+        with patch("sys.stdout", buf):
+            with phase("Loading data"):
+                pass
+        assert buf.getvalue() == "\nLoading data...\n"
+
+    def test_body_output_follows_label(self) -> None:
+        """Output inside the phase block appears after the label."""
+        buf = io.StringIO()
+        with patch("sys.stdout", buf):
+            with phase("Analyzing"):
+                print("  Pearson r = 0.42")
+        output = buf.getvalue()
+        assert output.index("Analyzing...") < output.index("Pearson r = 0.42")

@@ -2,7 +2,7 @@
 
 import polars as pl
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, analysis_dir, get_db, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, analysis_dir, get_db, phase, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -47,9 +47,9 @@ def main():
     conn = get_db()
 
     # Load data
-    print("\n1. Loading agency totals...")
-    wide = load_agency_totals(conn)
-    print(f"   {len(wide)} agencies with valid data in both 2019 and 2024")
+    with phase("Loading agency totals"):
+        wide = load_agency_totals(conn)
+        print(f"   {len(wide)} agencies with valid data in both 2019 and 2024")
 
     # Rank by 2019 UPT and take top N
     wide = wide.sort("upt_2019", descending=True).head(TOP_N)
@@ -103,46 +103,46 @@ def main():
     save_csv(result, OUT / "ridership_growth_data.csv")
 
     # --- Chart 1: Histogram ---
-    print("\n4. Generating histogram...")
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.hist(pct.to_list(), bins=30, color="#4878CF", edgecolor="white", alpha=0.8)
-    ax.axvline(median_pct, color="#333333", linestyle="--", linewidth=1.5, label=f"Median: {median_pct:.1f}%")
-    ax.axvline(0, color="#999999", linestyle=":", linewidth=1)
-    if len(prt) > 0:
-        prt_pct = prt_row["pct_change"]
-        ax.axvline(prt_pct, color="#E24A33", linestyle="-", linewidth=2.5,
-                   label=f"PRT: {prt_pct:+.1f}%")
-    ax.set_xlabel("Ridership Change 2019 → 2024 (%)")
-    ax.set_ylabel("Number of Agencies")
-    ax.set_title(f"Ridership Recovery Distribution — Top {TOP_N} US Transit Agencies")
-    ax.legend()
-    save_chart(fig, OUT / "ridership_growth_distribution.png")
+    with phase("Generating histogram"):
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.hist(pct.to_list(), bins=30, color="#4878CF", edgecolor="white", alpha=0.8)
+        ax.axvline(median_pct, color="#333333", linestyle="--", linewidth=1.5, label=f"Median: {median_pct:.1f}%")
+        ax.axvline(0, color="#999999", linestyle=":", linewidth=1)
+        if len(prt) > 0:
+            prt_pct = prt_row["pct_change"]
+            ax.axvline(prt_pct, color="#E24A33", linestyle="-", linewidth=2.5,
+                       label=f"PRT: {prt_pct:+.1f}%")
+        ax.set_xlabel("Ridership Change 2019 → 2024 (%)")
+        ax.set_ylabel("Number of Agencies")
+        ax.set_title(f"Ridership Recovery Distribution — Top {TOP_N} US Transit Agencies")
+        ax.legend()
+        save_chart(fig, OUT / "ridership_growth_distribution.png")
 
     # --- Chart 2: Horizontal bar ranking ---
-    print("\n5. Generating ranking bar chart...")
-    sorted_df = result.sort("pct_change")
-    agencies = sorted_df["agency_name"].to_list()
-    changes = sorted_df["pct_change"].to_list()
-    ntd_ids = sorted_df["ntd_id"].to_list()
-    colors = ["#E24A33" if nid == PRT_NTD_ID else "#4878CF" for nid in ntd_ids]
+    with phase("Generating ranking bar chart"):
+        sorted_df = result.sort("pct_change")
+        agencies = sorted_df["agency_name"].to_list()
+        changes = sorted_df["pct_change"].to_list()
+        ntd_ids = sorted_df["ntd_id"].to_list()
+        colors = ["#E24A33" if nid == PRT_NTD_ID else "#4878CF" for nid in ntd_ids]
 
-    fig, ax = plt.subplots(figsize=(14, max(30, TOP_N * 0.22)))
-    bars = ax.barh(range(len(agencies)), changes, color=colors, height=0.8)
-    ax.set_yticks(range(len(agencies)))
-    ax.set_yticklabels(agencies, fontsize=6)
-    ax.set_xlabel("Ridership Change 2019 → 2024 (%)")
-    ax.set_title(f"Ridership Recovery Ranking — Top {TOP_N} US Transit Agencies")
-    ax.axvline(0, color="#999999", linestyle=":", linewidth=1)
+        fig, ax = plt.subplots(figsize=(14, max(30, TOP_N * 0.22)))
+        bars = ax.barh(range(len(agencies)), changes, color=colors, height=0.8)
+        ax.set_yticks(range(len(agencies)))
+        ax.set_yticklabels(agencies, fontsize=6)
+        ax.set_xlabel("Ridership Change 2019 → 2024 (%)")
+        ax.set_title(f"Ridership Recovery Ranking — Top {TOP_N} US Transit Agencies")
+        ax.axvline(0, color="#999999", linestyle=":", linewidth=1)
 
-    # Highlight PRT label
-    if len(prt) > 0:
-        prt_idx = [i for i, nid in enumerate(ntd_ids) if nid == PRT_NTD_ID]
-        if prt_idx:
-            ax.get_yticklabels()[prt_idx[0]].set_color("#E24A33")
-            ax.get_yticklabels()[prt_idx[0]].set_fontweight("bold")
-            ax.get_yticklabels()[prt_idx[0]].set_fontsize(7)
+        # Highlight PRT label
+        if len(prt) > 0:
+            prt_idx = [i for i, nid in enumerate(ntd_ids) if nid == PRT_NTD_ID]
+            if prt_idx:
+                ax.get_yticklabels()[prt_idx[0]].set_color("#E24A33")
+                ax.get_yticklabels()[prt_idx[0]].set_fontweight("bold")
+                ax.get_yticklabels()[prt_idx[0]].set_fontsize(7)
 
-    save_chart(fig, OUT / "ridership_growth_ranking.png")
+        save_chart(fig, OUT / "ridership_growth_ranking.png")
 
     # Top and bottom 10
     print("\n6. Top 10 recoveries:")

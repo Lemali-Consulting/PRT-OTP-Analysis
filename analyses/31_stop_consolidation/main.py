@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import DATA_DIR, analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -209,43 +209,43 @@ def make_charts(candidates: pl.DataFrame, summary: pl.DataFrame) -> None:
 def main() -> None:
     """Entry point: load data, find candidates, estimate OTP gains, chart."""
 
-    print("\nLoading stop-level usage (pre-pandemic weekday)...")
-    usage = load_stop_usage()
-    print(f"  {len(usage):,} stop-route combinations")
+    with phase("Loading stop-level usage (pre-pandemic weekday)"):
+        usage = load_stop_usage()
+        print(f"  {len(usage):,} stop-route combinations")
 
-    print("\nLoading route OTP and stop counts from DB...")
-    route_otp = load_route_otp()
-    print(f"  {len(route_otp)} routes with OTP data")
+    with phase("Loading route OTP and stop counts from DB"):
+        route_otp = load_route_otp()
+        print(f"  {len(route_otp)} routes with OTP data")
 
-    print("\nComputing OTP ~ stop_count regression slope (bus-only)...")
-    slope = get_otp_slope()
-    print(f"  Slope = {slope:.6f} OTP per stop (i.e., {slope * 100:.3f} pp per stop)")
+    with phase("Computing OTP ~ stop_count regression slope (bus-only)"):
+        slope = get_otp_slope()
+        print(f"  Slope = {slope:.6f} OTP per stop (i.e., {slope * 100:.3f} pp per stop)")
 
-    print("\nIdentifying consolidation candidates...")
-    candidates = find_candidates(usage)
-    n_low = candidates.filter(pl.col("low_usage")).shape[0]
-    n_cand = candidates.filter(pl.col("candidate")).shape[0]
-    print(f"  {n_low:,} low-usage stop-route pairs (< {USAGE_THRESHOLD} daily ons+offs)")
-    print(f"  {n_cand:,} consolidation candidates (low usage + neighbor <= {WALK_DISTANCE_M} m)")
+    with phase("Identifying consolidation candidates"):
+        candidates = find_candidates(usage)
+        n_low = candidates.filter(pl.col("low_usage")).shape[0]
+        n_cand = candidates.filter(pl.col("candidate")).shape[0]
+        print(f"  {n_low:,} low-usage stop-route pairs (< {USAGE_THRESHOLD} daily ons+offs)")
+        print(f"  {n_cand:,} consolidation candidates (low usage + neighbor <= {WALK_DISTANCE_M} m)")
 
-    print("\nBuilding route summary...")
-    summary = route_summary(candidates, route_otp, slope)
-    routes_with_cand = summary.filter(pl.col("n_candidates") > 0)
-    print(f"  {len(routes_with_cand)} routes have at least one candidate")
-    if len(routes_with_cand) > 0:
-        total_cand = routes_with_cand["n_candidates"].sum()
-        avg_gain = routes_with_cand["est_otp_gain"].mean() * 100
-        max_gain = routes_with_cand["est_otp_gain"].max() * 100
-        print(f"  Total candidates across routes: {total_cand}")
-        print(f"  Avg estimated OTP gain: +{avg_gain:.1f} pp")
-        print(f"  Max estimated OTP gain: +{max_gain:.1f} pp")
+    with phase("Building route summary"):
+        summary = route_summary(candidates, route_otp, slope)
+        routes_with_cand = summary.filter(pl.col("n_candidates") > 0)
+        print(f"  {len(routes_with_cand)} routes have at least one candidate")
+        if len(routes_with_cand) > 0:
+            total_cand = routes_with_cand["n_candidates"].sum()
+            avg_gain = routes_with_cand["est_otp_gain"].mean() * 100
+            max_gain = routes_with_cand["est_otp_gain"].max() * 100
+            print(f"  Total candidates across routes: {total_cand}")
+            print(f"  Avg estimated OTP gain: +{avg_gain:.1f} pp")
+            print(f"  Max estimated OTP gain: +{max_gain:.1f} pp")
 
-    print("\nSaving CSVs...")
-    save_csv(candidates, OUT / "consolidation_candidates.csv")
-    save_csv(summary, OUT / "route_consolidation_summary.csv")
+    with phase("Saving CSVs"):
+        save_csv(candidates, OUT / "consolidation_candidates.csv")
+        save_csv(summary, OUT / "route_consolidation_summary.csv")
 
-    print("\nGenerating charts...")
-    make_charts(candidates, summary)
+    with phase("Generating charts"):
+        make_charts(candidates, summary)
 
 
 if __name__ == "__main__":

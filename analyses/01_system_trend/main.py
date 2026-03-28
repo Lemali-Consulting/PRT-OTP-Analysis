@@ -2,7 +2,7 @@
 
 import polars as pl
 
-from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -133,50 +133,50 @@ def make_chart(all_df: pl.DataFrame, bus_df: pl.DataFrame) -> None:
 @run_analysis(1, "System-Wide OTP Trend")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    df = load_data()
-    print(f"  {len(df):,} OTP observations loaded")
+    with phase("Loading data"):
+        df = load_data()
+        print(f"  {len(df):,} OTP observations loaded")
 
-    # Weight source diagnostics
-    has_sched = df.filter(pl.col("sched_trips").is_not_null())
-    has_static = df.filter(pl.col("sched_trips").is_null() & (pl.col("trips_weight") > 0))
-    has_none = df.filter(pl.col("trips_weight") == 0)
-    print(f"  Weight sources: {len(has_sched):,} time-varying, {len(has_static):,} static fallback, {len(has_none):,} zero-weight")
+        # Weight source diagnostics
+        has_sched = df.filter(pl.col("sched_trips").is_not_null())
+        has_static = df.filter(pl.col("sched_trips").is_null() & (pl.col("trips_weight") > 0))
+        has_none = df.filter(pl.col("trips_weight") == 0)
+        print(f"  Weight sources: {len(has_sched):,} time-varying, {len(has_static):,} static fallback, {len(has_none):,} zero-weight")
 
-    if len(has_sched) > 0:
-        sched_months = has_sched["month"].unique().sort()
-        print(f"  Time-varying range: {sched_months[0]} to {sched_months[-1]} ({len(sched_months)} months)")
+        if len(has_sched) > 0:
+            sched_months = has_sched["month"].unique().sort()
+            print(f"  Time-varying range: {sched_months[0]} to {sched_months[-1]} ({len(sched_months)} months)")
 
-    print("\nAnalyzing...")
-    all_result, bus_result = analyze(df)
-    print(f"  {len(all_result)} months computed (all modes)")
-    print(f"  {len(bus_result)} months computed (bus only)")
+    with phase("Analyzing"):
+        all_result, bus_result = analyze(df)
+        print(f"  {len(all_result)} months computed (all modes)")
+        print(f"  {len(bus_result)} months computed (bus only)")
 
-    # Print summary
-    latest = all_result.tail(1)
-    earliest = all_result.head(1)
-    print(f"  Period: {earliest['month'][0]} to {latest['month'][0]}")
-    print(f"  Latest all-mode weighted OTP: {latest['weighted_otp'][0]:.1%}")
+        # Print summary
+        latest = all_result.tail(1)
+        earliest = all_result.head(1)
+        print(f"  Period: {earliest['month'][0]} to {latest['month'][0]}")
+        print(f"  Latest all-mode weighted OTP: {latest['weighted_otp'][0]:.1%}")
 
-    bus_latest = bus_result.tail(1)
-    print(f"  Latest bus-only weighted OTP: {bus_latest['weighted_otp'][0]:.1%}")
+        bus_latest = bus_result.tail(1)
+        print(f"  Latest bus-only weighted OTP: {bus_latest['weighted_otp'][0]:.1%}")
 
-    # Route count range
-    min_rc = all_result["route_count"].min()
-    max_rc = all_result["route_count"].max()
-    print(f"  Route count range: {min_rc}--{max_rc}")
+        # Route count range
+        min_rc = all_result["route_count"].min()
+        max_rc = all_result["route_count"].max()
+        print(f"  Route count range: {min_rc}--{max_rc}")
 
-    # Zero-weight routes
-    zero_routes = sorted(df.filter(pl.col("trips_weight") == 0)["route_id"].unique().to_list())
-    if zero_routes:
-        print(f"  Routes with zero weight (excluded from weighted avg): {zero_routes}")
+        # Zero-weight routes
+        zero_routes = sorted(df.filter(pl.col("trips_weight") == 0)["route_id"].unique().to_list())
+        if zero_routes:
+            print(f"  Routes with zero weight (excluded from weighted avg): {zero_routes}")
 
-    print("\nSaving CSVs...")
-    save_csv(all_result, OUT / "system_trend.csv")
-    save_csv(bus_result, OUT / "system_trend_bus_only.csv")
+    with phase("Saving CSVs"):
+        save_csv(all_result, OUT / "system_trend.csv")
+        save_csv(bus_result, OUT / "system_trend_bus_only.csv")
 
-    print("\nGenerating chart...")
-    make_chart(all_result, bus_result)
+    with phase("Generating chart"):
+        make_chart(all_result, bus_result)
 
 
 if __name__ == "__main__":

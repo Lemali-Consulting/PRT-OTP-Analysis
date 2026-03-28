@@ -4,7 +4,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -172,76 +172,76 @@ def summarize(df: pl.DataFrame) -> pl.DataFrame:
 def main() -> None:
     """Entry point: detect schedule change events and measure OTP impact."""
 
-    print("\nLoading data...")
-    sched, otp = load_data()
-    print(f"  Scheduled trips: {len(sched):,} rows ({sched['route_id'].n_unique()} routes)")
-    print(f"  OTP: {len(otp):,} rows")
+    with phase("Loading data"):
+        sched, otp = load_data()
+        print(f"  Scheduled trips: {len(sched):,} rows ({sched['route_id'].n_unique()} routes)")
+        print(f"  OTP: {len(otp):,} rows")
 
-    print("\nDetecting schedule change events...")
-    events = detect_change_events(sched)
-    print(f"  {len(events)} pick_id change events detected")
-    print(f"  Across {events['route_id'].n_unique()} routes")
+    with phase("Detecting schedule change events"):
+        events = detect_change_events(sched)
+        print(f"  {len(events)} pick_id change events detected")
+        print(f"  Across {events['route_id'].n_unique()} routes")
 
-    print("\nComputing OTP deltas ({}-month window)...".format(WINDOW))
-    df = compute_otp_deltas(events, otp)
-    print(f"  {len(df)} events with sufficient OTP data")
+    with phase("Computing OTP deltas ({}-month window)".format(WINDOW)):
+        df = compute_otp_deltas(events, otp)
+        print(f"  {len(df)} events with sufficient OTP data")
 
-    df = classify_events(df)
+        df = classify_events(df)
 
-    # Overall stats
-    otp_deltas = df["otp_delta"].to_list()
-    t_stat, p_val = stats.ttest_1samp(otp_deltas, 0)
-    print(f"\n  Overall OTP delta: mean={df['otp_delta'].mean():.4f}, median={df['otp_delta'].median():.4f}")
-    print(f"  One-sample t-test (H0: delta=0): t={t_stat:.2f}, p={p_val:.4f}")
-    print(f"    (NOTE: naive t-test treats {len(otp_deltas)} events as independent)")
+        # Overall stats
+        otp_deltas = df["otp_delta"].to_list()
+        t_stat, p_val = stats.ttest_1samp(otp_deltas, 0)
+        print(f"\n  Overall OTP delta: mean={df['otp_delta'].mean():.4f}, median={df['otp_delta'].median():.4f}")
+        print(f"  One-sample t-test (H0: delta=0): t={t_stat:.2f}, p={p_val:.4f}")
+        print(f"    (NOTE: naive t-test treats {len(otp_deltas)} events as independent)")
 
-    # Route-clustered test: average within route first, then test route means
-    route_means = (
-        df.group_by("route_id")
-        .agg(
-            mean_delta=pl.col("otp_delta").mean(),
-            n_events=pl.len(),
+        # Route-clustered test: average within route first, then test route means
+        route_means = (
+            df.group_by("route_id")
+            .agg(
+                mean_delta=pl.col("otp_delta").mean(),
+                n_events=pl.len(),
+            )
         )
-    )
-    route_deltas = route_means["mean_delta"].to_numpy()
-    n_routes = len(route_deltas)
-    t_clust, p_clust = stats.ttest_1samp(route_deltas, 0)
-    print(f"  Route-clustered t-test (n={n_routes} route means): t={t_clust:.2f}, p={p_clust:.4f}")
+        route_deltas = route_means["mean_delta"].to_numpy()
+        n_routes = len(route_deltas)
+        t_clust, p_clust = stats.ttest_1samp(route_deltas, 0)
+        print(f"  Route-clustered t-test (n={n_routes} route means): t={t_clust:.2f}, p={p_clust:.4f}")
 
-    # By event type
-    summary = summarize(df)
-    print("\n  By event type:")
-    for row in summary.iter_rows(named=True):
-        print(f"    {row['event_type']:>10s}: n={row['n']:3d}, mean_otp_delta={row['mean_otp_delta']:+.4f}, "
-              f"mean_trip_delta={row['mean_trip_delta']:+.1f}")
+        # By event type
+        summary = summarize(df)
+        print("\n  By event type:")
+        for row in summary.iter_rows(named=True):
+            print(f"    {row['event_type']:>10s}: n={row['n']:3d}, mean_otp_delta={row['mean_otp_delta']:+.4f}, "
+                  f"mean_trip_delta={row['mean_trip_delta']:+.1f}")
 
-    # Kruskal-Wallis across event types
-    groups = []
-    for et in ["cut", "increase", "neutral"]:
-        g = df.filter(pl.col("event_type") == et)["otp_delta"].to_list()
-        if len(g) >= 2:
-            groups.append(g)
-    if len(groups) >= 2:
-        h_stat, kw_p = stats.kruskal(*groups)
-        print(f"\n  Kruskal-Wallis (event types): H={h_stat:.2f}, p={kw_p:.4f}")
+        # Kruskal-Wallis across event types
+        groups = []
+        for et in ["cut", "increase", "neutral"]:
+            g = df.filter(pl.col("event_type") == et)["otp_delta"].to_list()
+            if len(g) >= 2:
+                groups.append(g)
+        if len(groups) >= 2:
+            h_stat, kw_p = stats.kruskal(*groups)
+            print(f"\n  Kruskal-Wallis (event types): H={h_stat:.2f}, p={kw_p:.4f}")
 
-    # COVID vs non-COVID
-    non_covid = df.filter(~pl.col("is_covid"))
-    covid = df.filter(pl.col("is_covid"))
-    print(f"\n  Non-COVID events: n={len(non_covid)}, mean delta={non_covid['otp_delta'].mean():.4f}")
-    if len(covid) > 0:
-        print(f"  COVID events: n={len(covid)}, mean delta={covid['otp_delta'].mean():.4f}")
+        # COVID vs non-COVID
+        non_covid = df.filter(~pl.col("is_covid"))
+        covid = df.filter(pl.col("is_covid"))
+        print(f"\n  Non-COVID events: n={len(non_covid)}, mean delta={non_covid['otp_delta'].mean():.4f}")
+        if len(covid) > 0:
+            print(f"  COVID events: n={len(covid)}, mean delta={covid['otp_delta'].mean():.4f}")
 
-    # Correlation: trip_delta vs otp_delta
-    trip_otp_corr = correlate(df, "trip_delta", "otp_delta")
-    print(f"\n  Trip delta vs OTP delta: Pearson r={trip_otp_corr['pearson_r']:.3f} (p={trip_otp_corr['pearson_p']:.4f}), Spearman rho={trip_otp_corr['spearman_r']:.3f} (p={trip_otp_corr['spearman_p']:.4f})")
+        # Correlation: trip_delta vs otp_delta
+        trip_otp_corr = correlate(df, "trip_delta", "otp_delta")
+        print(f"\n  Trip delta vs OTP delta: Pearson r={trip_otp_corr['pearson_r']:.3f} (p={trip_otp_corr['pearson_p']:.4f}), Spearman rho={trip_otp_corr['spearman_r']:.3f} (p={trip_otp_corr['spearman_p']:.4f})")
 
-    print("\nSaving outputs...")
-    save_csv(df, OUT / "service_change_events.csv")
-    save_csv(summary, OUT / "service_change_summary.csv")
+    with phase("Saving outputs"):
+        save_csv(df, OUT / "service_change_events.csv")
+        save_csv(summary, OUT / "service_change_summary.csv")
 
-    print("\nGenerating chart...")
-    make_chart(df)
+    with phase("Generating chart"):
+        make_chart(df)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ import polars as pl
 from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
 from scipy.spatial.distance import squareform
 
-from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -166,58 +166,58 @@ def make_heatmap(corr: np.ndarray, route_ids: list[str], labels: np.ndarray) -> 
 @run_analysis(13, "Cross-Route Correlation Clustering")
 def main() -> None:
     """Entry point: load, detrend, correlate, cluster, and visualize."""
-    print("\nLoading data...")
-    otp, stop_counts = load_data()
+    with phase("Loading data"):
+        otp, stop_counts = load_data()
 
-    print("\nDetrending (subtracting system-wide monthly mean)...")
-    otp = detrend(otp)
+    with phase("Detrending (subtracting system-wide monthly mean)"):
+        otp = detrend(otp)
 
-    print("\nBuilding detrended correlation matrix...")
-    corr, route_ids, month_cols, n_excluded = build_correlation_matrix(otp)
-    print(f"  {len(route_ids)} routes with {MIN_MONTHS}+ months of data")
-    print(f"  Correlation matrix: {corr.shape}")
-    print(f"  {n_excluded} route pairs excluded for <{MIN_OVERLAP} overlapping months (imputed with median)")
+    with phase("Building detrended correlation matrix"):
+        corr, route_ids, month_cols, n_excluded = build_correlation_matrix(otp)
+        print(f"  {len(route_ids)} routes with {MIN_MONTHS}+ months of data")
+        print(f"  Correlation matrix: {corr.shape}")
+        print(f"  {n_excluded} route pairs excluded for <{MIN_OVERLAP} overlapping months (imputed with median)")
 
-    print("\nClustering routes (silhouette-optimized k)...")
-    labels, linkage_matrix, best_k, sil_scores = cluster_routes(corr)
-    print(f"  Silhouette scores by k:")
-    for k, s in sorted(sil_scores.items()):
-        marker = " <-- best" if k == best_k else ""
-        print(f"    k={k}: {s:.4f}{marker}")
-    print(f"  Selected k={best_k}")
+    with phase("Clustering routes (silhouette-optimized k)"):
+        labels, linkage_matrix, best_k, sil_scores = cluster_routes(corr)
+        print(f"  Silhouette scores by k:")
+        for k, s in sorted(sil_scores.items()):
+            marker = " <-- best" if k == best_k else ""
+            print(f"    k={k}: {s:.4f}{marker}")
+        print(f"  Selected k={best_k}")
 
-    # Build metadata for output
-    route_meta = query_to_polars("""
-        SELECT r.route_id, r.route_name, r.mode
-        FROM routes r
-    """)
-    avg_otp = otp.group_by("route_id").agg(pl.col("otp").mean().alias("avg_otp"))
+        # Build metadata for output
+        route_meta = query_to_polars("""
+            SELECT r.route_id, r.route_name, r.mode
+            FROM routes r
+        """)
+        avg_otp = otp.group_by("route_id").agg(pl.col("otp").mean().alias("avg_otp"))
 
-    membership = pl.DataFrame({
-        "route_id": route_ids,
-        "cluster": labels.tolist(),
-    })
-    membership = membership.join(route_meta, on="route_id", how="left")
-    membership = membership.join(avg_otp, on="route_id", how="left")
-    membership = membership.join(stop_counts, on="route_id", how="left")
-    membership = membership.sort(["cluster", "route_id"])
+        membership = pl.DataFrame({
+            "route_id": route_ids,
+            "cluster": labels.tolist(),
+        })
+        membership = membership.join(route_meta, on="route_id", how="left")
+        membership = membership.join(avg_otp, on="route_id", how="left")
+        membership = membership.join(stop_counts, on="route_id", how="left")
+        membership = membership.sort(["cluster", "route_id"])
 
-    print("\nCluster summary:")
-    for c in sorted(membership["cluster"].unique().to_list()):
-        cluster = membership.filter(pl.col("cluster") == c)
-        n = len(cluster)
-        avg = cluster["avg_otp"].mean()
-        modes = cluster["mode"].value_counts().sort("count", descending=True)
-        top_mode = modes["mode"][0] if len(modes) > 0 else "?"
-        avg_stops = cluster["stop_count"].mean()
-        print(f"  Cluster {c}: {n} routes, avg OTP={avg:.1%}, "
-              f"primary mode={top_mode}, avg stops={avg_stops:.0f}")
+        print("\nCluster summary:")
+        for c in sorted(membership["cluster"].unique().to_list()):
+            cluster = membership.filter(pl.col("cluster") == c)
+            n = len(cluster)
+            avg = cluster["avg_otp"].mean()
+            modes = cluster["mode"].value_counts().sort("count", descending=True)
+            top_mode = modes["mode"][0] if len(modes) > 0 else "?"
+            avg_stops = cluster["stop_count"].mean()
+            print(f"  Cluster {c}: {n} routes, avg OTP={avg:.1%}, "
+                  f"primary mode={top_mode}, avg stops={avg_stops:.0f}")
 
-    save_csv(membership, OUT / "cluster_membership.csv")
+        save_csv(membership, OUT / "cluster_membership.csv")
 
-    print("\nGenerating charts...")
-    make_dendrogram(linkage_matrix, route_ids, route_meta)
-    make_heatmap(corr, route_ids, labels)
+    with phase("Generating charts"):
+        make_dendrogram(linkage_matrix, route_ids, route_meta)
+        make_heatmap(corr, route_ids, labels)
 
 
 if __name__ == "__main__":

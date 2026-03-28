@@ -4,7 +4,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -115,74 +115,75 @@ def make_chart(df: pl.DataFrame, reg: dict) -> None:
 def main() -> None:
     """Entry point: build panel, compute deltas, regress, and chart."""
 
-    print("\nLoading panel data...")
-    panel = load_panel()
-    print(f"  {len(panel):,} route-month observations")
-    print(f"  {panel['route_id'].n_unique()} routes, months: {panel['month'].min()} to {panel['month'].max()}")
+    with phase("Loading panel data"):
+        panel = load_panel()
+        print(f"  {len(panel):,} route-month observations")
+        print(f"  {panel['route_id'].n_unique()} routes, months: {panel['month'].min()} to {panel['month'].max()}")
 
-    print("\nComputing month-over-month deltas...")
-    df = compute_deltas(panel)
-    print(f"  {len(df):,} delta observations (after dropping first month per route)")
+    with phase("Computing month-over-month deltas"):
+        df = compute_deltas(panel)
+        print(f"  {len(df):,} delta observations (after dropping first month per route)")
 
-    print("\nDetrending (removing system-wide monthly mean delta)...")
-    df = detrend(df)
+    with phase("Detrending (removing system-wide monthly mean delta)"):
+        df = detrend(df)
 
-    # Save panel
-    panel_df = df.select(
-        "route_id", "month", "mode", "otp", "daily_trips",
-        "delta_otp", "delta_trips", "detrended_delta_otp",
-    )
-    save_csv(panel_df, OUT / "service_level_panel.csv")
+        # Save panel
+        panel_df = df.select(
+            "route_id", "month", "mode", "otp", "daily_trips",
+            "delta_otp", "delta_trips", "detrended_delta_otp",
+        )
+        save_csv(panel_df, OUT / "service_level_panel.csv")
 
-    # --- All routes ---
-    print("\n--- All routes ---")
-    x_all = df["delta_trips"].to_list()
-    y_all = df["detrended_delta_otp"].to_list()
+    with phase("Analyzing"):
+        # --- All routes ---
+        print("\n--- All routes ---")
+        x_all = df["delta_trips"].to_list()
+        y_all = df["detrended_delta_otp"].to_list()
 
-    reg_all = run_regression(x_all, y_all)
-    print(f"  OLS: slope={reg_all['slope']:.5f} (SE={reg_all['se']:.5f}), r={reg_all['r']:.3f}, p={reg_all['p']:.4f}, n={reg_all['n']}")
+        reg_all = run_regression(x_all, y_all)
+        print(f"  OLS: slope={reg_all['slope']:.5f} (SE={reg_all['se']:.5f}), r={reg_all['r']:.3f}, p={reg_all['p']:.4f}, n={reg_all['n']}")
 
-    corr_all = correlate(df, "delta_trips", "detrended_delta_otp")
-    r_s, p_s = corr_all["spearman_r"], corr_all["spearman_p"]
-    print(f"  Spearman: rho={r_s:.3f}, p={p_s:.4f}")
+        corr_all = correlate(df, "delta_trips", "detrended_delta_otp")
+        r_s, p_s = corr_all["spearman_r"], corr_all["spearman_p"]
+        print(f"  Spearman: rho={r_s:.3f}, p={p_s:.4f}")
 
-    # --- Bus only ---
-    bus = df.filter(pl.col("mode") == "BUS")
-    print(f"\n--- Bus only (n={len(bus)}) ---")
-    x_bus = bus["delta_trips"].to_list()
-    y_bus = bus["detrended_delta_otp"].to_list()
+        # --- Bus only ---
+        bus = df.filter(pl.col("mode") == "BUS")
+        print(f"\n--- Bus only (n={len(bus)}) ---")
+        x_bus = bus["delta_trips"].to_list()
+        y_bus = bus["detrended_delta_otp"].to_list()
 
-    reg_bus = run_regression(x_bus, y_bus)
-    print(f"  OLS: slope={reg_bus['slope']:.5f} (SE={reg_bus['se']:.5f}), r={reg_bus['r']:.3f}, p={reg_bus['p']:.4f}, n={reg_bus['n']}")
+        reg_bus = run_regression(x_bus, y_bus)
+        print(f"  OLS: slope={reg_bus['slope']:.5f} (SE={reg_bus['se']:.5f}), r={reg_bus['r']:.3f}, p={reg_bus['p']:.4f}, n={reg_bus['n']}")
 
-    corr_bus = correlate(bus, "delta_trips", "detrended_delta_otp")
-    r_sb, p_sb = corr_bus["spearman_r"], corr_bus["spearman_p"]
-    print(f"  Spearman: rho={r_sb:.3f}, p={p_sb:.4f}")
+        corr_bus = correlate(bus, "delta_trips", "detrended_delta_otp")
+        r_sb, p_sb = corr_bus["spearman_r"], corr_bus["spearman_p"]
+        print(f"  Spearman: rho={r_sb:.3f}, p={p_sb:.4f}")
 
-    # --- Pre vs post COVID ---
-    pre = df.filter(pl.col("month") < "2020-03")
-    post = df.filter(pl.col("month") >= "2020-03")
-    print(f"\n--- Pre-COVID (n={len(pre)}) ---")
-    if len(pre) > 10:
-        reg_pre = run_regression(pre["delta_trips"].to_list(), pre["detrended_delta_otp"].to_list())
-        print(f"  OLS: slope={reg_pre['slope']:.5f}, r={reg_pre['r']:.3f}, p={reg_pre['p']:.4f}")
+        # --- Pre vs post COVID ---
+        pre = df.filter(pl.col("month") < "2020-03")
+        post = df.filter(pl.col("month") >= "2020-03")
+        print(f"\n--- Pre-COVID (n={len(pre)}) ---")
+        if len(pre) > 10:
+            reg_pre = run_regression(pre["delta_trips"].to_list(), pre["detrended_delta_otp"].to_list())
+            print(f"  OLS: slope={reg_pre['slope']:.5f}, r={reg_pre['r']:.3f}, p={reg_pre['p']:.4f}")
 
-    print(f"\n--- Post-COVID (n={len(post)}) ---")
-    if len(post) > 10:
-        reg_post = run_regression(post["delta_trips"].to_list(), post["detrended_delta_otp"].to_list())
-        print(f"  OLS: slope={reg_post['slope']:.5f}, r={reg_post['r']:.3f}, p={reg_post['p']:.4f}")
+        print(f"\n--- Post-COVID (n={len(post)}) ---")
+        if len(post) > 10:
+            reg_post = run_regression(post["delta_trips"].to_list(), post["detrended_delta_otp"].to_list())
+            print(f"  OLS: slope={reg_post['slope']:.5f}, r={reg_post['r']:.3f}, p={reg_post['p']:.4f}")
 
-    # Summary CSV
-    summary = pl.DataFrame([
-        {"group": "all", "n": reg_all["n"], "slope": reg_all["slope"], "se": reg_all["se"],
-         "pearson_r": reg_all["r"], "pearson_p": reg_all["p"], "spearman_rho": r_s, "spearman_p": p_s},
-        {"group": "bus_only", "n": reg_bus["n"], "slope": reg_bus["slope"], "se": reg_bus["se"],
-         "pearson_r": reg_bus["r"], "pearson_p": reg_bus["p"], "spearman_rho": r_sb, "spearman_p": p_sb},
-    ])
-    save_csv(summary, OUT / "service_level_summary.csv")
+        # Summary CSV
+        summary = pl.DataFrame([
+            {"group": "all", "n": reg_all["n"], "slope": reg_all["slope"], "se": reg_all["se"],
+             "pearson_r": reg_all["r"], "pearson_p": reg_all["p"], "spearman_rho": r_s, "spearman_p": p_s},
+            {"group": "bus_only", "n": reg_bus["n"], "slope": reg_bus["slope"], "se": reg_bus["se"],
+             "pearson_r": reg_bus["r"], "pearson_p": reg_bus["p"], "spearman_rho": r_sb, "spearman_p": p_sb},
+        ])
+        save_csv(summary, OUT / "service_level_summary.csv")
 
-    print("\nGenerating chart...")
-    make_chart(df, reg_all)
+    with phase("Generating chart"):
+        make_chart(df, reg_all)
 
 
 if __name__ == "__main__":

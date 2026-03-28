@@ -9,6 +9,7 @@ from prt_otp_analysis.common import (
     analysis_dir,
     classify_bus_route,
     correlate,
+    phase,
     query_to_polars,
     run_analysis,
     save_chart,
@@ -232,71 +233,71 @@ def make_subtype_chart(df: pl.DataFrame) -> None:
 def main() -> None:
     """Entry point: load, analyze, chart, and save."""
 
-    print("\nLoading data...")
-    df = load_data()
-    print(f"  {len(df)} routes with both pre-COVID and recovery data")
-    print(f"  Pre-COVID: {PRE_COVID_START} to {PRE_COVID_END}")
-    print(f"  Recovery:  {RECOVERY_START} to {RECOVERY_END}")
+    with phase("Loading data"):
+        df = load_data()
+        print(f"  {len(df)} routes with both pre-COVID and recovery data")
+        print(f"  Pre-COVID: {PRE_COVID_START} to {PRE_COVID_END}")
+        print(f"  Recovery:  {RECOVERY_START} to {RECOVERY_END}")
 
-    print("\nAnalyzing...")
-    results = analyze(df)
+    with phase("Analyzing"):
+        results = analyze(df)
 
-    print(f"\n  Quadrant breakdown:")
-    print(f"    Both improved:           {results['n_both_improved']}")
-    print(f"    Both declined:           {results['n_both_declined']}")
-    print(f"    OTP up, riders down:     {results['n_otp_up_riders_down']}")
-    print(f"    OTP down, riders up:     {results['n_otp_down_riders_up']}")
+        print(f"\n  Quadrant breakdown:")
+        print(f"    Both improved:           {results['n_both_improved']}")
+        print(f"    Both declined:           {results['n_both_declined']}")
+        print(f"    OTP up, riders down:     {results['n_otp_up_riders_down']}")
+        print(f"    OTP down, riders up:     {results['n_otp_down_riders_up']}")
 
-    print(f"\n  Ridership recovery vs OTP recovery:")
-    print(f"    Pearson:  r = {results['pearson_r']:.4f}, p = {results['pearson_p']:.4f}")
-    print(f"    Spearman: r = {results['spearman_r']:.4f}, p = {results['spearman_p']:.4f}")
+        print(f"\n  Ridership recovery vs OTP recovery:")
+        print(f"    Pearson:  r = {results['pearson_r']:.4f}, p = {results['pearson_p']:.4f}")
+        print(f"    Spearman: r = {results['spearman_r']:.4f}, p = {results['spearman_p']:.4f}")
 
-    print(f"\n  Regression to the mean test (baseline OTP vs OTP delta):")
-    print(f"    Pearson:  r = {results['rtm_r']:.4f}, p = {results['rtm_p']:.4f}")
-    if results['rtm_p'] < 0.05:
-        print("    => RTM detected: routes with extreme baseline OTP regress toward the mean.")
-        print("       The ridership-OTP correlation may be partly artifactual.")
+        print(f"\n  Regression to the mean test (baseline OTP vs OTP delta):")
+        print(f"    Pearson:  r = {results['rtm_r']:.4f}, p = {results['rtm_p']:.4f}")
+        if results['rtm_p'] < 0.05:
+            print("    => RTM detected: routes with extreme baseline OTP regress toward the mean.")
+            print("       The ridership-OTP correlation may be partly artifactual.")
 
-    if "kruskal_h" in results:
-        print(f"\n  Kruskal-Wallis (OTP delta by subtype):")
-        print(f"    H = {results['kruskal_h']:.3f}, p = {results['kruskal_p']:.4f}")
+        if "kruskal_h" in results:
+            print(f"\n  Kruskal-Wallis (OTP delta by subtype):")
+            print(f"    H = {results['kruskal_h']:.3f}, p = {results['kruskal_p']:.4f}")
 
-    # System-wide ridership recovery
-    median_rider = df["ridership_pct_change"].median()
-    mean_rider = df["ridership_pct_change"].mean()
-    print(f"\n  System ridership recovery:")
-    print(f"    Median: {median_rider:+.1%}")
-    print(f"    Mean:   {mean_rider:+.1%}")
-    n_rider_recovered = df.filter(pl.col("ridership_pct_change") >= 0).height
-    print(f"    Routes at/above pre-COVID: {n_rider_recovered}/{len(df)}")
+        # System-wide ridership recovery
+        median_rider = df["ridership_pct_change"].median()
+        mean_rider = df["ridership_pct_change"].mean()
+        print(f"\n  System ridership recovery:")
+        print(f"    Median: {median_rider:+.1%}")
+        print(f"    Mean:   {mean_rider:+.1%}")
+        n_rider_recovered = df.filter(pl.col("ridership_pct_change") >= 0).height
+        print(f"    Routes at/above pre-COVID: {n_rider_recovered}/{len(df)}")
 
-    # Extreme routes
-    print("\n  Most ridership recovery with OTP decline:")
-    worst = (
-        df.filter((pl.col("ridership_pct_change") > 0) & (pl.col("otp_delta") < -0.05))
-        .sort("otp_delta")
-        .head(5)
-    )
-    for row in worst.iter_rows(named=True):
-        print(f"    {row['route_id']:>5s} - {row['route_name']:<30s}  "
-              f"riders {row['ridership_pct_change']:+.0%}, OTP {row['otp_delta']:+.1%}")
+        # Extreme routes
+        print("\n  Most ridership recovery with OTP decline:")
+        worst = (
+            df.filter((pl.col("ridership_pct_change") > 0) & (pl.col("otp_delta") < -0.05))
+            .sort("otp_delta")
+            .head(5)
+        )
+        for row in worst.iter_rows(named=True):
+            print(f"    {row['route_id']:>5s} - {row['route_name']:<30s}  "
+                  f"riders {row['ridership_pct_change']:+.0%}, OTP {row['otp_delta']:+.1%}")
 
-    print("\n  Most ridership loss with OTP improvement:")
-    best = (
-        df.filter((pl.col("ridership_pct_change") < -0.1) & (pl.col("otp_delta") > 0))
-        .sort("otp_delta", descending=True)
-        .head(5)
-    )
-    for row in best.iter_rows(named=True):
-        print(f"    {row['route_id']:>5s} - {row['route_name']:<30s}  "
-              f"riders {row['ridership_pct_change']:+.0%}, OTP {row['otp_delta']:+.1%}")
+        print("\n  Most ridership loss with OTP improvement:")
+        best = (
+            df.filter((pl.col("ridership_pct_change") < -0.1) & (pl.col("otp_delta") > 0))
+            .sort("otp_delta", descending=True)
+            .head(5)
+        )
+        for row in best.iter_rows(named=True):
+            print(f"    {row['route_id']:>5s} - {row['route_name']:<30s}  "
+                  f"riders {row['ridership_pct_change']:+.0%}, OTP {row['otp_delta']:+.1%}")
 
-    print("\nSaving CSV...")
-    save_csv(df, OUT / "recovery_data.csv")
+    with phase("Saving CSV"):
+        save_csv(df, OUT / "recovery_data.csv")
 
-    print("\nGenerating charts...")
-    make_scatter(df, results)
-    make_subtype_chart(df)
+    with phase("Generating charts"):
+        make_scatter(df, results)
+        make_subtype_chart(df)
 
 
 if __name__ == "__main__":

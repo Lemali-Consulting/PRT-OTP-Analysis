@@ -1,6 +1,8 @@
 """Console output helpers and file-saving wrappers for analysis scripts."""
 
+import contextlib
 import functools
+from collections.abc import Generator
 from pathlib import Path
 from typing import Callable
 
@@ -39,6 +41,13 @@ def run_analysis(number: int | str, title: str) -> Callable:
             return result
         return wrapper
     return decorator
+
+
+@contextlib.contextmanager
+def phase(label: str) -> Generator[None]:
+    """Print a phase label and yield."""
+    print(f"\n{label}...")
+    yield
 
 
 def print_header(number: int | str, title: str) -> None:

@@ -2,7 +2,7 @@
 
 import polars as pl
 
-from prt_otp_analysis.common import DATA_DIR, analysis_dir, correlate, gini, mode_scatter, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, correlate, gini, mode_scatter, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -135,50 +135,50 @@ def make_charts(pareto: pl.DataFrame, gini_otp: pl.DataFrame) -> None:
 def main() -> None:
     """Entry point: load data, compute Pareto and Gini, correlate with OTP."""
 
-    print("\nLoading stop-level usage (pre-pandemic weekday)...")
-    usage = load_stop_usage()
-    print(f"  {len(usage):,} stop-route combinations")
+    with phase("Loading stop-level usage (pre-pandemic weekday)"):
+        usage = load_stop_usage()
+        print(f"  {len(usage):,} stop-route combinations")
 
-    print("\nComputing system-wide Pareto curve...")
-    pareto = system_pareto(usage)
-    cum = pareto["cum_pct_ridership"].to_list()
-    pct = pareto["pct_stops"].to_list()
-    for target in [50, 80, 90]:
-        for i, cr in enumerate(cum):
-            if cr >= target:
-                print(f"  {target}% of ridership served by top {pct[i]:.1f}% of stops")
-                break
+    with phase("Computing system-wide Pareto curve"):
+        pareto = system_pareto(usage)
+        cum = pareto["cum_pct_ridership"].to_list()
+        pct = pareto["pct_stops"].to_list()
+        for target in [50, 80, 90]:
+            for i, cr in enumerate(cum):
+                if cr >= target:
+                    print(f"  {target}% of ridership served by top {pct[i]:.1f}% of stops")
+                    break
 
-    sys_gini = gini(
-        usage.group_by("stop_id").agg(pl.col("avg_daily_usage").sum())["avg_daily_usage"].to_list()
-    )
-    print(f"  System-wide Gini: {sys_gini:.3f}")
+        sys_gini = gini(
+            usage.group_by("stop_id").agg(pl.col("avg_daily_usage").sum())["avg_daily_usage"].to_list()
+        )
+        print(f"  System-wide Gini: {sys_gini:.3f}")
 
-    print("\nComputing per-route Gini coefficients...")
-    route_g = route_gini(usage)
-    print(f"  {len(route_g)} routes with >= 3 stops")
-    print(f"  Gini range: {route_g['gini'].min():.3f} - {route_g['gini'].max():.3f}")
-    print(f"  Median Gini: {route_g['gini'].median():.3f}")
+    with phase("Computing per-route Gini coefficients"):
+        route_g = route_gini(usage)
+        print(f"  {len(route_g)} routes with >= 3 stops")
+        print(f"  Gini range: {route_g['gini'].min():.3f} - {route_g['gini'].max():.3f}")
+        print(f"  Median Gini: {route_g['gini'].median():.3f}")
 
-    print("\nLoading route OTP...")
-    route_otp = load_route_otp()
+    with phase("Loading route OTP"):
+        route_otp = load_route_otp()
 
-    # Join Gini with OTP (CSV route_name = DB route_id)
-    gini_otp = route_g.join(route_otp, left_on="route_name", right_on="route_id", how="inner")
-    print(f"  {len(gini_otp)} routes matched")
+        # Join Gini with OTP (CSV route_name = DB route_id)
+        gini_otp = route_g.join(route_otp, left_on="route_name", right_on="route_id", how="inner")
+        print(f"  {len(gini_otp)} routes matched")
 
-    bus = gini_otp.filter(pl.col("mode") == "BUS").drop_nulls(subset=["gini", "avg_otp"])
-    if len(bus) >= 3:
-        corr = correlate(bus, "gini", "avg_otp")
-        print(f"  Bus-only Pearson r = {corr['pearson_r']:.3f} (p = {corr['pearson_p']:.3f})")
-        print(f"  Bus-only Spearman rho = {corr['spearman_r']:.3f} (p = {corr['spearman_p']:.3f})")
+        bus = gini_otp.filter(pl.col("mode") == "BUS").drop_nulls(subset=["gini", "avg_otp"])
+        if len(bus) >= 3:
+            corr = correlate(bus, "gini", "avg_otp")
+            print(f"  Bus-only Pearson r = {corr['pearson_r']:.3f} (p = {corr['pearson_p']:.3f})")
+            print(f"  Bus-only Spearman rho = {corr['spearman_r']:.3f} (p = {corr['spearman_p']:.3f})")
 
-    print("\nSaving CSVs...")
-    save_csv(pareto, OUT / "pareto_system.csv")
-    save_csv(gini_otp, OUT / "route_gini.csv")
+    with phase("Saving CSVs"):
+        save_csv(pareto, OUT / "pareto_system.csv")
+        save_csv(gini_otp, OUT / "route_gini.csv")
 
-    print("\nGenerating charts...")
-    make_charts(pareto, gini_otp)
+    with phase("Generating charts"):
+        make_charts(pareto, gini_otp)
 
 
 if __name__ == "__main__":

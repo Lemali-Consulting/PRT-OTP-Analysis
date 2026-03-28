@@ -3,7 +3,7 @@
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -240,80 +240,80 @@ def make_scatter_chart(merged: pl.DataFrame) -> None:
 def main() -> None:
     """Entry point: load data, compute trends, correlate, chart, and save."""
 
-    print("\nLoading ridership data...")
-    ride_df = load_ridership()
-    print(f"  {len(ride_df):,} rows, {ride_df['route_id'].n_unique()} routes, "
-          f"{ride_df['day_type'].n_unique()} day types")
-    print(f"  Day types: {sorted(ride_df['day_type'].unique().to_list())}")
-    print(f"  Month range: {ride_df['month'].min()} to {ride_df['month'].max()}")
+    with phase("Loading ridership data"):
+        ride_df = load_ridership()
+        print(f"  {len(ride_df):,} rows, {ride_df['route_id'].n_unique()} routes, "
+              f"{ride_df['day_type'].n_unique()} day types")
+        print(f"  Day types: {sorted(ride_df['day_type'].unique().to_list())}")
+        print(f"  Month range: {ride_df['month'].min()} to {ride_df['month'].max()}")
 
-    print("\nComputing system-wide monthly ridership by day type...")
-    monthly = system_monthly(ride_df)
+    with phase("Computing system-wide monthly ridership by day type"):
+        monthly = system_monthly(ride_df)
 
-    # Summary stats by day type
-    print("\n  Day type summary (total monthly riders, averaged across months):")
-    for dt in sorted(monthly["day_type"].unique().to_list()):
-        sub = monthly.filter(pl.col("day_type") == dt)
-        avg = sub["total_riders"].mean()
-        print(f"    {dt:<12s}: {avg:>12,.0f} avg monthly riders")
+        # Summary stats by day type
+        print("\n  Day type summary (total monthly riders, averaged across months):")
+        for dt in sorted(monthly["day_type"].unique().to_list()):
+            sub = monthly.filter(pl.col("day_type") == dt)
+            avg = sub["total_riders"].mean()
+            print(f"    {dt:<12s}: {avg:>12,.0f} avg monthly riders")
 
-    print("\nIndexing to Jan 2019 baseline...")
-    monthly_idx = index_to_baseline(monthly, PRE_COVID_BASELINE_MONTH)
+    with phase("Indexing to Jan 2019 baseline"):
+        monthly_idx = index_to_baseline(monthly, PRE_COVID_BASELINE_MONTH)
 
-    # Latest index values
-    latest_month = monthly_idx["month"].max()
-    print(f"\n  Latest month ({latest_month}) indexed values:")
-    latest = monthly_idx.filter(pl.col("month") == latest_month)
-    for row in latest.iter_rows(named=True):
-        print(f"    {row['day_type']:<12s}: {row['indexed']:>6.1f}")
+        # Latest index values
+        latest_month = monthly_idx["month"].max()
+        print(f"\n  Latest month ({latest_month}) indexed values:")
+        latest = monthly_idx.filter(pl.col("month") == latest_month)
+        for row in latest.iter_rows(named=True):
+            print(f"    {row['day_type']:<12s}: {row['indexed']:>6.1f}")
 
-    print("\nComputing weekend ridership share...")
-    wk_share = weekend_share_monthly(monthly)
+    with phase("Computing weekend ridership share"):
+        wk_share = weekend_share_monthly(monthly)
 
-    # Pre-COVID vs latest weekend share
-    pre_covid_avg = wk_share.filter(
-        (pl.col("month") >= PRE_COVID_BASELINE_MONTH) & (pl.col("month") <= "2020-02")
-    )["weekend_share"].mean()
-    post_2023_avg = wk_share.filter(pl.col("month") >= "2023-01")["weekend_share"].mean()
-    print(f"\n  Weekend share (pre-COVID, 2019-01 to 2020-02): {pre_covid_avg:.1%}")
-    print(f"  Weekend share (2023-01 to latest):             {post_2023_avg:.1%}")
-    print(f"  Change: {post_2023_avg - pre_covid_avg:+.1%}")
+        # Pre-COVID vs latest weekend share
+        pre_covid_avg = wk_share.filter(
+            (pl.col("month") >= PRE_COVID_BASELINE_MONTH) & (pl.col("month") <= "2020-02")
+        )["weekend_share"].mean()
+        post_2023_avg = wk_share.filter(pl.col("month") >= "2023-01")["weekend_share"].mean()
+        print(f"\n  Weekend share (pre-COVID, 2019-01 to 2020-02): {pre_covid_avg:.1%}")
+        print(f"  Weekend share (2023-01 to latest):             {post_2023_avg:.1%}")
+        print(f"  Change: {post_2023_avg - pre_covid_avg:+.1%}")
 
-    print("\nComputing per-route weekend-to-weekday ratio...")
-    route_wkend = route_weekend_share(ride_df)
-    print(f"  {len(route_wkend)} routes with 6+ months of all three day types")
+    with phase("Computing per-route weekend-to-weekday ratio"):
+        route_wkend = route_weekend_share(ride_df)
+        print(f"  {len(route_wkend)} routes with 6+ months of all three day types")
 
-    if len(route_wkend) > 0:
-        print(f"  Median weekend ratio: {route_wkend['avg_weekend_ratio'].median():.3f}")
-        print(f"  Range: {route_wkend['avg_weekend_ratio'].min():.3f} -- "
-              f"{route_wkend['avg_weekend_ratio'].max():.3f}")
+        if len(route_wkend) > 0:
+            print(f"  Median weekend ratio: {route_wkend['avg_weekend_ratio'].median():.3f}")
+            print(f"  Range: {route_wkend['avg_weekend_ratio'].min():.3f} -- "
+                  f"{route_wkend['avg_weekend_ratio'].max():.3f}")
 
-        # Top/bottom 5
-        print("\n  Top 5 weekend-heavy routes:")
-        for row in route_wkend.head(5).iter_rows(named=True):
-            print(f"    {row['route_id']:<8s} ratio={row['avg_weekend_ratio']:.3f}")
-        print("  Bottom 5 weekend-heavy routes:")
-        for row in route_wkend.tail(5).iter_rows(named=True):
-            print(f"    {row['route_id']:<8s} ratio={row['avg_weekend_ratio']:.3f}")
+            # Top/bottom 5
+            print("\n  Top 5 weekend-heavy routes:")
+            for row in route_wkend.head(5).iter_rows(named=True):
+                print(f"    {row['route_id']:<8s} ratio={row['avg_weekend_ratio']:.3f}")
+            print("  Bottom 5 weekend-heavy routes:")
+            for row in route_wkend.tail(5).iter_rows(named=True):
+                print(f"    {row['route_id']:<8s} ratio={row['avg_weekend_ratio']:.3f}")
 
-    print("\nCorrelating weekend share with OTP...")
-    otp_df = load_otp()
-    corr = correlate_weekend_otp(route_wkend, otp_df)
-    if "error" not in corr:
-        print(f"  n = {corr['n']} routes")
-        print(f"  Pearson  r = {corr['r_pearson']:.3f}, p = {corr['p_pearson']:.4f}")
-        print(f"  Spearman r = {corr['r_spearman']:.3f}, p = {corr['p_spearman']:.4f}")
-    else:
-        print(f"  {corr['error']}")
+    with phase("Correlating weekend share with OTP"):
+        otp_df = load_otp()
+        corr = correlate_weekend_otp(route_wkend, otp_df)
+        if "error" not in corr:
+            print(f"  n = {corr['n']} routes")
+            print(f"  Pearson  r = {corr['r_pearson']:.3f}, p = {corr['p_pearson']:.4f}")
+            print(f"  Spearman r = {corr['r_spearman']:.3f}, p = {corr['p_spearman']:.4f}")
+        else:
+            print(f"  {corr['error']}")
 
-    print("\nSaving CSV...")
-    save_csv(monthly, OUT / "daytype_summary.csv")
+    with phase("Saving CSV"):
+        save_csv(monthly, OUT / "daytype_summary.csv")
 
-    print("\nGenerating charts...")
-    make_trend_chart(monthly_idx)
-    make_weekend_share_chart(wk_share)
-    if "merged" in corr:
-        make_scatter_chart(corr["merged"])
+    with phase("Generating charts"):
+        make_trend_chart(monthly_idx)
+        make_weekend_share_chart(wk_share)
+        if "merged" in corr:
+            make_scatter_chart(corr["merged"])
 
 
 if __name__ == "__main__":

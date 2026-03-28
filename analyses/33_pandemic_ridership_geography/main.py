@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import DATA_DIR, analysis_dir, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, phase, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -187,77 +187,77 @@ def make_charts(df: pl.DataFrame) -> None:
 def main() -> None:
     """Entry point: load data, analyze pandemic ridership geography."""
 
-    print("\nLoading and computing stop-level pandemic changes...")
-    df = load_data()
-    valid = df.filter(pl.col("pre_usage") > 0)
-    print(f"  {len(df):,} stops with both pre and post data")
-    print(f"  {len(valid):,} stops with pre-pandemic usage > 0")
+    with phase("Loading and computing stop-level pandemic changes"):
+        df = load_data()
+        valid = df.filter(pl.col("pre_usage") > 0)
+        print(f"  {len(df):,} stops with both pre and post data")
+        print(f"  {len(valid):,} stops with pre-pandemic usage > 0")
 
-    print("\nSystem-wide summary:")
-    med_pct = valid["pct_change"].median()
-    mean_pct = valid["pct_change"].mean()
-    total_pre = df["pre_usage"].sum()
-    total_post = df["post_usage"].sum()
-    sys_pct = (total_post - total_pre) / total_pre * 100
-    print(f"  Median stop-level change: {med_pct:.1f}%")
-    print(f"  Mean stop-level change: {mean_pct:.1f}%")
-    print(f"  System total: {total_pre:,.0f} -> {total_post:,.0f} ({sys_pct:+.1f}%)")
+        print("\nSystem-wide summary:")
+        med_pct = valid["pct_change"].median()
+        mean_pct = valid["pct_change"].mean()
+        total_pre = df["pre_usage"].sum()
+        total_post = df["post_usage"].sum()
+        sys_pct = (total_post - total_pre) / total_pre * 100
+        print(f"  Median stop-level change: {med_pct:.1f}%")
+        print(f"  Mean stop-level change: {mean_pct:.1f}%")
+        print(f"  System total: {total_pre:,.0f} -> {total_post:,.0f} ({sys_pct:+.1f}%)")
 
-    print("\nBy zone:")
-    for z in ["Downtown (< 2 km)", "Inner ring (2-8 km)", "Outer ring (> 8 km)"]:
-        sub = valid.filter(pl.col("zone") == z)
-        pre_sum = sub["pre_usage"].sum()
-        post_sum = sub["post_usage"].sum()
-        z_pct = (post_sum - pre_sum) / pre_sum * 100 if pre_sum > 0 else 0
-        print(f"  {z}: median {sub['pct_change'].median():+.0f}%, "
-              f"aggregate {z_pct:+.1f}%, n={len(sub):,}")
+        print("\nBy zone:")
+        for z in ["Downtown (< 2 km)", "Inner ring (2-8 km)", "Outer ring (> 8 km)"]:
+            sub = valid.filter(pl.col("zone") == z)
+            pre_sum = sub["pre_usage"].sum()
+            post_sum = sub["post_usage"].sum()
+            z_pct = (post_sum - pre_sum) / pre_sum * 100 if pre_sum > 0 else 0
+            print(f"  {z}: median {sub['pct_change'].median():+.0f}%, "
+                  f"aggregate {z_pct:+.1f}%, n={len(sub):,}")
 
-    # Formal tests for zone differences
-    zone_order = ["Downtown (< 2 km)", "Inner ring (2-8 km)", "Outer ring (> 8 km)"]
-    zone_groups = [
-        valid.filter(pl.col("zone") == z)["pct_change"].drop_nulls().to_list()
-        for z in zone_order
-    ]
-    if all(len(g) >= 3 for g in zone_groups):
-        h_stat, kw_p = stats.kruskal(*zone_groups)
-        print(f"\n  Kruskal-Wallis (zones): H={h_stat:.2f}, p={kw_p:.4f}")
-        if kw_p < 0.05:
-            # Pairwise Mann-Whitney with Bonferroni correction (3 pairs)
-            pairs = [(0, 1), (0, 2), (1, 2)]
-            print("  Pairwise Mann-Whitney (Bonferroni-corrected, 3 tests):")
-            for i, j in pairs:
-                u_stat, mw_p = stats.mannwhitneyu(zone_groups[i], zone_groups[j], alternative="two-sided")
-                adj_p = min(mw_p * 3, 1.0)
-                sig = "*" if adj_p < 0.05 else ""
-                print(f"    {zone_order[i]} vs {zone_order[j]}: U={u_stat:.0f}, p={adj_p:.4f} {sig}")
+        # Formal tests for zone differences
+        zone_order = ["Downtown (< 2 km)", "Inner ring (2-8 km)", "Outer ring (> 8 km)"]
+        zone_groups = [
+            valid.filter(pl.col("zone") == z)["pct_change"].drop_nulls().to_list()
+            for z in zone_order
+        ]
+        if all(len(g) >= 3 for g in zone_groups):
+            h_stat, kw_p = stats.kruskal(*zone_groups)
+            print(f"\n  Kruskal-Wallis (zones): H={h_stat:.2f}, p={kw_p:.4f}")
+            if kw_p < 0.05:
+                # Pairwise Mann-Whitney with Bonferroni correction (3 pairs)
+                pairs = [(0, 1), (0, 2), (1, 2)]
+                print("  Pairwise Mann-Whitney (Bonferroni-corrected, 3 tests):")
+                for i, j in pairs:
+                    u_stat, mw_p = stats.mannwhitneyu(zone_groups[i], zone_groups[j], alternative="two-sided")
+                    adj_p = min(mw_p * 3, 1.0)
+                    sig = "*" if adj_p < 0.05 else ""
+                    print(f"    {zone_order[i]} vs {zone_order[j]}: U={u_stat:.0f}, p={adj_p:.4f} {sig}")
 
-    print("\nBy mode:")
-    for mode in valid["mode"].unique().drop_nulls().sort().to_list():
-        sub = valid.filter(pl.col("mode") == mode)
-        print(f"  {mode:12s}: median {sub['pct_change'].median():+.0f}%, n={len(sub):,}")
+        print("\nBy mode:")
+        for mode in valid["mode"].unique().drop_nulls().sort().to_list():
+            sub = valid.filter(pl.col("mode") == mode)
+            print(f"  {mode:12s}: median {sub['pct_change'].median():+.0f}%, n={len(sub):,}")
 
-    # Formal test for mode differences
-    mode_groups = []
-    mode_names = []
-    for mode in valid["mode"].unique().drop_nulls().sort().to_list():
-        vals = valid.filter(pl.col("mode") == mode)["pct_change"].drop_nulls().to_list()
-        if len(vals) >= 3:
-            mode_groups.append(vals)
-            mode_names.append(mode)
-    if len(mode_groups) >= 2:
-        h_stat, kw_p = stats.kruskal(*mode_groups)
-        print(f"  Kruskal-Wallis (modes): H={h_stat:.2f}, p={kw_p:.4f}")
+        # Formal test for mode differences
+        mode_groups = []
+        mode_names = []
+        for mode in valid["mode"].unique().drop_nulls().sort().to_list():
+            vals = valid.filter(pl.col("mode") == mode)["pct_change"].drop_nulls().to_list()
+            if len(vals) >= 3:
+                mode_groups.append(vals)
+                mode_names.append(mode)
+        if len(mode_groups) >= 2:
+            h_stat, kw_p = stats.kruskal(*mode_groups)
+            print(f"  Kruskal-Wallis (modes): H={h_stat:.2f}, p={kw_p:.4f}")
 
-    print("\nTop 10 stops with largest absolute loss:")
-    biggest_loss = valid.sort("abs_change").head(10)
-    for row in biggest_loss.iter_rows(named=True):
-        print(f"  {row['stop_name'][:40]:40s} {row['pre_usage']:8.0f} -> {row['post_usage']:8.0f} ({row['pct_change']:+.0f}%)")
+        print("\nTop 10 stops with largest absolute loss:")
+        biggest_loss = valid.sort("abs_change").head(10)
+        for row in biggest_loss.iter_rows(named=True):
+            print(f"  {row['stop_name'][:40]:40s} {row['pre_usage']:8.0f} -> {row['post_usage']:8.0f} ({row['pct_change']:+.0f}%)")
 
-    print("\nSaving CSV...")
-    save_csv(df, OUT / "pandemic_change_by_stop.csv")
+    with phase("Saving CSV"):
+        save_csv(df, OUT / "pandemic_change_by_stop.csv")
 
-    print("\nGenerating charts...")
-    make_charts(df)
+    with phase("Generating charts"):
+        make_charts(df)
 
 
 if __name__ == "__main__":

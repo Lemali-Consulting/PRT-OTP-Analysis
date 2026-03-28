@@ -2,7 +2,7 @@
 
 import polars as pl
 
-from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -174,58 +174,58 @@ def make_rate_vs_burden_chart(ranking: pl.DataFrame) -> None:
 def main() -> None:
     """Entry point: load, compute burden, rank, chart, and save."""
 
-    print("\nLoading data...")
-    df = load_data()
-    n_routes = df["route_id"].n_unique()
-    print(f"  {len(df):,} route-month observations ({n_routes} routes)")
+    with phase("Loading data"):
+        df = load_data()
+        n_routes = df["route_id"].n_unique()
+        print(f"  {len(df):,} route-month observations ({n_routes} routes)")
 
-    print("\nRanking routes by delay burden...")
-    ranking = route_ranking(df)
+    with phase("Ranking routes by delay burden"):
+        ranking = route_ranking(df)
 
-    print("\n  Top 10 routes by cumulative late rider-trips:")
-    print(f"  {'Rank':>4} {'Route':<8} {'Name':<32} {'Late trips':>12} {'Avg OTP':>8} {'OTP Rank':>9}")
-    for row in ranking.head(10).iter_rows(named=True):
-        print(f"  {row['burden_rank']:>4} {row['route_id']:<8} {row['route_name']:<32} "
-              f"{row['total_late']:>12,.0f} {row['avg_otp']:>8.1%} {row['otp_rank']:>9}")
+        print("\n  Top 10 routes by cumulative late rider-trips:")
+        print(f"  {'Rank':>4} {'Route':<8} {'Name':<32} {'Late trips':>12} {'Avg OTP':>8} {'OTP Rank':>9}")
+        for row in ranking.head(10).iter_rows(named=True):
+            print(f"  {row['burden_rank']:>4} {row['route_id']:<8} {row['route_name']:<32} "
+                  f"{row['total_late']:>12,.0f} {row['avg_otp']:>8.1%} {row['otp_rank']:>9}")
 
-    # Routes that shift most between rankings
-    ranking_annotated = ranking.with_columns(
-        rank_shift=(pl.col("otp_rank").cast(pl.Int64) - pl.col("burden_rank").cast(pl.Int64)),
-    )
+        # Routes that shift most between rankings
+        ranking_annotated = ranking.with_columns(
+            rank_shift=(pl.col("otp_rank").cast(pl.Int64) - pl.col("burden_rank").cast(pl.Int64)),
+        )
 
-    print("\n  Biggest rank shifts (burden rank - OTP rank):")
-    print("  Positive = higher burden than OTP rank suggests (high-ridership route)")
-    print("  Negative = lower burden than OTP rank suggests (low-ridership route)")
-    shifted = ranking_annotated.sort("rank_shift", descending=True)
-    print(f"\n  {'Route':<8} {'Name':<32} {'OTP Rank':>9} {'Burden Rank':>12} {'Shift':>6}")
-    for row in shifted.head(5).iter_rows(named=True):
-        print(f"  {row['route_id']:<8} {row['route_name']:<32} "
-              f"{row['otp_rank']:>9} {row['burden_rank']:>12} {row['rank_shift']:>+6}")
-    print("  ...")
-    for row in shifted.tail(5).iter_rows(named=True):
-        print(f"  {row['route_id']:<8} {row['route_name']:<32} "
-              f"{row['otp_rank']:>9} {row['burden_rank']:>12} {row['rank_shift']:>+6}")
+        print("\n  Biggest rank shifts (burden rank - OTP rank):")
+        print("  Positive = higher burden than OTP rank suggests (high-ridership route)")
+        print("  Negative = lower burden than OTP rank suggests (low-ridership route)")
+        shifted = ranking_annotated.sort("rank_shift", descending=True)
+        print(f"\n  {'Route':<8} {'Name':<32} {'OTP Rank':>9} {'Burden Rank':>12} {'Shift':>6}")
+        for row in shifted.head(5).iter_rows(named=True):
+            print(f"  {row['route_id']:<8} {row['route_name']:<32} "
+                  f"{row['otp_rank']:>9} {row['burden_rank']:>12} {row['rank_shift']:>+6}")
+        print("  ...")
+        for row in shifted.tail(5).iter_rows(named=True):
+            print(f"  {row['route_id']:<8} {row['route_name']:<32} "
+                  f"{row['otp_rank']:>9} {row['burden_rank']:>12} {row['rank_shift']:>+6}")
 
-    print("\nComputing system-wide monthly trend...")
-    monthly = monthly_system(df)
-    total_late = monthly["system_late"].sum()
-    total_trips = monthly["system_total"].sum()
-    print(f"  Total late rider-trips (all time): {total_late:,.0f}")
-    print(f"  Total rider-trips (all time):      {total_trips:,.0f}")
-    print(f"  System late rate:                  {total_late / total_trips:.1%}")
+    with phase("Computing system-wide monthly trend"):
+        monthly = monthly_system(df)
+        total_late = monthly["system_late"].sum()
+        total_trips = monthly["system_total"].sum()
+        print(f"  Total late rider-trips (all time): {total_late:,.0f}")
+        print(f"  Total rider-trips (all time):      {total_trips:,.0f}")
+        print(f"  System late rate:                  {total_late / total_trips:.1%}")
 
-    # Top 10 share of system burden
-    top10_late = ranking.head(10)["total_late"].sum()
-    print(f"\n  Top 10 routes account for {top10_late / total_late:.1%} of all late rider-trips")
+        # Top 10 share of system burden
+        top10_late = ranking.head(10)["total_late"].sum()
+        print(f"\n  Top 10 routes account for {top10_late / total_late:.1%} of all late rider-trips")
 
-    print("\nSaving CSVs...")
-    save_csv(ranking, OUT / "delay_burden_ranking.csv")
-    save_csv(monthly, OUT / "delay_burden_monthly.csv")
+    with phase("Saving CSVs"):
+        save_csv(ranking, OUT / "delay_burden_ranking.csv")
+        save_csv(monthly, OUT / "delay_burden_monthly.csv")
 
-    print("\nGenerating charts...")
-    make_trend_chart(monthly)
-    make_top10_chart(ranking)
-    make_rate_vs_burden_chart(ranking)
+    with phase("Generating charts"):
+        make_trend_chart(monthly)
+        make_top10_chart(ranking)
+        make_rate_vs_burden_chart(ranking)
 
 
 if __name__ == "__main__":

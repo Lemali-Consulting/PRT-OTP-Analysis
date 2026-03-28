@@ -9,6 +9,7 @@ from scipy import stats
 from prt_otp_analysis.common import (
     analysis_dir,
     classify_bus_route,
+    phase,
     query_to_polars,
     run_analysis,
     save_chart,
@@ -240,11 +241,11 @@ def make_charts(df: pl.DataFrame, results: dict, y_hat: np.ndarray) -> None:
 @run_analysis(18, "Multivariate OTP Model")
 def main() -> None:
     """Entry point: load features, fit models, report, and visualize."""
-    print("\nLoading and assembling features...")
-    df = load_features()
-    n_rail = len(df.filter(pl.col("is_rail") == 1.0))
-    n_bus = len(df.filter(pl.col("mode") == "BUS"))
-    print(f"  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)")
+    with phase("Loading and assembling features"):
+        df = load_features()
+        n_rail = len(df.filter(pl.col("is_rail") == 1.0))
+        n_bus = len(df.filter(pl.col("mode") == "BUS"))
+        print(f"  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)")
 
     # --- Full model (all 6 features) ---
     full_features = ["stop_count", "span_km", "is_rail", "is_premium_bus",
@@ -252,45 +253,45 @@ def main() -> None:
     y = np.array(df["avg_otp"].to_list())
     X_full = np.column_stack([np.array(df[f].to_list(), dtype=float) for f in full_features])
 
-    print("\n--- VIF (Variance Inflation Factors) ---")
-    vifs = compute_vif(X_full, full_features)
-    for feat, vif in vifs.items():
-        flag = " ** HIGH" if vif > 5 else ""
-        print(f"  {feat:<20s} VIF = {vif:.2f}{flag}")
+    with phase("Computing VIF (Variance Inflation Factors)"):
+        vifs = compute_vif(X_full, full_features)
+        for feat, vif in vifs.items():
+            flag = " ** HIGH" if vif > 5 else ""
+            print(f"  {feat:<20s} VIF = {vif:.2f}{flag}")
 
-    print("\nFitting full model (6 features)...")
-    full_results, y_hat_full = fit_ols(y, X_full, full_features)
-    print_model(full_results, "Full model")
+    with phase("Fitting full model (6 features)"):
+        full_results, y_hat_full = fit_ols(y, X_full, full_features)
+        print_model(full_results, "Full model")
 
     # --- Reduced model (without n_munis suppressor) ---
     reduced_features = ["stop_count", "span_km", "is_rail", "is_premium_bus", "weekend_ratio"]
     X_reduced = np.column_stack([np.array(df[f].to_list(), dtype=float) for f in reduced_features])
-    print("\nFitting reduced model (without n_munis)...")
-    reduced_results, _ = fit_ols(y, X_reduced, reduced_features)
-    print_model(reduced_results, "Reduced model (no n_munis)")
+    with phase("Fitting reduced model (without n_munis)"):
+        reduced_results, _ = fit_ols(y, X_reduced, reduced_features)
+        print_model(reduced_results, "Reduced model (no n_munis)")
 
     # --- Bus-only model ---
     bus_df = df.filter(pl.col("mode") == "BUS")
     bus_features = ["stop_count", "span_km", "is_premium_bus", "weekend_ratio", "n_munis"]
     y_bus = np.array(bus_df["avg_otp"].to_list())
     X_bus = np.column_stack([np.array(bus_df[f].to_list(), dtype=float) for f in bus_features])
-    print(f"\nFitting bus-only model ({len(bus_df)} routes)...")
-    bus_results, _ = fit_ols(y_bus, X_bus, bus_features)
-    print_model(bus_results, "Bus-only model")
+    with phase(f"Fitting bus-only model ({len(bus_df)} routes)"):
+        bus_results, _ = fit_ols(y_bus, X_bus, bus_features)
+        print_model(bus_results, "Bus-only model")
 
-    # Save full model coefficients
-    coeff_df = pl.DataFrame({
-        "feature": full_results["features"],
-        "coefficient": full_results["coefficients"],
-        "std_error": full_results["std_errors"],
-        "t_value": full_results["t_values"],
-        "p_value": full_results["p_values"],
-        "beta_weight": [b if b is not None else float("nan") for b in full_results["beta_weights"]],
-    })
-    save_csv(coeff_df, OUT / "model_coefficients.csv")
+        # Save full model coefficients
+        coeff_df = pl.DataFrame({
+            "feature": full_results["features"],
+            "coefficient": full_results["coefficients"],
+            "std_error": full_results["std_errors"],
+            "t_value": full_results["t_values"],
+            "p_value": full_results["p_values"],
+            "beta_weight": [b if b is not None else float("nan") for b in full_results["beta_weights"]],
+        })
+        save_csv(coeff_df, OUT / "model_coefficients.csv")
 
-    print("\nGenerating charts...")
-    make_charts(df, full_results, y_hat_full)
+    with phase("Generating charts"):
+        make_charts(df, full_results, y_hat_full)
 
 
 if __name__ == "__main__":

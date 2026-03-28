@@ -2,7 +2,7 @@
 
 import polars as pl
 
-from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -211,32 +211,32 @@ def make_chart(
 @run_analysis(6, "Seasonal Patterns")
 def main() -> None:
     """Entry point: load data, analyze seasonal patterns, chart, and save."""
-    print("\nLoading data...")
-    df = load_data()
-    print(f"  {len(df):,} OTP observations loaded")
+    with phase("Loading data"):
+        df = load_data()
+        print(f"  {len(df):,} OTP observations loaded")
 
-    print("\nAnalyzing...")
-    system_seasonal, route_seasonal, route_amplitude = analyze(df)
+    with phase("Analyzing"):
+        system_seasonal, route_seasonal, route_amplitude = analyze(df)
 
-    # Summary
-    best_sys = system_seasonal.sort("weighted_otp", descending=True).head(1)
-    worst_sys = system_seasonal.sort("weighted_otp").head(1)
-    print(f"  Best system month:  {MONTH_LABELS[best_sys['month_num'][0] - 1]} ({best_sys['weighted_otp'][0]:.1%})")
-    print(f"  Worst system month: {MONTH_LABELS[worst_sys['month_num'][0] - 1]} ({worst_sys['weighted_otp'][0]:.1%})")
+        # Summary
+        best_sys = system_seasonal.sort("weighted_otp", descending=True).head(1)
+        worst_sys = system_seasonal.sort("weighted_otp").head(1)
+        print(f"  Best system month:  {MONTH_LABELS[best_sys['month_num'][0] - 1]} ({best_sys['weighted_otp'][0]:.1%})")
+        print(f"  Worst system month: {MONTH_LABELS[worst_sys['month_num'][0] - 1]} ({worst_sys['weighted_otp'][0]:.1%})")
 
-    n_eligible = route_amplitude.height
-    print(f"  {n_eligible} routes with {MIN_YEARS}+ years of data for seasonal ranking")
+        n_eligible = route_amplitude.height
+        print(f"  {n_eligible} routes with {MIN_YEARS}+ years of data for seasonal ranking")
 
-    top3 = route_amplitude.head(3)
-    print("\n  Most seasonally affected routes (detrended):")
-    for row in top3.iter_rows(named=True):
-        print(f"    {row['route_id']} - {row['route_name']}: amplitude = {row['seasonal_amplitude']:.3f}")
+        top3 = route_amplitude.head(3)
+        print("\n  Most seasonally affected routes (detrended):")
+        for row in top3.iter_rows(named=True):
+            print(f"    {row['route_id']} - {row['route_name']}: amplitude = {row['seasonal_amplitude']:.3f}")
 
-    print("\nSaving CSV...")
-    save_csv(route_amplitude, OUT / "seasonal_patterns.csv")
+    with phase("Saving CSV"):
+        save_csv(route_amplitude, OUT / "seasonal_patterns.csv")
 
-    print("\nGenerating chart...")
-    make_chart(system_seasonal, route_seasonal, route_amplitude)
+    with phase("Generating chart"):
+        make_chart(system_seasonal, route_seasonal, route_amplitude)
 
 
 if __name__ == "__main__":

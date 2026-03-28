@@ -3,7 +3,7 @@
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -134,34 +134,34 @@ def make_chart(monthly: pl.DataFrame) -> None:
 @run_analysis(19, "Ridership-Weighted OTP")
 def main() -> None:
     """Entry point: load data, compute weighted OTP series, test, chart, and save."""
-    print("\nLoading data...")
-    df = load_data()
-    n_routes = df["route_id"].n_unique()
-    print(f"  {len(df):,} route-month observations ({n_routes} routes)")
+    with phase("Loading data"):
+        df = load_data()
+        n_routes = df["route_id"].n_unique()
+        print(f"  {len(df):,} route-month observations ({n_routes} routes)")
 
-    print("\nComputing monthly OTP series...")
-    monthly = compute_monthly(df)
-    print(f"  {len(monthly)} months computed")
+    with phase("Computing monthly OTP series"):
+        monthly = compute_monthly(df)
+        print(f"  {len(monthly)} months computed")
 
-    print("\nSummary statistics:")
-    summary = compute_summary(monthly)
-    for row in summary.iter_rows(named=True):
-        print(f"  {row['weighting']:30s}  mean={row['mean']:.3%}  "
-              f"median={row['median']:.3%}  std={row['std']:.3%}")
+    with phase("Computing summary statistics"):
+        summary = compute_summary(monthly)
+        for row in summary.iter_rows(named=True):
+            print(f"  {row['weighting']:30s}  mean={row['mean']:.3%}  "
+                  f"median={row['median']:.3%}  std={row['std']:.3%}")
 
-    print("\nStatistical test (ridership-weighted vs trip-weighted):")
-    test = statistical_test(monthly)
-    print(f"  Mean difference: {test['mean_difference']:+.4%}")
-    print(f"  Paired t-test:   t={test['paired_t_stat']:.3f}, p={test['paired_t_p']:.4f}")
-    print(f"  Wilcoxon test:   W={test['wilcoxon_stat']:.0f}, p={test['wilcoxon_p']:.4f}")
-    print(f"  N months:        {test['n_months']}")
+    with phase("Statistical test (ridership-weighted vs trip-weighted)"):
+        test = statistical_test(monthly)
+        print(f"  Mean difference: {test['mean_difference']:+.4%}")
+        print(f"  Paired t-test:   t={test['paired_t_stat']:.3f}, p={test['paired_t_p']:.4f}")
+        print(f"  Wilcoxon test:   W={test['wilcoxon_stat']:.0f}, p={test['wilcoxon_p']:.4f}")
+        print(f"  N months:        {test['n_months']}")
 
-    print("\nSaving CSVs...")
-    save_csv(monthly, OUT / "weighting_comparison.csv")
-    save_csv(summary, OUT / "summary_stats.csv")
+    with phase("Saving CSVs"):
+        save_csv(monthly, OUT / "weighting_comparison.csv")
+        save_csv(summary, OUT / "summary_stats.csv")
 
-    print("\nGenerating chart...")
-    make_chart(monthly)
+    with phase("Generating chart"):
+        make_chart(monthly)
 
 
 if __name__ == "__main__":

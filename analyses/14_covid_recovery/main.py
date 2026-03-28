@@ -8,6 +8,7 @@ from prt_otp_analysis.common import (
     analysis_dir,
     classify_bus_route,
     correlate,
+    phase,
     query_to_polars,
     run_analysis,
     save_chart,
@@ -175,50 +176,50 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
 @run_analysis(14, "COVID Recovery Trajectories")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    df, current_start, current_end = load_data()
-    print(f"  {len(df)} routes with both pre-COVID and current data")
-    print(f"  Pre-COVID period: {PRE_COVID_START} to {PRE_COVID_END}")
-    print(f"  Current period:   {current_start} to {current_end}")
+    with phase("Loading data"):
+        df, current_start, current_end = load_data()
+        print(f"  {len(df)} routes with both pre-COVID and current data")
+        print(f"  Pre-COVID period: {PRE_COVID_START} to {PRE_COVID_END}")
+        print(f"  Current period:   {current_start} to {current_end}")
 
-    print("\nAnalyzing recovery...")
-    results = analyze(df)
-    print(f"  Improved: {results['n_improved']} routes")
-    print(f"  Declined: {results['n_declined']} routes")
-    print(f"  Median delta: {results['median_delta']:+.1%}")
-    print(f"  Mean delta:   {results['mean_delta']:+.1%}")
-    if "stops_recovery_r" in results:
-        print(f"  Stop count vs recovery (bus): r = {results['stops_recovery_r']:.4f} "
-              f"(p = {results['stops_recovery_p']:.4f})")
-    print(f"\n  Regression-to-the-mean test:")
-    print(f"    Baseline vs delta: r = {results['rtm_r']:.4f} (p = {results['rtm_p']:.4f})")
-    if results['rtm_p'] < 0.05:
-        print(f"    WARNING: Significant RTM detected -- routes with extreme baselines regress toward the mean.")
-    else:
-        print(f"    No significant RTM detected.")
-    if "kruskal_h" in results:
-        print(f"  Kruskal-Wallis test across subtypes: H = {results['kruskal_h']:.3f}, "
-              f"p = {results['kruskal_p']:.4f}")
+    with phase("Analyzing recovery"):
+        results = analyze(df)
+        print(f"  Improved: {results['n_improved']} routes")
+        print(f"  Declined: {results['n_declined']} routes")
+        print(f"  Median delta: {results['median_delta']:+.1%}")
+        print(f"  Mean delta:   {results['mean_delta']:+.1%}")
+        if "stops_recovery_r" in results:
+            print(f"  Stop count vs recovery (bus): r = {results['stops_recovery_r']:.4f} "
+                  f"(p = {results['stops_recovery_p']:.4f})")
+        print(f"\n  Regression-to-the-mean test:")
+        print(f"    Baseline vs delta: r = {results['rtm_r']:.4f} (p = {results['rtm_p']:.4f})")
+        if results['rtm_p'] < 0.05:
+            print(f"    WARNING: Significant RTM detected -- routes with extreme baselines regress toward the mean.")
+        else:
+            print(f"    No significant RTM detected.")
+        if "kruskal_h" in results:
+            print(f"  Kruskal-Wallis test across subtypes: H = {results['kruskal_h']:.3f}, "
+                  f"p = {results['kruskal_p']:.4f}")
 
-    # Top/bottom routes
-    print("\nMost improved:")
-    top = df.sort("recovery_delta", descending=True).head(5)
-    for row in top.iter_rows(named=True):
-        print(f"  {row['route_id']:>5s} - {row['route_name']:<30s} "
-              f"Baseline={row['baseline_otp']:.1%} -> Current={row['current_otp']:.1%} "
-              f"({row['recovery_delta']:+.1%})")
+        # Top/bottom routes
+        print("\nMost improved:")
+        top = df.sort("recovery_delta", descending=True).head(5)
+        for row in top.iter_rows(named=True):
+            print(f"  {row['route_id']:>5s} - {row['route_name']:<30s} "
+                  f"Baseline={row['baseline_otp']:.1%} -> Current={row['current_otp']:.1%} "
+                  f"({row['recovery_delta']:+.1%})")
 
-    print("\nMost declined:")
-    bottom = df.sort("recovery_delta").head(5)
-    for row in bottom.iter_rows(named=True):
-        print(f"  {row['route_id']:>5s} - {row['route_name']:<30s} "
-              f"Baseline={row['baseline_otp']:.1%} -> Current={row['current_otp']:.1%} "
-              f"({row['recovery_delta']:+.1%})")
+        print("\nMost declined:")
+        bottom = df.sort("recovery_delta").head(5)
+        for row in bottom.iter_rows(named=True):
+            print(f"  {row['route_id']:>5s} - {row['route_name']:<30s} "
+                  f"Baseline={row['baseline_otp']:.1%} -> Current={row['current_otp']:.1%} "
+                  f"({row['recovery_delta']:+.1%})")
 
-    save_csv(df, OUT / "covid_recovery.csv")
+        save_csv(df, OUT / "covid_recovery.csv")
 
-    print("\nGenerating charts...")
-    make_charts(df, results)
+    with phase("Generating charts"):
+        make_charts(df, results)
 
 
 if __name__ == "__main__":

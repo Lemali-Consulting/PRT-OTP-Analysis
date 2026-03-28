@@ -9,6 +9,7 @@ from prt_otp_analysis.common import (
     MODE_COLORS,
     analysis_dir,
     classify_bus_route,
+    phase,
     query_to_polars,
     run_analysis,
     save_chart,
@@ -272,54 +273,54 @@ def make_chart(
 @run_analysis(2, "Mode Comparison")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    df = load_data()
-    print(f"  {len(df):,} OTP observations loaded")
+    with phase("Loading data"):
+        df = load_data()
+        print(f"  {len(df):,} OTP observations loaded")
 
-    print("\nAnalyzing...")
-    mode_monthly, bus_monthly, paired, mode_monthly_weighted, test_results = analyze(df)
+    with phase("Analyzing"):
+        mode_monthly, bus_monthly, paired, mode_monthly_weighted, test_results = analyze(df)
 
-    # Summary
-    for mode in ["BUS", "RAIL"]:
-        data = mode_monthly.filter(pl.col("mode") == mode)
-        if len(data) > 0:
-            avg = data["avg_otp"].mean()
-            print(f"  {mode}: overall avg OTP (unweighted) = {avg:.1%}")
-        w_key = f"{mode.lower()}_weighted_avg"
-        if w_key in test_results:
-            print(f"  {mode}: overall avg OTP (trip-weighted) = {test_results[w_key]:.1%}")
+        # Summary
+        for mode in ["BUS", "RAIL"]:
+            data = mode_monthly.filter(pl.col("mode") == mode)
+            if len(data) > 0:
+                avg = data["avg_otp"].mean()
+                print(f"  {mode}: overall avg OTP (unweighted) = {avg:.1%}")
+            w_key = f"{mode.lower()}_weighted_avg"
+            if w_key in test_results:
+                print(f"  {mode}: overall avg OTP (trip-weighted) = {test_results[w_key]:.1%}")
 
-    # Mann-Whitney test
-    if "mann_whitney_u" in test_results:
-        print(f"\n  Mann-Whitney U test (RAIL vs BUS monthly OTP):")
-        print(f"    U = {test_results['mann_whitney_u']:.1f}, p = {test_results['mann_whitney_p']:.2e}")
-        print(f"    RAIL median = {test_results['rail_median_otp']:.1%}, BUS median = {test_results['bus_median_otp']:.1%}")
+        # Mann-Whitney test
+        if "mann_whitney_u" in test_results:
+            print(f"\n  Mann-Whitney U test (RAIL vs BUS monthly OTP):")
+            print(f"    U = {test_results['mann_whitney_u']:.1f}, p = {test_results['mann_whitney_p']:.2e}")
+            print(f"    RAIL median = {test_results['rail_median_otp']:.1%}, BUS median = {test_results['bus_median_otp']:.1%}")
 
-    if len(paired) > 0:
-        avg_diff = paired["otp_diff"].mean()
-        print(f"\n  Paired routes: avg OTP diff (variant - base) = {avg_diff:+.4f}")
-        print(f"  {paired.select('base_id', 'variant_id').unique().height} route pairs found")
+        if len(paired) > 0:
+            avg_diff = paired["otp_diff"].mean()
+            print(f"\n  Paired routes: avg OTP diff (variant - base) = {avg_diff:+.4f}")
+            print(f"  {paired.select('base_id', 'variant_id').unique().height} route pairs found")
 
-        if "paired_t_stat" in test_results:
-            print(f"  Paired t-test on monthly OTP differences:")
-            print(f"    t = {test_results['paired_t_stat']:.3f}, p = {test_results['paired_t_pval']:.4f}")
-            print(f"    Mean diff = {test_results['paired_mean_diff']:.4f}")
-            print(f"    95% CI: [{test_results['paired_ci_lower']:.4f}, {test_results['paired_ci_upper']:.4f}]")
-            print(f"    n = {test_results['paired_n_obs']} paired observations across {test_results['n_pairs']} pairs")
+            if "paired_t_stat" in test_results:
+                print(f"  Paired t-test on monthly OTP differences:")
+                print(f"    t = {test_results['paired_t_stat']:.3f}, p = {test_results['paired_t_pval']:.4f}")
+                print(f"    Mean diff = {test_results['paired_mean_diff']:.4f}")
+                print(f"    95% CI: [{test_results['paired_ci_lower']:.4f}, {test_results['paired_ci_upper']:.4f}]")
+                print(f"    n = {test_results['paired_n_obs']} paired observations across {test_results['n_pairs']} pairs")
 
-    print("\nSaving CSV...")
-    # Combine mode and bus type data for CSV
-    csv_data = pl.concat([
-        mode_monthly.with_columns(bus_type=pl.lit(None, dtype=pl.String)),
-        bus_monthly.with_columns(mode=pl.lit("BUS")),
-    ], how="diagonal")
-    save_csv(csv_data, OUT / "mode_comparison.csv")
+    with phase("Saving CSV"):
+        # Combine mode and bus type data for CSV
+        csv_data = pl.concat([
+            mode_monthly.with_columns(bus_type=pl.lit(None, dtype=pl.String)),
+            bus_monthly.with_columns(mode=pl.lit("BUS")),
+        ], how="diagonal")
+        save_csv(csv_data, OUT / "mode_comparison.csv")
 
-    # Save weighted mode data
-    save_csv(mode_monthly_weighted, OUT / "mode_comparison_weighted.csv")
+        # Save weighted mode data
+        save_csv(mode_monthly_weighted, OUT / "mode_comparison_weighted.csv")
 
-    print("\nGenerating chart...")
-    make_chart(mode_monthly, bus_monthly, paired)
+    with phase("Generating chart"):
+        make_chart(mode_monthly, bus_monthly, paired)
 
 
 if __name__ == "__main__":

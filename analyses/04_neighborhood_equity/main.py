@@ -2,7 +2,7 @@
 
 import polars as pl
 
-from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -282,98 +282,96 @@ def make_comparison_chart(hood_summary: pl.DataFrame) -> None:
 @run_analysis(4, "Neighborhood Equity")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    df = load_data()
-    print(f"  {len(df):,} route-stop records loaded (route-level avg OTP, {MIN_MONTHS}+ months, non-null trips_7d)")
-    print(f"  {df.filter(pl.col('hood').is_not_null() & (pl.col('hood') != '0') & (pl.col('hood') != ''))['hood'].n_unique()} neighborhoods represented")
+    with phase("Loading data"):
+        df = load_data()
+        print(f"  {len(df):,} route-stop records loaded (route-level avg OTP, {MIN_MONTHS}+ months, non-null trips_7d)")
+        print(f"  {df.filter(pl.col('hood').is_not_null() & (pl.col('hood') != '0') & (pl.col('hood') != ''))['hood'].n_unique()} neighborhoods represented")
 
-    # Check how many stops lack neighborhood data
-    total_stops = query_to_polars("SELECT COUNT(*) AS n FROM stops")["n"][0]
-    hood_stops = query_to_polars(
-        "SELECT COUNT(*) AS n FROM stops WHERE hood IS NOT NULL AND hood != '0' AND hood != ''"
-    )["n"][0]
-    print(f"  {total_stops - hood_stops} of {total_stops} stops excluded (missing/invalid neighborhood)")
+        # Check how many stops lack neighborhood data
+        total_stops = query_to_polars("SELECT COUNT(*) AS n FROM stops")["n"][0]
+        hood_stops = query_to_polars(
+            "SELECT COUNT(*) AS n FROM stops WHERE hood IS NOT NULL AND hood != '0' AND hood != ''"
+        )["n"][0]
+        print(f"  {total_stops - hood_stops} of {total_stops} stops excluded (missing/invalid neighborhood)")
 
-    print("\nAnalyzing (all modes, pooled)...")
-    hood_summary = analyze(df)
-    print(f"  {len(hood_summary)} neighborhoods ranked")
+    with phase("Analyzing (all modes, pooled)"):
+        hood_summary = analyze(df)
+        print(f"  {len(hood_summary)} neighborhoods ranked")
 
-    best = hood_summary.sort("weighted_otp", descending=True).head(3)
-    worst = hood_summary.sort("weighted_otp").head(3)
-    print("\n  Top 3 neighborhoods (weighted):")
-    for row in best.iter_rows(named=True):
-        print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
-    print("  Bottom 3 neighborhoods (weighted):")
-    for row in worst.iter_rows(named=True):
-        print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
+        best = hood_summary.sort("weighted_otp", descending=True).head(3)
+        worst = hood_summary.sort("weighted_otp").head(3)
+        print("\n  Top 3 neighborhoods (weighted):")
+        for row in best.iter_rows(named=True):
+            print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
+        print("  Bottom 3 neighborhoods (weighted):")
+        for row in worst.iter_rows(named=True):
+            print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
 
-    # Route count range across neighborhoods
-    min_routes = hood_summary["route_count"].min()
-    max_routes = hood_summary["route_count"].max()
-    print(f"\n  Route count per neighborhood: {min_routes} to {max_routes}")
+        # Route count range across neighborhoods
+        min_routes = hood_summary["route_count"].min()
+        max_routes = hood_summary["route_count"].max()
+        print(f"\n  Route count per neighborhood: {min_routes} to {max_routes}")
 
-    # Frequency-weighting effect summary
-    gaps = hood_summary["otp_gap"]
-    print(f"\n  Frequency-weighting effect (weighted - unweighted):")
-    print(f"    Mean gap:   {gaps.mean():+.2%}")
-    print(f"    Median gap: {gaps.median():+.2%}")
-    print(f"    Range:      {gaps.min():+.2%} to {gaps.max():+.2%}")
-    biggest = hood_summary.with_columns(abs_gap=pl.col("otp_gap").abs()).sort("abs_gap", descending=True).head(3)
-    print("  Largest divergences:")
-    for row in biggest.iter_rows(named=True):
-        print(f"    {row['hood']}: weighted={row['weighted_otp']:.1%}, "
-              f"unweighted={row['unweighted_otp']:.1%}, gap={row['otp_gap']:+.2%}")
+        # Frequency-weighting effect summary
+        gaps = hood_summary["otp_gap"]
+        print(f"\n  Frequency-weighting effect (weighted - unweighted):")
+        print(f"    Mean gap:   {gaps.mean():+.2%}")
+        print(f"    Median gap: {gaps.median():+.2%}")
+        print(f"    Range:      {gaps.min():+.2%} to {gaps.max():+.2%}")
+        biggest = hood_summary.with_columns(abs_gap=pl.col("otp_gap").abs()).sort("abs_gap", descending=True).head(3)
+        print("  Largest divergences:")
+        for row in biggest.iter_rows(named=True):
+            print(f"    {row['hood']}: weighted={row['weighted_otp']:.1%}, "
+                  f"unweighted={row['unweighted_otp']:.1%}, gap={row['otp_gap']:+.2%}")
 
-    # Bus-only stratification
-    print("\nAnalyzing (bus only)...")
-    route_modes = load_route_modes()
-    hood_bus = analyze_bus_only(df, route_modes)
-    print(f"  {len(hood_bus)} neighborhoods with bus service")
+    with phase("Analyzing (bus only)"):
+        route_modes = load_route_modes()
+        hood_bus = analyze_bus_only(df, route_modes)
+        print(f"  {len(hood_bus)} neighborhoods with bus service")
 
-    # Join bus OTP to main summary for comparison
-    hood_summary = hood_summary.join(
-        hood_bus.select("hood", "bus_weighted_otp", "bus_route_count"),
-        on="hood",
-        how="left",
-    )
+        # Join bus OTP to main summary for comparison
+        hood_summary = hood_summary.join(
+            hood_bus.select("hood", "bus_weighted_otp", "bus_route_count"),
+            on="hood",
+            how="left",
+        )
 
-    bus_best = hood_bus.sort("bus_weighted_otp", descending=True).head(3)
-    bus_worst = hood_bus.sort("bus_weighted_otp").head(3)
-    print("  Top 3 (bus only):")
-    for row in bus_best.iter_rows(named=True):
-        print(f"    {row['hood']} ({row['muni']}): {row['bus_weighted_otp']:.1%}")
-    print("  Bottom 3 (bus only):")
-    for row in bus_worst.iter_rows(named=True):
-        print(f"    {row['hood']} ({row['muni']}): {row['bus_weighted_otp']:.1%}")
+        bus_best = hood_bus.sort("bus_weighted_otp", descending=True).head(3)
+        bus_worst = hood_bus.sort("bus_weighted_otp").head(3)
+        print("  Top 3 (bus only):")
+        for row in bus_best.iter_rows(named=True):
+            print(f"    {row['hood']} ({row['muni']}): {row['bus_weighted_otp']:.1%}")
+        print("  Bottom 3 (bus only):")
+        for row in bus_worst.iter_rows(named=True):
+            print(f"    {row['hood']} ({row['muni']}): {row['bus_weighted_otp']:.1%}")
 
-    # Check for Simpson's paradox: do rankings change between pooled and bus-only?
-    both = hood_summary.filter(pl.col("bus_weighted_otp").is_not_null())
-    diff = both.with_columns(
-        rank_diff=(
-            pl.col("weighted_otp").rank(descending=True) - pl.col("bus_weighted_otp").rank(descending=True)
-        ).abs()
-    )
-    big_shifts = diff.filter(pl.col("rank_diff") > 10).sort("rank_diff", descending=True)
-    if len(big_shifts) > 0:
-        print(f"\n  {len(big_shifts)} neighborhoods shift 10+ rank positions between pooled and bus-only")
-    else:
-        print("\n  No neighborhoods shift more than 10 rank positions between pooled and bus-only")
+        # Check for Simpson's paradox: do rankings change between pooled and bus-only?
+        both = hood_summary.filter(pl.col("bus_weighted_otp").is_not_null())
+        diff = both.with_columns(
+            rank_diff=(
+                pl.col("weighted_otp").rank(descending=True) - pl.col("bus_weighted_otp").rank(descending=True)
+            ).abs()
+        )
+        big_shifts = diff.filter(pl.col("rank_diff") > 10).sort("rank_diff", descending=True)
+        if len(big_shifts) > 0:
+            print(f"\n  {len(big_shifts)} neighborhoods shift 10+ rank positions between pooled and bus-only")
+        else:
+            print("\n  No neighborhoods shift more than 10 rank positions between pooled and bus-only")
 
-    # Quintile time series
-    print("\nLoading monthly data for time series...")
-    monthly_df = load_monthly_data()
-    print(f"  {len(monthly_df):,} route-stop-month records loaded")
+    with phase("Loading monthly data for time series"):
+        monthly_df = load_monthly_data()
+        print(f"  {len(monthly_df):,} route-stop-month records loaded")
 
-    print("Analyzing quintile time series...")
-    quintile_ts = analyze_quintile_ts(monthly_df)
+        print("Analyzing quintile time series...")
+        quintile_ts = analyze_quintile_ts(monthly_df)
 
-    print("\nSaving CSV...")
-    save_csv(hood_summary, OUT / "neighborhood_otp.csv")
-    save_csv(hood_bus, OUT / "neighborhood_otp_bus_only.csv")
+    with phase("Saving CSV"):
+        save_csv(hood_summary, OUT / "neighborhood_otp.csv")
+        save_csv(hood_bus, OUT / "neighborhood_otp_bus_only.csv")
 
-    print("\nGenerating charts...")
-    make_chart(hood_summary, quintile_ts)
-    make_comparison_chart(hood_summary)
+    with phase("Generating charts"):
+        make_chart(hood_summary, quintile_ts)
+        make_comparison_chart(hood_summary)
 
 
 if __name__ == "__main__":

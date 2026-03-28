@@ -3,7 +3,7 @@
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -149,29 +149,29 @@ def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) 
 @run_analysis(15, "Municipal/County Equity")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    muni_otp, cross_jur = load_data()
-    print(f"  {len(muni_otp)} municipalities with {MIN_STOPS}+ stops")
+    with phase("Loading data"):
+        muni_otp, cross_jur = load_data()
+        print(f"  {len(muni_otp)} municipalities with {MIN_STOPS}+ stops")
 
-    print("\nAnalyzing...")
-    results = analyze(muni_otp, cross_jur)
-    print(f"  Best:  {results['best_muni']} ({results['best_otp']:.1%})")
-    print(f"  Worst: {results['worst_muni']} ({results['worst_otp']:.1%})")
-    print(f"  Spread: {results['spread']:.1%}")
-    if "pgh_otp" in results:
-        print(f"  Pittsburgh: {results['pgh_otp']:.1%} ({results['pgh_stops']} stops)")
-    print(f"  Suburban median: {results['suburban_median_otp']:.1%}")
-    print(f"  Cross-jurisdictional routes: {results['n_cross']} "
-          f"(avg OTP={results['cross_mean_otp']:.1%})")
-    print(f"  Single-municipality routes: {results['n_single']} "
-          f"(avg OTP={results['single_mean_otp']:.1%})")
-    if "cross_p" in results:
-        print(f"  Difference t-test: t={results['cross_t']:.3f}, p={results['cross_p']:.4f}")
+    with phase("Analyzing"):
+        results = analyze(muni_otp, cross_jur)
+        print(f"  Best:  {results['best_muni']} ({results['best_otp']:.1%})")
+        print(f"  Worst: {results['worst_muni']} ({results['worst_otp']:.1%})")
+        print(f"  Spread: {results['spread']:.1%}")
+        if "pgh_otp" in results:
+            print(f"  Pittsburgh: {results['pgh_otp']:.1%} ({results['pgh_stops']} stops)")
+        print(f"  Suburban median: {results['suburban_median_otp']:.1%}")
+        print(f"  Cross-jurisdictional routes: {results['n_cross']} "
+              f"(avg OTP={results['cross_mean_otp']:.1%})")
+        print(f"  Single-municipality routes: {results['n_single']} "
+              f"(avg OTP={results['single_mean_otp']:.1%})")
+        if "cross_p" in results:
+            print(f"  Difference t-test: t={results['cross_t']:.3f}, p={results['cross_p']:.4f}")
 
-    save_csv(muni_otp, OUT / "municipal_otp.csv")
+        save_csv(muni_otp, OUT / "municipal_otp.csv")
 
-    print("\nGenerating charts...")
-    make_charts(muni_otp, cross_jur, results)
+    with phase("Generating charts"):
+        make_charts(muni_otp, cross_jur, results)
 
 
 if __name__ == "__main__":

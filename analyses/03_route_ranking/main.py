@@ -4,7 +4,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import MODE_COLORS, Z_CRITICAL_95, analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, Z_CRITICAL_95, analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -230,41 +230,41 @@ def make_chart(df: pl.DataFrame) -> None:
 @run_analysis(3, "Route Ranking")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    otp, stop_counts = load_data()
-    print(f"  {len(otp):,} OTP observations, {len(stop_counts)} routes with stop data")
+    with phase("Loading data"):
+        otp, stop_counts = load_data()
+        print(f"  {len(otp):,} OTP observations, {len(stop_counts)} routes with stop data")
 
-    print("\nAnalyzing...")
-    result = analyze(otp, stop_counts)
-    rankable = result.filter(~pl.col("limited_data"))
-    limited = result.filter(pl.col("limited_data"))
-    print(f"  {len(rankable)} routes ranked ({MIN_MONTHS}+ months of data)")
-    print(f"  {len(limited)} routes excluded (fewer than {MIN_MONTHS} months)")
-    hv = result.filter(pl.col("high_volatility"))
-    print(f"  {len(hv)} high-volatility routes flagged")
-    print(f"  Slope period: {POST_COVID_START} onward (per-year units)")
+    with phase("Analyzing"):
+        result = analyze(otp, stop_counts)
+        rankable = result.filter(~pl.col("limited_data"))
+        limited = result.filter(pl.col("limited_data"))
+        print(f"  {len(rankable)} routes ranked ({MIN_MONTHS}+ months of data)")
+        print(f"  {len(limited)} routes excluded (fewer than {MIN_MONTHS} months)")
+        hv = result.filter(pl.col("high_volatility"))
+        print(f"  {len(hv)} high-volatility routes flagged")
+        print(f"  Slope period: {POST_COVID_START} onward (per-year units)")
 
-    # Report slope significance
-    has_slope = result.filter(pl.col("slope").is_not_null())
-    sig_slopes = has_slope.filter(pl.col("slope_significant") == True)
-    print(f"  {len(sig_slopes)} of {len(has_slope)} slopes are statistically significant (95% CI excludes zero)")
+        # Report slope significance
+        has_slope = result.filter(pl.col("slope").is_not_null())
+        sig_slopes = has_slope.filter(pl.col("slope_significant") == True)
+        print(f"  {len(sig_slopes)} of {len(has_slope)} slopes are statistically significant (95% CI excludes zero)")
 
-    # Report routes with null stop counts
-    null_stops = result.filter(pl.col("stop_count").is_null())
-    if len(null_stops) > 0:
-        ids = null_stops["route_id"].to_list()
-        print(f"  {len(null_stops)} routes lack stop count data: {', '.join(str(r) for r in ids)}")
+        # Report routes with null stop counts
+        null_stops = result.filter(pl.col("stop_count").is_null())
+        if len(null_stops) > 0:
+            ids = null_stops["route_id"].to_list()
+            print(f"  {len(null_stops)} routes lack stop count data: {', '.join(str(r) for r in ids)}")
 
-    # Report modes
-    for mode in sorted(rankable["mode"].unique().to_list()):
-        mode_count = len(rankable.filter(pl.col("mode") == mode))
-        print(f"  Mode {mode}: {mode_count} routes ranked")
+        # Report modes
+        for mode in sorted(rankable["mode"].unique().to_list()):
+            mode_count = len(rankable.filter(pl.col("mode") == mode))
+            print(f"  Mode {mode}: {mode_count} routes ranked")
 
-    print("\nSaving CSV...")
-    save_csv(result, OUT / "route_ranking.csv")
+    with phase("Saving CSV"):
+        save_csv(result, OUT / "route_ranking.csv")
 
-    print("\nGenerating chart...")
-    make_chart(result)
+    with phase("Generating chart"):
+        make_chart(result)
 
 
 if __name__ == "__main__":

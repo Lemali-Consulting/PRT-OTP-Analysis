@@ -2,7 +2,7 @@
 
 import polars as pl
 
-from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_csv
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_csv
 
 OUT = analysis_dir(__file__)
 
@@ -114,44 +114,44 @@ def investigate() -> str:
 @run_analysis(9, "Incline Investigation")
 def main() -> None:
     """Entry point: investigate the Incline data and produce a report."""
-    print("\nInvestigating...")
-    report = investigate()
-    print(report)
+    with phase("Investigating"):
+        report = investigate()
+        print(report)
 
-    # Save report
-    report_path = OUT / "incline_report.txt"
-    report_path.write_text(report, encoding="utf-8")
-    print(f"\n  Report saved to {report_path}")
+        # Save report
+        report_path = OUT / "incline_report.txt"
+        report_path.write_text(report, encoding="utf-8")
+        print(f"\n  Report saved to {report_path}")
 
-    # Save any OTP data as CSV
-    otp = query_to_polars("SELECT * FROM otp_monthly WHERE route_id IN ('MI', 'DQI')")
-    route_stops = query_to_polars("""
-        SELECT rs.*, s.stop_name
-        FROM route_stops rs
-        LEFT JOIN stops s ON rs.stop_id = s.stop_id
-        WHERE rs.route_id = 'MI'
-    """)
-    stop_ref = query_to_polars("""
-        SELECT * FROM stop_reference
-        WHERE mode = 'INCLINE' OR LOWER(stop_name) LIKE '%incline%'
-    """)
+        # Save any OTP data as CSV
+        otp = query_to_polars("SELECT * FROM otp_monthly WHERE route_id IN ('MI', 'DQI')")
+        route_stops = query_to_polars("""
+            SELECT rs.*, s.stop_name
+            FROM route_stops rs
+            LEFT JOIN stops s ON rs.stop_id = s.stop_id
+            WHERE rs.route_id = 'MI'
+        """)
+        stop_ref = query_to_polars("""
+            SELECT * FROM stop_reference
+            WHERE mode = 'INCLINE' OR LOWER(stop_name) LIKE '%incline%'
+        """)
 
-    # Combine all incline data into one CSV
-    all_data = []
-    if len(otp) > 0:
-        all_data.append(otp.with_columns(source=pl.lit("otp_monthly")))
-    if len(route_stops) > 0:
-        # Select compatible columns
-        rs_summary = route_stops.select("route_id", "stop_id", "stop_name", "direction", "trips_wd", "trips_7d")
-        save_csv(rs_summary, OUT / "incline_route_stops.csv")
-    if len(stop_ref) > 0:
-        save_csv(stop_ref, OUT / "incline_stop_reference.csv")
+        # Combine all incline data into one CSV
+        all_data = []
+        if len(otp) > 0:
+            all_data.append(otp.with_columns(source=pl.lit("otp_monthly")))
+        if len(route_stops) > 0:
+            # Select compatible columns
+            rs_summary = route_stops.select("route_id", "stop_id", "stop_name", "direction", "trips_wd", "trips_7d")
+            save_csv(rs_summary, OUT / "incline_route_stops.csv")
+        if len(stop_ref) > 0:
+            save_csv(stop_ref, OUT / "incline_stop_reference.csv")
 
-    if len(otp) > 0:
-        save_csv(otp, OUT / "incline_report.csv")
-    else:
-        # Write empty CSV with headers
-        save_csv(pl.DataFrame({"route_id": [], "month": [], "otp": []}), OUT / "incline_report.csv")
+        if len(otp) > 0:
+            save_csv(otp, OUT / "incline_report.csv")
+        else:
+            # Write empty CSV with headers
+            save_csv(pl.DataFrame({"route_id": [], "month": [], "otp": []}), OUT / "incline_report.csv")
 
 
 if __name__ == "__main__":

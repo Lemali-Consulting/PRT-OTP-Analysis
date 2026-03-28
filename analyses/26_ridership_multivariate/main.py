@@ -10,6 +10,7 @@ from prt_otp_analysis.common import (
     analysis_dir,
     classify_bus_route,
     correlate,
+    phase,
     query_to_polars,
     run_analysis,
     save_chart,
@@ -315,13 +316,13 @@ def make_partial_residual_chart(df: pl.DataFrame, base: dict) -> None:
 def main() -> None:
     """Entry point: load features, fit models, compare, chart, and save."""
 
-    print("\nLoading and assembling features...")
-    df = load_features()
-    n_rail = len(df.filter(pl.col("is_rail") == 1.0))
-    n_bus = len(df.filter(pl.col("mode") == "BUS"))
-    print(f"  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)")
-    print(f"  Ridership range: {df['avg_riders'].min():.0f} -- {df['avg_riders'].max():.0f}")
-    print(f"  Log ridership range: {df['log_riders'].min():.2f} -- {df['log_riders'].max():.2f}")
+    with phase("Loading and assembling features"):
+        df = load_features()
+        n_rail = len(df.filter(pl.col("is_rail") == 1.0))
+        n_bus = len(df.filter(pl.col("mode") == "BUS"))
+        print(f"  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)")
+        print(f"  Ridership range: {df['avg_riders'].min():.0f} -- {df['avg_riders'].max():.0f}")
+        print(f"  Log ridership range: {df['log_riders'].min():.2f} -- {df['log_riders'].max():.2f}")
 
     y = df["avg_otp"].to_numpy()
 
@@ -329,42 +330,42 @@ def main() -> None:
     base_features = ["stop_count", "span_km", "is_rail", "is_premium_bus",
                      "weekend_ratio", "n_munis"]
     X_base = np.column_stack([df[f].to_numpy().astype(float) for f in base_features])
-    print("\nFitting base model (6 features, Analysis 18 replication)...")
-    base = fit_ols(y, X_base, base_features)
-    print_model(base, "Base model (6 features)")
+    with phase("Fitting base model (6 features, Analysis 18 replication)"):
+        base = fit_ols(y, X_base, base_features)
+        print_model(base, "Base model (6 features)")
 
     # --- Model 2: Expanded (+ log_riders) ---
     exp_features = base_features + ["log_riders"]
     X_exp = np.column_stack([df[f].to_numpy().astype(float) for f in exp_features])
-    print("\nFitting expanded model (+ log_riders)...")
-    expanded = fit_ols(y, X_exp, exp_features)
-    print_model(expanded, "Expanded model (+ log_riders)")
+    with phase("Fitting expanded model (+ log_riders)"):
+        expanded = fit_ols(y, X_exp, exp_features)
+        print_model(expanded, "Expanded model (+ log_riders)")
 
-    # F-test
-    f_stat, f_p = f_test_nested(base, expanded)
-    print(f"\n  F-test for log_riders: F = {f_stat:.3f}, p = {f_p:.4f}")
-    print(f"  R2 change: {base['r_squared']:.4f} -> {expanded['r_squared']:.4f} "
-          f"(+{expanded['r_squared'] - base['r_squared']:.4f})")
-    print(f"  Adj R2 change: {base['adj_r_squared']:.4f} -> {expanded['adj_r_squared']:.4f} "
-          f"(+{expanded['adj_r_squared'] - base['adj_r_squared']:.4f})")
-    if f_p < 0.05:
-        print("  => Ridership IS significant after controlling for structural features.")
-    else:
-        print("  => Ridership is NOT significant after controlling for structural features.")
+        # F-test
+        f_stat, f_p = f_test_nested(base, expanded)
+        print(f"\n  F-test for log_riders: F = {f_stat:.3f}, p = {f_p:.4f}")
+        print(f"  R2 change: {base['r_squared']:.4f} -> {expanded['r_squared']:.4f} "
+              f"(+{expanded['r_squared'] - base['r_squared']:.4f})")
+        print(f"  Adj R2 change: {base['adj_r_squared']:.4f} -> {expanded['adj_r_squared']:.4f} "
+              f"(+{expanded['adj_r_squared'] - base['adj_r_squared']:.4f})")
+        if f_p < 0.05:
+            print("  => Ridership IS significant after controlling for structural features.")
+        else:
+            print("  => Ridership is NOT significant after controlling for structural features.")
 
-    # --- VIF for expanded model ---
-    print("\n--- VIF (Expanded Model) ---")
-    vifs = compute_vif(X_exp, exp_features)
-    for feat, vif in vifs.items():
-        flag = " ** HIGH" if vif > 5 else ""
-        print(f"  {feat:<20s} VIF = {vif:.2f}{flag}")
+        # --- VIF for expanded model ---
+        print("\n--- VIF (Expanded Model) ---")
+        vifs = compute_vif(X_exp, exp_features)
+        for feat, vif in vifs.items():
+            flag = " ** HIGH" if vif > 5 else ""
+            print(f"  {feat:<20s} VIF = {vif:.2f}{flag}")
 
     # --- Model 3: Ridership-only (log_riders + is_rail) ---
     rider_features = ["log_riders", "is_rail"]
     X_rider = np.column_stack([df[f].to_numpy().astype(float) for f in rider_features])
-    print("\nFitting ridership-only model (log_riders + is_rail)...")
-    rider_only = fit_ols(y, X_rider, rider_features)
-    print_model(rider_only, "Ridership-only model")
+    with phase("Fitting ridership-only model (log_riders + is_rail)"):
+        rider_only = fit_ols(y, X_rider, rider_features)
+        print_model(rider_only, "Ridership-only model")
 
     # --- Model 4: Bus-only expanded ---
     bus_df = df.filter(pl.col("mode") == "BUS")
@@ -375,57 +376,54 @@ def main() -> None:
     X_bus_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_base_feats])
     X_bus_exp = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_exp_feats])
 
-    print(f"\nFitting bus-only base model ({len(bus_df)} routes)...")
-    bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
-    print_model(bus_base, "Bus-only base (5 features)")
+    with phase(f"Fitting bus-only models ({len(bus_df)} routes)"):
+        bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
+        print_model(bus_base, "Bus-only base (5 features)")
 
-    print(f"\nFitting bus-only expanded model (+ log_riders)...")
-    bus_expanded = fit_ols(y_bus, X_bus_exp, bus_exp_feats)
-    print_model(bus_expanded, "Bus-only expanded (+ log_riders)")
+        bus_expanded = fit_ols(y_bus, X_bus_exp, bus_exp_feats)
+        print_model(bus_expanded, "Bus-only expanded (+ log_riders)")
 
-    f_bus, fp_bus = f_test_nested(bus_base, bus_expanded)
-    print(f"\n  Bus-only F-test for log_riders: F = {f_bus:.3f}, p = {fp_bus:.4f}")
-    print(f"  R2 change: {bus_base['r_squared']:.4f} -> {bus_expanded['r_squared']:.4f} "
-          f"(+{bus_expanded['r_squared'] - bus_base['r_squared']:.4f})")
+        f_bus, fp_bus = f_test_nested(bus_base, bus_expanded)
+        print(f"\n  Bus-only F-test for log_riders: F = {f_bus:.3f}, p = {fp_bus:.4f}")
+        print(f"  R2 change: {bus_base['r_squared']:.4f} -> {bus_expanded['r_squared']:.4f} "
+              f"(+{bus_expanded['r_squared'] - bus_base['r_squared']:.4f})")
 
-    # --- Correlation between ridership and existing predictors ---
-    print("\n--- Correlations: log_riders vs structural features ---")
-    for feat in base_features:
-        corr = correlate(df, feat, "log_riders")
-        sig = "*" if corr["pearson_p"] < 0.05 else ""
-        print(f"  log_riders vs {feat:<20s}: r = {corr['pearson_r']:+.3f}, p = {corr['pearson_p']:.4f} {sig}")
+        # --- Correlation between ridership and existing predictors ---
+        print("\n--- Correlations: log_riders vs structural features ---")
+        for feat in base_features:
+            corr = correlate(df, feat, "log_riders")
+            sig = "*" if corr["pearson_p"] < 0.05 else ""
+            print(f"  log_riders vs {feat:<20s}: r = {corr['pearson_r']:+.3f}, p = {corr['pearson_p']:.4f} {sig}")
 
-    # --- Save outputs ---
-    print("\nSaving CSVs...")
+    with phase("Saving CSVs"):
+        # Model comparison
+        rows = []
+        for model, label in [(base, "base_6feat"), (expanded, "expanded_7feat"),
+                              (rider_only, "ridership_only"), (bus_base, "bus_base"),
+                              (bus_expanded, "bus_expanded")]:
+            for i, feat in enumerate(model["features"]):
+                rows.append({
+                    "model": label,
+                    "feature": feat,
+                    "coefficient": model["coefficients"][i],
+                    "std_error": model["std_errors"][i],
+                    "p_value": model["p_values"][i],
+                    "beta_weight": model["beta_weights"][i] if model["beta_weights"][i] is not None else float("nan"),
+                    "r_squared": model["r_squared"],
+                    "adj_r_squared": model["adj_r_squared"],
+                    "n": model["n"],
+                })
+        model_comparison_df = pl.DataFrame(rows)
+        save_csv(model_comparison_df, OUT / "model_comparison.csv")
 
-    # Model comparison
-    rows = []
-    for model, label in [(base, "base_6feat"), (expanded, "expanded_7feat"),
-                          (rider_only, "ridership_only"), (bus_base, "bus_base"),
-                          (bus_expanded, "bus_expanded")]:
-        for i, feat in enumerate(model["features"]):
-            rows.append({
-                "model": label,
-                "feature": feat,
-                "coefficient": model["coefficients"][i],
-                "std_error": model["std_errors"][i],
-                "p_value": model["p_values"][i],
-                "beta_weight": model["beta_weights"][i] if model["beta_weights"][i] is not None else float("nan"),
-                "r_squared": model["r_squared"],
-                "adj_r_squared": model["adj_r_squared"],
-                "n": model["n"],
-            })
-    model_comparison_df = pl.DataFrame(rows)
-    save_csv(model_comparison_df, OUT / "model_comparison.csv")
+        # VIF table
+        vif_rows = [{"feature": f, "vif": v} for f, v in vifs.items()]
+        vif_df = pl.DataFrame(vif_rows)
+        save_csv(vif_df, OUT / "vif_table.csv")
 
-    # VIF table
-    vif_rows = [{"feature": f, "vif": v} for f, v in vifs.items()]
-    vif_df = pl.DataFrame(vif_rows)
-    save_csv(vif_df, OUT / "vif_table.csv")
-
-    print("\nGenerating charts...")
-    make_coefficient_chart(base, expanded)
-    make_partial_residual_chart(df, base)
+    with phase("Generating charts"):
+        make_coefficient_chart(base, expanded)
+        make_partial_residual_chart(df, base)
 
 
 if __name__ == "__main__":

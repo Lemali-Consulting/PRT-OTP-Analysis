@@ -10,6 +10,7 @@ from prt_otp_analysis.common import (
     analysis_dir,
     classify_bus_route,
     correlate,
+    phase,
     query_to_polars,
     run_analysis,
     save_chart,
@@ -340,23 +341,23 @@ def make_partial_residual_chart(df: pl.DataFrame, base: dict) -> None:
 def main() -> None:
     """Entry point: load features, fit models, compare, chart, and save."""
 
-    print("\nLoading and assembling features...")
-    df_all = load_features()
-    print(f"  {len(df_all)} routes with traffic + structural features")
+    with phase("Loading and assembling features"):
+        df_all = load_features()
+        print(f"  {len(df_all)} routes with traffic + structural features")
 
-    # Filter by match rate
-    df = df_all.filter(pl.col("match_rate") >= MIN_MATCH_RATE)
-    excluded = df_all.filter(pl.col("match_rate") < MIN_MATCH_RATE)
-    n_rail = len(df.filter(pl.col("is_rail") == 1.0))
-    n_bus = len(df.filter(pl.col("mode") == "BUS"))
-    print(f"  {len(df)} routes after match_rate >= {MIN_MATCH_RATE} filter ({n_bus} BUS, {n_rail} RAIL)")
-    if len(excluded) > 0:
-        print(f"  Excluded ({len(excluded)}): "
-              + ", ".join(excluded.sort("match_rate")["route_id"].to_list()))
+        # Filter by match rate
+        df = df_all.filter(pl.col("match_rate") >= MIN_MATCH_RATE)
+        excluded = df_all.filter(pl.col("match_rate") < MIN_MATCH_RATE)
+        n_rail = len(df.filter(pl.col("is_rail") == 1.0))
+        n_bus = len(df.filter(pl.col("mode") == "BUS"))
+        print(f"  {len(df)} routes after match_rate >= {MIN_MATCH_RATE} filter ({n_bus} BUS, {n_rail} RAIL)")
+        if len(excluded) > 0:
+            print(f"  Excluded ({len(excluded)}): "
+                  + ", ".join(excluded.sort("match_rate")["route_id"].to_list()))
 
-    print(f"\n  AADT range: {df['weighted_aadt'].min():,.0f} -- {df['weighted_aadt'].max():,.0f}")
-    print(f"  Log AADT range: {df['log_aadt'].min():.2f} -- {df['log_aadt'].max():.2f}")
-    print(f"  Median match rate: {df['match_rate'].median():.1%}")
+        print(f"\n  AADT range: {df['weighted_aadt'].min():,.0f} -- {df['weighted_aadt'].max():,.0f}")
+        print(f"  Log AADT range: {df['log_aadt'].min():.2f} -- {df['log_aadt'].max():.2f}")
+        print(f"  Median match rate: {df['match_rate'].median():.1%}")
 
     y = df["avg_otp"].to_numpy()
 
@@ -364,61 +365,61 @@ def main() -> None:
     base_features = ["stop_count", "span_km", "is_rail", "is_premium_bus",
                      "weekend_ratio", "n_munis"]
     X_base = np.column_stack([df[f].to_numpy().astype(float) for f in base_features])
-    print("\nFitting base model (6 features, Analysis 18 replication)...")
-    base = fit_ols(y, X_base, base_features)
-    print_model(base, "Base model (6 features)")
+    with phase("Fitting base model (6 features, Analysis 18 replication)"):
+        base = fit_ols(y, X_base, base_features)
+        print_model(base, "Base model (6 features)")
 
     # --- Model 2: Expanded (+ log_aadt) ---
     exp_features = base_features + ["log_aadt"]
     X_exp = np.column_stack([df[f].to_numpy().astype(float) for f in exp_features])
-    print("\nFitting expanded model (+ log_aadt)...")
-    expanded = fit_ols(y, X_exp, exp_features)
-    print_model(expanded, "Expanded model (+ log_aadt)")
+    with phase("Fitting expanded model (+ log_aadt)"):
+        expanded = fit_ols(y, X_exp, exp_features)
+        print_model(expanded, "Expanded model (+ log_aadt)")
 
-    # F-test
-    f_stat, f_p = f_test_nested(base, expanded)
-    print(f"\n  F-test for log_aadt: F = {f_stat:.3f}, p = {f_p:.4f}")
-    print(f"  R2 change: {base['r_squared']:.4f} -> {expanded['r_squared']:.4f} "
-          f"(+{expanded['r_squared'] - base['r_squared']:.4f})")
-    print(f"  Adj R2 change: {base['adj_r_squared']:.4f} -> {expanded['adj_r_squared']:.4f} "
-          f"(+{expanded['adj_r_squared'] - base['adj_r_squared']:.4f})")
-    if f_p < 0.05:
-        print("  => AADT IS significant after controlling for structural features.")
-    else:
-        print("  => AADT is NOT significant after controlling for structural features.")
+        # F-test
+        f_stat, f_p = f_test_nested(base, expanded)
+        print(f"\n  F-test for log_aadt: F = {f_stat:.3f}, p = {f_p:.4f}")
+        print(f"  R2 change: {base['r_squared']:.4f} -> {expanded['r_squared']:.4f} "
+              f"(+{expanded['r_squared'] - base['r_squared']:.4f})")
+        print(f"  Adj R2 change: {base['adj_r_squared']:.4f} -> {expanded['adj_r_squared']:.4f} "
+              f"(+{expanded['adj_r_squared'] - base['adj_r_squared']:.4f})")
+        if f_p < 0.05:
+            print("  => AADT IS significant after controlling for structural features.")
+        else:
+            print("  => AADT is NOT significant after controlling for structural features.")
 
-    # --- Model 3: Expanded + truck_pct ---
-    truck_df = df.filter(pl.col("avg_truck_pct").is_not_null())
-    if len(truck_df) >= 20:
-        y_truck = truck_df["avg_otp"].to_numpy()
-        truck_features = base_features + ["log_aadt", "avg_truck_pct"]
-        X_truck = np.column_stack([truck_df[f].to_numpy().astype(float) for f in truck_features])
-        print(f"\nFitting expanded model (+ log_aadt + avg_truck_pct, n={len(truck_df)})...")
-        truck_model = fit_ols(y_truck, X_truck, truck_features)
-        print_model(truck_model, "Expanded model (+ log_aadt + avg_truck_pct)")
+        # --- Model 3: Expanded + truck_pct ---
+        truck_df = df.filter(pl.col("avg_truck_pct").is_not_null())
+        if len(truck_df) >= 20:
+            y_truck = truck_df["avg_otp"].to_numpy()
+            truck_features = base_features + ["log_aadt", "avg_truck_pct"]
+            X_truck = np.column_stack([truck_df[f].to_numpy().astype(float) for f in truck_features])
+            print(f"\nFitting expanded model (+ log_aadt + avg_truck_pct, n={len(truck_df)})...")
+            truck_model = fit_ols(y_truck, X_truck, truck_features)
+            print_model(truck_model, "Expanded model (+ log_aadt + avg_truck_pct)")
 
-        # Compare vs base on same sample
-        X_base_truck = np.column_stack([truck_df[f].to_numpy().astype(float) for f in base_features])
-        base_truck = fit_ols(y_truck, X_base_truck, base_features)
-        f2, fp2 = f_test_nested(base_truck, truck_model)
-        print(f"\n  F-test for log_aadt + truck_pct (joint): F = {f2:.3f}, p = {fp2:.4f}")
-    else:
-        truck_model = None
-        print(f"\n  Skipping truck_pct model (only {len(truck_df)} routes with truck data)")
+            # Compare vs base on same sample
+            X_base_truck = np.column_stack([truck_df[f].to_numpy().astype(float) for f in base_features])
+            base_truck = fit_ols(y_truck, X_base_truck, base_features)
+            f2, fp2 = f_test_nested(base_truck, truck_model)
+            print(f"\n  F-test for log_aadt + truck_pct (joint): F = {f2:.3f}, p = {fp2:.4f}")
+        else:
+            truck_model = None
+            print(f"\n  Skipping truck_pct model (only {len(truck_df)} routes with truck data)")
 
-    # --- VIF for expanded model ---
-    print("\n--- VIF (Expanded Model: base + log_aadt) ---")
-    vifs = compute_vif(X_exp, exp_features)
-    for feat, vif in vifs.items():
-        flag = " ** HIGH" if vif > 5 else ""
-        print(f"  {feat:<20s} VIF = {vif:.2f}{flag}")
+        # --- VIF for expanded model ---
+        print("\n--- VIF (Expanded Model: base + log_aadt) ---")
+        vifs = compute_vif(X_exp, exp_features)
+        for feat, vif in vifs.items():
+            flag = " ** HIGH" if vif > 5 else ""
+            print(f"  {feat:<20s} VIF = {vif:.2f}{flag}")
 
-    # --- Correlation: log_aadt vs structural features ---
-    print("\n--- Correlations: log_aadt vs structural features ---")
-    for feat in base_features:
-        corr = correlate(df, feat, "log_aadt")
-        sig = "*" if corr["pearson_p"] < 0.05 else ""
-        print(f"  log_aadt vs {feat:<20s}: r = {corr['pearson_r']:+.3f}, p = {corr['pearson_p']:.4f} {sig}")
+        # --- Correlation: log_aadt vs structural features ---
+        print("\n--- Correlations: log_aadt vs structural features ---")
+        for feat in base_features:
+            corr = correlate(df, feat, "log_aadt")
+            sig = "*" if corr["pearson_p"] < 0.05 else ""
+            print(f"  log_aadt vs {feat:<20s}: r = {corr['pearson_r']:+.3f}, p = {corr['pearson_p']:.4f} {sig}")
 
     # --- Bus-only subgroup ---
     bus_df = df.filter(pl.col("mode") == "BUS")
@@ -429,65 +430,62 @@ def main() -> None:
     X_bus_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_base_feats])
     X_bus_exp = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_exp_feats])
 
-    print(f"\nFitting bus-only base model ({len(bus_df)} routes)...")
-    bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
-    print_model(bus_base, "Bus-only base (5 features)")
+    with phase(f"Fitting bus-only models ({len(bus_df)} routes)"):
+        bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
+        print_model(bus_base, "Bus-only base (5 features)")
 
-    print(f"\nFitting bus-only expanded model (+ log_aadt)...")
-    bus_expanded = fit_ols(y_bus, X_bus_exp, bus_exp_feats)
-    print_model(bus_expanded, "Bus-only expanded (+ log_aadt)")
+        bus_expanded = fit_ols(y_bus, X_bus_exp, bus_exp_feats)
+        print_model(bus_expanded, "Bus-only expanded (+ log_aadt)")
 
-    f_bus, fp_bus = f_test_nested(bus_base, bus_expanded)
-    print(f"\n  Bus-only F-test for log_aadt: F = {f_bus:.3f}, p = {fp_bus:.4f}")
-    print(f"  R2 change: {bus_base['r_squared']:.4f} -> {bus_expanded['r_squared']:.4f} "
-          f"(+{bus_expanded['r_squared'] - bus_base['r_squared']:.4f})")
+        f_bus, fp_bus = f_test_nested(bus_base, bus_expanded)
+        print(f"\n  Bus-only F-test for log_aadt: F = {f_bus:.3f}, p = {fp_bus:.4f}")
+        print(f"  R2 change: {bus_base['r_squared']:.4f} -> {bus_expanded['r_squared']:.4f} "
+              f"(+{bus_expanded['r_squared'] - bus_base['r_squared']:.4f})")
 
-    # --- Save outputs ---
-    print("\nSaving CSVs...")
+    with phase("Saving CSVs"):
+        # Model comparison
+        rows = []
+        models = [
+            (base, "base_6feat"),
+            (expanded, "expanded_7feat_aadt"),
+            (bus_base, "bus_base"),
+            (bus_expanded, "bus_expanded_aadt"),
+        ]
+        if truck_model is not None:
+            models.append((truck_model, "expanded_8feat_aadt_truck"))
+        for model, label in models:
+            for i, feat in enumerate(model["features"]):
+                rows.append({
+                    "model": label,
+                    "feature": feat,
+                    "coefficient": model["coefficients"][i],
+                    "std_error": model["std_errors"][i],
+                    "p_value": model["p_values"][i],
+                    "beta_weight": model["beta_weights"][i] if model["beta_weights"][i] is not None else float("nan"),
+                    "r_squared": model["r_squared"],
+                    "adj_r_squared": model["adj_r_squared"],
+                    "n": model["n"],
+                })
+        model_comparison_df = pl.DataFrame(rows)
+        save_csv(model_comparison_df, OUT / "model_comparison.csv")
 
-    # Model comparison
-    rows = []
-    models = [
-        (base, "base_6feat"),
-        (expanded, "expanded_7feat_aadt"),
-        (bus_base, "bus_base"),
-        (bus_expanded, "bus_expanded_aadt"),
-    ]
-    if truck_model is not None:
-        models.append((truck_model, "expanded_8feat_aadt_truck"))
-    for model, label in models:
-        for i, feat in enumerate(model["features"]):
-            rows.append({
-                "model": label,
-                "feature": feat,
-                "coefficient": model["coefficients"][i],
-                "std_error": model["std_errors"][i],
-                "p_value": model["p_values"][i],
-                "beta_weight": model["beta_weights"][i] if model["beta_weights"][i] is not None else float("nan"),
-                "r_squared": model["r_squared"],
-                "adj_r_squared": model["adj_r_squared"],
-                "n": model["n"],
-            })
-    model_comparison_df = pl.DataFrame(rows)
-    save_csv(model_comparison_df, OUT / "model_comparison.csv")
+        # VIF table
+        vif_rows = [{"feature": f, "vif": v} for f, v in vifs.items()]
+        vif_df = pl.DataFrame(vif_rows)
+        save_csv(vif_df, OUT / "vif_table.csv")
 
-    # VIF table
-    vif_rows = [{"feature": f, "vif": v} for f, v in vifs.items()]
-    vif_df = pl.DataFrame(vif_rows)
-    save_csv(vif_df, OUT / "vif_table.csv")
+        # Route-level summary
+        summary_df = df.select([
+            "route_id", "route_name", "mode", "avg_otp", "weighted_aadt", "max_aadt",
+            "median_aadt", "p90_aadt", "avg_truck_pct", "match_rate", "n_segments",
+            "stop_count", "span_km",
+        ]).sort("weighted_aadt", descending=True)
+        save_csv(summary_df, OUT / "route_traffic_summary.csv")
 
-    # Route-level summary
-    summary_df = df.select([
-        "route_id", "route_name", "mode", "avg_otp", "weighted_aadt", "max_aadt",
-        "median_aadt", "p90_aadt", "avg_truck_pct", "match_rate", "n_segments",
-        "stop_count", "span_km",
-    ]).sort("weighted_aadt", descending=True)
-    save_csv(summary_df, OUT / "route_traffic_summary.csv")
-
-    print("\nGenerating charts...")
-    make_scatter_chart(df)
-    make_coefficient_chart(base, expanded)
-    make_partial_residual_chart(df, base)
+    with phase("Generating charts"):
+        make_scatter_chart(df)
+        make_coefficient_chart(base, expanded)
+        make_partial_residual_chart(df, base)
 
 
 if __name__ == "__main__":

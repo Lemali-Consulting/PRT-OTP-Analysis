@@ -4,7 +4,7 @@ import math
 
 import polars as pl
 
-from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -144,39 +144,39 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
 @run_analysis(16, "Transfer Hub Performance")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    stop_df, route_df = load_data()
-    print(f"  {len(stop_df)} stops with OTP and connectivity data")
-    print(f"  {len(route_df)} routes with avg stop connectivity")
+    with phase("Loading data"):
+        stop_df, route_df = load_data()
+        print(f"  {len(stop_df)} stops with OTP and connectivity data")
+        print(f"  {len(route_df)} routes with avg stop connectivity")
 
-    print("\nAnalyzing...")
-    results = analyze(stop_df, route_df)
-    for tier, key in [("Hub (5+)", "hub"), ("Medium (2-4)", "medium"), ("Simple (1)", "simple")]:
-        print(f"  {tier}: n={results[f'{key}_n']}, "
-              f"mean OTP={results[f'{key}_mean_otp']:.1%}, "
-              f"median OTP={results[f'{key}_median_otp']:.1%}")
+    with phase("Analyzing"):
+        results = analyze(stop_df, route_df)
+        for tier, key in [("Hub (5+)", "hub"), ("Medium (2-4)", "medium"), ("Simple (1)", "simple")]:
+            print(f"  {tier}: n={results[f'{key}_n']}, "
+                  f"mean OTP={results[f'{key}_mean_otp']:.1%}, "
+                  f"median OTP={results[f'{key}_median_otp']:.1%}")
 
-    print(f"\n  Stop-level (n={results['n_stops']}, non-independent -- inflated power):")
-    print(f"    Pearson r = {results['stop_connectivity_r']:.4f} (p = {results['stop_connectivity_p']:.4f})")
-    print(f"    Spearman rho = {results['stop_connectivity_rho']:.4f} (p = {results['stop_connectivity_rho_p']:.4f})")
-    print(f"\n  Route-level (n={results['n_routes']}, independent observations):")
-    print(f"    Pearson r = {results['route_connectivity_r']:.4f} (p = {results['route_connectivity_p']:.4f})")
-    if not math.isnan(results["bus_route_connectivity_r"]):
-        print(f"\n  Route-level, bus only (n={results['n_bus_routes']}):")
-        print(f"    Pearson r = {results['bus_route_connectivity_r']:.4f} "
-              f"(p = {results['bus_route_connectivity_p']:.4f})")
+        print(f"\n  Stop-level (n={results['n_stops']}, non-independent -- inflated power):")
+        print(f"    Pearson r = {results['stop_connectivity_r']:.4f} (p = {results['stop_connectivity_p']:.4f})")
+        print(f"    Spearman rho = {results['stop_connectivity_rho']:.4f} (p = {results['stop_connectivity_rho_p']:.4f})")
+        print(f"\n  Route-level (n={results['n_routes']}, independent observations):")
+        print(f"    Pearson r = {results['route_connectivity_r']:.4f} (p = {results['route_connectivity_p']:.4f})")
+        if not math.isnan(results["bus_route_connectivity_r"]):
+            print(f"\n  Route-level, bus only (n={results['n_bus_routes']}):")
+            print(f"    Pearson r = {results['bus_route_connectivity_r']:.4f} "
+                  f"(p = {results['bus_route_connectivity_p']:.4f})")
 
-    # Top hubs
-    print("\nBusiest hubs:")
-    hubs = stop_df.filter(pl.col("tier") == "hub (5+)").sort("n_routes", descending=True).head(10)
-    for row in hubs.iter_rows(named=True):
-        print(f"  {row['stop_name']:<40s} {row['n_routes']} routes, "
-              f"OTP={row['avg_otp']:.1%}, {row['total_trips']} trips/wk")
+        # Top hubs
+        print("\nBusiest hubs:")
+        hubs = stop_df.filter(pl.col("tier") == "hub (5+)").sort("n_routes", descending=True).head(10)
+        for row in hubs.iter_rows(named=True):
+            print(f"  {row['stop_name']:<40s} {row['n_routes']} routes, "
+                  f"OTP={row['avg_otp']:.1%}, {row['total_trips']} trips/wk")
 
-    save_csv(stop_df, OUT / "hub_performance.csv")
+        save_csv(stop_df, OUT / "hub_performance.csv")
 
-    print("\nGenerating charts...")
-    make_charts(stop_df, results)
+    with phase("Generating charts"):
+        make_charts(stop_df, results)
 
 
 if __name__ == "__main__":

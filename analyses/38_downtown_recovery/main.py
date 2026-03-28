@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import DATA_DIR, PRE_COVID_BASELINE_YEAR, analysis_dir, correlate, get_db, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import DATA_DIR, PRE_COVID_BASELINE_YEAR, analysis_dir, correlate, get_db, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -239,67 +239,68 @@ def main() -> None:
     """Entry point."""
 
     # Step 1: Downtown-dependence scores
-    print("\nComputing downtown-dependence scores from stop-level data...")
-    route_scores = compute_downtown_scores()
-    route_scores = assign_terciles(route_scores)
-    print(f"  {len(route_scores)} routes scored")
-    for t in ["High", "Medium", "Low"]:
-        sub = route_scores.filter(pl.col("dt_tercile") == t)
-        print(f"  {t:6s}: n={len(sub)}, median dt_share={sub['dt_share'].median():.1%}")
+    with phase("Computing downtown-dependence scores from stop-level data"):
+        route_scores = compute_downtown_scores()
+        route_scores = assign_terciles(route_scores)
+        print(f"  {len(route_scores)} routes scored")
+        for t in ["High", "Medium", "Low"]:
+            sub = route_scores.filter(pl.col("dt_tercile") == t)
+            print(f"  {t:6s}: n={len(sub)}, median dt_share={sub['dt_share'].median():.1%}")
 
     # Step 2: Load ridership and compute recovery
-    print("\nLoading monthly ridership...")
-    ridership = load_ridership()
-    df = compute_recovery(ridership, route_scores)
-    # Merge tercile labels
-    df = df.join(
-        route_scores.select("route_id", "dt_tercile"), on="route_id", how="left"
-    )
-    print(f"  {df['route_id'].n_unique()} routes with both ridership and downtown scores")
+    with phase("Loading monthly ridership"):
+        ridership = load_ridership()
+        df = compute_recovery(ridership, route_scores)
+        # Merge tercile labels
+        df = df.join(
+            route_scores.select("route_id", "dt_tercile"), on="route_id", how="left"
+        )
+        print(f"  {df['route_id'].n_unique()} routes with both ridership and downtown scores")
 
-    # Step 3: Compute 2024 recovery ratio per route
-    recovery_2024 = (
-        df.filter(pl.col("month").str.starts_with("2024"))
-        .group_by("route_id")
-        .agg(pl.col("indexed").mean().alias("recovery_2024"))
-    )
-    route_df = route_scores.join(recovery_2024, on="route_id", how="inner")
-    # Also get baseline for scatter sizing
-    baseline = (
-        ridership.filter(pl.col("month").str.starts_with(BASELINE_YEAR))
-        .group_by("route_id")
-        .agg(pl.col("avg_riders").mean().alias("baseline_2019"))
-    )
-    route_df = route_df.join(baseline, on="route_id", how="inner")
+        # Step 3: Compute 2024 recovery ratio per route
+        recovery_2024 = (
+            df.filter(pl.col("month").str.starts_with("2024"))
+            .group_by("route_id")
+            .agg(pl.col("indexed").mean().alias("recovery_2024"))
+        )
+        route_df = route_scores.join(recovery_2024, on="route_id", how="inner")
+        # Also get baseline for scatter sizing
+        baseline = (
+            ridership.filter(pl.col("month").str.starts_with(BASELINE_YEAR))
+            .group_by("route_id")
+            .agg(pl.col("avg_riders").mean().alias("baseline_2019"))
+        )
+        route_df = route_df.join(baseline, on="route_id", how="inner")
 
-    print("\nRecovery by tercile (2024 avg as % of 2019):")
-    for t in ["High", "Medium", "Low"]:
-        sub = route_df.filter(pl.col("dt_tercile") == t)
-        med = sub["recovery_2024"].median()
-        mean = sub["recovery_2024"].mean()
-        print(f"  {t:6s}: median={med:.1f}%, mean={mean:.1f}%, n={len(sub)}")
+        print("\nRecovery by tercile (2024 avg as % of 2019):")
+        for t in ["High", "Medium", "Low"]:
+            sub = route_df.filter(pl.col("dt_tercile") == t)
+            med = sub["recovery_2024"].median()
+            mean = sub["recovery_2024"].mean()
+            print(f"  {t:6s}: median={med:.1f}%, mean={mean:.1f}%, n={len(sub)}")
 
-    # Step 4: Statistical tests
-    print("\nStatistical tests:")
-    test_results = run_tests(route_df)
-    for row in test_results.iter_rows(named=True):
-        sig = "*" if row["significant"] else ""
-        print(f"  {row['test']:30s} {row['comparison']:25s} "
-              f"stat={row['statistic']:.3f}, p={row['p_value']:.4f} {sig}")
+        # Step 4: Statistical tests
+        print("\nStatistical tests:")
+        test_results = run_tests(route_df)
+        for row in test_results.iter_rows(named=True):
+            sig = "*" if row["significant"] else ""
+            print(f"  {row['test']:30s} {row['comparison']:25s} "
+                  f"stat={row['statistic']:.3f}, p={row['p_value']:.4f} {sig}")
 
-    # Spearman correlation (continuous)
-    corr = correlate(route_df, "dt_share", "recovery_2024")
-    print(f"\n  Spearman (dt_share vs recovery): ρ={corr['spearman_r']:.3f}, p={corr['spearman_p']:.4f}")
+        # Spearman correlation (continuous)
+        corr = correlate(route_df, "dt_share", "recovery_2024")
+        print(f"\n  Spearman (dt_share vs recovery): ρ={corr['spearman_r']:.3f}, p={corr['spearman_p']:.4f}")
 
     # Step 5: Charts
-    print("\nGenerating charts...")
-    plot_trajectories(df)
-    plot_scatter(route_df)
+    with phase("Generating charts"):
+        plot_trajectories(df)
+        plot_scatter(route_df)
 
     # Step 6: Save CSV
-    sorted_route_df = route_df.sort("dt_share", descending=True)
-    save_csv(sorted_route_df, OUT / "route_downtown_scores.csv")
-    save_csv(test_results, OUT / "statistical_tests.csv")
+    with phase("Saving CSVs"):
+        sorted_route_df = route_df.sort("dt_share", descending=True)
+        save_csv(sorted_route_df, OUT / "route_downtown_scores.csv")
+        save_csv(test_results, OUT / "statistical_tests.csv")
 
 
 if __name__ == "__main__":

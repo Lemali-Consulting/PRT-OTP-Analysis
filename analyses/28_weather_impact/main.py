@@ -4,7 +4,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
 OUT = analysis_dir(__file__)
 
@@ -663,13 +663,13 @@ def save_model_comparison(block_a_reg: dict, block_b_results: dict, block_c_resu
 def main() -> None:
     """Entry point: load data, run three analysis blocks, chart, and save."""
 
-    print("\nLoading data...")
-    system = load_system_otp()
-    weather = load_weather()
-    route_otp = load_route_otp()
-    print(f"  System OTP: {len(system)} months")
-    print(f"  Weather: {len(weather)} months")
-    print(f"  Route OTP: {len(route_otp)} route-month observations")
+    with phase("Loading data"):
+        system = load_system_otp()
+        weather = load_weather()
+        route_otp = load_route_otp()
+        print(f"  System OTP: {len(system)} months")
+        print(f"  Weather: {len(weather)} months")
+        print(f"  Route OTP: {len(route_otp)} route-month observations")
 
     # Block A: System-level correlations
     merged = block_a(system, weather)
@@ -680,18 +680,17 @@ def main() -> None:
     # Block C: Route-level panel regression
     block_c_results = block_c(route_otp, weather)
 
-    # Charts
-    print("\n" + "=" * 60)
-    print("Charts")
-    print("=" * 60)
-    chart_timeseries(merged)
-    chart_seasonal_adjusted(block_b_results["seasonal_raw"], block_b_results["seasonal_adj"])
-    chart_scatter_matrix(merged)
-    chart_weather_heatmap(weather)
+    with phase("Generating charts"):
+        print("\n" + "=" * 60)
+        print("Charts")
+        print("=" * 60)
+        chart_timeseries(merged)
+        chart_seasonal_adjusted(block_b_results["seasonal_raw"], block_b_results["seasonal_adj"])
+        chart_scatter_matrix(merged)
+        chart_weather_heatmap(weather)
 
-    # Save model comparison
-    print("\nSaving CSVs...")
-    save_model_comparison(None, block_b_results, block_c_results)
+    with phase("Saving CSVs"):
+        save_model_comparison(None, block_b_results, block_c_results)
 
 
 if __name__ == "__main__":
