@@ -21,6 +21,12 @@
 - The `description` field in `SOURCES.yaml` is the single source of truth for website cards and the analysis index. Do not duplicate findings in README.md — keep README.md as a 2-3 sentence description of what the analysis does, not what it found.
 - **Summary style**: Write for a reader who has no context — a community member skimming the website. Lead with the key finding in plain language, include one or two numbers. Avoid jargon like "OTP", "headway", or "VIF" without explanation. Good: "Routes in lower-income neighborhoods run late 23% more often than the system average." Bad: "OTP gap of 4.2pp between Q1 and Q4 income quartiles (p<0.01)."
 
+## DataFrame schema validation
+- Table schemas are defined in `prt_otp_analysis.common.schemas`. Each schema declares expected column names and Polars dtypes.
+- After querying a database table, validate the result: `validate(df, ROUTES)` (or `validate(df, OTP_MONTHLY, subset=True)` for partial SELECTs).
+- Import schemas by table name: `from prt_otp_analysis.common.schemas import ROUTES, OTP_MONTHLY, validate`.
+- When adding a new table to `prt.db`, add a corresponding `Schema` in `schemas.py` and an integration test in `tests/test_schemas_integration.py`.
+
 ## Naming conventions
 - **DataFrame variables must end with `_df`** (e.g., `route_df`, `otp_df`, `stops_df`). This distinguishes them from scalars, lists, numpy arrays, and other lowercase variables that share the same scope. The only exception is the generic `df` when a function operates on a single DataFrame passed as a parameter.
 
