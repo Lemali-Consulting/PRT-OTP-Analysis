@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -129,9 +129,7 @@ def load_system_otp() -> pl.DataFrame:
     system = (
         df.group_by("month")
         .agg(
-            weighted_otp=pl.when(pl.col("trips_7d").sum() > 0)
-            .then((pl.col("otp") * pl.col("trips_7d")).sum() / pl.col("trips_7d").sum())
-            .otherwise(pl.col("otp").mean()),
+            weighted_otp=weighted_mean("otp", "trips_7d", safe=True),
         )
         .sort("month")
     )
@@ -177,17 +175,14 @@ def block_a(system: pl.DataFrame, weather: pl.DataFrame) -> pl.DataFrame:
     print(f"  {'-'*60}")
     corr_rows = []
     for var in WEATHER_VARS:
-        x = merged[var].to_numpy().astype(float)
-        mask = ~np.isnan(x)
-        if mask.sum() < 10:
+        c = correlate(merged, var, "weighted_otp", min_n=10)
+        if np.isnan(c["pearson_r"]):
             continue
-        r_p, p_p = stats.pearsonr(x[mask], otp[mask])
-        r_s, p_s = stats.spearmanr(x[mask], otp[mask])
-        sig = "*" if p_p < 0.05 else ""
-        print(f"  {var:<22s} {r_p:>+10.3f} {p_p:>8.4f} {r_s:>+10.3f} {p_s:>8.4f} {sig}")
+        sig = "*" if c["pearson_p"] < 0.05 else ""
+        print(f"  {var:<22s} {c['pearson_r']:>+10.3f} {c['pearson_p']:>8.4f} {c['spearman_r']:>+10.3f} {c['spearman_p']:>8.4f} {sig}")
         corr_rows.append({
-            "variable": var, "pearson_r": r_p, "pearson_p": p_p,
-            "spearman_r": r_s, "spearman_p": p_s, "type": "raw",
+            "variable": var, "pearson_r": c["pearson_r"], "pearson_p": c["pearson_p"],
+            "spearman_r": c["spearman_r"], "spearman_p": c["spearman_p"], "type": "raw",
         })
 
     # --- Detrended correlations ---
@@ -214,20 +209,16 @@ def block_a(system: pl.DataFrame, weather: pl.DataFrame) -> pl.DataFrame:
     print(f"\n  Detrended correlations ({len(dt)} months):")
     print(f"  {'Variable':<22s} {'Pearson r':>10s} {'p':>8s} {'Spearman r':>10s} {'p':>8s}")
     print(f"  {'-'*60}")
-    otp_dt = dt["otp_detrended"].to_numpy()
     for var in WEATHER_VARS:
         col = f"{var}_detrended"
-        x = dt[col].to_numpy().astype(float)
-        mask = ~np.isnan(x) & ~np.isnan(otp_dt)
-        if mask.sum() < 10:
+        c = correlate(dt, col, "otp_detrended", min_n=10)
+        if np.isnan(c["pearson_r"]):
             continue
-        r_p, p_p = stats.pearsonr(x[mask], otp_dt[mask])
-        r_s, p_s = stats.spearmanr(x[mask], otp_dt[mask])
-        sig = "*" if p_p < 0.05 else ""
-        print(f"  {var:<22s} {r_p:>+10.3f} {p_p:>8.4f} {r_s:>+10.3f} {p_s:>8.4f} {sig}")
+        sig = "*" if c["pearson_p"] < 0.05 else ""
+        print(f"  {var:<22s} {c['pearson_r']:>+10.3f} {c['pearson_p']:>8.4f} {c['spearman_r']:>+10.3f} {c['spearman_p']:>8.4f} {sig}")
         corr_rows.append({
-            "variable": var, "pearson_r": r_p, "pearson_p": p_p,
-            "spearman_r": r_s, "spearman_p": p_s, "type": "detrended",
+            "variable": var, "pearson_r": c["pearson_r"], "pearson_p": c["pearson_p"],
+            "spearman_r": c["spearman_r"], "spearman_p": c["spearman_p"], "type": "detrended",
         })
 
     # --- Multiple regression: system OTP ~ weather + trend ---
@@ -260,8 +251,7 @@ def block_a(system: pl.DataFrame, weather: pl.DataFrame) -> pl.DataFrame:
           f"(+{weather_reg['r_squared'] - trend_only['r_squared']:.4f})")
 
     corr_df = pl.DataFrame(corr_rows)
-    corr_df.write_csv(OUT / "weather_otp_correlation.csv")
-    print(f"\n  Saved {OUT / 'weather_otp_correlation.csv'}")
+    save_csv(corr_df, OUT / "weather_otp_correlation.csv")
 
     return merged
 
@@ -539,10 +529,7 @@ def chart_timeseries(merged: pl.DataFrame) -> None:
     ax.set_xticklabels([months[i] for i in tick_idx], rotation=45, ha="right", fontsize=8)
 
     fig.suptitle("Weather Variables vs System OTP (2019-2024)", fontsize=13)
-    fig.tight_layout()
-    fig.savefig(OUT / "weather_otp_timeseries.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'weather_otp_timeseries.png'}")
+    save_chart(fig, OUT / "weather_otp_timeseries.png")
 
 
 def chart_seasonal_adjusted(seasonal_raw: dict, seasonal_adj: dict) -> None:
@@ -571,10 +558,7 @@ def chart_seasonal_adjusted(seasonal_raw: dict, seasonal_adj: dict) -> None:
         y_pos = max(raw_vals[m], adj_vals[m]) + 0.5
         ax.annotate(f"{diff:+.1f}pp", xy=(m, y_pos), ha="center", fontsize=9, color="#666")
 
-    fig.tight_layout()
-    fig.savefig(OUT / "seasonal_weather_adjusted.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'seasonal_weather_adjusted.png'}")
+    save_chart(fig, OUT / "seasonal_weather_adjusted.png")
 
 
 def chart_scatter_matrix(merged: pl.DataFrame) -> None:
@@ -609,10 +593,7 @@ def chart_scatter_matrix(merged: pl.DataFrame) -> None:
             ax.set_ylabel("Detrended OTP (pp)")
 
     fig.suptitle("Detrended Weather Variables vs Detrended System OTP", fontsize=12)
-    fig.tight_layout()
-    fig.savefig(OUT / "weather_scatter_matrix.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'weather_scatter_matrix.png'}")
+    save_chart(fig, OUT / "weather_scatter_matrix.png")
 
 
 def chart_weather_heatmap(weather: pl.DataFrame) -> None:
@@ -644,10 +625,7 @@ def chart_weather_heatmap(weather: pl.DataFrame) -> None:
 
     fig.colorbar(im, ax=ax, label="Pearson Correlation", shrink=0.8)
     ax.set_title("Weather Variable Inter-Correlations")
-    fig.tight_layout()
-    fig.savefig(OUT / "weather_correlation_heatmap.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'weather_correlation_heatmap.png'}")
+    save_chart(fig, OUT / "weather_correlation_heatmap.png")
 
 
 # ---------------------------------------------------------------------------
@@ -677,8 +655,7 @@ def save_model_comparison(block_a_reg: dict, block_b_results: dict, block_c_resu
                 "n": model["n"],
             })
 
-    pl.DataFrame(rows).write_csv(OUT / "model_comparison.csv")
-    print(f"  Saved {OUT / 'model_comparison.csv'}")
+    save_csv(pl.DataFrame(rows), OUT / "model_comparison.csv")
 
 
 # ---------------------------------------------------------------------------
@@ -687,9 +664,7 @@ def save_model_comparison(block_a_reg: dict, block_b_results: dict, block_c_resu
 
 def main() -> None:
     """Entry point: load data, run three analysis blocks, chart, and save."""
-    print("=" * 60)
-    print("Analysis 28: Weather Impact on OTP")
-    print("=" * 60)
+    print_header(28, "Weather Impact on OTP")
 
     print("\nLoading data...")
     system = load_system_otp()
@@ -721,7 +696,7 @@ def main() -> None:
     print("\nSaving CSVs...")
     save_model_comparison(None, block_b_results, block_c_results)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

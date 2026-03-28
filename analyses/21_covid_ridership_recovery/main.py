@@ -9,8 +9,13 @@ from scipy import stats
 from prt_otp_analysis.common import (
     PRE_COVID_BASELINE_MONTH,
     classify_bus_route,
+    correlate,
     output_dir,
+    print_done,
+    print_header,
     query_to_polars,
+    save_chart,
+    save_csv,
     setup_plotting,
 )
 
@@ -91,21 +96,17 @@ def analyze(df: pl.DataFrame) -> dict:
     otp_d = df["otp_delta"].to_numpy()
     rider_r = df["ridership_pct_change"].to_numpy()
 
-    # Pearson
-    r_p, p_p = stats.pearsonr(rider_r, otp_d)
-    results["pearson_r"] = r_p
-    results["pearson_p"] = p_p
-
-    # Spearman
-    r_s, p_s = stats.spearmanr(rider_r, otp_d)
-    results["spearman_r"] = r_s
-    results["spearman_p"] = p_s
+    # Pearson + Spearman
+    corr = correlate(df, "ridership_pct_change", "otp_delta")
+    results["pearson_r"] = corr["pearson_r"]
+    results["pearson_p"] = corr["pearson_p"]
+    results["spearman_r"] = corr["spearman_r"]
+    results["spearman_p"] = corr["spearman_p"]
 
     # Regression to the mean test: corr(baseline_otp, otp_delta)
-    baseline_otp = df["baseline_otp"].to_numpy()
-    rtm_r, rtm_p = stats.pearsonr(baseline_otp, otp_d)
-    results["rtm_r"] = rtm_r
-    results["rtm_p"] = rtm_p
+    rtm_corr = correlate(df, "baseline_otp", "otp_delta")
+    results["rtm_r"] = rtm_corr["pearson_r"]
+    results["rtm_p"] = rtm_corr["pearson_p"]
 
     # Summary counts
     results["n_both_improved"] = int(((otp_d > 0) & (rider_r > 0)).sum())
@@ -183,10 +184,7 @@ def make_scatter(df: pl.DataFrame, results: dict) -> None:
     ax.set_title("COVID Recovery: Ridership vs OTP by Route")
     ax.legend(loc="upper left", fontsize=8)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "recovery_scatter.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'recovery_scatter.png'}")
+    save_chart(fig, OUT / "recovery_scatter.png")
 
 
 def make_subtype_chart(df: pl.DataFrame) -> None:
@@ -231,17 +229,12 @@ def make_subtype_chart(df: pl.DataFrame) -> None:
     ax2.set_ylabel("Ridership Change (recovery / baseline - 1)")
     ax2.set_title("Ridership Recovery by Subtype")
 
-    fig.tight_layout()
-    fig.savefig(OUT / "recovery_by_subtype.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'recovery_by_subtype.png'}")
+    save_chart(fig, OUT / "recovery_by_subtype.png")
 
 
 def main() -> None:
     """Entry point: load, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 21: COVID Ridership vs OTP Recovery")
-    print("=" * 60)
+    print_header(21, "COVID Ridership vs OTP Recovery")
 
     print("\nLoading data...")
     df = load_data()
@@ -303,14 +296,13 @@ def main() -> None:
               f"riders {row['ridership_pct_change']:+.0%}, OTP {row['otp_delta']:+.1%}")
 
     print("\nSaving CSV...")
-    df.write_csv(OUT / "recovery_data.csv")
-    print(f"  {OUT / 'recovery_data.csv'}")
+    save_csv(df, OUT / "recovery_data.csv")
 
     print("\nGenerating charts...")
     make_scatter(df, results)
     make_subtype_chart(df)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

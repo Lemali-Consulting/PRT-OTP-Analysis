@@ -4,10 +4,9 @@ from pathlib import Path
 
 import numpy as np
 import polars as pl
-from scipy import stats as sp_stats
 from statsmodels.tsa.stattools import adfuller, grangercausalitytests
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -61,15 +60,16 @@ def compute_lagged_crosscorr(df: pl.DataFrame) -> pl.DataFrame:
 
         for lag in range(0, MAX_LAG + 1):
             if lag == 0:
-                r, p = sp_stats.pearsonr(otp, riders)
+                lag_df = pl.DataFrame({"otp": otp, "riders": riders})
             else:
                 # OTP at time t correlated with ridership at time t+lag
-                r, p = sp_stats.pearsonr(otp[:-lag], riders[lag:])
+                lag_df = pl.DataFrame({"otp": otp[:-lag], "riders": riders[lag:]})
+            corr = correlate(lag_df, "otp", "riders")
             results.append({
                 "route_id": route,
                 "lag": lag,
-                "correlation": r,
-                "p_value": p,
+                "correlation": corr["pearson_r"],
+                "p_value": corr["pearson_p"],
             })
 
     return pl.DataFrame(results)
@@ -221,10 +221,7 @@ def make_crosscorr_chart(agg: pl.DataFrame) -> None:
     ax.set_xticks(lags)
     ax.legend()
 
-    fig.tight_layout()
-    fig.savefig(OUT / "lagged_crosscorr.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'lagged_crosscorr.png'}")
+    save_chart(fig, OUT / "lagged_crosscorr.png")
 
 
 def make_granger_chart(gdf: pl.DataFrame) -> None:
@@ -257,17 +254,12 @@ def make_granger_chart(gdf: pl.DataFrame) -> None:
     ax2.set_title(f"Optimal Lag for Significant Routes (n={len(sig_lags)})")
     ax2.set_xticks(range(1, MAX_LAG + 1))
 
-    fig.tight_layout()
-    fig.savefig(OUT / "granger_summary.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'granger_summary.png'}")
+    save_chart(fig, OUT / "granger_summary.png")
 
 
 def main() -> None:
     """Entry point: load, detrend, cross-correlate, Granger test, chart, and save."""
-    print("=" * 60)
-    print("Analysis 20: OTP -> Ridership Causality")
-    print("=" * 60)
+    print_header(20, "OTP -> Ridership Causality")
 
     print("\nLoading data...")
     df = load_data()
@@ -312,16 +304,14 @@ def main() -> None:
               f"{row['p_value']:>10.4f} {row['p_bonferroni']:>10.4f}")
 
     print("\nSaving CSVs...")
-    ccdf.write_csv(OUT / "lagged_crosscorr.csv")
-    print(f"  {OUT / 'lagged_crosscorr.csv'}")
-    gdf.write_csv(OUT / "granger_results.csv")
-    print(f"  {OUT / 'granger_results.csv'}")
+    save_csv(ccdf, OUT / "lagged_crosscorr.csv")
+    save_csv(gdf, OUT / "granger_results.csv")
 
     print("\nGenerating charts...")
     make_crosscorr_chart(agg)
     make_granger_chart(gdf)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

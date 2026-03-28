@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -129,18 +129,14 @@ def correlate_weekend_otp(route_wkend: pl.DataFrame, otp_df: pl.DataFrame) -> di
     if len(merged) < 10:
         return {"n": len(merged), "error": "too few routes"}
 
-    x = merged["avg_weekend_ratio"].to_list()
-    y = merged["avg_otp"].to_list()
-
-    r_pearson, p_pearson = stats.pearsonr(x, y)
-    r_spearman, p_spearman = stats.spearmanr(x, y)
+    corr = correlate(merged, "avg_weekend_ratio", "avg_otp")
 
     return {
         "n": len(merged),
-        "r_pearson": r_pearson,
-        "p_pearson": p_pearson,
-        "r_spearman": r_spearman,
-        "p_spearman": p_spearman,
+        "r_pearson": corr["pearson_r"],
+        "p_pearson": corr["pearson_p"],
+        "r_spearman": corr["spearman_r"],
+        "p_spearman": corr["spearman_p"],
         "merged": merged,
     }
 
@@ -182,10 +178,7 @@ def make_trend_chart(monthly_idx: pl.DataFrame) -> None:
     ax.set_xticklabels(tick_labels)
     ax.legend(loc="upper right", fontsize=9)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "daytype_ridership_trend.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'daytype_ridership_trend.png'}")
+    save_chart(fig, OUT / "daytype_ridership_trend.png")
 
 
 def make_weekend_share_chart(wk_share: pl.DataFrame) -> None:
@@ -219,10 +212,7 @@ def make_weekend_share_chart(wk_share: pl.DataFrame) -> None:
     ax.legend(loc="upper left", fontsize=9)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
 
-    fig.tight_layout()
-    fig.savefig(OUT / "weekend_share_trend.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'weekend_share_trend.png'}")
+    save_chart(fig, OUT / "weekend_share_trend.png")
 
 
 def make_scatter_chart(merged: pl.DataFrame) -> None:
@@ -246,17 +236,12 @@ def make_scatter_chart(merged: pl.DataFrame) -> None:
     ax.set_title("Weekend Ridership Ratio vs On-Time Performance")
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0%}"))
 
-    fig.tight_layout()
-    fig.savefig(OUT / "weekend_share_vs_otp.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'weekend_share_vs_otp.png'}")
+    save_chart(fig, OUT / "weekend_share_vs_otp.png")
 
 
 def main() -> None:
     """Entry point: load data, compute trends, correlate, chart, and save."""
-    print("=" * 60)
-    print("Analysis 24: Weekday vs Weekend Ridership Trends")
-    print("=" * 60)
+    print_header(24, "Weekday vs Weekend Ridership Trends")
 
     print("\nLoading ridership data...")
     ride_df = load_ridership()
@@ -325,8 +310,7 @@ def main() -> None:
         print(f"  {corr['error']}")
 
     print("\nSaving CSV...")
-    monthly.write_csv(OUT / "daytype_summary.csv")
-    print(f"  {OUT / 'daytype_summary.csv'}")
+    save_csv(monthly, OUT / "daytype_summary.csv")
 
     print("\nGenerating charts...")
     make_trend_chart(monthly_idx)
@@ -334,7 +318,7 @@ def main() -> None:
     if "merged" in corr:
         make_scatter_chart(corr["merged"])
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

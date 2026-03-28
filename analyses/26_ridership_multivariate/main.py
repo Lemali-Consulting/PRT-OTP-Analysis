@@ -9,8 +9,13 @@ from scipy import stats
 
 from prt_otp_analysis.common import (
     classify_bus_route,
+    correlate,
     output_dir,
+    print_done,
+    print_header,
     query_to_polars,
+    save_chart,
+    save_csv,
     setup_plotting,
 )
 
@@ -276,10 +281,7 @@ def make_coefficient_chart(base: dict, expanded: dict) -> None:
     ax.legend(loc="lower right", fontsize=9)
     ax.invert_yaxis()
 
-    fig.tight_layout()
-    fig.savefig(OUT / "coefficient_comparison.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'coefficient_comparison.png'}")
+    save_chart(fig, OUT / "coefficient_comparison.png")
 
 
 def make_partial_residual_chart(df: pl.DataFrame, base: dict) -> None:
@@ -305,10 +307,7 @@ def make_partial_residual_chart(df: pl.DataFrame, base: dict) -> None:
     ax.set_title("Partial Residual: Does Ridership Explain Remaining OTP Variance?")
     ax.legend(fontsize=9)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "partial_residual.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'partial_residual.png'}")
+    save_chart(fig, OUT / "partial_residual.png")
 
 
 # ---------------------------------------------------------------------------
@@ -317,9 +316,7 @@ def make_partial_residual_chart(df: pl.DataFrame, base: dict) -> None:
 
 def main() -> None:
     """Entry point: load features, fit models, compare, chart, and save."""
-    print("=" * 60)
-    print("Analysis 26: Ridership in Multivariate OTP Model")
-    print("=" * 60)
+    print_header(26, "Ridership in Multivariate OTP Model")
 
     print("\nLoading and assembling features...")
     df = load_features()
@@ -397,9 +394,9 @@ def main() -> None:
     # --- Correlation between ridership and existing predictors ---
     print("\n--- Correlations: log_riders vs structural features ---")
     for feat in base_features:
-        r, p = stats.pearsonr(df[feat].to_numpy().astype(float), df["log_riders"].to_numpy())
-        sig = "*" if p < 0.05 else ""
-        print(f"  log_riders vs {feat:<20s}: r = {r:+.3f}, p = {p:.4f} {sig}")
+        corr = correlate(df, feat, "log_riders")
+        sig = "*" if corr["pearson_p"] < 0.05 else ""
+        print(f"  log_riders vs {feat:<20s}: r = {corr['pearson_r']:+.3f}, p = {corr['pearson_p']:.4f} {sig}")
 
     # --- Save outputs ---
     print("\nSaving CSVs...")
@@ -421,19 +418,19 @@ def main() -> None:
                 "adj_r_squared": model["adj_r_squared"],
                 "n": model["n"],
             })
-    pl.DataFrame(rows).write_csv(OUT / "model_comparison.csv")
-    print(f"  {OUT / 'model_comparison.csv'}")
+    model_comparison_df = pl.DataFrame(rows)
+    save_csv(model_comparison_df, OUT / "model_comparison.csv")
 
     # VIF table
     vif_rows = [{"feature": f, "vif": v} for f, v in vifs.items()]
-    pl.DataFrame(vif_rows).write_csv(OUT / "vif_table.csv")
-    print(f"  {OUT / 'vif_table.csv'}")
+    vif_df = pl.DataFrame(vif_rows)
+    save_csv(vif_df, OUT / "vif_table.csv")
 
     print("\nGenerating charts...")
     make_coefficient_chart(base, expanded)
     make_partial_residual_chart(df, base)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

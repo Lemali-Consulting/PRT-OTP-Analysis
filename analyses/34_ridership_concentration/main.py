@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -136,10 +136,7 @@ def make_charts(pareto: pl.DataFrame, gini_otp: pl.DataFrame) -> None:
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 100)
     ax.legend(loc="lower right")
-    fig.tight_layout()
-    fig.savefig(OUT / "pareto_curve.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'pareto_curve.png'}")
+    save_chart(fig, OUT / "pareto_curve.png")
 
     # --- Gini vs OTP scatter ---
     fig, ax = plt.subplots(figsize=(10, 7))
@@ -160,28 +157,23 @@ def make_charts(pareto: pl.DataFrame, gini_otp: pl.DataFrame) -> None:
         x = bus["gini"].to_list()
         y = bus["avg_otp"].to_list()
         lr = stats.linregress(x, y)
-        r, p = stats.pearsonr(x, y)
+        corr = correlate(bus, "gini", "avg_otp")
         x_line = [min(x), max(x)]
         y_line = [lr.slope * xi + lr.intercept for xi in x_line]
         ax.plot(x_line, y_line, color="#1e40af", linewidth=1.5, linestyle="--",
-                label=f"BUS trend (r={r:.3f}, p={p:.3f})")
+                label=f"BUS trend (r={corr['pearson_r']:.3f}, p={corr['pearson_p']:.3f})")
 
     ax.set_xlabel("Gini Coefficient (ridership concentration)")
     ax.set_ylabel("Average OTP")
     ax.set_title("Route-Level Ridership Concentration vs On-Time Performance")
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
-    fig.tight_layout()
-    fig.savefig(OUT / "gini_vs_otp.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'gini_vs_otp.png'}")
+    save_chart(fig, OUT / "gini_vs_otp.png")
 
 
 def main() -> None:
     """Entry point: load data, compute Pareto and Gini, correlate with OTP."""
-    print("=" * 60)
-    print("Analysis 34: Ridership Concentration (Pareto)")
-    print("=" * 60)
+    print_header(34, "Ridership Concentration (Pareto)")
 
     print("\nLoading stop-level usage (pre-pandemic weekday)...")
     usage = load_stop_usage()
@@ -217,21 +209,18 @@ def main() -> None:
 
     bus = gini_otp.filter(pl.col("mode") == "BUS").drop_nulls(subset=["gini", "avg_otp"])
     if len(bus) >= 3:
-        r, p = stats.pearsonr(bus["gini"].to_list(), bus["avg_otp"].to_list())
-        rho, p_rho = stats.spearmanr(bus["gini"].to_list(), bus["avg_otp"].to_list())
-        print(f"  Bus-only Pearson r = {r:.3f} (p = {p:.3f})")
-        print(f"  Bus-only Spearman rho = {rho:.3f} (p = {p_rho:.3f})")
+        corr = correlate(bus, "gini", "avg_otp")
+        print(f"  Bus-only Pearson r = {corr['pearson_r']:.3f} (p = {corr['pearson_p']:.3f})")
+        print(f"  Bus-only Spearman rho = {corr['spearman_r']:.3f} (p = {corr['spearman_p']:.3f})")
 
     print("\nSaving CSVs...")
-    pareto.write_csv(OUT / "pareto_system.csv")
-    print(f"  Saved {OUT / 'pareto_system.csv'}")
-    gini_otp.write_csv(OUT / "route_gini.csv")
-    print(f"  Saved {OUT / 'route_gini.csv'}")
+    save_csv(pareto, OUT / "pareto_system.csv")
+    save_csv(gini_otp, OUT / "route_gini.csv")
 
     print("\nGenerating charts...")
     make_charts(pareto, gini_otp)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

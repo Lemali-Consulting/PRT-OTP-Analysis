@@ -8,8 +8,13 @@ from scipy import stats
 from prt_otp_analysis.common import (
     PRE_COVID_BASELINE_MONTH,
     classify_bus_route,
+    correlate,
     output_dir,
+    print_done,
+    print_header,
     query_to_polars,
+    save_chart,
+    save_csv,
     setup_plotting,
 )
 
@@ -90,14 +95,14 @@ def analyze(df: pl.DataFrame) -> dict:
     # Correlation: stop count vs recovery delta (bus only)
     bus = df.filter(pl.col("mode") == "BUS").drop_nulls("stop_count")
     if len(bus) > 5:
-        r, p = stats.pearsonr(bus["stop_count"].to_list(), bus["recovery_delta"].to_list())
-        results["stops_recovery_r"] = r
-        results["stops_recovery_p"] = p
+        corr = correlate(bus, "stop_count", "recovery_delta")
+        results["stops_recovery_r"] = corr["pearson_r"]
+        results["stops_recovery_p"] = corr["pearson_p"]
 
     # Regression-to-the-mean test: baseline vs delta
-    r, p = stats.pearsonr(df["baseline_otp"].to_list(), df["recovery_delta"].to_list())
-    results["rtm_r"] = r
-    results["rtm_p"] = p
+    rtm_corr = correlate(df, "baseline_otp", "recovery_delta")
+    results["rtm_r"] = rtm_corr["pearson_r"]
+    results["rtm_p"] = rtm_corr["pearson_p"]
 
     # Kruskal-Wallis test across subtypes (non-parametric, handles unequal groups)
     subtypes = sorted(df["subtype"].unique().to_list())
@@ -129,10 +134,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     ax.set_ylabel("Number of Routes")
     ax.set_title("Distribution of OTP Recovery from Pre-COVID Baseline")
     ax.legend()
-    fig.tight_layout()
-    fig.savefig(OUT / "recovery_distribution.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'recovery_distribution.png'}")
+    save_chart(fig, OUT / "recovery_distribution.png")
 
     # Recovery by subtype box plot
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -153,10 +155,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     ax.axhline(0, color="#dc2626", linewidth=1, linestyle="--", alpha=0.5)
     ax.set_ylabel("OTP Change (Current - Pre-COVID)")
     ax.set_title("COVID Recovery by Route Type")
-    fig.tight_layout()
-    fig.savefig(OUT / "recovery_by_mode.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'recovery_by_mode.png'}")
+    save_chart(fig, OUT / "recovery_by_mode.png")
 
     # Regression-to-the-mean scatter
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -174,17 +173,12 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     ax.set_ylabel("OTP Change (Current - Baseline)")
     ax.set_title("Regression to the Mean Test")
     ax.legend()
-    fig.tight_layout()
-    fig.savefig(OUT / "regression_to_mean.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'regression_to_mean.png'}")
+    save_chart(fig, OUT / "regression_to_mean.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 14: COVID Recovery Trajectories")
-    print("=" * 60)
+    print_header(14, "COVID Recovery Trajectories")
 
     print("\nLoading data...")
     df, current_start, current_end = load_data()
@@ -226,14 +220,12 @@ def main() -> None:
               f"Baseline={row['baseline_otp']:.1%} -> Current={row['current_otp']:.1%} "
               f"({row['recovery_delta']:+.1%})")
 
-    print("\nSaving CSV...")
-    df.write_csv(OUT / "covid_recovery.csv")
-    print(f"  Saved to {OUT / 'covid_recovery.csv'}")
+    save_csv(df, OUT / "covid_recovery.csv")
 
     print("\nGenerating charts...")
     make_charts(df, results)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

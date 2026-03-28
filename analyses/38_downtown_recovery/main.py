@@ -7,7 +7,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, get_db, output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, correlate, get_db, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -136,12 +136,8 @@ def plot_trajectories(df: pl.DataFrame) -> None:
     monthly = (
         df.group_by(["month", "dt_tercile"])
         .agg(
-            (pl.col("indexed") * pl.col("avg_riders")).sum().alias("weighted_sum"),
-            pl.col("avg_riders").sum().alias("total_riders"),
-            pl.col("route_id").n_unique().alias("n_routes"),
-        )
-        .with_columns(
-            (pl.col("weighted_sum") / pl.col("total_riders")).alias("weighted_index")
+            weighted_index=weighted_mean("indexed", "avg_riders"),
+            n_routes=pl.col("route_id").n_unique(),
         )
         .sort("month")
     )
@@ -174,10 +170,7 @@ def plot_trajectories(df: pl.DataFrame) -> None:
     ax.legend(loc="lower right")
     ax.set_ylim(0, 130)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "recovery_trajectories.png", dpi=150, bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'recovery_trajectories.png'}")
+    save_chart(fig, OUT / "recovery_trajectories.png", dpi=150)
 
 
 def plot_scatter(route_df: pl.DataFrame) -> None:
@@ -195,11 +188,11 @@ def plot_scatter(route_df: pl.DataFrame) -> None:
     # Regression line
     mask = np.isfinite(x) & np.isfinite(y)
     if mask.sum() > 5:
-        rho, p_val = stats.spearmanr(x[mask], y[mask])
+        corr = correlate(route_df, "dt_share", "recovery_2024")
         slope, intercept = np.polyfit(x[mask], y[mask], 1)
         x_line = np.linspace(x[mask].min(), x[mask].max(), 100)
         ax.plot(x_line, slope * x_line + intercept, color="#dc2626", linewidth=1.5,
-                linestyle="--", label=f"Spearman ρ = {rho:.2f} (p = {p_val:.3f})")
+                linestyle="--", label=f"Spearman ρ = {corr['spearman_r']:.2f} (p = {corr['spearman_p']:.3f})")
 
     ax.axhline(100, color="gray", linewidth=0.8, linestyle="--", alpha=0.5)
     ax.set_xlabel("Downtown boardings share (% of route total)")
@@ -207,10 +200,7 @@ def plot_scatter(route_df: pl.DataFrame) -> None:
     ax.set_title("Downtown Dependence vs. Ridership Recovery")
     ax.legend()
 
-    fig.tight_layout()
-    fig.savefig(OUT / "scatter_dt_share_vs_recovery.png", dpi=150, bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Saved {OUT / 'scatter_dt_share_vs_recovery.png'}")
+    save_chart(fig, OUT / "scatter_dt_share_vs_recovery.png", dpi=150)
 
 
 def run_tests(route_df: pl.DataFrame) -> pl.DataFrame:
@@ -249,9 +239,7 @@ def run_tests(route_df: pl.DataFrame) -> pl.DataFrame:
 
 def main() -> None:
     """Entry point."""
-    print("=" * 60)
-    print("Analysis 38: Downtown Recovery Gap")
-    print("=" * 60)
+    print_header(38, "Downtown Recovery Gap")
 
     # Step 1: Downtown-dependence scores
     print("\nComputing downtown-dependence scores from stop-level data...")
@@ -303,11 +291,8 @@ def main() -> None:
               f"stat={row['statistic']:.3f}, p={row['p_value']:.4f} {sig}")
 
     # Spearman correlation (continuous)
-    x = route_df["dt_share"].to_numpy()
-    y = route_df["recovery_2024"].to_numpy()
-    mask = np.isfinite(x) & np.isfinite(y)
-    rho, p_val = stats.spearmanr(x[mask], y[mask])
-    print(f"\n  Spearman (dt_share vs recovery): ρ={rho:.3f}, p={p_val:.4f}")
+    corr = correlate(route_df, "dt_share", "recovery_2024")
+    print(f"\n  Spearman (dt_share vs recovery): ρ={corr['spearman_r']:.3f}, p={corr['spearman_p']:.4f}")
 
     # Step 5: Charts
     print("\nGenerating charts...")
@@ -315,14 +300,11 @@ def main() -> None:
     plot_scatter(route_df)
 
     # Step 6: Save CSV
-    route_df.sort("dt_share", descending=True).write_csv(
-        OUT / "route_downtown_scores.csv"
-    )
-    test_results.write_csv(OUT / "statistical_tests.csv")
-    print(f"  Saved {OUT / 'route_downtown_scores.csv'}")
-    print(f"  Saved {OUT / 'statistical_tests.csv'}")
+    sorted_route_df = route_df.sort("dt_share", descending=True)
+    save_csv(sorted_route_df, OUT / "route_downtown_scores.csv")
+    save_csv(test_results, OUT / "statistical_tests.csv")
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":
