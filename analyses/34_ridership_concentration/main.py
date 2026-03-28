@@ -1,9 +1,8 @@
 """Quantify ridership concentration across stops and test whether it correlates with OTP."""
 
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import DATA_DIR, MODE_COLORS, analysis_dir, correlate, gini, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, correlate, gini, mode_scatter, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -123,27 +122,7 @@ def make_charts(pareto: pl.DataFrame, gini_otp: pl.DataFrame) -> None:
 
     # --- Gini vs OTP scatter ---
     fig, ax = plt.subplots(figsize=(10, 7))
-    for mode, color in MODE_COLORS.items():
-        sub = gini_otp.filter(pl.col("mode") == mode)
-        if len(sub) == 0:
-            continue
-        ax.scatter(
-            sub["gini"].to_list(), sub["avg_otp"].to_list(),
-            color=color, label=mode, s=50, alpha=0.7, edgecolors="white", linewidths=0.5,
-        )
-
-    # Bus-only regression
-    bus = gini_otp.filter(pl.col("mode") == "BUS").drop_nulls(subset=["gini", "avg_otp"])
-    if len(bus) >= 3:
-        x = bus["gini"].to_list()
-        y = bus["avg_otp"].to_list()
-        lr = stats.linregress(x, y)
-        corr = correlate(bus, "gini", "avg_otp")
-        x_line = [min(x), max(x)]
-        y_line = [lr.slope * xi + lr.intercept for xi in x_line]
-        ax.plot(x_line, y_line, color="#1e40af", linewidth=1.5, linestyle="--",
-                label=f"BUS trend (r={corr['pearson_r']:.3f}, p={corr['pearson_p']:.3f})")
-
+    mode_scatter(ax, gini_otp, "gini", "avg_otp")
     ax.set_xlabel("Gini Coefficient (ridership concentration)")
     ax.set_ylabel("Average OTP")
     ax.set_title("Route-Level Ridership Concentration vs On-Time Performance")

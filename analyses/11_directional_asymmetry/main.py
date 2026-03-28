@@ -3,9 +3,8 @@
 import math
 
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import MODE_COLORS, analysis_dir, correlate_by_mode, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate_by_mode, mode_scatter, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -77,41 +76,17 @@ def analyze(directional: pl.DataFrame, avg_otp: pl.DataFrame) -> tuple[pl.DataFr
     return result.sort("asymmetry_index", descending=True), results
 
 
-def make_chart(df: pl.DataFrame, results: dict) -> None:
+def make_chart(df: pl.DataFrame) -> None:
     """Generate scatter plot of directional asymmetry vs OTP."""
     plt = setup_plotting()
     fig, ax = plt.subplots(figsize=(10, 7))
-
-    for mode, color in MODE_COLORS.items():
-        subset = df.filter(pl.col("mode") == mode)
-        if len(subset) == 0:
-            continue
-        ax.scatter(
-            subset["asymmetry_index"].to_list(),
-            subset["avg_otp"].to_list(),
-            color=color, label=mode, s=40, alpha=0.7, edgecolors="white", linewidths=0.5,
-        )
-
-    # Bus-only regression line
-    bus = df.filter(pl.col("mode") == "BUS")
-    x_vals = bus["asymmetry_index"].to_list()
-    y_vals = bus["avg_otp"].to_list()
-    if len(x_vals) > 1:
-        reg = stats.linregress(x_vals, y_vals)
-        x_line = [min(x_vals), max(x_vals)]
-        y_line = [reg.slope * xi + reg.intercept for xi in x_line]
-        r_bus = results.get("bus_pearson_r", 0)
-        p_bus = results.get("bus_pearson_p", 1)
-        ax.plot(x_line, y_line, color="#1e40af", linewidth=1.5, linestyle="--",
-                label=f"BUS trend (r={r_bus:.3f}, p={p_bus:.3f})")
-
+    mode_scatter(ax, df, "asymmetry_index", "avg_otp")
     ax.set_xlabel("Directional Asymmetry Index |IB - OB| / (IB + OB)")
     ax.set_ylabel("Average OTP")
     ax.set_title("Directional Trip Asymmetry vs On-Time Performance")
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
     ax.set_xlim(-0.05, 1.05)
-
     save_chart(fig, OUT / "directional_asymmetry.png")
 
 
@@ -145,7 +120,7 @@ def main() -> None:
         save_csv(result, OUT / "directional_asymmetry.csv")
 
     with phase("Generating chart"):
-        make_chart(result, results)
+        make_chart(result)
 
 
 if __name__ == "__main__":

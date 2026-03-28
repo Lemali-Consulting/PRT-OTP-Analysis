@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import MODE_COLORS, analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, mode_scatter, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -138,20 +138,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     plt = setup_plotting()
     # Span vs OTP
     fig, ax = plt.subplots(figsize=(10, 7))
-    for mode, color in MODE_COLORS.items():
-        subset = df.filter(pl.col("mode") == mode)
-        if len(subset) == 0:
-            continue
-        ax.scatter(subset["span_km"].to_list(), subset["avg_otp"].to_list(),
-                   color=color, label=mode, s=40, alpha=0.7, edgecolors="white", linewidths=0.5)
-
-    bus = df.filter(pl.col("mode") == "BUS")
-    x, y = bus["span_km"].to_list(), bus["avg_otp"].to_list()
-    slope, intercept = np.polyfit(x, y, 1)
-    x_line = [min(x), max(x)]
-    ax.plot(x_line, [slope * xi + intercept for xi in x_line],
-            color="#1e40af", linewidth=1.5, linestyle="--",
-            label=f"BUS trend (r={results['bus_span_r']:.3f})")
+    mode_scatter(ax, df, "span_km", "avg_otp")
     ax.set_xlabel("Geographic Span (km)")
     ax.set_ylabel("Average OTP")
     ax.set_title("Route Geographic Span vs On-Time Performance")
@@ -161,6 +148,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
 
     # Density vs OTP (bus only)
     fig, ax = plt.subplots(figsize=(10, 7))
+    bus = df.filter(pl.col("mode") == "BUS")
     bus_dens = bus.filter(pl.col("stop_density").is_not_null())
     ax.scatter(bus_dens["stop_density"].to_list(), bus_dens["avg_otp"].to_list(),
                color="#3b82f6", s=40, alpha=0.7, edgecolors="white", linewidths=0.5)
@@ -181,28 +169,28 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
 @run_analysis(12, "Route Geographic Span vs OTP")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data and computing geographic spans...")
-    df = load_data()
-    print(f"  {len(df)} routes with span, stop count, and OTP data")
+    with phase("Loading data and computing geographic spans"):
+        df = load_data()
+        print(f"  {len(df)} routes with span, stop count, and OTP data")
 
-    print("\nAnalyzing correlations...")
-    results = analyze(df)
-    print(f"\n  Bus-only (primary):")
-    print(f"    Span vs OTP:  Pearson r = {results['bus_span_r']:.4f} (p = {results['bus_span_p']:.4f})")
-    print(f"                  Spearman rho = {results['bus_span_rho']:.4f} (p = {results['bus_span_rho_p']:.4f})")
-    print(f"    n = {results['n_bus']} bus routes")
-    print(f"\n  All-mode (secondary, Simpson's paradox risk):")
-    print(f"    Span vs OTP:  Pearson r = {results['all_span_r']:.4f} (p = {results['all_span_p']:.4f})")
-    print(f"    n = {results['n_all']} routes")
-    print(f"\n  Density vs OTP (bus):          r = {results['density_r']:.4f} (p = {results['density_p']:.4f})")
-    print(f"  Span vs OTP | stop count (bus): r = {results['span_partial_r']:.4f} (p = {results['span_partial_p']:.4f})")
-    print(f"  Stops vs OTP | span (bus):      r = {results['stops_partial_r']:.4f} (p = {results['stops_partial_p']:.4f})")
-    print(f"  Span-stop count collinearity:  r = {results['span_stops_r']:.4f}")
+    with phase("Analyzing correlations"):
+        results = analyze(df)
+        print(f"\n  Bus-only (primary):")
+        print(f"    Span vs OTP:  Pearson r = {results['bus_span_r']:.4f} (p = {results['bus_span_p']:.4f})")
+        print(f"                  Spearman rho = {results['bus_span_rho']:.4f} (p = {results['bus_span_rho_p']:.4f})")
+        print(f"    n = {results['n_bus']} bus routes")
+        print(f"\n  All-mode (secondary, Simpson's paradox risk):")
+        print(f"    Span vs OTP:  Pearson r = {results['all_span_r']:.4f} (p = {results['all_span_p']:.4f})")
+        print(f"    n = {results['n_all']} routes")
+        print(f"\n  Density vs OTP (bus):          r = {results['density_r']:.4f} (p = {results['density_p']:.4f})")
+        print(f"  Span vs OTP | stop count (bus): r = {results['span_partial_r']:.4f} (p = {results['span_partial_p']:.4f})")
+        print(f"  Stops vs OTP | span (bus):      r = {results['stops_partial_r']:.4f} (p = {results['stops_partial_p']:.4f})")
+        print(f"  Span-stop count collinearity:  r = {results['span_stops_r']:.4f}")
 
-    save_csv(df, OUT / "geographic_span.csv")
+        save_csv(df, OUT / "geographic_span.csv")
 
-    print("\nGenerating charts...")
-    make_charts(df, results)
+    with phase("Generating charts"):
+        make_charts(df, results)
 
 
 if __name__ == "__main__":

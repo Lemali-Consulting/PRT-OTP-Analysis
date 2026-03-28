@@ -2,7 +2,7 @@
 
 import polars as pl
 
-from prt_otp_analysis.common import MODE_COLORS, analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, mode_scatter, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -90,12 +90,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     plt = setup_plotting()
     # Scatter: weekend ratio vs OTP
     fig, ax = plt.subplots(figsize=(10, 7))
-    for mode, color in MODE_COLORS.items():
-        subset = df.filter(pl.col("mode") == mode)
-        if len(subset) == 0:
-            continue
-        ax.scatter(subset["weekend_ratio"].to_list(), subset["avg_otp"].to_list(),
-                   color=color, label=mode, s=40, alpha=0.7, edgecolors="white", linewidths=0.5)
+    mode_scatter(ax, df, "weekend_ratio", "avg_otp", trend=False)
     ax.set_xlabel("Weekend/Weekday Service Ratio")
     ax.set_ylabel("Average OTP")
     ax.set_title(f"Weekend Service Ratio vs OTP (r={results['ratio_r']:.3f}, p={results['ratio_p']:.3f})")
@@ -127,25 +122,25 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
 @run_analysis(17, "Weekend vs Weekday Service Profile")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    df = load_data()
-    print(f"  {len(df)} routes with service profile and OTP data")
+    with phase("Loading data"):
+        df = load_data()
+        print(f"  {len(df)} routes with service profile and OTP data")
 
-    print("\nAnalyzing...")
-    results = analyze(df)
-    print(f"  All-mode:  Pearson r = {results['ratio_r']:.4f} (p = {results['ratio_p']:.4f})")
-    print(f"             Spearman rho = {results['ratio_rho']:.4f} (p = {results['ratio_rho_p']:.4f})")
-    print(f"  Bus-only:  Pearson r = {results['bus_ratio_r']:.4f} (p = {results['bus_ratio_p']:.4f}), "
-          f"n = {results['n_bus']}")
-    for tier, key in [("Weekday-heavy", "weekday-heavy"), ("Balanced", "balanced"), ("Weekend-heavy", "weekend-heavy")]:
-        n = results.get(f"{key}_n", 0)
-        if n > 0:
-            print(f"  {tier}: n={n}, mean OTP={results[f'{key}_mean_otp']:.1%}")
+    with phase("Analyzing"):
+        results = analyze(df)
+        print(f"  All-mode:  Pearson r = {results['ratio_r']:.4f} (p = {results['ratio_p']:.4f})")
+        print(f"             Spearman rho = {results['ratio_rho']:.4f} (p = {results['ratio_rho_p']:.4f})")
+        print(f"  Bus-only:  Pearson r = {results['bus_ratio_r']:.4f} (p = {results['bus_ratio_p']:.4f}), "
+              f"n = {results['n_bus']}")
+        for tier, key in [("Weekday-heavy", "weekday-heavy"), ("Balanced", "balanced"), ("Weekend-heavy", "weekend-heavy")]:
+            n = results.get(f"{key}_n", 0)
+            if n > 0:
+                print(f"  {tier}: n={n}, mean OTP={results[f'{key}_mean_otp']:.1%}")
 
-    save_csv(df, OUT / "service_profile.csv")
+        save_csv(df, OUT / "service_profile.csv")
 
-    print("\nGenerating charts...")
-    make_charts(df, results)
+    with phase("Generating charts"):
+        make_charts(df, results)
 
 
 if __name__ == "__main__":

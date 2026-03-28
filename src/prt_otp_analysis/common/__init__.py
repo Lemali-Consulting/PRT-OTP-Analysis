@@ -16,7 +16,7 @@ from prt_otp_analysis.common.db import (
     output_dir,
     query_to_polars,
 )
-from prt_otp_analysis.common.io import analysis_dir, print_done, print_header, run_analysis, save_chart, save_csv
+from prt_otp_analysis.common.io import analysis_dir, phase, print_done, print_header, run_analysis, save_chart, save_csv
 from prt_otp_analysis.common.plotting import (
     BUS_TYPE_COLORS,
     COLOR_GOOD,
@@ -25,6 +25,7 @@ from prt_otp_analysis.common.plotting import (
     COLOR_PRIMARY,
     COLOR_WARNING,
     MODE_COLORS,
+    mode_scatter,
     setup_plotting,
 )
 from prt_otp_analysis.common.schemas import validate
@@ -57,6 +58,7 @@ __all__ = [
     "classify_bus_route",
     "get_db",
     "output_dir",
+    "phase",
     "print_done",
     "print_header",
     "run_analysis",
@@ -66,6 +68,7 @@ __all__ = [
     "correlate",
     "correlate_by_mode",
     "gini",
+    "mode_scatter",
     "setup_plotting",
     "validate",
     "weighted_mean",
