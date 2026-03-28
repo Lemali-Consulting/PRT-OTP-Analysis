@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import get_db, output_dir, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -30,9 +30,9 @@ def load_service_data(conn) -> pl.DataFrame:
     rows = conn.execute("""
         SELECT ntd_id, agency_name, city, state, year, vrh, upt
         FROM ntd_annual_service
-        WHERE year IN (2019, 2023)
+        WHERE year IN (?, 2023)
           AND vrh IS NOT NULL
-    """).fetchall()
+    """, (int(PRE_COVID_BASELINE_YEAR),)).fetchall()
     df = pl.DataFrame([dict(r) for r in rows])
 
     # Pivot to one row per agency with vrh_2019, vrh_2023, upt_2019, upt_2023

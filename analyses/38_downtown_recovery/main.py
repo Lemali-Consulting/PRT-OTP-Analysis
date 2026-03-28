@@ -7,7 +7,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import get_db, output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, get_db, output_dir, query_to_polars, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -17,7 +17,7 @@ DATA_DIR = HERE.parents[1] / "data"
 DT_LAT, DT_LON = 40.4406, -79.9959
 DT_RADIUS_KM = 2.0
 
-BASELINE_YEAR = "2019"
+BASELINE_YEAR = PRE_COVID_BASELINE_YEAR
 
 
 def haversine_km(lat: float, lon: float) -> float:

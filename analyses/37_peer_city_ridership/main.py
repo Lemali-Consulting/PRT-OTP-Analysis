@@ -4,7 +4,7 @@ from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import get_db, output_dir, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, PRE_COVID_BASELINE_YEAR, get_db, output_dir, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -33,7 +33,7 @@ def load_monthly(conn) -> pl.DataFrame:
         SELECT ntd_id, mode, month, SUM(upt) AS upt
         FROM ntd_ridership
         WHERE ntd_id IN ({id_list})
-          AND month >= '2019-01' AND month <= '2025-12'
+          AND month >= '{PRE_COVID_BASELINE_MONTH}' AND month <= '2025-12'
         GROUP BY ntd_id, mode, month
     """).fetchall()
     return pl.DataFrame([dict(r) for r in rows])
@@ -70,7 +70,7 @@ def main():
 
     # Compute 2019 monthly average per agency
     baseline = (
-        totals.filter(pl.col("month").str.starts_with("2019"))
+        totals.filter(pl.col("month").str.starts_with(PRE_COVID_BASELINE_YEAR))
         .group_by("ntd_id")
         .agg(avg_2019=pl.col("upt").mean())
     )
@@ -186,7 +186,7 @@ def main():
     )
 
     mode_2019 = (
-        mode_totals.filter(pl.col("month").str.starts_with("2019"))
+        mode_totals.filter(pl.col("month").str.starts_with(PRE_COVID_BASELINE_YEAR))
         .group_by("ntd_id", "city", "mode_group")
         .agg(avg_2019=pl.col("upt").mean())
     )

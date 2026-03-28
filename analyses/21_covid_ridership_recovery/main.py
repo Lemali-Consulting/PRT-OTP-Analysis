@@ -7,6 +7,7 @@ import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
+    PRE_COVID_BASELINE_MONTH,
     classify_bus_route,
     output_dir,
     query_to_polars,
@@ -16,7 +17,7 @@ from prt_otp_analysis.common import (
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
 
-PRE_COVID_START = "2019-01"
+PRE_COVID_START = PRE_COVID_BASELINE_MONTH
 PRE_COVID_END = "2020-02"
 RECOVERY_START = "2023-01"
 RECOVERY_END = "2024-10"

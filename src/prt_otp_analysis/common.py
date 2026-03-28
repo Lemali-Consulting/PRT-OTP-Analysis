@@ -9,6 +9,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
 DB_PATH = DATA_DIR / "prt.db"
 
+# Pre-COVID baseline: the last full year / month before the pandemic.
+PRE_COVID_BASELINE_YEAR = "2019"
+PRE_COVID_BASELINE_MONTH = "2019-01"
+
 
 def get_db() -> sqlite3.Connection:
     """Return a read-only connection to the PRT database."""

@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, output_dir, query_to_polars, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -44,7 +44,7 @@ def system_monthly(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def index_to_baseline(monthly: pl.DataFrame, baseline_month: str = "2019-01") -> pl.DataFrame:
+def index_to_baseline(monthly: pl.DataFrame, baseline_month: str = PRE_COVID_BASELINE_MONTH) -> pl.DataFrame:
     """Index each day type series to baseline_month = 100."""
     baseline = (
         monthly.filter(pl.col("month") == baseline_month)
@@ -276,7 +276,7 @@ def main() -> None:
         print(f"    {dt:<12s}: {avg:>12,.0f} avg monthly riders")
 
     print("\nIndexing to Jan 2019 baseline...")
-    monthly_idx = index_to_baseline(monthly, "2019-01")
+    monthly_idx = index_to_baseline(monthly, PRE_COVID_BASELINE_MONTH)
 
     # Latest index values
     latest_month = monthly_idx["month"].max()
@@ -290,7 +290,7 @@ def main() -> None:
 
     # Pre-COVID vs latest weekend share
     pre_covid_avg = wk_share.filter(
-        (pl.col("month") >= "2019-01") & (pl.col("month") <= "2020-02")
+        (pl.col("month") >= PRE_COVID_BASELINE_MONTH) & (pl.col("month") <= "2020-02")
     )["weekend_share"].mean()
     post_2023_avg = wk_share.filter(pl.col("month") >= "2023-01")["weekend_share"].mean()
     print(f"\n  Weekend share (pre-COVID, 2019-01 to 2020-02): {pre_covid_avg:.1%}")
