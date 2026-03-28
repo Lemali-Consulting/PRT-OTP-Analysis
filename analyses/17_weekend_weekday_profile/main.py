@@ -3,9 +3,8 @@
 from pathlib import Path
 
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -64,20 +63,18 @@ def analyze(df: pl.DataFrame) -> dict:
     # Filter to routes with weekday service for meaningful ratio
     with_wd = df.filter(pl.col("max_wd") > 0)
 
-    r, p = stats.pearsonr(with_wd["weekend_ratio"].to_list(), with_wd["avg_otp"].to_list())
-    results["ratio_r"] = r
-    results["ratio_p"] = p
-
-    rho, p_rho = stats.spearmanr(with_wd["weekend_ratio"].to_list(), with_wd["avg_otp"].to_list())
-    results["ratio_rho"] = rho
-    results["ratio_rho_p"] = p_rho
+    all_corr = correlate(with_wd, "weekend_ratio", "avg_otp")
+    results["ratio_r"] = all_corr["pearson_r"]
+    results["ratio_p"] = all_corr["pearson_p"]
+    results["ratio_rho"] = all_corr["spearman_r"]
+    results["ratio_rho_p"] = all_corr["spearman_p"]
 
     # Bus-only (avoids Simpson's paradox)
     bus_wd = with_wd.filter(pl.col("mode") == "BUS")
-    r, p = stats.pearsonr(bus_wd["weekend_ratio"].to_list(), bus_wd["avg_otp"].to_list())
-    results["bus_ratio_r"] = r
-    results["bus_ratio_p"] = p
-    results["n_bus"] = len(bus_wd)
+    bus_corr = correlate(bus_wd, "weekend_ratio", "avg_otp")
+    results["bus_ratio_r"] = bus_corr["pearson_r"]
+    results["bus_ratio_p"] = bus_corr["pearson_p"]
+    results["n_bus"] = bus_corr["n"]
 
     # Tier stats
     for tier_label in [f"weekday-heavy (<{WEEKEND_RATIO_LOW})", f"balanced ({WEEKEND_RATIO_LOW}-{WEEKEND_RATIO_HIGH})", f"weekend-heavy (>{WEEKEND_RATIO_HIGH})"]:
@@ -110,10 +107,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
     ax.set_xlim(-0.05, 1.5)
-    fig.tight_layout()
-    fig.savefig(OUT / "weekend_ratio_vs_otp.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'weekend_ratio_vs_otp.png'}")
+    save_chart(fig, OUT / "weekend_ratio_vs_otp.png")
 
     # Box plot by service tier
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -132,17 +126,12 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
         patch.set_alpha(0.6)
     ax.set_ylabel("Average OTP")
     ax.set_title("OTP by Service Profile Tier")
-    fig.tight_layout()
-    fig.savefig(OUT / "service_tier_comparison.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'service_tier_comparison.png'}")
+    save_chart(fig, OUT / "service_tier_comparison.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 17: Weekend vs Weekday Service Profile")
-    print("=" * 60)
+    print_header(17, "Weekend vs Weekday Service Profile")
 
     print("\nLoading data...")
     df = load_data()
@@ -159,14 +148,12 @@ def main() -> None:
         if n > 0:
             print(f"  {tier}: n={n}, mean OTP={results[f'{key}_mean_otp']:.1%}")
 
-    print("\nSaving CSV...")
-    df.write_csv(OUT / "service_profile.csv")
-    print(f"  Saved to {OUT / 'service_profile.csv'}")
+    save_csv(df, OUT / "service_profile.csv")
 
     print("\nGenerating charts...")
     make_charts(df, results)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

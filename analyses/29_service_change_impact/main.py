@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -152,10 +152,7 @@ def make_chart(df: pl.DataFrame) -> None:
     ax.set_title("Service Change Impact on OTP")
     ax.legend(fontsize=9)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "service_change_impact.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'service_change_impact.png'}")
+    save_chart(fig, OUT / "service_change_impact.png")
 
 
 def summarize(df: pl.DataFrame) -> pl.DataFrame:
@@ -176,9 +173,7 @@ def summarize(df: pl.DataFrame) -> pl.DataFrame:
 
 def main() -> None:
     """Entry point: detect schedule change events and measure OTP impact."""
-    print("=" * 60)
-    print("Analysis 29: Service Change Impact on OTP")
-    print("=" * 60)
+    print_header(29, "Service Change Impact on OTP")
 
     print("\nLoading data...")
     sched, otp = load_data()
@@ -241,9 +236,8 @@ def main() -> None:
         print(f"  COVID events: n={len(covid)}, mean delta={covid['otp_delta'].mean():.4f}")
 
     # Correlation: trip_delta vs otp_delta
-    r, r_p = stats.pearsonr(df["trip_delta"].to_list(), otp_deltas)
-    rho, rho_p = stats.spearmanr(df["trip_delta"].to_list(), otp_deltas)
-    print(f"\n  Trip delta vs OTP delta: Pearson r={r:.3f} (p={r_p:.4f}), Spearman rho={rho:.3f} (p={rho_p:.4f})")
+    trip_otp_corr = correlate(df, "trip_delta", "otp_delta")
+    print(f"\n  Trip delta vs OTP delta: Pearson r={trip_otp_corr['pearson_r']:.3f} (p={trip_otp_corr['pearson_p']:.4f}), Spearman rho={trip_otp_corr['spearman_r']:.3f} (p={trip_otp_corr['spearman_p']:.4f})")
 
     print("\nSaving outputs...")
     df.write_csv(OUT / "service_change_events.csv")
@@ -254,7 +248,7 @@ def main() -> None:
     print("\nGenerating chart...")
     make_chart(df)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

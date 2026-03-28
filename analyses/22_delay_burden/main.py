@@ -3,9 +3,8 @@
 from pathlib import Path
 
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -69,9 +68,7 @@ def monthly_system(df: pl.DataFrame) -> pl.DataFrame:
         .agg(
             system_late=pl.col("late_rider_trips").sum(),
             system_total=pl.col("total_rider_trips").sum(),
-            system_otp=(
-                (pl.col("otp") * pl.col("avg_riders")).sum() / pl.col("avg_riders").sum()
-            ),
+            system_otp=weighted_mean("otp", "avg_riders"),
             route_count=pl.col("route_id").n_unique(),
         )
         .sort("month")
@@ -104,10 +101,7 @@ def make_trend_chart(monthly: pl.DataFrame) -> None:
     ax.set_xticks(tick_positions)
     ax.set_xticklabels(tick_labels)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "delay_burden_trend.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'delay_burden_trend.png'}")
+    save_chart(fig, OUT / "delay_burden_trend.png")
 
 
 def make_top10_chart(ranking: pl.DataFrame) -> None:
@@ -132,10 +126,7 @@ def make_top10_chart(ranking: pl.DataFrame) -> None:
     ax.set_xlabel("Cumulative Late Rider-Trips (millions, Jan 2019 - Oct 2024)")
     ax.set_title("Top 10 Routes by Delay Burden")
 
-    fig.tight_layout()
-    fig.savefig(OUT / "top10_burden.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'top10_burden.png'}")
+    save_chart(fig, OUT / "top10_burden.png")
 
 
 def make_rate_vs_burden_chart(ranking: pl.DataFrame) -> None:
@@ -167,8 +158,8 @@ def make_rate_vs_burden_chart(ranking: pl.DataFrame) -> None:
         )
 
     # Spearman rank correlation
-    r_s, p_s = stats.spearmanr(ranking["otp_rank"].to_list(), ranking["burden_rank"].to_list())
-    ax.text(0.05, 0.95, f"Spearman r = {r_s:.3f}\np = {p_s:.4f}",
+    rank_corr = correlate(ranking, "otp_rank", "burden_rank")
+    ax.text(0.05, 0.95, f"Spearman r = {rank_corr['spearman_r']:.3f}\np = {rank_corr['spearman_p']:.4f}",
             transform=ax.transAxes, fontsize=9, va="top",
             bbox=dict(boxstyle="round", facecolor="white", alpha=0.8))
 
@@ -179,17 +170,12 @@ def make_rate_vs_burden_chart(ranking: pl.DataFrame) -> None:
     ax.invert_yaxis()
     ax.legend(loc="lower right", fontsize=8)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "rate_vs_burden.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'rate_vs_burden.png'}")
+    save_chart(fig, OUT / "rate_vs_burden.png")
 
 
 def main() -> None:
     """Entry point: load, compute burden, rank, chart, and save."""
-    print("=" * 60)
-    print("Analysis 22: Passenger-Weighted Delay Burden")
-    print("=" * 60)
+    print_header(22, "Passenger-Weighted Delay Burden")
 
     print("\nLoading data...")
     df = load_data()
@@ -236,17 +222,15 @@ def main() -> None:
     print(f"\n  Top 10 routes account for {top10_late / total_late:.1%} of all late rider-trips")
 
     print("\nSaving CSVs...")
-    ranking.write_csv(OUT / "delay_burden_ranking.csv")
-    print(f"  {OUT / 'delay_burden_ranking.csv'}")
-    monthly.write_csv(OUT / "delay_burden_monthly.csv")
-    print(f"  {OUT / 'delay_burden_monthly.csv'}")
+    save_csv(ranking, OUT / "delay_burden_ranking.csv")
+    save_csv(monthly, OUT / "delay_burden_monthly.csv")
 
     print("\nGenerating charts...")
     make_trend_chart(monthly)
     make_top10_chart(ranking)
     make_rate_vs_burden_chart(ranking)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

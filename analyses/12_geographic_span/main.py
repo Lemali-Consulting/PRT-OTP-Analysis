@@ -7,7 +7,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -95,23 +95,22 @@ def analyze(df: pl.DataFrame) -> dict:
     bus = df.filter(pl.col("mode") == "BUS")
 
     # --- Bus-only correlations (primary, avoids Simpson's paradox) ---
-    r, p = stats.pearsonr(bus["span_km"].to_list(), bus["avg_otp"].to_list())
-    results["bus_span_r"] = r
-    results["bus_span_p"] = p
-    rho, p_rho = stats.spearmanr(bus["span_km"].to_list(), bus["avg_otp"].to_list())
-    results["bus_span_rho"] = rho
-    results["bus_span_rho_p"] = p_rho
+    bus_span_corr = correlate(bus, "span_km", "avg_otp")
+    results["bus_span_r"] = bus_span_corr["pearson_r"]
+    results["bus_span_p"] = bus_span_corr["pearson_p"]
+    results["bus_span_rho"] = bus_span_corr["spearman_r"]
+    results["bus_span_rho_p"] = bus_span_corr["spearman_p"]
 
     # All-mode (secondary, for reference)
-    r, p = stats.pearsonr(df["span_km"].to_list(), df["avg_otp"].to_list())
-    results["all_span_r"] = r
-    results["all_span_p"] = p
+    all_span_corr = correlate(df, "span_km", "avg_otp")
+    results["all_span_r"] = all_span_corr["pearson_r"]
+    results["all_span_p"] = all_span_corr["pearson_p"]
 
     # Stop density vs OTP (bus only, excluding zero-span routes)
     bus_dens = bus.filter(pl.col("stop_density").is_not_null())
-    r, p = stats.pearsonr(bus_dens["stop_density"].to_list(), bus_dens["avg_otp"].to_list())
-    results["density_r"] = r
-    results["density_p"] = p
+    dens_corr = correlate(bus_dens, "stop_density", "avg_otp")
+    results["density_r"] = dens_corr["pearson_r"]
+    results["density_p"] = dens_corr["pearson_p"]
 
     # Partial: span vs OTP controlling for stop count (bus only)
     r, p = partial_corr(
@@ -128,8 +127,8 @@ def analyze(df: pl.DataFrame) -> dict:
     results["stops_partial_p"] = p
 
     # Span vs stop count (collinearity check)
-    r, p = stats.pearsonr(bus["span_km"].to_list(), bus["stop_count"].to_list())
-    results["span_stops_r"] = r
+    span_stops_corr = correlate(bus, "span_km", "stop_count")
+    results["span_stops_r"] = span_stops_corr["pearson_r"]
 
     results["n_all"] = len(df)
     results["n_bus"] = len(bus)
@@ -162,10 +161,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     ax.set_title("Route Geographic Span vs On-Time Performance")
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
-    fig.tight_layout()
-    fig.savefig(OUT / "span_vs_otp.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'span_vs_otp.png'}")
+    save_chart(fig, OUT / "span_vs_otp.png")
 
     # Density vs OTP (bus only)
     fig, ax = plt.subplots(figsize=(10, 7))
@@ -183,17 +179,12 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     ax.set_title("Stop Density vs On-Time Performance (Bus Only)")
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
-    fig.tight_layout()
-    fig.savefig(OUT / "density_vs_otp.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'density_vs_otp.png'}")
+    save_chart(fig, OUT / "density_vs_otp.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 12: Route Geographic Span vs OTP")
-    print("=" * 60)
+    print_header(12, "Route Geographic Span vs OTP")
 
     print("\nLoading data and computing geographic spans...")
     df = load_data()
@@ -213,14 +204,12 @@ def main() -> None:
     print(f"  Stops vs OTP | span (bus):      r = {results['stops_partial_r']:.4f} (p = {results['stops_partial_p']:.4f})")
     print(f"  Span-stop count collinearity:  r = {results['span_stops_r']:.4f}")
 
-    print("\nSaving CSV...")
-    df.write_csv(OUT / "geographic_span.csv")
-    print(f"  Saved to {OUT / 'geographic_span.csv'}")
+    save_csv(df, OUT / "geographic_span.csv")
 
     print("\nGenerating charts...")
     make_charts(df, results)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

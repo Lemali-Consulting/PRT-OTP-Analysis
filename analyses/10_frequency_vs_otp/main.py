@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate_by_mode, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -32,22 +32,15 @@ def load_data() -> pl.DataFrame:
 
 def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
     """Compute Pearson and Spearman correlations, overall and bus-only."""
+    corr = correlate_by_mode(df, "max_trips_wd", "avg_otp")
     results = {}
-
-    # All routes
-    r_all, p_all = stats.pearsonr(df["max_trips_wd"].to_list(), df["avg_otp"].to_list())
-    results["all_pearson_r"] = r_all
-    results["all_pearson_p"] = p_all
-
-    # Bus only
-    bus = df.filter(pl.col("mode") == "BUS")
-    r_bus, p_bus = stats.pearsonr(bus["max_trips_wd"].to_list(), bus["avg_otp"].to_list())
-    rho_bus, p_rho = stats.spearmanr(bus["max_trips_wd"].to_list(), bus["avg_otp"].to_list())
-    results["bus_pearson_r"] = r_bus
-    results["bus_pearson_p"] = p_bus
-    results["bus_spearman_r"] = rho_bus
-    results["bus_spearman_p"] = p_rho
-    results["bus_n"] = len(bus)
+    results["all_pearson_r"] = corr["all"]["pearson_r"]
+    results["all_pearson_p"] = corr["all"]["pearson_p"]
+    results["bus_pearson_r"] = corr["bus"]["pearson_r"]
+    results["bus_pearson_p"] = corr["bus"]["pearson_p"]
+    results["bus_spearman_r"] = corr["bus"]["spearman_r"]
+    results["bus_spearman_p"] = corr["bus"]["spearman_p"]
+    results["bus_n"] = corr["bus"]["n"]
 
     return df, results
 
@@ -88,17 +81,12 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "frequency_vs_otp.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'frequency_vs_otp.png'}")
+    save_chart(fig, OUT / "frequency_vs_otp.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 10: Trip Frequency vs OTP")
-    print("=" * 60)
+    print_header(10, "Trip Frequency vs OTP")
 
     print("\nLoading data...")
     df = load_data()
@@ -112,13 +100,12 @@ def main() -> None:
     print(f"               n = {results['bus_n']} bus routes")
 
     print("\nSaving CSV...")
-    df.write_csv(OUT / "frequency_otp.csv")
-    print(f"  Saved to {OUT / 'frequency_otp.csv'}")
+    save_csv(df, OUT / "frequency_otp.csv")
 
     print("\nGenerating chart...")
     make_chart(df, results)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

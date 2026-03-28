@@ -1,11 +1,12 @@
 """Analysis of inbound vs outbound trip asymmetry and its correlation with OTP."""
 
+import math
 from pathlib import Path
 
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate_by_mode, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -73,30 +74,16 @@ def analyze(directional: pl.DataFrame, avg_otp: pl.DataFrame) -> tuple[pl.DataFr
     result = pivoted.join(avg_otp, on="route_id", how="inner")
 
     # Compute correlations
+    corr = correlate_by_mode(result, "asymmetry_index", "avg_otp")
     results = {}
-
-    # All routes
-    r_all, p_all = stats.pearsonr(
-        result["asymmetry_index"].to_list(), result["avg_otp"].to_list()
-    )
-    results["all_pearson_r"] = r_all
-    results["all_pearson_p"] = p_all
-    results["all_n"] = len(result)
-
-    # Bus only
-    bus = result.filter(pl.col("mode") == "BUS")
-    if len(bus) > 2:
-        r_bus, p_bus = stats.pearsonr(
-            bus["asymmetry_index"].to_list(), bus["avg_otp"].to_list()
-        )
-        rho_bus, p_rho = stats.spearmanr(
-            bus["asymmetry_index"].to_list(), bus["avg_otp"].to_list()
-        )
-        results["bus_pearson_r"] = r_bus
-        results["bus_pearson_p"] = p_bus
-        results["bus_spearman_r"] = rho_bus
-        results["bus_spearman_p"] = p_rho
-        results["bus_n"] = len(bus)
+    results["all_pearson_r"] = corr["all"]["pearson_r"]
+    results["all_pearson_p"] = corr["all"]["pearson_p"]
+    results["all_n"] = corr["all"]["n"]
+    results["bus_pearson_r"] = corr["bus"]["pearson_r"]
+    results["bus_pearson_p"] = corr["bus"]["pearson_p"]
+    results["bus_spearman_r"] = corr["bus"]["spearman_r"]
+    results["bus_spearman_p"] = corr["bus"]["spearman_p"]
+    results["bus_n"] = corr["bus"]["n"]
 
     return result.sort("asymmetry_index", descending=True), results
 
@@ -138,17 +125,12 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
     ax.set_ylim(0, 1)
     ax.set_xlim(-0.05, 1.05)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "directional_asymmetry.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'directional_asymmetry.png'}")
+    save_chart(fig, OUT / "directional_asymmetry.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze asymmetry, chart, and save."""
-    print("=" * 60)
-    print("Analysis 11: Directional Asymmetry")
-    print("=" * 60)
+    print_header(11, "Directional Asymmetry")
 
     print("\nLoading data...")
     directional, avg_otp = load_data()
@@ -162,7 +144,7 @@ def main() -> None:
 
     print(f"  {results['all_n']} routes analyzed (routes with both IB and OB data)")
     print(f"  All routes:  Pearson r = {results['all_pearson_r']:.4f} (p = {results['all_pearson_p']:.4f})")
-    if "bus_pearson_r" in results:
+    if not math.isnan(results["bus_pearson_r"]):
         print(f"  Bus only:    Pearson r = {results['bus_pearson_r']:.4f} (p = {results['bus_pearson_p']:.4f})")
         print(f"               Spearman r = {results['bus_spearman_r']:.4f} (p = {results['bus_spearman_p']:.4f})")
         print(f"               n = {results['bus_n']} bus routes")
@@ -174,14 +156,12 @@ def main() -> None:
               f"IB={row['ib_trips_wd']}, OB={row['ob_trips_wd']}, "
               f"asymmetry={row['asymmetry_index']:.3f}, OTP={row['avg_otp']:.1%}")
 
-    print("\nSaving CSV...")
-    result.write_csv(OUT / "directional_asymmetry.csv")
-    print(f"  Saved to {OUT / 'directional_asymmetry.csv'}")
+    save_csv(result, OUT / "directional_asymmetry.csv")
 
     print("\nGenerating chart...")
     make_chart(result, results)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

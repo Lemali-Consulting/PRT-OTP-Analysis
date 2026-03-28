@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -111,17 +111,12 @@ def make_chart(df: pl.DataFrame, reg: dict) -> None:
     ax.set_title("Service Level vs OTP: Within-Route Longitudinal Panel")
     ax.legend(fontsize=9)
 
-    fig.tight_layout()
-    fig.savefig(OUT / "service_level_scatter.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'service_level_scatter.png'}")
+    save_chart(fig, OUT / "service_level_scatter.png")
 
 
 def main() -> None:
     """Entry point: build panel, compute deltas, regress, and chart."""
-    print("=" * 60)
-    print("Analysis 30: Service Level vs OTP Longitudinal")
-    print("=" * 60)
+    print_header(30, "Service Level vs OTP Longitudinal")
 
     print("\nLoading panel data...")
     panel = load_panel()
@@ -150,7 +145,8 @@ def main() -> None:
     reg_all = run_regression(x_all, y_all)
     print(f"  OLS: slope={reg_all['slope']:.5f} (SE={reg_all['se']:.5f}), r={reg_all['r']:.3f}, p={reg_all['p']:.4f}, n={reg_all['n']}")
 
-    r_s, p_s = stats.spearmanr(x_all, y_all)
+    corr_all = correlate(df, "delta_trips", "detrended_delta_otp")
+    r_s, p_s = corr_all["spearman_r"], corr_all["spearman_p"]
     print(f"  Spearman: rho={r_s:.3f}, p={p_s:.4f}")
 
     # --- Bus only ---
@@ -162,7 +158,8 @@ def main() -> None:
     reg_bus = run_regression(x_bus, y_bus)
     print(f"  OLS: slope={reg_bus['slope']:.5f} (SE={reg_bus['se']:.5f}), r={reg_bus['r']:.3f}, p={reg_bus['p']:.4f}, n={reg_bus['n']}")
 
-    r_sb, p_sb = stats.spearmanr(x_bus, y_bus)
+    corr_bus = correlate(bus, "delta_trips", "detrended_delta_otp")
+    r_sb, p_sb = corr_bus["spearman_r"], corr_bus["spearman_p"]
     print(f"  Spearman: rho={r_sb:.3f}, p={p_sb:.4f}")
 
     # --- Pre vs post COVID ---
@@ -191,7 +188,7 @@ def main() -> None:
     print("\nGenerating chart...")
     make_chart(df, reg_all)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":

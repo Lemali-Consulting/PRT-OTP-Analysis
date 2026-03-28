@@ -1,11 +1,11 @@
 """Transfer hub analysis: do high-connectivity stops have worse OTP?"""
 
+import math
 from pathlib import Path
 
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -28,12 +28,11 @@ def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
     # Per-stop: trip-weighted OTP and route count
     stop_otp = (
         stop_route_otp
-        .with_columns((pl.col("route_avg_otp") * pl.col("trips_wd")).alias("weighted_otp"))
         .group_by("stop_id", "stop_name", "lat", "lon", "muni")
         .agg(
-            (pl.col("weighted_otp").sum() / pl.col("trips_wd").sum()).alias("avg_otp"),
-            pl.col("route_id").n_unique().alias("n_routes"),
-            pl.col("trips_wd").sum().alias("total_trips"),
+            avg_otp=weighted_mean("route_avg_otp", "trips_wd"),
+            n_routes=pl.col("route_id").n_unique(),
+            total_trips=pl.col("trips_wd").sum(),
         )
     )
     stop_otp = stop_otp.with_columns(
@@ -87,28 +86,24 @@ def analyze(stop_df: pl.DataFrame, route_df: pl.DataFrame) -> dict:
         results[f"{key}_median_otp"] = subset["avg_otp"].median()
 
     # Stop-level correlation (inflated n, caveat in output)
-    r, p = stats.pearsonr(clean["n_routes"].to_list(), clean["avg_otp"].to_list())
-    results["stop_connectivity_r"] = r
-    results["stop_connectivity_p"] = p
-    rho, p_rho = stats.spearmanr(clean["n_routes"].to_list(), clean["avg_otp"].to_list())
-    results["stop_connectivity_rho"] = rho
-    results["stop_connectivity_rho_p"] = p_rho
+    stop_corr = correlate(clean, "n_routes", "avg_otp")
+    results["stop_connectivity_r"] = stop_corr["pearson_r"]
+    results["stop_connectivity_p"] = stop_corr["pearson_p"]
+    results["stop_connectivity_rho"] = stop_corr["spearman_r"]
+    results["stop_connectivity_rho_p"] = stop_corr["spearman_p"]
 
     # Route-level correlation (independent observations)
-    r, p = stats.pearsonr(route_df["avg_stop_connectivity"].to_list(),
-                          route_df["route_otp"].to_list())
-    results["route_connectivity_r"] = r
-    results["route_connectivity_p"] = p
+    route_corr = correlate(route_df, "avg_stop_connectivity", "route_otp")
+    results["route_connectivity_r"] = route_corr["pearson_r"]
+    results["route_connectivity_p"] = route_corr["pearson_p"]
     results["n_routes"] = len(route_df)
 
     # Bus-only route-level
     bus = route_df.filter(pl.col("mode") == "BUS")
-    if len(bus) > 5:
-        r, p = stats.pearsonr(bus["avg_stop_connectivity"].to_list(),
-                              bus["route_otp"].to_list())
-        results["bus_route_connectivity_r"] = r
-        results["bus_route_connectivity_p"] = p
-        results["n_bus_routes"] = len(bus)
+    bus_corr = correlate(bus, "avg_stop_connectivity", "route_otp", min_n=6)
+    results["bus_route_connectivity_r"] = bus_corr["pearson_r"]
+    results["bus_route_connectivity_p"] = bus_corr["pearson_p"]
+    results["n_bus_routes"] = bus_corr["n"]
 
     return results
 
@@ -131,10 +126,7 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
                  f"route-level r={results['route_connectivity_r']:.3f})")
     ax.legend(fontsize=9)
     ax.set_ylim(0.4, 1.0)
-    fig.tight_layout()
-    fig.savefig(OUT / "connectivity_vs_otp.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'connectivity_vs_otp.png'}")
+    save_chart(fig, OUT / "connectivity_vs_otp.png")
 
     # Hub tier box plot
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -148,17 +140,12 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
         patch.set_alpha(0.6)
     ax.set_ylabel("Trip-Weighted Average OTP")
     ax.set_title("OTP by Stop Connectivity Tier")
-    fig.tight_layout()
-    fig.savefig(OUT / "hub_tier_comparison.png", bbox_inches="tight")
-    plt.close(fig)
-    print(f"  Chart saved to {OUT / 'hub_tier_comparison.png'}")
+    save_chart(fig, OUT / "hub_tier_comparison.png")
 
 
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("=" * 60)
-    print("Analysis 16: Transfer Hub Performance")
-    print("=" * 60)
+    print_header(16, "Transfer Hub Performance")
 
     print("\nLoading data...")
     stop_df, route_df = load_data()
@@ -177,7 +164,7 @@ def main() -> None:
     print(f"    Spearman rho = {results['stop_connectivity_rho']:.4f} (p = {results['stop_connectivity_rho_p']:.4f})")
     print(f"\n  Route-level (n={results['n_routes']}, independent observations):")
     print(f"    Pearson r = {results['route_connectivity_r']:.4f} (p = {results['route_connectivity_p']:.4f})")
-    if "bus_route_connectivity_r" in results:
+    if not math.isnan(results["bus_route_connectivity_r"]):
         print(f"\n  Route-level, bus only (n={results['n_bus_routes']}):")
         print(f"    Pearson r = {results['bus_route_connectivity_r']:.4f} "
               f"(p = {results['bus_route_connectivity_p']:.4f})")
@@ -189,14 +176,12 @@ def main() -> None:
         print(f"  {row['stop_name']:<40s} {row['n_routes']} routes, "
               f"OTP={row['avg_otp']:.1%}, {row['total_trips']} trips/wk")
 
-    print("\nSaving CSV...")
-    stop_df.write_csv(OUT / "hub_performance.csv")
-    print(f"  Saved to {OUT / 'hub_performance.csv'}")
+    save_csv(stop_df, OUT / "hub_performance.csv")
 
     print("\nGenerating charts...")
     make_charts(stop_df, results)
 
-    print("\nDone.")
+    print_done()
 
 
 if __name__ == "__main__":
