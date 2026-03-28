@@ -1,17 +1,14 @@
 """Test whether downtown-dependent routes explain Pittsburgh's poor ridership recovery."""
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, correlate, get_db, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import DATA_DIR, PRE_COVID_BASELINE_YEAR, analysis_dir, correlate, get_db, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / "data"
+OUT = analysis_dir(__file__)
 
 # Downtown Pittsburgh centroid (matches analysis 33)
 DT_LAT, DT_LON = 40.4406, -79.9959
@@ -237,9 +234,9 @@ def run_tests(route_df: pl.DataFrame) -> pl.DataFrame:
     return pl.DataFrame(results)
 
 
+@run_analysis(38, "Downtown Recovery Gap")
 def main() -> None:
     """Entry point."""
-    print_header(38, "Downtown Recovery Gap")
 
     # Step 1: Downtown-dependence scores
     print("\nComputing downtown-dependence scores from stop-level data...")
@@ -303,8 +300,6 @@ def main() -> None:
     sorted_route_df = route_df.sort("dt_share", descending=True)
     save_csv(sorted_route_df, OUT / "route_downtown_scores.csv")
     save_csv(test_results, OUT / "statistical_tests.csv")
-
-    print_done()
 
 
 if __name__ == "__main__":

@@ -1,14 +1,11 @@
 """Analysis 25: Measure ridership concentration on low-OTP routes using Lorenz curves and Gini coefficients."""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12
 
@@ -228,9 +225,9 @@ def make_quintile_chart(quintiles_all: pl.DataFrame, quintiles_bus: pl.DataFrame
     save_chart(fig, OUT / "quintile_summary.png")
 
 
+@run_analysis(25, "Ridership Concentration & Equity")
 def main() -> None:
     """Entry point: load data, compute Lorenz/Gini, quintiles, chart, and save."""
-    print_header(25, "Ridership Concentration & Equity")
 
     print("\nLoading data...")
     df = load_data()
@@ -296,8 +293,6 @@ def main() -> None:
     print("\nGenerating charts...")
     make_lorenz_chart(lorenz_all, lorenz_bus)
     make_quintile_chart(quintiles_all, quintiles_bus)
-
-    print_done()
 
 
 if __name__ == "__main__":

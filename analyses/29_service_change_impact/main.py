@@ -1,15 +1,12 @@
 """Analysis 29: Do schedule changes (pick period transitions) correlate with OTP shifts?"""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 WINDOW = 3  # months before/after a schedule change to average
 
@@ -171,9 +168,9 @@ def summarize(df: pl.DataFrame) -> pl.DataFrame:
     return summary
 
 
+@run_analysis(29, "Service Change Impact on OTP")
 def main() -> None:
     """Entry point: detect schedule change events and measure OTP impact."""
-    print_header(29, "Service Change Impact on OTP")
 
     print("\nLoading data...")
     sched, otp = load_data()
@@ -245,8 +242,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(df)
-
-    print_done()
 
 
 if __name__ == "__main__":

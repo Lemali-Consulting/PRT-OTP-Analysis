@@ -1,13 +1,10 @@
 """Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies; rank PRT."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, get_db, output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, analysis_dir, get_db, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 PRT_NTD_ID = 30022
 MIN_MONTHS = 10  # require at least 10 months of data per year
@@ -44,11 +41,10 @@ def load_agency_totals(conn) -> pl.DataFrame:
     return wide
 
 
+@run_analysis(36, "National Ridership Growth (2019 vs 2024)")
 def main():
     plt = setup_plotting()
     conn = get_db()
-
-    print_header(36, "National Ridership Growth (2019 vs 2024)")
 
     # Load data
     print("\n1. Loading agency totals...")
@@ -156,8 +152,6 @@ def main():
     print("\n   Bottom 10:")
     for row in result.tail(10).iter_rows(named=True):
         print(f"   {row['rank']:>3d}. {row['agency_name']:<50s} {row['pct_change']:>+7.1f}%")
-
-    print_done()
 
 
 if __name__ == "__main__":

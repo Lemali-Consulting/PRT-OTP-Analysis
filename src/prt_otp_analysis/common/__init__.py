@@ -16,7 +16,7 @@ from prt_otp_analysis.common.db import (
     output_dir,
     query_to_polars,
 )
-from prt_otp_analysis.common.io import print_done, print_header, save_chart, save_csv
+from prt_otp_analysis.common.io import analysis_dir, print_done, print_header, run_analysis, save_chart, save_csv
 from prt_otp_analysis.common.plotting import (
     BUS_TYPE_COLORS,
     COLOR_GOOD,
@@ -53,11 +53,13 @@ __all__ = [
     "COLOR_PRIMARY",
     "COLOR_WARNING",
     "MODE_COLORS",
+    "analysis_dir",
     "classify_bus_route",
     "get_db",
     "output_dir",
     "print_done",
     "print_header",
+    "run_analysis",
     "query_to_polars",
     "save_chart",
     "save_csv",

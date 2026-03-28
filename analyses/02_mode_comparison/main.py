@@ -1,7 +1,5 @@
 """Mode and route-type comparison: BUS vs RAIL, local vs limited vs express, with statistical tests."""
 
-from pathlib import Path
-
 import polars as pl
 from scipy.stats import mannwhitneyu, ttest_rel
 
@@ -9,19 +7,17 @@ from prt_otp_analysis.common import (
     BUS_TYPE_COLORS,
     CONFIDENCE_95_PERCENTILE,
     MODE_COLORS,
+    analysis_dir,
     classify_bus_route,
-    output_dir,
-    print_done,
-    print_header,
     query_to_polars,
+    run_analysis,
     save_chart,
     save_csv,
     setup_plotting,
     weighted_mean,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -> pl.DataFrame:
@@ -273,10 +269,9 @@ def make_chart(
     save_chart(fig, OUT / "mode_comparison.png")
 
 
+@run_analysis(2, "Mode Comparison")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(2, "Mode Comparison")
-
     print("\nLoading data...")
     df = load_data()
     print(f"  {len(df):,} OTP observations loaded")
@@ -325,8 +320,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(mode_monthly, bus_monthly, paired)
-
-    print_done()
 
 
 if __name__ == "__main__":

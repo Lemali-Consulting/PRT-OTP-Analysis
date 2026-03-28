@@ -1,25 +1,22 @@
 """Multivariate OLS model combining structural predictors of OTP."""
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
+    analysis_dir,
     classify_bus_route,
-    output_dir,
-    print_done,
-    print_header,
     query_to_polars,
+    run_analysis,
     save_chart,
     save_csv,
     setup_plotting,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -240,10 +237,9 @@ def make_charts(df: pl.DataFrame, results: dict, y_hat: np.ndarray) -> None:
     save_chart(fig, OUT / "predicted_vs_actual.png")
 
 
+@run_analysis(18, "Multivariate OTP Model")
 def main() -> None:
     """Entry point: load features, fit models, report, and visualize."""
-    print_header(18, "Multivariate OTP Model")
-
     print("\nLoading and assembling features...")
     df = load_features()
     n_rail = len(df.filter(pl.col("is_rail") == 1.0))
@@ -295,8 +291,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(df, full_results, y_hat_full)
-
-    print_done()
 
 
 if __name__ == "__main__":

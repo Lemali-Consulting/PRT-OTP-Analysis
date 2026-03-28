@@ -1,16 +1,13 @@
 """Cluster routes by detrended OTP time-series correlation to find co-moving groups."""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
 from scipy.spatial.distance import squareform
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 36
 MIN_OVERLAP = 24
@@ -166,10 +163,9 @@ def make_heatmap(corr: np.ndarray, route_ids: list[str], labels: np.ndarray) -> 
     save_chart(fig, OUT / "correlation_heatmap.png")
 
 
+@run_analysis(13, "Cross-Route Correlation Clustering")
 def main() -> None:
     """Entry point: load, detrend, correlate, cluster, and visualize."""
-    print_header(13, "Cross-Route Correlation Clustering")
-
     print("\nLoading data...")
     otp, stop_counts = load_data()
 
@@ -222,8 +218,6 @@ def main() -> None:
     print("\nGenerating charts...")
     make_dendrogram(linkage_matrix, route_ids, route_meta)
     make_heatmap(corr, route_ids, labels)
-
-    print_done()
 
 
 if __name__ == "__main__":

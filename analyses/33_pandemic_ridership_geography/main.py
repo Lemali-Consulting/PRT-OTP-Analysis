@@ -1,17 +1,14 @@
 """Map the spatial pattern of stop-level ridership loss and recovery during the pandemic."""
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / "data"
+OUT = analysis_dir(__file__)
 
 # Downtown Pittsburgh centroid
 DT_LAT, DT_LON = 40.4406, -79.9959
@@ -186,9 +183,9 @@ def make_charts(df: pl.DataFrame) -> None:
     save_chart(fig, OUT / "change_by_zone.png")
 
 
+@run_analysis(33, "Pandemic Ridership Geography")
 def main() -> None:
     """Entry point: load data, analyze pandemic ridership geography."""
-    print_header(33, "Pandemic Ridership Geography")
 
     print("\nLoading and computing stop-level pandemic changes...")
     df = load_data()
@@ -261,8 +258,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(df)
-
-    print_done()
 
 
 if __name__ == "__main__":

@@ -1,16 +1,14 @@
 """Analysis 23: Compare OTP and ridership across PRT garages to surface operational differences."""
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12
 
@@ -337,9 +335,9 @@ def controlled_garage_test(route_df: pl.DataFrame) -> dict:
     }
 
 
+@run_analysis(23, "Garage-Level Performance")
 def main() -> None:
     """Entry point: load, summarize, test, chart, and save."""
-    print_header(23, "Garage-Level Performance")
 
     print("\nLoading data...")
     df = load_data()
@@ -408,8 +406,6 @@ def main() -> None:
     print("\nGenerating charts...")
     make_trend_chart(monthly)
     make_boxplot(route_df)
-
-    print_done()
 
 
 if __name__ == "__main__":

@@ -1,26 +1,22 @@
 """Analysis 21: Compare ridership recovery trajectories with OTP recovery trajectories post-COVID."""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
     PRE_COVID_BASELINE_MONTH,
+    analysis_dir,
     classify_bus_route,
     correlate,
-    output_dir,
-    print_done,
-    print_header,
     query_to_polars,
+    run_analysis,
     save_chart,
     save_csv,
     setup_plotting,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 PRE_COVID_START = PRE_COVID_BASELINE_MONTH
 PRE_COVID_END = "2020-02"
@@ -232,9 +228,9 @@ def make_subtype_chart(df: pl.DataFrame) -> None:
     save_chart(fig, OUT / "recovery_by_subtype.png")
 
 
+@run_analysis(21, "COVID Ridership vs OTP Recovery")
 def main() -> None:
     """Entry point: load, analyze, chart, and save."""
-    print_header(21, "COVID Ridership vs OTP Recovery")
 
     print("\nLoading data...")
     df = load_data()
@@ -301,8 +297,6 @@ def main() -> None:
     print("\nGenerating charts...")
     make_scatter(df, results)
     make_subtype_chart(df)
-
-    print_done()
 
 
 if __name__ == "__main__":

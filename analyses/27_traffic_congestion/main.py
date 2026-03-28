@@ -1,26 +1,23 @@
 """Analysis 27: Test whether PennDOT AADT traffic volume explains OTP variance beyond structural features."""
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
+    analysis_dir,
     classify_bus_route,
     correlate,
-    output_dir,
-    print_done,
-    print_header,
     query_to_polars,
+    run_analysis,
     save_chart,
     save_csv,
     setup_plotting,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12
 MIN_MATCH_RATE = 0.3
@@ -339,9 +336,9 @@ def make_partial_residual_chart(df: pl.DataFrame, base: dict) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+@run_analysis(27, "Traffic Congestion and OTP")
 def main() -> None:
     """Entry point: load features, fit models, compare, chart, and save."""
-    print_header(27, "Traffic Congestion and OTP")
 
     print("\nLoading and assembling features...")
     df_all = load_features()
@@ -491,8 +488,6 @@ def main() -> None:
     make_scatter_chart(df)
     make_coefficient_chart(base, expanded)
     make_partial_residual_chart(df, base)
-
-    print_done()
 
 
 if __name__ == "__main__":

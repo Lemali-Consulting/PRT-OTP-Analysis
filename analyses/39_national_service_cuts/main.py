@@ -1,13 +1,10 @@
 """Compare 2019-to-2023 service changes (VRH) across 150 largest US transit agencies; rank PRT."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_YEAR, get_db, output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_YEAR, analysis_dir, get_db, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 PRT_NTD_ID = 30022
 TOP_N = 150
@@ -45,11 +42,10 @@ def load_service_data(conn) -> pl.DataFrame:
     return wide
 
 
+@run_analysis(39, "National Service Cuts (2019 vs 2023)")
 def main():
     plt = setup_plotting()
     conn = get_db()
-
-    print_header(39, "National Service Cuts (2019 vs 2023)")
 
     # Load data
     print("\n1. Loading service data...")
@@ -280,8 +276,6 @@ def main():
     print("\n   Bottom 10:")
     for row in result.tail(10).iter_rows(named=True):
         print(f"   {row['rank']:>3d}. {row['agency_name']:<50s} VRH: {row['vrh_pct_change']:>+7.1f}%")
-
-    print_done()
 
 
 if __name__ == "__main__":

@@ -1,14 +1,11 @@
 """Scatter analysis of route stop count versus average on-time performance."""
 
-from pathlib import Path
-
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import MODE_COLORS, correlate_by_mode, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, analysis_dir, correlate_by_mode, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -> pl.DataFrame:
@@ -82,10 +79,9 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
     save_chart(fig, OUT / "stop_count_vs_otp.png")
 
 
+@run_analysis(7, "Stop Count vs OTP")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(7, "Stop Count vs OTP")
-
     print("\nLoading data...")
     df = load_data()
     print(f"  {len(df)} routes with both stop count and OTP data")
@@ -102,8 +98,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(df, results)
-
-    print_done()
 
 
 if __name__ == "__main__":

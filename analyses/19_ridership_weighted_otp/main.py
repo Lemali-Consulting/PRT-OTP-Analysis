@@ -1,14 +1,11 @@
 """Analysis 19: Compare system OTP under three weighting schemes -- unweighted, trip-weighted, and ridership-weighted."""
 
-from pathlib import Path
-
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12
 
@@ -134,10 +131,9 @@ def make_chart(monthly: pl.DataFrame) -> None:
     save_chart(fig, OUT / "ridership_weighted_otp_trend.png")
 
 
+@run_analysis(19, "Ridership-Weighted OTP")
 def main() -> None:
     """Entry point: load data, compute weighted OTP series, test, chart, and save."""
-    print_header(19, "Ridership-Weighted OTP")
-
     print("\nLoading data...")
     df = load_data()
     n_routes = df["route_id"].n_unique()
@@ -166,8 +162,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(monthly)
-
-    print_done()
 
 
 if __name__ == "__main__":

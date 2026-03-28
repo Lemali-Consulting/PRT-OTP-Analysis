@@ -1,15 +1,11 @@
 """Analyze net boarding-alighting flows by stop to identify trip generators and attractors."""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / "data"
+OUT = analysis_dir(__file__)
 
 
 def load_stop_flows() -> pl.DataFrame:
@@ -162,9 +158,9 @@ def make_charts(df: pl.DataFrame) -> None:
     save_chart(fig, OUT / "top_generators_attractors.png")
 
 
+@run_analysis(35, "Boarding/Alighting Flow Analysis")
 def main() -> None:
     """Entry point: load data, analyze boarding/alighting flows, chart."""
-    print_header(35, "Boarding/Alighting Flow Analysis")
 
     print("\nLoading stop-level flows (pre-pandemic weekday)...")
     df = load_stop_flows()
@@ -213,8 +209,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(df)
-
-    print_done()
 
 
 if __name__ == "__main__":

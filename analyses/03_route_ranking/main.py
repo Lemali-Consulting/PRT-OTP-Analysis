@@ -1,15 +1,12 @@
 """Route ranking by average OTP, trend slope, and volatility."""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import MODE_COLORS, Z_CRITICAL_95, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, Z_CRITICAL_95, analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12  # minimum months of data to include in rankings
 POST_COVID_START = "2022-01"  # start of post-COVID period for slope calculation
@@ -230,10 +227,9 @@ def make_chart(df: pl.DataFrame) -> None:
     save_chart(fig, OUT / "top_bottom_routes.png")
 
 
+@run_analysis(3, "Route Ranking")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(3, "Route Ranking")
-
     print("\nLoading data...")
     otp, stop_counts = load_data()
     print(f"  {len(otp):,} OTP observations, {len(stop_counts)} routes with stop data")
@@ -269,8 +265,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(result)
-
-    print_done()
 
 
 if __name__ == "__main__":

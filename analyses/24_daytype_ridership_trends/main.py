@@ -1,14 +1,11 @@
 """Analysis 24: Compare weekday, Saturday, and Sunday ridership trends and correlate weekend share with OTP."""
 
-from pathlib import Path
-
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_ridership() -> pl.DataFrame:
@@ -239,9 +236,9 @@ def make_scatter_chart(merged: pl.DataFrame) -> None:
     save_chart(fig, OUT / "weekend_share_vs_otp.png")
 
 
+@run_analysis(24, "Weekday vs Weekend Ridership Trends")
 def main() -> None:
     """Entry point: load data, compute trends, correlate, chart, and save."""
-    print_header(24, "Weekday vs Weekend Ridership Trends")
 
     print("\nLoading ridership data...")
     ride_df = load_ridership()
@@ -317,8 +314,6 @@ def main() -> None:
     make_weekend_share_chart(wk_share)
     if "merged" in corr:
         make_scatter_chart(corr["merged"])
-
-    print_done()
 
 
 if __name__ == "__main__":

@@ -1,15 +1,12 @@
 """Analysis 20: Test whether OTP declines predict subsequent ridership losses using lagged cross-correlation and Granger causality."""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from statsmodels.tsa.stattools import adfuller, grangercausalitytests
 
-from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 36
 MAX_LAG = 6
@@ -257,10 +254,9 @@ def make_granger_chart(gdf: pl.DataFrame) -> None:
     save_chart(fig, OUT / "granger_summary.png")
 
 
+@run_analysis(20, "OTP -> Ridership Causality")
 def main() -> None:
     """Entry point: load, detrend, cross-correlate, Granger test, chart, and save."""
-    print_header(20, "OTP -> Ridership Causality")
-
     print("\nLoading data...")
     df = load_data()
     n_routes = df["route_id"].n_unique()
@@ -310,8 +306,6 @@ def main() -> None:
     print("\nGenerating charts...")
     make_crosscorr_chart(agg)
     make_granger_chart(gdf)
-
-    print_done()
 
 
 if __name__ == "__main__":

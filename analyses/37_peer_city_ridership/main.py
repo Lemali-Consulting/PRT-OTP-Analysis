@@ -1,13 +1,10 @@
 """Compare Pittsburgh's ridership trajectory to 7 peer cities using NTD monthly data."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_MONTH, PRE_COVID_BASELINE_YEAR, get_db, output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import PEERS, PRE_COVID_BASELINE_MONTH, PRE_COVID_BASELINE_YEAR, analysis_dir, get_db, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 # NTD mode codes for bus vs rail breakdown
 BUS_MODES = {"MB", "CB", "RB", "TB"}  # motorbus, commuter bus, rapid bus, trolleybus
@@ -27,11 +24,10 @@ def load_monthly(conn) -> pl.DataFrame:
     return pl.DataFrame([dict(r) for r in rows])
 
 
+@run_analysis(37, "Peer City Ridership Comparison")
 def main():
     plt = setup_plotting()
     conn = get_db()
-
-    print_header(37, "Peer City Ridership Comparison")
 
     # Load data
     print("\n1. Loading monthly data for peer agencies...")
@@ -226,8 +222,6 @@ def main():
     for row in mode_recovery.iter_rows(named=True):
         marker = " <<<" if row["ntd_id"] == 30022 else ""
         print(f"   {row['city']:<15s} {row['mode_group']:<6s} {row['recovery_pct']:>6.1f}%{marker}")
-
-    print_done()
 
 
 if __name__ == "__main__":

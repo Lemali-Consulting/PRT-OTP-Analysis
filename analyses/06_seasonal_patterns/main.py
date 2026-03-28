@@ -1,13 +1,10 @@
 """Seasonal decomposition of OTP into trend, seasonal, and residual components."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 # OTP color-scale bounds for the seasonal heatmap.
 OTP_HEATMAP_VMIN = 0.3
@@ -211,10 +208,9 @@ def make_chart(
     save_chart(fig, OUT / "seasonal_patterns.png")
 
 
+@run_analysis(6, "Seasonal Patterns")
 def main() -> None:
     """Entry point: load data, analyze seasonal patterns, chart, and save."""
-    print_header(6, "Seasonal Patterns")
-
     print("\nLoading data...")
     df = load_data()
     print(f"  {len(df):,} OTP observations loaded")
@@ -241,8 +237,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(system_seasonal, route_seasonal, route_amplitude)
-
-    print_done()
 
 
 if __name__ == "__main__":

@@ -1,8 +1,44 @@
 """Console output helpers and file-saving wrappers for analysis scripts."""
 
+import functools
 from pathlib import Path
+from typing import Callable
 
 import polars as pl
+
+
+def analysis_dir(caller_file: str) -> Path:
+    """Return the output/ directory for the analysis that owns *caller_file*.
+
+    Replaces the two-line ``HERE = Path(__file__).resolve().parent`` /
+    ``OUT = output_dir(HERE)`` boilerplate.  Usage::
+
+        OUT = analysis_dir(__file__)
+    """
+    here = Path(caller_file).resolve().parent
+    out = here / "output"
+    out.mkdir(parents=True, exist_ok=True)
+    return out
+
+
+def run_analysis(number: int | str, title: str) -> Callable:
+    """Decorator that prints a header/done banner around an analysis entry point.
+
+    Usage::
+
+        @run_analysis(7, "Stop Count vs OTP")
+        def main() -> None:
+            ...
+    """
+    def decorator(fn: Callable) -> Callable:
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            print_header(number, title)
+            result = fn(*args, **kwargs)
+            print_done()
+            return result
+        return wrapper
+    return decorator
 
 
 def print_header(number: int | str, title: str) -> None:

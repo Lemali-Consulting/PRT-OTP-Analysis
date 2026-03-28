@@ -1,13 +1,10 @@
 """Neighborhood equity analysis: OTP aggregated by geography."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12  # minimum months of OTP data per route
 
@@ -282,10 +279,9 @@ def make_comparison_chart(hood_summary: pl.DataFrame) -> None:
     save_chart(fig, OUT / "weighted_vs_unweighted_otp.png")
 
 
+@run_analysis(4, "Neighborhood Equity")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(4, "Neighborhood Equity")
-
     print("\nLoading data...")
     df = load_data()
     print(f"  {len(df):,} route-stop records loaded (route-level avg OTP, {MIN_MONTHS}+ months, non-null trips_7d)")
@@ -378,8 +374,6 @@ def main() -> None:
     print("\nGenerating charts...")
     make_chart(hood_summary, quintile_ts)
     make_comparison_chart(hood_summary)
-
-    print_done()
 
 
 if __name__ == "__main__":

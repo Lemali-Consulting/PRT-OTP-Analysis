@@ -1,14 +1,12 @@
 """Transfer hub analysis: do high-connectivity stops have worse OTP?"""
 
 import math
-from pathlib import Path
 
 import polars as pl
 
-from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
@@ -143,10 +141,9 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     save_chart(fig, OUT / "hub_tier_comparison.png")
 
 
+@run_analysis(16, "Transfer Hub Performance")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(16, "Transfer Hub Performance")
-
     print("\nLoading data...")
     stop_df, route_df = load_data()
     print(f"  {len(stop_df)} stops with OTP and connectivity data")
@@ -180,8 +177,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(stop_df, results)
-
-    print_done()
 
 
 if __name__ == "__main__":

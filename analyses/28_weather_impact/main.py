@@ -1,15 +1,12 @@
 """Analysis 28: Test whether weather explains OTP variance or the counterintuitive seasonal pattern."""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 COMPLETE_YEAR_START = "2019-01"
 COMPLETE_YEAR_END = "2024-12"
@@ -662,9 +659,9 @@ def save_model_comparison(block_a_reg: dict, block_b_results: dict, block_c_resu
 # Main
 # ---------------------------------------------------------------------------
 
+@run_analysis(28, "Weather Impact on OTP")
 def main() -> None:
     """Entry point: load data, run three analysis blocks, chart, and save."""
-    print_header(28, "Weather Impact on OTP")
 
     print("\nLoading data...")
     system = load_system_otp()
@@ -695,8 +692,6 @@ def main() -> None:
     # Save model comparison
     print("\nSaving CSVs...")
     save_model_comparison(None, block_b_results, block_c_results)
-
-    print_done()
 
 
 if __name__ == "__main__":

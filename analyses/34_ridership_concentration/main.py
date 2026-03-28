@@ -1,15 +1,11 @@
 """Quantify ridership concentration across stops and test whether it correlates with OTP."""
 
-from pathlib import Path
-
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import MODE_COLORS, correlate, gini, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, MODE_COLORS, analysis_dir, correlate, gini, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / "data"
+OUT = analysis_dir(__file__)
 
 
 def load_stop_usage() -> pl.DataFrame:
@@ -156,9 +152,9 @@ def make_charts(pareto: pl.DataFrame, gini_otp: pl.DataFrame) -> None:
     save_chart(fig, OUT / "gini_vs_otp.png")
 
 
+@run_analysis(34, "Ridership Concentration (Pareto)")
 def main() -> None:
     """Entry point: load data, compute Pareto and Gini, correlate with OTP."""
-    print_header(34, "Ridership Concentration (Pareto)")
 
     print("\nLoading stop-level usage (pre-pandemic weekday)...")
     usage = load_stop_usage()
@@ -204,8 +200,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(pareto, gini_otp)
-
-    print_done()
 
 
 if __name__ == "__main__":

@@ -1,13 +1,10 @@
 """Analysis 22: Estimate late rider-trips per route per month to identify where the most total human impact occurs."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -> pl.DataFrame:
@@ -173,9 +170,9 @@ def make_rate_vs_burden_chart(ranking: pl.DataFrame) -> None:
     save_chart(fig, OUT / "rate_vs_burden.png")
 
 
+@run_analysis(22, "Passenger-Weighted Delay Burden")
 def main() -> None:
     """Entry point: load, compute burden, rank, chart, and save."""
-    print_header(22, "Passenger-Weighted Delay Burden")
 
     print("\nLoading data...")
     df = load_data()
@@ -229,8 +226,6 @@ def main() -> None:
     make_trend_chart(monthly)
     make_top10_chart(ranking)
     make_rate_vs_burden_chart(ranking)
-
-    print_done()
 
 
 if __name__ == "__main__":

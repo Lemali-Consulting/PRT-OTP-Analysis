@@ -1,25 +1,21 @@
 """COVID recovery analysis: which routes recovered and which didn't?"""
 
-from pathlib import Path
-
 import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
     PRE_COVID_BASELINE_MONTH,
+    analysis_dir,
     classify_bus_route,
     correlate,
-    output_dir,
-    print_done,
-    print_header,
     query_to_polars,
+    run_analysis,
     save_chart,
     save_csv,
     setup_plotting,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 PRE_COVID_START = PRE_COVID_BASELINE_MONTH
 PRE_COVID_END = "2020-02"
@@ -176,10 +172,9 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     save_chart(fig, OUT / "regression_to_mean.png")
 
 
+@run_analysis(14, "COVID Recovery Trajectories")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(14, "COVID Recovery Trajectories")
-
     print("\nLoading data...")
     df, current_start, current_end = load_data()
     print(f"  {len(df)} routes with both pre-COVID and current data")
@@ -224,8 +219,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(df, results)
-
-    print_done()
 
 
 if __name__ == "__main__":

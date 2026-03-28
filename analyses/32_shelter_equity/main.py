@@ -1,16 +1,12 @@
 """Assess whether bus shelters are equitably placed relative to stop-level ridership."""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / "data"
+OUT = analysis_dir(__file__)
 
 
 def load_stop_usage() -> pl.DataFrame:
@@ -197,9 +193,9 @@ def make_charts(df: pl.DataFrame, mode_df: pl.DataFrame, owner_df: pl.DataFrame)
     save_chart(fig, OUT / "shelter_coverage_by_mode.png")
 
 
+@run_analysis(32, "Shelter Equity")
 def main() -> None:
     """Entry point: load data, analyze shelter equity, chart, and save."""
-    print_header(32, "Shelter Equity")
 
     print("\nLoading stop-level usage (pre-pandemic weekday)...")
     df = load_stop_usage()
@@ -245,8 +241,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(df, mode_df, owner_df)
-
-    print_done()
 
 
 if __name__ == "__main__":

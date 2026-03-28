@@ -6,10 +6,9 @@ import folium
 import polars as pl
 from branca.colormap import LinearColormap
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 # OTP color-scale bounds for geographic maps.
 OTP_MAP_VMIN = 0.5
@@ -241,10 +240,9 @@ def make_interactive_map(
     print(f"  Interactive map saved to {OUT / 'hotspot_map.html'}")
 
 
+@run_analysis(8, "Hot-Spot Map")
 def main() -> None:
     """Entry point: load data, compute stop OTP, map, and save."""
-    print_header(8, "Hot-Spot Map")
-
     print("\nLoading data...")
     raw = load_data()
     print(f"  {len(raw):,} route-stop records loaded")
@@ -280,8 +278,6 @@ def main() -> None:
 
     print("\nGenerating interactive map...")
     make_interactive_map(stop_otp, route_shapes, route_otp)
-
-    print_done()
 
 
 if __name__ == "__main__":

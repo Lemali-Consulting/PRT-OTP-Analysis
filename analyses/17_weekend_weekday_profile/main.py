@@ -1,13 +1,10 @@
 """Weekend vs weekday service profile analysis of on-time performance."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import MODE_COLORS, correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 # Weekend-to-weekday service ratio boundaries for tier classification.
 WEEKEND_RATIO_LOW = 0.3   # below = weekday-heavy
@@ -127,10 +124,9 @@ def make_charts(df: pl.DataFrame, results: dict) -> None:
     save_chart(fig, OUT / "service_tier_comparison.png")
 
 
+@run_analysis(17, "Weekend vs Weekday Service Profile")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(17, "Weekend vs Weekday Service Profile")
-
     print("\nLoading data...")
     df = load_data()
     print(f"  {len(df)} routes with service profile and OTP data")
@@ -150,8 +146,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(df, results)
-
-    print_done()
 
 
 if __name__ == "__main__":

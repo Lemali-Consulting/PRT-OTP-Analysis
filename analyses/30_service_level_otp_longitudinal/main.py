@@ -1,15 +1,12 @@
 """Analysis 30: Within-route panel -- does changing trip frequency predict OTP changes?"""
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import correlate, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_panel() -> pl.DataFrame:
@@ -114,9 +111,9 @@ def make_chart(df: pl.DataFrame, reg: dict) -> None:
     save_chart(fig, OUT / "service_level_scatter.png")
 
 
+@run_analysis(30, "Service Level vs OTP Longitudinal")
 def main() -> None:
     """Entry point: build panel, compute deltas, regress, and chart."""
-    print_header(30, "Service Level vs OTP Longitudinal")
 
     print("\nLoading panel data...")
     panel = load_panel()
@@ -186,8 +183,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(df, reg_all)
-
-    print_done()
 
 
 if __name__ == "__main__":

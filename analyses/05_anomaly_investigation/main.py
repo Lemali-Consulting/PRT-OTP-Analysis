@@ -1,13 +1,10 @@
 """Anomaly detection: flag and investigate sharp OTP deviations (both drops and spikes)."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 KNOWN_EVENTS = {
     "2020-03": "COVID-19 shutdown begins",
@@ -130,10 +127,9 @@ def make_chart(full_df: pl.DataFrame, anomalies: pl.DataFrame) -> None:
     save_chart(fig, OUT / "anomaly_profiles.png")
 
 
+@run_analysis(5, "Anomaly Investigation")
 def main() -> None:
     """Entry point: load data, detect anomalies, chart, and save."""
-    print_header(5, "Anomaly Investigation")
-
     print("\nLoading data...")
     df = load_data()
     print(f"  {len(df):,} OTP observations loaded")
@@ -210,8 +206,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(full_df, anomalies)
-
-    print_done()
 
 
 if __name__ == "__main__":

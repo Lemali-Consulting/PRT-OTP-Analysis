@@ -1,15 +1,13 @@
 """Analysis of inbound vs outbound trip asymmetry and its correlation with OTP."""
 
 import math
-from pathlib import Path
 
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import MODE_COLORS, correlate_by_mode, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, analysis_dir, correlate_by_mode, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -> tuple[pl.DataFrame, pl.DataFrame]:
@@ -126,10 +124,9 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
     save_chart(fig, OUT / "directional_asymmetry.png")
 
 
+@run_analysis(11, "Directional Asymmetry")
 def main() -> None:
     """Entry point: load data, analyze asymmetry, chart, and save."""
-    print_header(11, "Directional Asymmetry")
-
     print("\nLoading data...")
     directional, avg_otp = load_data()
     print(f"  {len(directional)} directional records, {len(avg_otp)} routes with OTP")
@@ -158,8 +155,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(result, results)
-
-    print_done()
 
 
 if __name__ == "__main__":

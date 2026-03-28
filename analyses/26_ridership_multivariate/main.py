@@ -1,26 +1,23 @@
 """Analysis 26: Test whether ridership adds explanatory power to the Analysis 18 multivariate OTP model."""
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
+    analysis_dir,
     classify_bus_route,
     correlate,
-    output_dir,
-    print_done,
-    print_header,
     query_to_polars,
+    run_analysis,
     save_chart,
     save_csv,
     setup_plotting,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12
 
@@ -314,9 +311,9 @@ def make_partial_residual_chart(df: pl.DataFrame, base: dict) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+@run_analysis(26, "Ridership in Multivariate OTP Model")
 def main() -> None:
     """Entry point: load features, fit models, compare, chart, and save."""
-    print_header(26, "Ridership in Multivariate OTP Model")
 
     print("\nLoading and assembling features...")
     df = load_features()
@@ -429,8 +426,6 @@ def main() -> None:
     print("\nGenerating charts...")
     make_coefficient_chart(base, expanded)
     make_partial_residual_chart(df, base)
-
-    print_done()
 
 
 if __name__ == "__main__":

@@ -1,13 +1,10 @@
 """System-wide OTP trend analysis: weighted and unweighted monthly averages, with bus-only stratification."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -> pl.DataFrame:
@@ -133,10 +130,9 @@ def make_chart(all_df: pl.DataFrame, bus_df: pl.DataFrame) -> None:
     save_chart(fig, OUT / "system_trend.png")
 
 
+@run_analysis(1, "System-Wide OTP Trend")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(1, "System-Wide OTP Trend")
-
     print("\nLoading data...")
     df = load_data()
     print(f"  {len(df):,} OTP observations loaded")
@@ -181,8 +177,6 @@ def main() -> None:
 
     print("\nGenerating chart...")
     make_chart(all_result, bus_result)
-
-    print_done()
 
 
 if __name__ == "__main__":

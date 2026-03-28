@@ -1,17 +1,14 @@
 """Identify low-usage bus stops that are candidates for consolidation to improve OTP."""
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / "data"
+OUT = analysis_dir(__file__)
 
 USAGE_THRESHOLD = 5      # avg daily ons+offs below this = low-usage
 WALK_DISTANCE_M = 400    # max walk distance to nearest neighbor
@@ -208,9 +205,9 @@ def make_charts(candidates: pl.DataFrame, summary: pl.DataFrame) -> None:
     save_chart(fig, OUT / "candidate_map.png")
 
 
+@run_analysis(31, "Stop Consolidation Candidates")
 def main() -> None:
     """Entry point: load data, find candidates, estimate OTP gains, chart."""
-    print_header(31, "Stop Consolidation Candidates")
 
     print("\nLoading stop-level usage (pre-pandemic weekday)...")
     usage = load_stop_usage()
@@ -249,8 +246,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(candidates, summary)
-
-    print_done()
 
 
 if __name__ == "__main__":

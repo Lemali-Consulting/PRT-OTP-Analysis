@@ -1,13 +1,10 @@
 """Data audit of the Monongahela Incline's presence in OTP data."""
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, print_done, print_header, query_to_polars, save_csv
+from prt_otp_analysis.common import analysis_dir, query_to_polars, run_analysis, save_csv
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def investigate() -> str:
@@ -114,10 +111,9 @@ def investigate() -> str:
     return "\n".join(lines)
 
 
+@run_analysis(9, "Incline Investigation")
 def main() -> None:
     """Entry point: investigate the Incline data and produce a report."""
-    print_header(9, "Incline Investigation")
-
     print("\nInvestigating...")
     report = investigate()
     print(report)
@@ -156,8 +152,6 @@ def main() -> None:
     else:
         # Write empty CSV with headers
         save_csv(pl.DataFrame({"route_id": [], "month": [], "otp": []}), OUT / "incline_report.csv")
-
-    print_done()
 
 
 if __name__ == "__main__":

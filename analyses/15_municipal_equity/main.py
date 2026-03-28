@@ -1,14 +1,11 @@
 """Municipal and county equity analysis of on-time performance."""
 
-from pathlib import Path
-
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, analysis_dir, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_STOPS = 10
 
@@ -149,10 +146,9 @@ def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) 
     save_chart(fig, OUT / "pittsburgh_vs_suburban.png")
 
 
+@run_analysis(15, "Municipal/County Equity")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print_header(15, "Municipal/County Equity")
-
     print("\nLoading data...")
     muni_otp, cross_jur = load_data()
     print(f"  {len(muni_otp)} municipalities with {MIN_STOPS}+ stops")
@@ -176,8 +172,6 @@ def main() -> None:
 
     print("\nGenerating charts...")
     make_charts(muni_otp, cross_jur, results)
-
-    print_done()
 
 
 if __name__ == "__main__":
