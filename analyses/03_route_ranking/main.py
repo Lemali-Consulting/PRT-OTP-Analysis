@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import Z_CRITICAL_95, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, Z_CRITICAL_95, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -181,7 +181,6 @@ def make_chart(df: pl.DataFrame) -> None:
     from matplotlib.patches import Patch
 
     rankable = df.filter(~pl.col("limited_data"))
-    mode_colors = {"BUS": "#3b82f6", "RAIL": "#22c55e", "INCLINE": "#f59e0b", "UNKNOWN": "#9ca3af"}
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 8))
 
@@ -194,7 +193,7 @@ def make_chart(df: pl.DataFrame) -> None:
 
     labels = [f"{r} - {n}" for r, n in zip(combined["route_id"].to_list(), combined["route_name"].to_list())]
     values = combined["recent_mean_otp"].to_list()
-    colors = [mode_colors.get(m, "#9ca3af") for m in combined["mode"].to_list()]
+    colors = [MODE_COLORS.get(m, "#9ca3af") for m in combined["mode"].to_list()]
 
     y_pos = range(len(labels))
     ax.barh(y_pos, values, color=colors)
@@ -225,7 +224,7 @@ def make_chart(df: pl.DataFrame) -> None:
     ax.invert_yaxis()
     ax.axvline(0, color="black", linewidth=0.5)
 
-    legend_patches = [Patch(facecolor=c, label=m) for m, c in mode_colors.items() if m != "UNKNOWN"]
+    legend_patches = [Patch(facecolor=c, label=m) for m, c in MODE_COLORS.items() if m != "UNKNOWN"]
     axes[0].legend(handles=legend_patches, loc="lower right", fontsize=8)
 
     save_chart(fig, OUT / "top_bottom_routes.png")

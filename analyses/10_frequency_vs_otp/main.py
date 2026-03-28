@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import correlate_by_mode, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, correlate_by_mode, output_dir, print_done, print_header, query_to_polars, save_chart, save_csv, setup_plotting
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
@@ -50,9 +50,7 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
     plt = setup_plotting()
     fig, ax = plt.subplots(figsize=(10, 7))
 
-    mode_colors = {"BUS": "#3b82f6", "RAIL": "#22c55e", "INCLINE": "#f59e0b", "UNKNOWN": "#9ca3af"}
-
-    for mode, color in mode_colors.items():
+    for mode, color in MODE_COLORS.items():
         subset = df.filter(pl.col("mode") == mode)
         if len(subset) == 0:
             continue

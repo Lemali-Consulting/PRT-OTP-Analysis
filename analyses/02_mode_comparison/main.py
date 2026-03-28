@@ -6,7 +6,9 @@ import polars as pl
 from scipy.stats import mannwhitneyu, ttest_rel
 
 from prt_otp_analysis.common import (
+    BUS_TYPE_COLORS,
     CONFIDENCE_95_PERCENTILE,
+    MODE_COLORS,
     classify_bus_route,
     output_dir,
     print_done,
@@ -173,8 +175,6 @@ def make_chart(
     plt = setup_plotting()
     fig, axes = plt.subplots(2, 2, figsize=(16, 10))
 
-    mode_colors = {"BUS": "#3b82f6", "RAIL": "#22c55e", "INCLINE": "#f59e0b"}
-    bus_type_colors = {"local": "#3b82f6", "limited": "#8b5cf6", "express": "#ef4444", "busway": "#f59e0b", "flyer": "#06b6d4"}
 
     # Top-left: Mode time series
     ax = axes[0, 0]
@@ -185,7 +185,7 @@ def make_chart(
         months = data["month"].to_list()
         vals = data["avg_otp"].to_list()
         n_routes = int(data["route_count"].median())
-        ax.plot(range(len(months)), vals, color=mode_colors[mode], linewidth=1.2,
+        ax.plot(range(len(months)), vals, color=MODE_COLORS[mode], linewidth=1.2,
                 label=f"{mode} (n={n_routes} routes)")
         tick_pos = [i for i, m in enumerate(months) if m.endswith("-01")]
         tick_lbl = [months[i][:4] for i in tick_pos]
@@ -204,7 +204,7 @@ def make_chart(
             continue
         months = data["month"].to_list()
         vals = data["avg_otp"].to_list()
-        ax.plot(range(len(months)), vals, color=bus_type_colors[btype], linewidth=1.2, label=btype)
+        ax.plot(range(len(months)), vals, color=BUS_TYPE_COLORS[btype], linewidth=1.2, label=btype)
         tick_pos = [i for i, m in enumerate(months) if m.endswith("-01")]
         tick_lbl = [months[i][:4] for i in tick_pos]
         ax.set_xticks(tick_pos)
