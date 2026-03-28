@@ -3,7 +3,7 @@
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import MODE_COLORS, analysis_dir, correlate_by_mode, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, analysis_dir, correlate_by_mode, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
 OUT = analysis_dir(__file__)
 
@@ -29,17 +29,7 @@ def load_data() -> pl.DataFrame:
 
 def analyze(df: pl.DataFrame) -> tuple[pl.DataFrame, dict]:
     """Compute Pearson and Spearman correlations, overall and bus-only."""
-    corr = correlate_by_mode(df, "max_trips_wd", "avg_otp")
-    results = {}
-    results["all_pearson_r"] = corr["all"]["pearson_r"]
-    results["all_pearson_p"] = corr["all"]["pearson_p"]
-    results["bus_pearson_r"] = corr["bus"]["pearson_r"]
-    results["bus_pearson_p"] = corr["bus"]["pearson_p"]
-    results["bus_spearman_r"] = corr["bus"]["spearman_r"]
-    results["bus_spearman_p"] = corr["bus"]["spearman_p"]
-    results["bus_n"] = corr["bus"]["n"]
-
-    return df, results
+    return df, correlate_by_mode(df, "max_trips_wd", "avg_otp")
 
 
 def make_chart(df: pl.DataFrame, results: dict) -> None:
@@ -82,22 +72,22 @@ def make_chart(df: pl.DataFrame, results: dict) -> None:
 @run_analysis(10, "Trip Frequency vs OTP")
 def main() -> None:
     """Entry point: load data, analyze, chart, and save."""
-    print("\nLoading data...")
-    df = load_data()
-    print(f"  {len(df)} routes with both frequency and OTP data")
+    with phase("Loading data"):
+        df = load_data()
+        print(f"  {len(df)} routes with both frequency and OTP data")
 
-    print("\nAnalyzing...")
-    df, results = analyze(df)
-    print(f"  All routes:  Pearson r = {results['all_pearson_r']:.4f} (p = {results['all_pearson_p']:.4f})")
-    print(f"  Bus only:    Pearson r = {results['bus_pearson_r']:.4f} (p = {results['bus_pearson_p']:.4f})")
-    print(f"               Spearman r = {results['bus_spearman_r']:.4f} (p = {results['bus_spearman_p']:.4f})")
-    print(f"               n = {results['bus_n']} bus routes")
+    with phase("Analyzing"):
+        df, results = analyze(df)
+        print(f"  All routes:  Pearson r = {results['all_pearson_r']:.4f} (p = {results['all_pearson_p']:.4f})")
+        print(f"  Bus only:    Pearson r = {results['bus_pearson_r']:.4f} (p = {results['bus_pearson_p']:.4f})")
+        print(f"               Spearman r = {results['bus_spearman_r']:.4f} (p = {results['bus_spearman_p']:.4f})")
+        print(f"               n = {results['bus_n']} bus routes")
 
-    print("\nSaving CSV...")
-    save_csv(df, OUT / "frequency_otp.csv")
+    with phase("Saving CSV"):
+        save_csv(df, OUT / "frequency_otp.csv")
 
-    print("\nGenerating chart...")
-    make_chart(df, results)
+    with phase("Generating chart"):
+        make_chart(df, results)
 
 
 if __name__ == "__main__":

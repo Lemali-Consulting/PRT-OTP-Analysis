@@ -36,29 +36,38 @@ def correlate(
     y_col: str,
     *,
     min_n: int = 3,
+    prefix: str | None = None,
 ) -> dict[str, float]:
     """Compute Pearson and Spearman correlations between two columns.
 
     Rows with null in either column are dropped. Returns NaN values if
     fewer than *min_n* rows remain.
+
+    When *prefix* is given, keys are ``{prefix}_pearson_r`` etc. instead
+    of bare ``pearson_r``, so the result can be merged directly into a
+    results dict with ``results |= correlate(..., prefix="bus_span")``.
     """
     clean_df = df.drop_nulls(subset=[x_col, y_col])
     n = len(clean_df)
     nan = float("nan")
 
     if n < min_n:
-        return {
+        out = {
             "pearson_r": nan, "pearson_p": nan,
             "spearman_r": nan, "spearman_p": nan, "n": n,
         }
+    else:
+        x = clean_df[x_col].to_list()
+        y = clean_df[y_col].to_list()
 
-    x = clean_df[x_col].to_list()
-    y = clean_df[y_col].to_list()
+        pr, pp = sp_stats.pearsonr(x, y)
+        sr, sp = sp_stats.spearmanr(x, y)
 
-    pr, pp = sp_stats.pearsonr(x, y)
-    sr, sp = sp_stats.spearmanr(x, y)
+        out = {"pearson_r": pr, "pearson_p": pp, "spearman_r": sr, "spearman_p": sp, "n": n}
 
-    return {"pearson_r": pr, "pearson_p": pp, "spearman_r": sr, "spearman_p": sp, "n": n}
+    if prefix is not None:
+        return {f"{prefix}_{k}": v for k, v in out.items()}
+    return out
 
 
 def correlate_by_mode(
@@ -67,15 +76,18 @@ def correlate_by_mode(
     y_col: str,
     *,
     min_n: int = 3,
-) -> dict[str, dict[str, float]]:
+) -> dict[str, float]:
     """Compute correlations for all routes and for bus-only routes.
 
-    *df* must have a ``mode`` column.
+    *df* must have a ``mode`` column.  Returns a flat dict with keys
+    prefixed by ``all_`` and ``bus_`` (e.g. ``all_pearson_r``,
+    ``bus_spearman_p``).
     """
     return {
-        "all": correlate(df, x_col, y_col, min_n=min_n),
-        "bus": correlate(
-            df.filter(pl.col("mode") == "BUS"), x_col, y_col, min_n=min_n,
+        **correlate(df, x_col, y_col, min_n=min_n, prefix="all"),
+        **correlate(
+            df.filter(pl.col("mode") == "BUS"), x_col, y_col,
+            min_n=min_n, prefix="bus",
         ),
     }
 

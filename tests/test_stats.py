@@ -99,7 +99,29 @@ class TestCorrelate:
         assert result["n"] == 4
         assert result["pearson_r"] == pytest.approx(1.0)
 
-    def test_correlate_by_mode(self):
+    def test_prefix_flattens_keys(self):
+        from prt_otp_analysis.common import correlate
+
+        df = pl.DataFrame({"x": [1.0, 2.0, 3.0], "y": [2.0, 4.0, 6.0]})
+        result = correlate(df, "x", "y", prefix="bus_span")
+        assert "bus_span_pearson_r" in result
+        assert "bus_span_pearson_p" in result
+        assert "bus_span_spearman_r" in result
+        assert "bus_span_spearman_p" in result
+        assert "bus_span_n" in result
+        assert result["bus_span_pearson_r"] == pytest.approx(1.0)
+        # Original keys should not be present
+        assert "pearson_r" not in result
+
+    def test_prefix_min_n_guard(self):
+        from prt_otp_analysis.common import correlate
+
+        df = pl.DataFrame({"x": [1.0, 2.0], "y": [3.0, 4.0]})
+        result = correlate(df, "x", "y", prefix="foo", min_n=3)
+        assert math.isnan(result["foo_pearson_r"])
+        assert result["foo_n"] == 2
+
+    def test_correlate_by_mode_returns_flat(self):
         from prt_otp_analysis.common import correlate_by_mode
 
         df = pl.DataFrame({
@@ -108,12 +130,11 @@ class TestCorrelate:
             "mode": ["BUS", "BUS", "BUS", "BUS", "RAIL", "RAIL"],
         })
         result = correlate_by_mode(df, "x", "y")
-        assert "all" in result
-        assert "bus" in result
-        assert result["all"]["n"] == 6
-        assert result["bus"]["n"] == 4
-        assert result["all"]["pearson_r"] == pytest.approx(1.0)
-        assert result["bus"]["pearson_r"] == pytest.approx(1.0)
+        assert result["all_n"] == 6
+        assert result["bus_n"] == 4
+        assert result["all_pearson_r"] == pytest.approx(1.0)
+        assert result["bus_pearson_r"] == pytest.approx(1.0)
+        assert result["bus_spearman_r"] == pytest.approx(1.0)
 
 
 class TestGini:
