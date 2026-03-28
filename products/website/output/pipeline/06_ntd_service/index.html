@@ -36,7 +36,7 @@
   <h1>NTD Annual Service ETL</h1>
   
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-27 20:03 UTC · Commit a28c93d</p>
+  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
 </section>
 
 <section class="panel toc-panel">
@@ -80,7 +80,41 @@
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: NTD Annual Service ETL</h1>
-<p>Populated after first pipeline run.</p>
+<p>Loaded NTD TS2.2 annual service data into <code>ntd_annual_service</code> table.</p>
+<ul>
+<li><strong>90,057 rows</strong> written (3,062 agencies × up to 33 years each)</li>
+<li><strong>2,729 unique agencies</strong> with identifier data</li>
+<li><strong>43,391 non-null VRH values</strong>, 43,589 VRM, 43,475 UPT, 35,316 VOMS</li>
+<li><strong>Year range</strong>: 1991–2023</li>
+</ul>
+<h2>PRT verification (NTD ID 30022)</h2>
+<table>
+<thead>
+<tr>
+  <th>Year</th>
+  <th>VRH</th>
+  <th>VRM</th>
+  <th>UPT</th>
+  <th>VOMS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>2019</td>
+  <td>2,382,972</td>
+  <td>31,955,492</td>
+  <td>64,007,925</td>
+  <td>942</td>
+</tr>
+<tr>
+  <td>2023</td>
+  <td>2,025,498</td>
+  <td>26,447,131</td>
+  <td>37,908,532</td>
+  <td>780</td>
+</tr>
+</tbody>
+</table>
 </div>
   </details>
 </section>

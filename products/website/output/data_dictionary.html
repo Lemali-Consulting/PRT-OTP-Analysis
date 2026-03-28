@@ -35,7 +35,7 @@
   <p class="kicker">Reference</p>
   <h1>Data Dictionary</h1>
   <p class="lede">Database tables, columns, types, and known data quality notes for the PRT OTP dataset.</p>
-  <p class="lede">Built 2026-03-27 20:03 UTC · Commit a28c93d</p>
+  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
 </section>
 <section class="panel">
   <div class="markdown-body">
@@ -108,6 +108,11 @@
   <td><code>ntd_ridership</code></td>
   <td>673,920</td>
   <td>Fact: monthly UPT by agency/mode/TOS</td>
+</tr>
+<tr>
+  <td><code>ntd_annual_service</code></td>
+  <td>90,057</td>
+  <td>Fact: annual VRH/VRM/UPT/VOMS by agency</td>
 </tr>
 </tbody>
 </table>
@@ -437,6 +442,70 @@
 </tbody>
 </table>
 <p>Primary key: <code>(ntd_id, mode, tos, month)</code>. Source: NTD Monthly Module Excel, UPT sheet. Built by <code>src/prt_otp_analysis/ntd_ridership.py</code>.</p>
+<h3><code>ntd_annual_service</code></h3>
+<p>Annual service metrics from the NTD TS2.2 &quot;Service Data by System&quot; workbook, 1991–2023. System-level (all modes aggregated).</p>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ntd_id</code></td>
+  <td>INTEGER PK</td>
+  <td>NTD agency ID (e.g. 30022 = PRT)</td>
+</tr>
+<tr>
+  <td><code>agency_name</code></td>
+  <td>TEXT</td>
+  <td>Agency name</td>
+</tr>
+<tr>
+  <td><code>city</code></td>
+  <td>TEXT</td>
+  <td>Headquarters city</td>
+</tr>
+<tr>
+  <td><code>state</code></td>
+  <td>TEXT</td>
+  <td>Headquarters state</td>
+</tr>
+<tr>
+  <td><code>uza_name</code></td>
+  <td>TEXT</td>
+  <td>Primary urbanized area name</td>
+</tr>
+<tr>
+  <td><code>year</code></td>
+  <td>INTEGER PK</td>
+  <td>Report year (1991–2023)</td>
+</tr>
+<tr>
+  <td><code>vrh</code></td>
+  <td>REAL</td>
+  <td>Vehicle Revenue Hours (nullable)</td>
+</tr>
+<tr>
+  <td><code>vrm</code></td>
+  <td>REAL</td>
+  <td>Vehicle Revenue Miles (nullable)</td>
+</tr>
+<tr>
+  <td><code>upt</code></td>
+  <td>REAL</td>
+  <td>Unlinked Passenger Trips (nullable)</td>
+</tr>
+<tr>
+  <td><code>voms</code></td>
+  <td>REAL</td>
+  <td>Vehicles Operated in Maximum Service (nullable)</td>
+</tr>
+</tbody>
+</table>
+<p>Primary key: <code>(ntd_id, year)</code>. Source: NTD TS2.2 Excel workbook. Built by <code>src/prt_otp_analysis/ntd_service.py</code>.</p>
 <h2>Route ID Reconciliation</h2>
 <p>Route codes are extracted from <code>routes_by_month.csv</code> by splitting on <code>&quot; - &quot;</code> (first token).</p>
 <table>
@@ -500,6 +569,11 @@
   <td><code>ntd-monthly-ridership/*.xlsx</code></td>
   <td>2,340 agencies x 288 months</td>
   <td><code>ntd_agency</code>, <code>ntd_ridership</code></td>
+</tr>
+<tr>
+  <td><code>ntd-annual-service/*.xlsx</code></td>
+  <td>3,062 agencies x 33 years</td>
+  <td><code>ntd_annual_service</code></td>
 </tr>
 </tbody>
 </table>

@@ -36,7 +36,7 @@
   <h1>39 — National Service Cuts (2019 vs 2023)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-27 20:03 UTC · Commit a28c93d</p>
+  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
 </section>
 
 <section class="panel toc-panel">
@@ -94,18 +94,42 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: National Service Cuts (2019 vs 2023)</h1>
 <h2>Summary</h2>
-<p>Brief summary of results.</p>
+<p>PRT cut 15.0% of vehicle revenue hours between 2019 and 2023, ranking 97th of 150 large US transit agencies (worse than the -10.8% <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>). However, PRT's ridership dropped 40.8% over the same period — a 25.8 pp gap that strongly suggests the ridership decline is primarily a demand-side problem, not a consequence of service cuts.</p>
 <h2>Key Numbers</h2>
 <ul>
-<li>Headline statistics here.</li>
+<li><strong>PRT VRH change</strong>: -15.0% (2,382,972 → 2,025,498 hours)</li>
+<li><strong>PRT UPT change</strong>: -40.8% (64.0M → 37.9M trips)</li>
+<li><strong>PRT VRH rank</strong>: 97th of 150 (1st = best recovery)</li>
+<li><strong>National <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> VRH change</strong>: -10.8%</li>
+<li><strong>Agencies recovered to 2019 VRH</strong>: 26 of 150 (17%)</li>
+<li><strong>Supply–demand gap</strong>: 136 of 150 agencies lost more riders than service (below the y=x diagonal)</li>
 </ul>
 <h2>Observations</h2>
 <ul>
-<li>Detailed observations from the analysis.</li>
+<li><strong>PRT's ridership problem is demand-driven.</strong> PRT cut 15% of service hours but lost 41% of riders. The 26 pp gap means roughly two-thirds of the ridership loss occurred independently of service reductions. This pattern holds across virtually all peers and nationally.</li>
+<li><strong>PRT is mid-pack on service cuts among peers.</strong> Cleveland cut the least (-7.3%), while St. Louis cut the most (-34.2%). PRT sits between Baltimore (-12.0%) and Buffalo (-15.6%).</li>
+<li><strong>Denver and Minneapolis cut service aggressively.</strong> Both cut 25–27% of VRH, among the steepest cuts in the peer group, but their ridership losses (-39% and -42%) were proportionally smaller relative to the service reductions compared to East Coast peers.</li>
+<li><strong>Supply–demand gaps vary significantly.</strong> Cleveland maintained 93% of service but lost 30% of riders (23 pp gap). Baltimore cut 12% but lost 38% (27 pp gap). The gap ranges from 12 pp (St. Louis, Denver) to 27 pp (Baltimore) among peers.</li>
+<li><strong>Service growth does not guarantee ridership recovery.</strong> Of the 26 agencies that grew VRH, only 14 also grew ridership. Sacramento grew VRH by 24% but still lost 17% of riders.</li>
+<li><strong>Fleet reductions tracked service cuts.</strong> PRT's VOMS (vehicles operated in maximum service) dropped from 942 to 780 (-17.2%), roughly proportional to the VRH cut.</li>
 </ul>
+<h2>Discussion</h2>
+<p>The dominant national pattern is that transit agencies lost far more riders than they cut service. This suggests the post-COVID ridership shortfall is primarily driven by changed travel patterns (remote work, shifted commuting) rather than by service austerity. PRT fits this pattern: even if all 2019 service hours were restored tomorrow, the data suggests ridership would remain well below 2019 levels.</p>
+<p>That said, service cuts and ridership loss are not fully independent. Reduced frequency makes transit less attractive, creating a feedback loop: cut service → longer waits → some riders leave → further cuts seem justified. The 15% VRH reduction likely contributed some portion of the 41% ridership loss, but the cross-agency evidence shows the demand shift is the larger driver.</p>
+<p>Among peers, the agencies with the smallest service cuts (Cleveland, Baltimore) do not consistently show the best ridership recovery, reinforcing that supply restoration alone is insufficient.</p>
 <h2>Caveats</h2>
 <ul>
-<li>Limitations and caveats of this analysis.</li>
+<li><strong>System-level aggregation.</strong> The TS2.2 data combines all modes and types of service into a single VRH figure per agency. PRT's bus vs. rail service changes cannot be separated in this dataset.</li>
+<li><strong>2023 is the latest available year.</strong> The NTD Annual Module lags the monthly data (which goes to 2025). Service and ridership may have changed since 2023.</li>
+<li><strong>VRH measures scheduled service, not effective service.</strong> An agency could maintain VRH while degrading reliability, frequency, or coverage in ways that don't appear in this metric.</li>
+<li><strong>No causal claim.</strong> The supply–demand gap does not prove that service cuts had no effect on ridership — only that the ridership decline substantially exceeds what service reductions alone could explain.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified.</strong> VRH and UPT from <code>ntd_annual_service</code> table, loaded from FTA TS2.2 workbook via pipeline 06.</li>
+<li><strong>Aggregates sanity-checked.</strong> PRT 2019 UPT (64.0M) matches NTD monthly data aggregation from Analysis 36. Top agencies by VRH (NYCT, NJT, WMATA, CTA) are consistent with known largest US transit systems.</li>
+<li><strong>Direction of effects checked.</strong> VRH and UPT both declined for most agencies (expected post-COVID). Agencies with positive VRH growth (Sacramento, BART) are known to have expanded service.</li>
+<li><strong>Surprising results investigated.</strong> BART's +19% VRH growth despite massive ridership losses reflects deliberate service restoration strategy — confirmed by public reporting.</li>
 </ul>
 </div>
   </details>
@@ -116,9 +140,9 @@
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
-    <button class="tab-btn" data-target="data">Data (0)</button>
+    <button class="tab-btn" data-target="data">Data (1)</button>
   </div>
 
   <div class="output-pane active" data-pane="charts">
@@ -129,7 +153,7 @@
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/service_cuts_distribution.png" target="_blank" rel="noopener noreferrer">service_cuts_distribution.png</a>
-          <p class="artifact-desc">Generated chart image produced by this page.</p>
+          <p class="artifact-desc">Histogram of VRH percent change with PRT highlighted.</p>
         </figcaption>
       </figure>
     
@@ -138,7 +162,25 @@
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/service_cuts_ranking.png" target="_blank" rel="noopener noreferrer">service_cuts_ranking.png</a>
-          <p class="artifact-desc">Generated chart image produced by this page.</p>
+          <p class="artifact-desc">Horizontal bar chart ranking 150 agencies by VRH change.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/39_national_service_cuts/peer_service_vs_ridership.png" alt="peer_service_vs_ridership" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/peer_service_vs_ridership.png" target="_blank" rel="noopener noreferrer">peer_service_vs_ridership.png</a>
+          <p class="artifact-desc">Grouped bars comparing VRH and UPT change for 8 peer cities.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/39_national_service_cuts/supply_vs_demand_scatter.png" alt="supply_vs_demand_scatter" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/supply_vs_demand_scatter.png" target="_blank" rel="noopener noreferrer">supply_vs_demand_scatter.png</a>
+          <p class="artifact-desc">Scatter plot of VRH change vs UPT change for top 150.</p>
         </figcaption>
       </figure>
     
@@ -156,7 +198,21 @@
   <div class="output-pane" data-pane="data">
     <div class="gallery">
     
-    <p class="artifact-desc">No data outputs declared.</p>
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/service_cuts_data.csv" target="_blank" rel="noopener noreferrer">service_cuts_data.csv</a>
+          <p class="artifact-desc">Per-agency VRH/UPT change data with ranks.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/39_national_service_cuts/service_cuts_data.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
     </div>
   </div>
 </section>
@@ -415,10 +471,13 @@ def main():
     # --- Chart 3: Peer city VRH vs UPT change ---
     print(&quot;\n6. Generating peer city comparison...&quot;)
     peer_ids = list(PEERS.keys())
+    peer_map = pl.DataFrame({
+        &quot;ntd_id&quot;: list(PEERS.keys()),
+        &quot;city_label&quot;: list(PEERS.values()),
+    })
     peer_data = result.filter(pl.col(&quot;ntd_id&quot;).is_in(peer_ids))
-    peer_data = peer_data.with_columns(
-        city_label=pl.col(&quot;ntd_id&quot;).replace(PEERS, return_dtype=pl.Utf8)
-    ).sort(&quot;vrh_pct_change&quot;, descending=True)
+    peer_data = peer_data.join(peer_map, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+    peer_data = peer_data.sort(&quot;vrh_pct_change&quot;, descending=True)
 
     if len(peer_data) &gt; 0:
         cities = peer_data[&quot;city_label&quot;].to_list()
