@@ -1,0 +1,25 @@
+kind: analysis
+title: "43 - Allegheny Go Program Growth"
+tables:
+- otp_monthly
+- allegheny_go_weekly
+files:
+- data/allegheny-go/enrollments_weekly.csv
+analyses: []
+description: "The Allegheny Go fare program grew from 262 rides per week to over 30,000 in 18 months, accumulating 2.27 million total rides. Ridership growth is uncorrelated with system OTP (r = 0.13, p = 0.60), driven by enrollment expansion rather than service quality."
+dependencies:
+- polars
+- scipy
+outputs:
+- path: growth_vs_otp.csv
+  kind: data
+  description: Monthly Allegheny Go metrics alongside system OTP.
+- path: ridership_otp_overlay.png
+  kind: image
+  description: Dual-axis chart of program ridership and system OTP.
+- path: enrollment_by_type.png
+  kind: image
+  description: Stacked bar of enrollment types over time.
+- path: utilization_trend.png
+  kind: image
+  description: Rides-per-rider utilization over time.

@@ -1,0 +1,24 @@
+kind: analysis
+title: "42 - Allegheny Go Equity"
+tables:
+- otp_monthly
+- route_stops
+- stops
+files:
+- data/allegheny-go/tract_reach.csv
+- data/allegheny-go/demographics_summary.csv
+analyses: []
+description: "Municipalities with poor bus reliability do not have lower Allegheny Go adoption — the program successfully reaches areas across the OTP spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50)."
+dependencies:
+- polars
+- scipy
+outputs:
+- path: muni_adoption_otp.csv
+  kind: data
+  description: Per-municipality OTP and Allegheny Go adoption metrics.
+- path: adoption_vs_otp.png
+  kind: image
+  description: Scatter plot of program adoption vs on-time performance by municipality.
+- path: demographics_summary.png
+  kind: image
+  description: Program demographics overview (age, race, gender, children).
