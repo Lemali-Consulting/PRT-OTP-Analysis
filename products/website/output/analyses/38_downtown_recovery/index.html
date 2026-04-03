@@ -36,7 +36,7 @@
   <h1>38 - Downtown Recovery Gap</h1>
   <p class="lede">Ridership & Recovery</p>
   <p class="lede">Coverage: 2017-01 to 2024-10 (from ridership_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:31 UTC · Commit dc9e6e3</p>
 </section>
 
 <section class="panel toc-panel">
@@ -100,7 +100,7 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Downtown Recovery Gap</h1>
 <h2>Summary</h2>
-<p>Downtown dependence is a statistically significant predictor of worse ridership recovery, partially supporting PRT's claim that weak downtown business activity drags system-wide ridership. Routes with higher shares of pre-pandemic downtown boardings show worse recovery trajectories. However, the effect is modest (Spearman rho = -0.29) and explains only a fraction of the system-wide gap — even routes with minimal downtown exposure remain well below 2019 levels.</p>
+<p>Downtown dependence is a statistically significant predictor of worse ridership recovery, partially supporting PRT's claim that weak downtown business activity drags system-wide ridership. Routes with higher shares of pre-pandemic downtown boardings show worse recovery trajectories. However, the effect is modest (Spearman rho = -0.29) and explains only a fraction of the system-wide gap — even routes with minimal downtown exposure remain well below 2019 levels. Decomposing by service type reveals that the downtown effect is primarily a commuter/express route phenomenon: commuter routes recovered to just 34% of 2019 levels vs. 59% for local routes. Within local routes alone, downtown dependence is not a significant predictor of recovery.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong><a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a></strong> between downtown boardings share and 2024 recovery: rho = -0.29, p = 0.005.</li>
@@ -110,6 +110,15 @@
 <li><strong>Kruskal-Wallis</strong> across terciles: H = 8.64, p = 0.013.</li>
 <li>Only the <strong>Medium vs Low</strong> pairwise comparison is significant after <a href="../../glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a> (p = 0.02). High vs Low approaches significance (p = 0.11) but does not clear the threshold.</li>
 </ul>
+<h3>By Service Type</h3>
+<ul>
+<li><strong>Local routes</strong> (n=69): <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> recovery = 58.6%, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> downtown share = 41.1%.</li>
+<li><strong>Limited routes</strong> (n=4): <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> recovery = 51.4%, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> downtown share = 42.8%.</li>
+<li><strong>Commuter/Express routes</strong> (n=21): <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> recovery = 33.7%, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> downtown share = 41.6%.</li>
+<li><strong>Kruskal-Wallis</strong> across service types: H = 12.71, p = 0.002 — recovery differs significantly by service type.</li>
+<li><strong>Within-group Spearman</strong> (downtown share vs recovery): Local rho = -0.19 (p = 0.11, NS); Commuter/Express rho = -0.56 (p = 0.008).</li>
+<li><strong>Partial Spearman</strong> controlling for service type: rho = -0.26, p = 0.010 — downtown dependence still predicts worse recovery even after accounting for route type.</li>
+</ul>
 <h2>Observations</h2>
 <ul>
 <li><strong>PRT's claim is directionally correct but insufficient as a full explanation.</strong> The negative correlation confirms that downtown-oriented routes have recovered less ridership. But the effect is modest — downtown dependence alone accounts for roughly 8% of the <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> in recovery (rho-squared ~ 0.08).</li>
@@ -118,6 +127,15 @@
 <li><strong>Large local routes in the high tercile held up better than expected.</strong> Routes like 6, 12, 17, 81, 83 have &gt;50% downtown share but recovered to 65-79% — likely because they serve diverse trip purposes (shopping, medical, transfers) beyond commuting.</li>
 <li><strong>The best-recovering routes are high-ridership trunk lines with low downtown shares:</strong> 61A (84%), 61C (79%), 71B (80%), 59 (90%). These serve corridor travel that is less sensitive to office occupancy.</li>
 <li><strong>The trajectory chart shows all three groups tracking closely until mid-2021</strong>, after which the low-dependence group pulls ahead. This timing aligns with the return of non-commute travel (errands, school, medical) while office occupancy remained depressed.</li>
+</ul>
+<h3>Service Type Decomposition</h3>
+<ul>
+<li><strong>Commuter/express routes recovered far less than local routes</strong> — <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 33.7% vs 58.6% of 2019 levels. This is statistically significant (Kruskal-Wallis H = 12.71, p = 0.002) and represents the single largest explanatory split in the data.</li>
+<li><strong>Downtown dependence and service type are partially confounded but not redundant.</strong> Commuter/express routes have similar <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> downtown shares to local routes (~41%), but their recovery is 25pp worse. The downtown effect operates <em>through</em> route type — commuter routes serve downtown commuters specifically, while local routes serve downtown for diverse purposes.</li>
+<li><strong>Within local routes, downtown dependence has no significant effect</strong> (rho = -0.19, p = 0.11). Among local bus routes, having more downtown stops does not meaningfully predict worse recovery. The downtown recovery gap is primarily a commuter route phenomenon.</li>
+<li><strong>Within commuter/express routes, downtown dependence is strongly predictive</strong> (rho = -0.56, p = 0.008). Among commuter routes, those with higher downtown share recovered even less — suggesting that peak-direction downtown express services were hit hardest.</li>
+<li><strong>After controlling for service type, downtown dependence still predicts recovery</strong> (partial rho = -0.26, p = 0.010), but the effect is attenuated from rho = -0.29 to -0.26. Service type explains part but not all of the downtown dependence effect.</li>
+<li><strong>The faceted trajectory chart reveals starkly different recovery shapes.</strong> Local routes show a gradual climb back toward 60-70% across all terciles. Commuter/express routes show a much flatter recovery, with high-downtown-dependence commuter routes plateauing around 30-40%.</li>
 </ul>
 <h2>Caveats</h2>
 <ul>
@@ -145,9 +163,9 @@
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
-    <button class="tab-btn" data-target="data">Data (2)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
   </div>
 
   <div class="output-pane active" data-pane="charts">
@@ -171,6 +189,24 @@
         </figcaption>
       </figure>
     
+      <figure class="shot-card">
+        <img src="../../assets/analyses/38_downtown_recovery/recovery_by_service_type.png" alt="recovery_by_service_type" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/recovery_by_service_type.png" target="_blank" rel="noopener noreferrer">recovery_by_service_type.png</a>
+          <p class="artifact-desc">Recovery trajectories faceted by service type (local, limited, commuter/express), showing downtown-dependence terciles within each.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/38_downtown_recovery/scatter_by_service_type.png" alt="scatter_by_service_type" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/scatter_by_service_type.png" target="_blank" rel="noopener noreferrer">scatter_by_service_type.png</a>
+          <p class="artifact-desc">Downtown share vs recovery scatter with points colored by service type (local, limited, commuter/express).</p>
+        </figcaption>
+      </figure>
+    
     
     </div>
   </div>
@@ -189,7 +225,7 @@
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/route_downtown_scores.csv" target="_blank" rel="noopener noreferrer">route_downtown_scores.csv</a>
-          <p class="artifact-desc">Per-route downtown-dependence scores, tercile assignments, and 2024 recovery ratios.</p>
+          <p class="artifact-desc">Per-route downtown-dependence scores, service type classification, tercile assignments, and 2024 recovery ratios.</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/38_downtown_recovery/route_downtown_scores.csv">
             <summary>Preview CSV</summary>
@@ -206,6 +242,20 @@
           <p class="artifact-desc">Kruskal-Wallis and pairwise Mann-Whitney test results.</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/38_downtown_recovery/statistical_tests.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/38_downtown_recovery/service_type_tests.csv" target="_blank" rel="noopener noreferrer">service_type_tests.csv</a>
+          <p class="artifact-desc">Within-group Spearman correlations, Kruskal-Wallis across service types, and partial Spearman controlling for service type.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/38_downtown_recovery/service_type_tests.csv">
             <summary>Preview CSV</summary>
             <div class="csv-preview-body">Expand to load preview.</div>
           </details>
@@ -233,6 +283,8 @@
 <li><strong>Build monthly ridership recovery trajectories.</strong> Using <code>ridership_monthly</code> (weekday data, 2017-01 through 2024-10), index each route's ridership to its 2019 monthly average. Aggregate indexed ridership by downtown-dependence tercile to produce three recovery curves.</li>
 <li><strong>Statistical test.</strong> Compare 2024 recovery ratios across the three groups using Kruskal-Wallis (non-parametric, no normality assumption). If significant, apply pairwise Mann-Whitney with <a href="../../glossary.html#bonferroni-correction" class="glossary-link" data-definition="Multiple-testing adjustment that scales p-value thresholds by the number of tests.">Bonferroni correction</a>.</li>
 <li><strong>Scatter plot.</strong> Show the relationship between downtown-dependence share (continuous) and 2024 recovery ratio at the route level, with <a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a>.</li>
+<li><strong>Service type segmentation.</strong> Classify each route by service type using route ID naming conventions (<code>classify_bus_route</code>): local (plain numbers), limited (L-suffix), and commuter/express (P/O/G-prefix flyers, X-suffix express, busway). Produce faceted recovery trajectories and scatter plots by service type.</li>
+<li><strong>Service type as covariate.</strong> Test whether downtown dependence predicts recovery after controlling for service type using: (a) within-group Spearman correlations for each service type, (b) Kruskal-Wallis across service types, and (c) partial <a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a> residualizing both downtown share and recovery on service type rank.</li>
 </ol>
 <h2>Data</h2>
 <ul>
@@ -244,8 +296,11 @@
 <ul>
 <li><code>output/recovery_trajectories.png</code> — Monthly indexed ridership (2019=100) for high/medium/low downtown-dependence terciles.</li>
 <li><code>output/scatter_dt_share_vs_recovery.png</code> — Route-level scatter of downtown share vs. 2024 recovery ratio.</li>
-<li><code>output/route_downtown_scores.csv</code> — Per-route downtown-dependence scores and recovery ratios.</li>
+<li><code>output/recovery_by_service_type.png</code> — Recovery trajectories faceted by service type (local, limited, commuter/express).</li>
+<li><code>output/scatter_by_service_type.png</code> — Downtown share vs. recovery scatter colored by service type.</li>
+<li><code>output/route_downtown_scores.csv</code> — Per-route downtown-dependence scores, service type, and recovery ratios.</li>
 <li><code>output/statistical_tests.csv</code> — Kruskal-Wallis and pairwise test results.</li>
+<li><code>output/service_type_tests.csv</code> — Within-group correlations, Kruskal-Wallis by service type, and <a href="../../glossary.html#partial-correlation" class="glossary-link" data-definition="Correlation between two variables after controlling for one or more covariates.">partial correlation</a> results.</li>
 </ul>
 </div>
   </details>
@@ -262,23 +317,39 @@
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Test whether downtown-dependent routes explain Pittsburgh&#x27;s poor ridership recovery.&quot;&quot;&quot;
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import get_db, output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, PRE_COVID_BASELINE_YEAR, analysis_dir, classify_bus_route, correlate, get_db, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / &quot;data&quot;
+OUT = analysis_dir(__file__)
 
 # Downtown Pittsburgh centroid (matches analysis 33)
 DT_LAT, DT_LON = 40.4406, -79.9959
 DT_RADIUS_KM = 2.0
 
-BASELINE_YEAR = &quot;2019&quot;
+BASELINE_YEAR = PRE_COVID_BASELINE_YEAR
+
+# Commuter-type subtypes (flyer, express, busway) vs local vs limited
+COMMUTER_SUBTYPES = {&quot;express&quot;, &quot;flyer&quot;, &quot;busway&quot;}
+
+
+def add_service_type(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Add subtype and service_type columns based on route_id naming conventions.&quot;&quot;&quot;
+    return df.with_columns(
+        pl.col(&quot;route_id&quot;)
+        .map_elements(classify_bus_route, return_dtype=pl.Utf8)
+        .alias(&quot;subtype&quot;),
+    ).with_columns(
+        pl.when(pl.col(&quot;subtype&quot;).is_in(COMMUTER_SUBTYPES))
+        .then(pl.lit(&quot;Commuter/Express&quot;))
+        .when(pl.col(&quot;subtype&quot;) == &quot;limited&quot;)
+        .then(pl.lit(&quot;Limited&quot;))
+        .otherwise(pl.lit(&quot;Local&quot;))
+        .alias(&quot;service_type&quot;),
+    )
 
 
 def haversine_km(lat: float, lon: float) -&gt; float:
@@ -397,12 +468,8 @@ def plot_trajectories(df: pl.DataFrame) -&gt; None:
     monthly = (
         df.group_by([&quot;month&quot;, &quot;dt_tercile&quot;])
         .agg(
-            (pl.col(&quot;indexed&quot;) * pl.col(&quot;avg_riders&quot;)).sum().alias(&quot;weighted_sum&quot;),
-            pl.col(&quot;avg_riders&quot;).sum().alias(&quot;total_riders&quot;),
-            pl.col(&quot;route_id&quot;).n_unique().alias(&quot;n_routes&quot;),
-        )
-        .with_columns(
-            (pl.col(&quot;weighted_sum&quot;) / pl.col(&quot;total_riders&quot;)).alias(&quot;weighted_index&quot;)
+            weighted_index=weighted_mean(&quot;indexed&quot;, &quot;avg_riders&quot;),
+            n_routes=pl.col(&quot;route_id&quot;).n_unique(),
         )
         .sort(&quot;month&quot;)
     )
@@ -435,10 +502,57 @@ def plot_trajectories(df: pl.DataFrame) -&gt; None:
     ax.legend(loc=&quot;lower right&quot;)
     ax.set_ylim(0, 130)
 
+    save_chart(fig, OUT / &quot;recovery_trajectories.png&quot;, dpi=150)
+
+
+def plot_trajectories_by_service_type(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Plot recovery trajectories faceted by service type.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    service_types = [&quot;Local&quot;, &quot;Limited&quot;, &quot;Commuter/Express&quot;]
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6), sharey=True)
+
+    colors = {&quot;High&quot;: &quot;#dc2626&quot;, &quot;Medium&quot;: &quot;#f59e0b&quot;, &quot;Low&quot;: &quot;#2563eb&quot;}
+
+    for ax, stype in zip(axes, service_types):
+        sub_df = df.filter(pl.col(&quot;service_type&quot;) == stype)
+        n_routes = sub_df[&quot;route_id&quot;].n_unique()
+
+        monthly = (
+            sub_df.group_by([&quot;month&quot;, &quot;dt_tercile&quot;])
+            .agg(
+                weighted_index=weighted_mean(&quot;indexed&quot;, &quot;avg_riders&quot;),
+                n_routes=pl.col(&quot;route_id&quot;).n_unique(),
+            )
+            .sort(&quot;month&quot;)
+        )
+
+        for tercile in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
+            tsub = monthly.filter(pl.col(&quot;dt_tercile&quot;) == tercile).sort(&quot;month&quot;)
+            if len(tsub) == 0:
+                continue
+            n = tsub[&quot;n_routes&quot;].max()
+            ax.plot(
+                tsub[&quot;month&quot;].to_list(),
+                tsub[&quot;weighted_index&quot;].to_list(),
+                label=f&quot;{tercile} (n={n})&quot;,
+                color=colors[tercile],
+                linewidth=2,
+            )
+
+        ax.axhline(100, color=&quot;gray&quot;, linewidth=0.8, linestyle=&quot;--&quot;, alpha=0.5)
+        ax.axvspan(&quot;2020-03&quot;, &quot;2020-06&quot;, alpha=0.08, color=&quot;gray&quot;)
+        ticks = [m for m in monthly[&quot;month&quot;].unique().sort().to_list() if m.endswith(&quot;-01&quot;)]
+        ax.set_xticks(ticks)
+        ax.set_xticklabels([m[:4] for m in ticks], rotation=0, fontsize=8)
+        ax.set_title(f&quot;{stype} routes (n={n_routes})&quot;)
+        ax.legend(loc=&quot;lower right&quot;, fontsize=8)
+        ax.set_ylim(0, 130)
+
+    axes[0].set_ylabel(&quot;Indexed weekday ridership (2019 = 100)&quot;)
+    fig.suptitle(&quot;Recovery by Downtown Dependence — Faceted by Service Type&quot;, fontsize=14)
     fig.tight_layout()
-    fig.savefig(OUT / &quot;recovery_trajectories.png&quot;, dpi=150, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Saved {OUT / &#x27;recovery_trajectories.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;recovery_by_service_type.png&quot;, dpi=150)
 
 
 def plot_scatter(route_df: pl.DataFrame) -&gt; None:
@@ -456,11 +570,11 @@ def plot_scatter(route_df: pl.DataFrame) -&gt; None:
     # Regression line
     mask = np.isfinite(x) &amp; np.isfinite(y)
     if mask.sum() &gt; 5:
-        rho, p_val = stats.spearmanr(x[mask], y[mask])
+        corr = correlate(route_df, &quot;dt_share&quot;, &quot;recovery_2024&quot;)
         slope, intercept = np.polyfit(x[mask], y[mask], 1)
         x_line = np.linspace(x[mask].min(), x[mask].max(), 100)
         ax.plot(x_line, slope * x_line + intercept, color=&quot;#dc2626&quot;, linewidth=1.5,
-                linestyle=&quot;--&quot;, label=f&quot;Spearman ρ = {rho:.2f} (p = {p_val:.3f})&quot;)
+                linestyle=&quot;--&quot;, label=f&quot;Spearman ρ = {corr[&#x27;spearman_r&#x27;]:.2f} (p = {corr[&#x27;spearman_p&#x27;]:.3f})&quot;)
 
     ax.axhline(100, color=&quot;gray&quot;, linewidth=0.8, linestyle=&quot;--&quot;, alpha=0.5)
     ax.set_xlabel(&quot;Downtown boardings share (% of route total)&quot;)
@@ -468,10 +582,36 @@ def plot_scatter(route_df: pl.DataFrame) -&gt; None:
     ax.set_title(&quot;Downtown Dependence vs. Ridership Recovery&quot;)
     ax.legend()
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;scatter_dt_share_vs_recovery.png&quot;, dpi=150, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Saved {OUT / &#x27;scatter_dt_share_vs_recovery.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;scatter_dt_share_vs_recovery.png&quot;, dpi=150)
+
+
+def plot_scatter_by_service_type(route_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter plot of downtown share vs recovery, colored by service type.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+
+    type_colors = {&quot;Local&quot;: &quot;#2563eb&quot;, &quot;Limited&quot;: &quot;#f59e0b&quot;, &quot;Commuter/Express&quot;: &quot;#dc2626&quot;}
+
+    for stype, color in type_colors.items():
+        sub = route_df.filter(pl.col(&quot;service_type&quot;) == stype)
+        if len(sub) == 0:
+            continue
+        x = sub[&quot;dt_share&quot;].to_numpy() * 100
+        y = sub[&quot;recovery_2024&quot;].to_numpy()
+        sizes = np.clip(sub[&quot;baseline_2019&quot;].to_numpy() / 100, 10, 200)
+        ax.scatter(
+            x, y, s=sizes, alpha=0.6, color=color, edgecolors=&quot;white&quot;,
+            linewidth=0.5, label=f&quot;{stype} (n={len(sub)})&quot;,
+        )
+
+    ax.axhline(100, color=&quot;gray&quot;, linewidth=0.8, linestyle=&quot;--&quot;, alpha=0.5)
+    ax.set_xlabel(&quot;Downtown boardings share (% of route total)&quot;)
+    ax.set_ylabel(&quot;2024 ridership as % of 2019&quot;)
+    ax.set_title(&quot;Downtown Dependence vs. Recovery — By Service Type&quot;)
+    ax.legend()
+
+    save_chart(fig, OUT / &quot;scatter_by_service_type.png&quot;, dpi=150)
 
 
 def run_tests(route_df: pl.DataFrame) -&gt; pl.DataFrame:
@@ -508,82 +648,175 @@ def run_tests(route_df: pl.DataFrame) -&gt; pl.DataFrame:
     return pl.DataFrame(results)
 
 
+def run_service_type_analysis(route_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Test downtown dependence effect within each service type and overall with covariate.&quot;&quot;&quot;
+    results = []
+
+    # Within-group Spearman correlations
+    for stype in [&quot;Local&quot;, &quot;Limited&quot;, &quot;Commuter/Express&quot;]:
+        sub = route_df.filter(pl.col(&quot;service_type&quot;) == stype).drop_nulls(
+            subset=[&quot;dt_share&quot;, &quot;recovery_2024&quot;]
+        )
+        if len(sub) &gt;= 5:
+            r, p = stats.spearmanr(sub[&quot;dt_share&quot;].to_numpy(), sub[&quot;recovery_2024&quot;].to_numpy())
+            results.append({
+                &quot;test&quot;: &quot;Spearman (within group)&quot;,
+                &quot;group&quot;: stype,
+                &quot;n&quot;: len(sub),
+                &quot;statistic&quot;: round(r, 3),
+                &quot;p_value&quot;: round(p, 4),
+                &quot;significant&quot;: p &lt; 0.05,
+            })
+
+    # Kruskal-Wallis across service types (is recovery different by type?)
+    groups_by_type = {}
+    for stype in [&quot;Local&quot;, &quot;Limited&quot;, &quot;Commuter/Express&quot;]:
+        vals = route_df.filter(pl.col(&quot;service_type&quot;) == stype)[&quot;recovery_2024&quot;].drop_nulls().to_list()
+        if len(vals) &gt;= 3:
+            groups_by_type[stype] = vals
+
+    if len(groups_by_type) &gt;= 2:
+        h_stat, kw_p = stats.kruskal(*groups_by_type.values())
+        results.append({
+            &quot;test&quot;: &quot;Kruskal-Wallis (service type)&quot;,
+            &quot;group&quot;: &quot; vs &quot;.join(groups_by_type.keys()),
+            &quot;n&quot;: sum(len(v) for v in groups_by_type.values()),
+            &quot;statistic&quot;: round(h_stat, 3),
+            &quot;p_value&quot;: round(kw_p, 4),
+            &quot;significant&quot;: kw_p &lt; 0.05,
+        })
+
+    # Partial correlation: rank-based approach
+    # Encode service_type as ordinal for partial correlation
+    type_rank = {&quot;Local&quot;: 0, &quot;Limited&quot;: 1, &quot;Commuter/Express&quot;: 2}
+    valid_df = route_df.drop_nulls(subset=[&quot;dt_share&quot;, &quot;recovery_2024&quot;]).with_columns(
+        pl.col(&quot;service_type&quot;).replace_strict(type_rank).cast(pl.Float64).alias(&quot;type_rank&quot;)
+    )
+    if len(valid_df) &gt;= 10:
+        # Partial Spearman: residualize both dt_share and recovery on service type rank
+        dt_vals = valid_df[&quot;dt_share&quot;].to_numpy()
+        rec_vals = valid_df[&quot;recovery_2024&quot;].to_numpy()
+        type_vals = valid_df[&quot;type_rank&quot;].to_numpy()
+
+        # Rank-based residuals
+        dt_resid = dt_vals - np.array([np.mean(dt_vals[type_vals == t]) for t in type_vals])
+        rec_resid = rec_vals - np.array([np.mean(rec_vals[type_vals == t]) for t in type_vals])
+
+        r_partial, p_partial = stats.spearmanr(dt_resid, rec_resid)
+        results.append({
+            &quot;test&quot;: &quot;Partial Spearman (controlling service type)&quot;,
+            &quot;group&quot;: &quot;All&quot;,
+            &quot;n&quot;: len(valid_df),
+            &quot;statistic&quot;: round(r_partial, 3),
+            &quot;p_value&quot;: round(p_partial, 4),
+            &quot;significant&quot;: p_partial &lt; 0.05,
+        })
+
+    return pl.DataFrame(results)
+
+
+@run_analysis(38, &quot;Downtown Recovery Gap&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 38: Downtown Recovery Gap&quot;)
-    print(&quot;=&quot; * 60)
 
-    # Step 1: Downtown-dependence scores
-    print(&quot;\nComputing downtown-dependence scores from stop-level data...&quot;)
-    route_scores = compute_downtown_scores()
-    route_scores = assign_terciles(route_scores)
-    print(f&quot;  {len(route_scores)} routes scored&quot;)
-    for t in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
-        sub = route_scores.filter(pl.col(&quot;dt_tercile&quot;) == t)
-        print(f&quot;  {t:6s}: n={len(sub)}, median dt_share={sub[&#x27;dt_share&#x27;].median():.1%}&quot;)
+    # Step 1: Downtown-dependence scores + service type classification
+    with phase(&quot;Computing downtown-dependence scores from stop-level data&quot;):
+        route_scores = compute_downtown_scores()
+        route_scores = assign_terciles(route_scores)
+        route_scores = add_service_type(route_scores)
+        print(f&quot;  {len(route_scores)} routes scored&quot;)
+        for t in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
+            sub = route_scores.filter(pl.col(&quot;dt_tercile&quot;) == t)
+            print(f&quot;  {t:6s}: n={len(sub)}, median dt_share={sub[&#x27;dt_share&#x27;].median():.1%}&quot;)
+        print(&quot;\n  Service type breakdown:&quot;)
+        for stype in [&quot;Local&quot;, &quot;Limited&quot;, &quot;Commuter/Express&quot;]:
+            sub = route_scores.filter(pl.col(&quot;service_type&quot;) == stype)
+            if len(sub) &gt; 0:
+                print(f&quot;  {stype:20s}: n={len(sub)}, median dt_share={sub[&#x27;dt_share&#x27;].median():.1%}&quot;)
 
     # Step 2: Load ridership and compute recovery
-    print(&quot;\nLoading monthly ridership...&quot;)
-    ridership = load_ridership()
-    df = compute_recovery(ridership, route_scores)
-    # Merge tercile labels
-    df = df.join(
-        route_scores.select(&quot;route_id&quot;, &quot;dt_tercile&quot;), on=&quot;route_id&quot;, how=&quot;left&quot;
-    )
-    print(f&quot;  {df[&#x27;route_id&#x27;].n_unique()} routes with both ridership and downtown scores&quot;)
+    with phase(&quot;Loading monthly ridership&quot;):
+        ridership = load_ridership()
+        df = compute_recovery(ridership, route_scores)
+        # Merge tercile labels and service type
+        df = df.join(
+            route_scores.select(&quot;route_id&quot;, &quot;dt_tercile&quot;, &quot;service_type&quot;),
+            on=&quot;route_id&quot;,
+            how=&quot;left&quot;,
+        )
+        print(f&quot;  {df[&#x27;route_id&#x27;].n_unique()} routes with both ridership and downtown scores&quot;)
 
-    # Step 3: Compute 2024 recovery ratio per route
-    recovery_2024 = (
-        df.filter(pl.col(&quot;month&quot;).str.starts_with(&quot;2024&quot;))
-        .group_by(&quot;route_id&quot;)
-        .agg(pl.col(&quot;indexed&quot;).mean().alias(&quot;recovery_2024&quot;))
-    )
-    route_df = route_scores.join(recovery_2024, on=&quot;route_id&quot;, how=&quot;inner&quot;)
-    # Also get baseline for scatter sizing
-    baseline = (
-        ridership.filter(pl.col(&quot;month&quot;).str.starts_with(BASELINE_YEAR))
-        .group_by(&quot;route_id&quot;)
-        .agg(pl.col(&quot;avg_riders&quot;).mean().alias(&quot;baseline_2019&quot;))
-    )
-    route_df = route_df.join(baseline, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+        # Step 3: Compute 2024 recovery ratio per route
+        recovery_2024 = (
+            df.filter(pl.col(&quot;month&quot;).str.starts_with(&quot;2024&quot;))
+            .group_by(&quot;route_id&quot;)
+            .agg(pl.col(&quot;indexed&quot;).mean().alias(&quot;recovery_2024&quot;))
+        )
+        route_df = route_scores.join(recovery_2024, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+        # Also get baseline for scatter sizing
+        baseline = (
+            ridership.filter(pl.col(&quot;month&quot;).str.starts_with(BASELINE_YEAR))
+            .group_by(&quot;route_id&quot;)
+            .agg(pl.col(&quot;avg_riders&quot;).mean().alias(&quot;baseline_2019&quot;))
+        )
+        route_df = route_df.join(baseline, on=&quot;route_id&quot;, how=&quot;inner&quot;)
 
-    print(&quot;\nRecovery by tercile (2024 avg as % of 2019):&quot;)
-    for t in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
-        sub = route_df.filter(pl.col(&quot;dt_tercile&quot;) == t)
-        med = sub[&quot;recovery_2024&quot;].median()
-        mean = sub[&quot;recovery_2024&quot;].mean()
-        print(f&quot;  {t:6s}: median={med:.1f}%, mean={mean:.1f}%, n={len(sub)}&quot;)
+        print(&quot;\nRecovery by tercile (2024 avg as % of 2019):&quot;)
+        for t in [&quot;High&quot;, &quot;Medium&quot;, &quot;Low&quot;]:
+            sub = route_df.filter(pl.col(&quot;dt_tercile&quot;) == t)
+            med = sub[&quot;recovery_2024&quot;].median()
+            mean = sub[&quot;recovery_2024&quot;].mean()
+            print(f&quot;  {t:6s}: median={med:.1f}%, mean={mean:.1f}%, n={len(sub)}&quot;)
 
-    # Step 4: Statistical tests
-    print(&quot;\nStatistical tests:&quot;)
-    test_results = run_tests(route_df)
-    for row in test_results.iter_rows(named=True):
-        sig = &quot;*&quot; if row[&quot;significant&quot;] else &quot;&quot;
-        print(f&quot;  {row[&#x27;test&#x27;]:30s} {row[&#x27;comparison&#x27;]:25s} &quot;
-              f&quot;stat={row[&#x27;statistic&#x27;]:.3f}, p={row[&#x27;p_value&#x27;]:.4f} {sig}&quot;)
+        # Step 4: Statistical tests
+        print(&quot;\nStatistical tests:&quot;)
+        test_results = run_tests(route_df)
+        for row in test_results.iter_rows(named=True):
+            sig = &quot;*&quot; if row[&quot;significant&quot;] else &quot;&quot;
+            print(f&quot;  {row[&#x27;test&#x27;]:30s} {row[&#x27;comparison&#x27;]:25s} &quot;
+                  f&quot;stat={row[&#x27;statistic&#x27;]:.3f}, p={row[&#x27;p_value&#x27;]:.4f} {sig}&quot;)
 
-    # Spearman correlation (continuous)
-    x = route_df[&quot;dt_share&quot;].to_numpy()
-    y = route_df[&quot;recovery_2024&quot;].to_numpy()
-    mask = np.isfinite(x) &amp; np.isfinite(y)
-    rho, p_val = stats.spearmanr(x[mask], y[mask])
-    print(f&quot;\n  Spearman (dt_share vs recovery): ρ={rho:.3f}, p={p_val:.4f}&quot;)
+        # Spearman correlation (continuous)
+        corr = correlate(route_df, &quot;dt_share&quot;, &quot;recovery_2024&quot;)
+        print(f&quot;\n  Spearman (dt_share vs recovery): ρ={corr[&#x27;spearman_r&#x27;]:.3f}, p={corr[&#x27;spearman_p&#x27;]:.4f}&quot;)
+
+    # Step 4b: Service type analysis
+    with phase(&quot;Analyzing recovery by service type&quot;):
+        print(&quot;\nRecovery by service type (2024 avg as % of 2019):&quot;)
+        for stype in [&quot;Local&quot;, &quot;Limited&quot;, &quot;Commuter/Express&quot;]:
+            sub = route_df.filter(pl.col(&quot;service_type&quot;) == stype)
+            if len(sub) &gt; 0:
+                med = sub[&quot;recovery_2024&quot;].median()
+                mean = sub[&quot;recovery_2024&quot;].mean()
+                dt_med = sub[&quot;dt_share&quot;].median()
+                print(
+                    f&quot;  {stype:20s}: median recovery={med:.1f}%, &quot;
+                    f&quot;mean={mean:.1f}%, median dt_share={dt_med:.1%}, n={len(sub)}&quot;
+                )
+
+        service_type_results = run_service_type_analysis(route_df)
+        print(&quot;\nService type statistical tests:&quot;)
+        for row in service_type_results.iter_rows(named=True):
+            sig = &quot;*&quot; if row[&quot;significant&quot;] else &quot;&quot;
+            print(
+                f&quot;  {row[&#x27;test&#x27;]:45s} {row[&#x27;group&#x27;]:20s} &quot;
+                f&quot;n={row[&#x27;n&#x27;]:3d}, stat={row[&#x27;statistic&#x27;]:.3f}, &quot;
+                f&quot;p={row[&#x27;p_value&#x27;]:.4f} {sig}&quot;
+            )
 
     # Step 5: Charts
-    print(&quot;\nGenerating charts...&quot;)
-    plot_trajectories(df)
-    plot_scatter(route_df)
+    with phase(&quot;Generating charts&quot;):
+        plot_trajectories(df)
+        plot_scatter(route_df)
+        plot_trajectories_by_service_type(df)
+        plot_scatter_by_service_type(route_df)
 
     # Step 6: Save CSV
-    route_df.sort(&quot;dt_share&quot;, descending=True).write_csv(
-        OUT / &quot;route_downtown_scores.csv&quot;
-    )
-    test_results.write_csv(OUT / &quot;statistical_tests.csv&quot;)
-    print(f&quot;  Saved {OUT / &#x27;route_downtown_scores.csv&#x27;}&quot;)
-    print(f&quot;  Saved {OUT / &#x27;statistical_tests.csv&#x27;}&quot;)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Saving CSVs&quot;):
+        sorted_route_df = route_df.sort(&quot;dt_share&quot;, descending=True)
+        save_csv(sorted_route_df, OUT / &quot;route_downtown_scores.csv&quot;)
+        save_csv(test_results, OUT / &quot;statistical_tests.csv&quot;)
+        save_csv(service_type_results, OUT / &quot;service_type_tests.csv&quot;)
 
 
 if __name__ == &quot;__main__&quot;:

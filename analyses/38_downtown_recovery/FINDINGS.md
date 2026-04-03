@@ -1,7 +1,7 @@
 # Findings: Downtown Recovery Gap
 
 ## Summary
-Downtown dependence is a statistically significant predictor of worse ridership recovery, partially supporting PRT's claim that weak downtown business activity drags system-wide ridership. Routes with higher shares of pre-pandemic downtown boardings show worse recovery trajectories. However, the effect is modest (Spearman rho = -0.29) and explains only a fraction of the system-wide gap — even routes with minimal downtown exposure remain well below 2019 levels.
+Downtown dependence is a statistically significant predictor of worse ridership recovery, partially supporting PRT's claim that weak downtown business activity drags system-wide ridership. Routes with higher shares of pre-pandemic downtown boardings show worse recovery trajectories. However, the effect is modest (Spearman rho = -0.29) and explains only a fraction of the system-wide gap — even routes with minimal downtown exposure remain well below 2019 levels. Decomposing by service type reveals that the downtown effect is primarily a commuter/express route phenomenon: commuter routes recovered to just 34% of 2019 levels vs. 59% for local routes. Within local routes alone, downtown dependence is not a significant predictor of recovery.
 
 ## Key Numbers
 - **Spearman correlation** between downtown boardings share and 2024 recovery: rho = -0.29, p = 0.005.
@@ -11,6 +11,14 @@ Downtown dependence is a statistically significant predictor of worse ridership 
 - **Kruskal-Wallis** across terciles: H = 8.64, p = 0.013.
 - Only the **Medium vs Low** pairwise comparison is significant after Bonferroni correction (p = 0.02). High vs Low approaches significance (p = 0.11) but does not clear the threshold.
 
+### By Service Type
+- **Local routes** (n=69): median recovery = 58.6%, median downtown share = 41.1%.
+- **Limited routes** (n=4): median recovery = 51.4%, median downtown share = 42.8%.
+- **Commuter/Express routes** (n=21): median recovery = 33.7%, median downtown share = 41.6%.
+- **Kruskal-Wallis** across service types: H = 12.71, p = 0.002 — recovery differs significantly by service type.
+- **Within-group Spearman** (downtown share vs recovery): Local rho = -0.19 (p = 0.11, NS); Commuter/Express rho = -0.56 (p = 0.008).
+- **Partial Spearman** controlling for service type: rho = -0.26, p = 0.010 — downtown dependence still predicts worse recovery even after accounting for route type.
+
 ## Observations
 - **PRT's claim is directionally correct but insufficient as a full explanation.** The negative correlation confirms that downtown-oriented routes have recovered less ridership. But the effect is modest — downtown dependence alone accounts for roughly 8% of the variance in recovery (rho-squared ~ 0.08).
 - **Even non-downtown routes are far from recovery.** The low-dependence tercile sits at median 63.8% of 2019, meaning routes with almost no downtown exposure still lost over a third of their riders. This is not purely a downtown story.
@@ -18,6 +26,14 @@ Downtown dependence is a statistically significant predictor of worse ridership 
 - **Large local routes in the high tercile held up better than expected.** Routes like 6, 12, 17, 81, 83 have >50% downtown share but recovered to 65-79% — likely because they serve diverse trip purposes (shopping, medical, transfers) beyond commuting.
 - **The best-recovering routes are high-ridership trunk lines with low downtown shares:** 61A (84%), 61C (79%), 71B (80%), 59 (90%). These serve corridor travel that is less sensitive to office occupancy.
 - **The trajectory chart shows all three groups tracking closely until mid-2021**, after which the low-dependence group pulls ahead. This timing aligns with the return of non-commute travel (errands, school, medical) while office occupancy remained depressed.
+
+### Service Type Decomposition
+- **Commuter/express routes recovered far less than local routes** — median 33.7% vs 58.6% of 2019 levels. This is statistically significant (Kruskal-Wallis H = 12.71, p = 0.002) and represents the single largest explanatory split in the data.
+- **Downtown dependence and service type are partially confounded but not redundant.** Commuter/express routes have similar median downtown shares to local routes (~41%), but their recovery is 25pp worse. The downtown effect operates *through* route type — commuter routes serve downtown commuters specifically, while local routes serve downtown for diverse purposes.
+- **Within local routes, downtown dependence has no significant effect** (rho = -0.19, p = 0.11). Among local bus routes, having more downtown stops does not meaningfully predict worse recovery. The downtown recovery gap is primarily a commuter route phenomenon.
+- **Within commuter/express routes, downtown dependence is strongly predictive** (rho = -0.56, p = 0.008). Among commuter routes, those with higher downtown share recovered even less — suggesting that peak-direction downtown express services were hit hardest.
+- **After controlling for service type, downtown dependence still predicts recovery** (partial rho = -0.26, p = 0.010), but the effect is attenuated from rho = -0.29 to -0.26. Service type explains part but not all of the downtown dependence effect.
+- **The faceted trajectory chart reveals starkly different recovery shapes.** Local routes show a gradual climb back toward 60-70% across all terciles. Commuter/express routes show a much flatter recovery, with high-downtown-dependence commuter routes plateauing around 30-40%.
 
 ## Caveats
 - **Downtown share is computed from pre-pandemic stop-level data (FY2019)**, not current patterns. Routes may have shifted service since 2019.

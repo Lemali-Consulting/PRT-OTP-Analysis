@@ -1,0 +1,5 @@
+test,group,n,statistic,p_value,significant
+Spearman (within group),Local,69,-0.194,0.1095,0.0
+Spearman (within group),Commuter/Express,21,-0.562,0.008,1.0
+Kruskal-Wallis (service type),Local vs Limited vs Commuter/Express,94,12.71,0.0017,1.0
+Partial Spearman (controlling service type),All,94,-0.263,0.0104,1.0

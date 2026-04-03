@@ -9,6 +9,8 @@ Does downtown-dependent ridership explain Pittsburgh's poor system-wide recovery
 3. **Build monthly ridership recovery trajectories.** Using `ridership_monthly` (weekday data, 2017-01 through 2024-10), index each route's ridership to its 2019 monthly average. Aggregate indexed ridership by downtown-dependence tercile to produce three recovery curves.
 4. **Statistical test.** Compare 2024 recovery ratios across the three groups using Kruskal-Wallis (non-parametric, no normality assumption). If significant, apply pairwise Mann-Whitney with Bonferroni correction.
 5. **Scatter plot.** Show the relationship between downtown-dependence share (continuous) and 2024 recovery ratio at the route level, with Spearman correlation.
+6. **Service type segmentation.** Classify each route by service type using route ID naming conventions (`classify_bus_route`): local (plain numbers), limited (L-suffix), and commuter/express (P/O/G-prefix flyers, X-suffix express, busway). Produce faceted recovery trajectories and scatter plots by service type.
+7. **Service type as covariate.** Test whether downtown dependence predicts recovery after controlling for service type using: (a) within-group Spearman correlations for each service type, (b) Kruskal-Wallis across service types, and (c) partial Spearman correlation residualizing both downtown share and recovery on service type rank.
 
 ## Data
 - `data/bus-stop-usage/wprdc_stop_data.csv` — stop-level ridership with lat/lon. Filtered to `time_period == 'Pre-pandemic'` and `serviceday == 'Weekday'`. Used to compute downtown-dependence scores.
@@ -18,5 +20,8 @@ Does downtown-dependent ridership explain Pittsburgh's poor system-wide recovery
 ## Output
 - `output/recovery_trajectories.png` — Monthly indexed ridership (2019=100) for high/medium/low downtown-dependence terciles.
 - `output/scatter_dt_share_vs_recovery.png` — Route-level scatter of downtown share vs. 2024 recovery ratio.
-- `output/route_downtown_scores.csv` — Per-route downtown-dependence scores and recovery ratios.
+- `output/recovery_by_service_type.png` — Recovery trajectories faceted by service type (local, limited, commuter/express).
+- `output/scatter_by_service_type.png` — Downtown share vs. recovery scatter colored by service type.
+- `output/route_downtown_scores.csv` — Per-route downtown-dependence scores, service type, and recovery ratios.
 - `output/statistical_tests.csv` — Kruskal-Wallis and pairwise test results.
+- `output/service_type_tests.csv` — Within-group correlations, Kruskal-Wallis by service type, and partial correlation results.

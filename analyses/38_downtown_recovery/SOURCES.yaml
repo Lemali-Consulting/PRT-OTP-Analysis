@@ -15,9 +15,10 @@ analyses:
     an explanatory factor.
 - id: 21
   relationship: extends COVID ridership recovery finding with geographic decomposition.
-description: Tests PRT claim that poor downtown business recovery explains system-wide
-  ridership lag vs peer cities by comparing recovery trajectories of routes grouped
-  by downtown boardings share.
+description: Routes serving downtown recovered less ridership post-COVID, but the
+  gap is driven mainly by commuter/express services (34% recovered) rather than local
+  buses (59% recovered). Within local routes, downtown dependence alone does not predict
+  worse recovery.
 dependencies:
 - numpy
 - polars
@@ -31,10 +32,22 @@ outputs:
   kind: image
   description: Route-level scatter of downtown boardings share vs 2024 recovery ratio
     with Spearman correlation.
+- path: recovery_by_service_type.png
+  kind: image
+  description: Recovery trajectories faceted by service type (local, limited,
+    commuter/express), showing downtown-dependence terciles within each.
+- path: scatter_by_service_type.png
+  kind: image
+  description: Downtown share vs recovery scatter with points colored by service type
+    (local, limited, commuter/express).
 - path: route_downtown_scores.csv
   kind: data
-  description: Per-route downtown-dependence scores, tercile assignments, and 2024
-    recovery ratios.
+  description: Per-route downtown-dependence scores, service type classification,
+    tercile assignments, and 2024 recovery ratios.
 - path: statistical_tests.csv
   kind: data
   description: Kruskal-Wallis and pairwise Mann-Whitney test results.
+- path: service_type_tests.csv
+  kind: data
+  description: Within-group Spearman correlations, Kruskal-Wallis across service types,
+    and partial Spearman controlling for service type.
