@@ -35,7 +35,7 @@
   <p class="kicker">Reference</p>
   <h1>Data Dictionary</h1>
   <p class="lede">Database tables, columns, types, and known data quality notes for the PRT OTP dataset.</p>
-  <p class="lede">Built 2026-04-03 19:46 UTC · Commit 59585ac</p>
+  <p class="lede">Built 2026-04-03 19:51 UTC · Commit ebbab23</p>
 </section>
 <section class="panel">
   <div class="markdown-body">
@@ -118,6 +118,11 @@
   <td><code>otp_null_classification</code></td>
   <td>1,064</td>
   <td>Ref: why each missing OTP value is null</td>
+</tr>
+<tr>
+  <td><code>allegheny_go_weekly</code></td>
+  <td>~96</td>
+  <td>Fact: weekly Allegheny Go program ridership</td>
 </tr>
 </tbody>
 </table>
@@ -585,6 +590,35 @@
 <li><code>not_operating</code>: within temporal coverage of at least one cross-reference source, but no evidence the route operated</li>
 <li><code>no_coverage</code>: month falls outside both the schedule data range (through 2021-03) and ridership data range (through 2024-10)</li>
 </ul>
+<h3><code>allegheny_go_weekly</code></h3>
+<p>Weekly ridership for the Allegheny Go discounted fare program, extracted from the county's Tableau dashboard.</p>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>week_start</code></td>
+  <td>TEXT PK</td>
+  <td>ISO date for the start of the week (<code>&quot;2024-05-12&quot;</code>)</td>
+</tr>
+<tr>
+  <td><code>rides</code></td>
+  <td>INTEGER</td>
+  <td>Total rides taken that week by program participants</td>
+</tr>
+<tr>
+  <td><code>riders</code></td>
+  <td>INTEGER</td>
+  <td>Unique riders that week</td>
+</tr>
+</tbody>
+</table>
+<p>Source: <a href="https://tableau.alleghenycounty.us/t/PublicSite/views/AlleghenyGoDashboard/Ridership">Allegheny Go Dashboard</a>. Built by <code>src/prt_otp_analysis/allegheny_go.py</code>.</p>
 <h2>Source Files</h2>
 <table>
 <thead>

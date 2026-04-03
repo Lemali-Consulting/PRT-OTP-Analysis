@@ -53,6 +53,33 @@ def load_peer_data(conn) -> pl.DataFrame:
     )
 
 
+def load_peer_timeseries(conn) -> pl.DataFrame:
+    """Load annual metrics for all peer cities across the full year range."""
+    id_list = ",".join(str(i) for i in PEERS)
+    rows = conn.execute(f"""
+        SELECT ntd_id, year, upt, vrh, fares, opexp
+        FROM ntd_annual_service
+        WHERE ntd_id IN ({id_list})
+          AND year BETWEEN {BASELINE_YEAR} AND {COMPARE_YEAR}
+    """).fetchall()
+    peer_map = pl.DataFrame({
+        "ntd_id": list(PEERS.keys()),
+        "city": list(PEERS.values()),
+    })
+    df = pl.DataFrame(
+        [dict(r) for r in rows],
+        schema={"ntd_id": pl.Int64, "year": pl.Int64, "upt": pl.Float64,
+                "vrh": pl.Float64, "fares": pl.Float64, "opexp": pl.Float64},
+    )
+    df = df.join(peer_map, on="ntd_id", how="left")
+    # Compute derived metrics
+    df = df.with_columns(
+        fare_per_trip=(pl.col("fares") / pl.col("upt")),
+        farebox_recovery=(pl.col("fares") / pl.col("opexp") * 100),
+    )
+    return df.sort("city", "year")
+
+
 def compute_metrics(raw_df: pl.DataFrame) -> pl.DataFrame:
     """Compute derived metrics and percent changes for each peer city."""
     peer_map = pl.DataFrame({
@@ -248,6 +275,47 @@ def chart_dashboard(plt, metrics_df: pl.DataFrame) -> None:
     save_chart(fig, OUT / "peer_dashboard.png")
 
 
+def _plot_trend_line(ax, ts_df: pl.DataFrame, metric: str, ylabel: str,
+                     title: str, fmt: str = ".1f", indexed: bool = False) -> None:
+    """Plot one trend line per city on the given axes."""
+    for city in sorted(PEERS.values()):
+        city_df = ts_df.filter(pl.col("city") == city).sort("year")
+        years = city_df["year"].to_list()
+        vals = city_df[metric].to_list()
+        if indexed:
+            base = vals[0] if vals[0] else 1
+            vals = [v / base * 100 for v in vals]
+        lw = 2.5 if city == "Pittsburgh" else 1.2
+        alpha = 1.0 if city == "Pittsburgh" else 0.6
+        zorder = 10 if city == "Pittsburgh" else 1
+        ax.plot(years, vals, label=city, color=COLORS[city],
+                linewidth=lw, alpha=alpha, zorder=zorder, marker="o", markersize=3)
+    if indexed:
+        ax.axhline(100, color="#999999", linestyle=":", linewidth=0.8)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.set_xticks(list(range(BASELINE_YEAR, COMPARE_YEAR + 1)))
+
+
+def chart_trends(plt, ts_df: pl.DataFrame) -> None:
+    """2x2 line chart panel showing annual trajectories for each metric."""
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+
+    _plot_trend_line(axes[0, 0], ts_df, "upt", "Indexed (2019 = 100)",
+                     "Ridership Trajectory", indexed=True)
+    _plot_trend_line(axes[0, 1], ts_df, "vrh", "Indexed (2019 = 100)",
+                     "Service Hours Trajectory", indexed=True)
+    _plot_trend_line(axes[1, 0], ts_df, "fare_per_trip", "$/Trip",
+                     "Fare Revenue per Trip")
+    _plot_trend_line(axes[1, 1], ts_df, "farebox_recovery", "Recovery Ratio (%)",
+                     "Farebox Recovery Ratio")
+
+    axes[0, 0].legend(loc="lower right", fontsize=8)
+    fig.suptitle(f"Peer City Trends \u2014 Pittsburgh vs 7 Peers ({BY}\u2013{CY})",
+                 fontsize=14, fontweight="bold", y=0.98)
+    save_chart(fig, OUT / "peer_trends.png")
+
+
 @run_analysis(40, "Peer City Dashboard")
 def main():
     plt = setup_plotting()
@@ -255,8 +323,10 @@ def main():
 
     with phase("Loading peer city data"):
         raw_df = load_peer_data(conn)
+        ts_df = load_peer_timeseries(conn)
         conn.close()
-        print(f"   {len(raw_df)} rows loaded ({len(raw_df) // 2} city-year pairs)")
+        print(f"   {len(raw_df)} rows for endpoint comparison")
+        print(f"   {len(ts_df)} rows for time series ({BASELINE_YEAR}-{COMPARE_YEAR})")
 
     with phase("Computing metrics"):
         metrics_df = compute_metrics(raw_df)
@@ -302,6 +372,9 @@ def main():
 
     with phase("Generating dashboard"):
         chart_dashboard(plt, metrics_df)
+
+    with phase("Generating trend lines"):
+        chart_trends(plt, ts_df)
 
 
 if __name__ == "__main__":

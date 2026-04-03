@@ -133,6 +133,16 @@ NTD_ANNUAL_SERVICE = Schema(
 )
 
 
+ALLEGHENY_GO_WEEKLY = Schema(
+    name="allegheny_go_weekly",
+    columns={
+        "week_start": pl.Utf8,
+        "rides": pl.Int64,
+        "riders": pl.Int64,
+    },
+)
+
+
 OTP_NULL_CLASSIFICATION = Schema(
     name="otp_null_classification",
     columns={

@@ -36,7 +36,7 @@
   <h1>40 - Peer City Dashboard</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-04-03 19:46 UTC · Commit 59585ac</p>
+  <p class="lede">Built 2026-04-03 19:51 UTC · Commit ebbab23</p>
 </section>
 
 <section class="panel toc-panel">
@@ -128,7 +128,7 @@
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn active" data-target="charts">Charts (5)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
     <button class="tab-btn" data-target="data">Data (1)</button>
   </div>
@@ -159,7 +159,7 @@
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/40_peer_city_dashboard/fare_per_trip.png" target="_blank" rel="noopener noreferrer">fare_per_trip.png</a>
-          <p class="artifact-desc">paired bars comparing fare revenue per trip in 2019 vs 2023.</p>
+          <p class="artifact-desc">paired bars comparing fare revenue per trip in 2019 vs 2024.</p>
         </figcaption>
       </figure>
     
@@ -168,7 +168,16 @@
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/40_peer_city_dashboard/farebox_recovery.png" target="_blank" rel="noopener noreferrer">farebox_recovery.png</a>
-          <p class="artifact-desc">paired bars comparing farebox recovery ratio in 2019 vs 2023.</p>
+          <p class="artifact-desc">paired bars comparing farebox recovery ratio in 2019 vs 2024.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/40_peer_city_dashboard/peer_trends.png" alt="peer_trends" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/40_peer_city_dashboard/peer_trends.png" target="_blank" rel="noopener noreferrer">peer_trends.png</a>
+          <p class="artifact-desc">2x2 line chart showing annual trajectories for ridership, service hours, fare per trip, and farebox recovery from 2019 to 2024.</p>
         </figcaption>
       </figure>
     
@@ -300,6 +309,33 @@ def load_peer_data(conn) -&gt; pl.DataFrame:
         schema={&quot;ntd_id&quot;: pl.Int64, &quot;year&quot;: pl.Int64, &quot;upt&quot;: pl.Float64,
                 &quot;vrh&quot;: pl.Float64, &quot;fares&quot;: pl.Float64, &quot;opexp&quot;: pl.Float64},
     )
+
+
+def load_peer_timeseries(conn) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load annual metrics for all peer cities across the full year range.&quot;&quot;&quot;
+    id_list = &quot;,&quot;.join(str(i) for i in PEERS)
+    rows = conn.execute(f&quot;&quot;&quot;
+        SELECT ntd_id, year, upt, vrh, fares, opexp
+        FROM ntd_annual_service
+        WHERE ntd_id IN ({id_list})
+          AND year BETWEEN {BASELINE_YEAR} AND {COMPARE_YEAR}
+    &quot;&quot;&quot;).fetchall()
+    peer_map = pl.DataFrame({
+        &quot;ntd_id&quot;: list(PEERS.keys()),
+        &quot;city&quot;: list(PEERS.values()),
+    })
+    df = pl.DataFrame(
+        [dict(r) for r in rows],
+        schema={&quot;ntd_id&quot;: pl.Int64, &quot;year&quot;: pl.Int64, &quot;upt&quot;: pl.Float64,
+                &quot;vrh&quot;: pl.Float64, &quot;fares&quot;: pl.Float64, &quot;opexp&quot;: pl.Float64},
+    )
+    df = df.join(peer_map, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+    # Compute derived metrics
+    df = df.with_columns(
+        fare_per_trip=(pl.col(&quot;fares&quot;) / pl.col(&quot;upt&quot;)),
+        farebox_recovery=(pl.col(&quot;fares&quot;) / pl.col(&quot;opexp&quot;) * 100),
+    )
+    return df.sort(&quot;city&quot;, &quot;year&quot;)
 
 
 def compute_metrics(raw_df: pl.DataFrame) -&gt; pl.DataFrame:
@@ -497,6 +533,47 @@ def chart_dashboard(plt, metrics_df: pl.DataFrame) -&gt; None:
     save_chart(fig, OUT / &quot;peer_dashboard.png&quot;)
 
 
+def _plot_trend_line(ax, ts_df: pl.DataFrame, metric: str, ylabel: str,
+                     title: str, fmt: str = &quot;.1f&quot;, indexed: bool = False) -&gt; None:
+    &quot;&quot;&quot;Plot one trend line per city on the given axes.&quot;&quot;&quot;
+    for city in sorted(PEERS.values()):
+        city_df = ts_df.filter(pl.col(&quot;city&quot;) == city).sort(&quot;year&quot;)
+        years = city_df[&quot;year&quot;].to_list()
+        vals = city_df[metric].to_list()
+        if indexed:
+            base = vals[0] if vals[0] else 1
+            vals = [v / base * 100 for v in vals]
+        lw = 2.5 if city == &quot;Pittsburgh&quot; else 1.2
+        alpha = 1.0 if city == &quot;Pittsburgh&quot; else 0.6
+        zorder = 10 if city == &quot;Pittsburgh&quot; else 1
+        ax.plot(years, vals, label=city, color=COLORS[city],
+                linewidth=lw, alpha=alpha, zorder=zorder, marker=&quot;o&quot;, markersize=3)
+    if indexed:
+        ax.axhline(100, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=0.8)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.set_xticks(list(range(BASELINE_YEAR, COMPARE_YEAR + 1)))
+
+
+def chart_trends(plt, ts_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;2x2 line chart panel showing annual trajectories for each metric.&quot;&quot;&quot;
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+
+    _plot_trend_line(axes[0, 0], ts_df, &quot;upt&quot;, &quot;Indexed (2019 = 100)&quot;,
+                     &quot;Ridership Trajectory&quot;, indexed=True)
+    _plot_trend_line(axes[0, 1], ts_df, &quot;vrh&quot;, &quot;Indexed (2019 = 100)&quot;,
+                     &quot;Service Hours Trajectory&quot;, indexed=True)
+    _plot_trend_line(axes[1, 0], ts_df, &quot;fare_per_trip&quot;, &quot;$/Trip&quot;,
+                     &quot;Fare Revenue per Trip&quot;)
+    _plot_trend_line(axes[1, 1], ts_df, &quot;farebox_recovery&quot;, &quot;Recovery Ratio (%)&quot;,
+                     &quot;Farebox Recovery Ratio&quot;)
+
+    axes[0, 0].legend(loc=&quot;lower right&quot;, fontsize=8)
+    fig.suptitle(f&quot;Peer City Trends \u2014 Pittsburgh vs 7 Peers ({BY}\u2013{CY})&quot;,
+                 fontsize=14, fontweight=&quot;bold&quot;, y=0.98)
+    save_chart(fig, OUT / &quot;peer_trends.png&quot;)
+
+
 @run_analysis(40, &quot;Peer City Dashboard&quot;)
 def main():
     plt = setup_plotting()
@@ -504,8 +581,10 @@ def main():
 
     with phase(&quot;Loading peer city data&quot;):
         raw_df = load_peer_data(conn)
+        ts_df = load_peer_timeseries(conn)
         conn.close()
-        print(f&quot;   {len(raw_df)} rows loaded ({len(raw_df) // 2} city-year pairs)&quot;)
+        print(f&quot;   {len(raw_df)} rows for endpoint comparison&quot;)
+        print(f&quot;   {len(ts_df)} rows for time series ({BASELINE_YEAR}-{COMPARE_YEAR})&quot;)
 
     with phase(&quot;Computing metrics&quot;):
         metrics_df = compute_metrics(raw_df)
@@ -551,6 +630,9 @@ def main():
 
     with phase(&quot;Generating dashboard&quot;):
         chart_dashboard(plt, metrics_df)
+
+    with phase(&quot;Generating trend lines&quot;):
+        chart_trends(plt, ts_df)
 
 
 if __name__ == &quot;__main__&quot;:

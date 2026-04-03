@@ -11,4 +11,7 @@ Run steps in numeric order, or use `uv run python scaffold.py run-all`.
 3. `03_weather`
 4. `04_traffic_overlay`
 5. `05_ntd_ridership`
+6. `06_ntd_service`
+7. `07_otp_null_classification`
+8. `08_allegheny_go`
 

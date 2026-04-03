@@ -23,6 +23,7 @@ Pittsburgh Regional Transit (PRT) on-time performance and system data, normalize
 | `ntd_ridership`  | 673,920 | Fact: monthly UPT by agency/mode/TOS     |
 | `ntd_annual_service` | 93,188 | Fact: annual VRH/VRM/UPT/VOMS/fares/opexp by agency |
 | `otp_null_classification` | 1,064 | Ref: why each missing OTP value is null |
+| `allegheny_go_weekly` | ~96 | Fact: weekly Allegheny Go program ridership |
 
 ### `routes`
 
@@ -168,6 +169,18 @@ Primary key: `(route_id, month)`. Only rows *missing* from `otp_monthly` appear 
 - `unreported`: evidence the route was operating (schedule or ridership data exists) but OTP was not reported
 - `not_operating`: within temporal coverage of at least one cross-reference source, but no evidence the route operated
 - `no_coverage`: month falls outside both the schedule data range (through 2021-03) and ridership data range (through 2024-10)
+
+### `allegheny_go_weekly`
+
+Weekly ridership for the Allegheny Go discounted fare program, extracted from the county's Tableau dashboard.
+
+| Column       | Type    | Description                                              |
+|--------------|---------|----------------------------------------------------------|
+| `week_start` | TEXT PK | ISO date for the start of the week (`"2024-05-12"`)      |
+| `rides`      | INTEGER | Total rides taken that week by program participants      |
+| `riders`     | INTEGER | Unique riders that week                                  |
+
+Source: [Allegheny Go Dashboard](https://tableau.alleghenycounty.us/t/PublicSite/views/AlleghenyGoDashboard/Ridership). Built by `src/prt_otp_analysis/allegheny_go.py`.
 
 ## Source Files
 

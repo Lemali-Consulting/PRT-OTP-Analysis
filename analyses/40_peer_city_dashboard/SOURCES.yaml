@@ -24,10 +24,14 @@ outputs:
     and fare revenue per peer city.
 - path: fare_per_trip.png
   kind: image
-  description: paired bars comparing fare revenue per trip in 2019 vs 2023.
+  description: paired bars comparing fare revenue per trip in 2019 vs 2024.
 - path: farebox_recovery.png
   kind: image
-  description: paired bars comparing farebox recovery ratio in 2019 vs 2023.
+  description: paired bars comparing farebox recovery ratio in 2019 vs 2024.
+- path: peer_trends.png
+  kind: image
+  description: 2x2 line chart showing annual trajectories for ridership, service hours,
+    fare per trip, and farebox recovery from 2019 to 2024.
 - path: peer_comparison.csv
   kind: data
   description: full metrics table with raw values, percent changes, and derived ratios.
