@@ -1,0 +1,18 @@
+category,group,count
+age,55 to 64,1241
+age,45 to 44,1708
+age,35 to 54,3016
+age,25 to 34,3112
+age,18 to 24,1579
+age,12 to 18,1243
+race,Native Hawaiian or Other Pacific Islander,23
+race,Asian,155
+race,"Other, Default, Unknown",253
+race,White,4512
+race,"Black, African American, or African",6966
+gender,Female,7627
+gender,Male,4245
+gender,Other or Unknown,36
+children_in_household,"Households with children, at least one child enrolled",822
+children_in_household,"Households with children, no children enrolled",3118
+children_in_household,Households without children,6090
