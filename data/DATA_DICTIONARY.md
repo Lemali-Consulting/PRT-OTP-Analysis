@@ -139,6 +139,10 @@ Annual service and financial metrics from the NTD TS2.2 "Service Data and Operat
 | `voms`        | REAL        | Vehicles Operated in Maximum Service (nullable) |
 | `fares`       | REAL        | Fare revenue in USD (nullable)       |
 | `opexp`       | REAL        | Total operating expenses in USD (nullable) |
+| `opexp_vo`    | REAL        | Vehicle operations expenses in USD (nullable) |
+| `opexp_vm`    | REAL        | Vehicle maintenance expenses in USD (nullable) |
+| `opexp_nvm`   | REAL        | Non-vehicle maintenance expenses in USD (nullable) |
+| `opexp_ga`    | REAL        | General administration expenses in USD (nullable) |
 
 Primary key: `(ntd_id, year)`. Source: NTD TS2.2 Excel workbook. Built by `src/prt_otp_analysis/ntd_service.py`.
 

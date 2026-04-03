@@ -36,7 +36,7 @@
   <h1>ntd_annual_service</h1>
   <p class="lede">Annual VRH, VRM, UPT, VOMS by NTD system (1991-2023). Produced by NTD Annual Service ETL.</p>
   <p class="lede">Owner: Produced by NTD Annual Service ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-04-03 19:51 UTC · Commit ebbab23</p>
+  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
 </section>
 
 
@@ -46,6 +46,7 @@
   src["ntd_annual_service"]
   src --> c1["39 — National Service Cuts (2019 vs 2024)"]
   src --> c2["40 - Peer City Dashboard"]
+  src --> c3["41 - Operating Cost Drivers"]
 </pre>
 </section>
 
@@ -74,6 +75,11 @@
   
     <article class="card">
       <h3><a href="analyses/40_peer_city_dashboard/index.html">40 - Peer City Dashboard</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/41_operating_cost_drivers/index.html">41 - Operating Cost Drivers</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

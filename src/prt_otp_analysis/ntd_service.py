@@ -24,6 +24,10 @@ METRIC_SHEETS = {
     "VOMS": "voms",
     "FARES": "fares",
     "OpExp Total": "opexp",
+    "OpExp VO": "opexp_vo",
+    "OpExp VM": "opexp_vm",
+    "OpExp NVM": "opexp_nvm",
+    "OpExp GA": "opexp_ga",
 }
 
 # Sheet names that differ between workbook releases (2023 vs 2024).
@@ -131,17 +135,21 @@ def write_to_db(data: pl.DataFrame) -> None:
             voms         REAL,
             fares        REAL,
             opexp        REAL,
+            opexp_vo     REAL,
+            opexp_vm     REAL,
+            opexp_nvm    REAL,
+            opexp_ga     REAL,
             PRIMARY KEY (ntd_id, year)
         )
     """)
+    metric_cols = list(METRIC_SHEETS.values())
+    id_cols = ["ntd_id", "agency_name", "city", "state", "uza_name", "year"]
+    all_cols = id_cols + metric_cols
+    placeholders = ", ".join(["?"] * len(all_cols))
+    col_names = ", ".join(all_cols)
     conn.executemany(
-        "INSERT INTO ntd_annual_service "
-        "(ntd_id, agency_name, city, state, uza_name, year, vrh, vrm, upt, voms, fares, opexp) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        data.select(
-            "ntd_id", "agency_name", "city", "state", "uza_name",
-            "year", "vrh", "vrm", "upt", "voms", "fares", "opexp",
-        ).rows(),
+        f"INSERT INTO ntd_annual_service ({col_names}) VALUES ({placeholders})",
+        data.select(all_cols).rows(),
     )
 
     conn.commit()

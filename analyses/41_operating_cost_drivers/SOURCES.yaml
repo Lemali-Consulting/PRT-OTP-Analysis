@@ -1,0 +1,34 @@
+kind: analysis
+title: 41 - Operating Cost Drivers
+group: Equity and Strategic Planning
+tables:
+- ntd_annual_service
+- ntd_fleet_age
+files: []
+analyses: []
+description: PRT spends $3.34 per trip on vehicle maintenance — the highest of 8 peer
+  cities and 47% above average. Bus fleet age does not explain the gap (PRT's buses
+  are mid-age at 7.1 years), but the light rail fleet averages 32 years old. General
+  administration is PRT's leanest cost category at $2.23 per trip.
+dependencies:
+- polars
+- numpy
+outputs:
+- path: cost_breakdown.png
+  kind: image
+  description: stacked bar chart of per-trip cost by category for each peer city.
+- path: cost_change.png
+  kind: image
+  description: 2x2 panel comparing 2019 vs 2024 per-trip costs by category.
+- path: fleet_age_vs_maintenance.png
+  kind: image
+  description: scatter plot of bus fleet age vs vehicle maintenance cost per trip.
+- path: fleet_age_comparison.png
+  kind: image
+  description: bar chart comparing bus and light rail fleet age across peers.
+- path: cost_trends.png
+  kind: image
+  description: 2x2 line chart of per-trip cost trajectories by category 2019-2024.
+- path: cost_breakdown.csv
+  kind: data
+  description: per-trip cost data and fleet age metrics for all peers.

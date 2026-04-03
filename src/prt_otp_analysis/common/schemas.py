@@ -128,8 +128,13 @@ NTD_ANNUAL_SERVICE = Schema(
         "voms": pl.Float64,
         "fares": pl.Float64,
         "opexp": pl.Float64,
+        "opexp_vo": pl.Float64,
+        "opexp_vm": pl.Float64,
+        "opexp_nvm": pl.Float64,
+        "opexp_ga": pl.Float64,
     },
-    nullable=frozenset({"vrh", "vrm", "upt", "voms", "fares", "opexp"}),
+    nullable=frozenset({"vrh", "vrm", "upt", "voms", "fares", "opexp",
+                         "opexp_vo", "opexp_vm", "opexp_nvm", "opexp_ga"}),
 )
 
 
@@ -140,6 +145,20 @@ ALLEGHENY_GO_WEEKLY = Schema(
         "rides": pl.Int64,
         "riders": pl.Int64,
     },
+)
+
+
+NTD_FLEET_AGE = Schema(
+    name="ntd_fleet_age",
+    columns={
+        "ntd_id": pl.Int64,
+        "year": pl.Int64,
+        "vehicle_type": pl.Utf8,
+        "total_vehicles": pl.Int64,
+        "avg_age": pl.Float64,
+        "avg_miles": pl.Float64,
+    },
+    nullable=frozenset({"total_vehicles", "avg_age", "avg_miles"}),
 )
 
 

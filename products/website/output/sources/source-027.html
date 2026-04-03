@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ntd_ridership - Source Detail</title>
+  <title>ntd_fleet_age - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,19 +33,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Table</p>
-  <h1>ntd_ridership</h1>
-  <p class="lede">Monthly UPT facts by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</p>
-  <p class="lede">Owner: Produced by NTD Ridership ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-04-03 19:51 UTC · Commit ebbab23</p>
+  <h1>ntd_fleet_age</h1>
+  <p class="lede">Database table consumed by one or more analyses.</p>
+  <p class="lede">Owner: Project pipeline owner not linked. · Freshness: Refresh cadence unknown.</p>
+  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["ntd_ridership"]
-  src --> c1["36 - National Ridership Growth (2019 vs 2024)"]
-  src --> c2["37 - Peer City Ridership Comparison"]
+  src["ntd_fleet_age"]
+  src --> c1["41 - Operating Cost Drivers"]
 </pre>
 </section>
 
@@ -68,12 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a></h3>
+      <h3><a href="analyses/41_operating_cost_drivers/index.html">41 - Operating Cost Drivers</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

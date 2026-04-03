@@ -289,6 +289,10 @@ PRT cut **13.1% of vehicle revenue hours** between 2019 and 2024, ranking **104t
 
 Pittsburgh lost 41% of riders and 13% of service hours between 2019 and 2024 — roughly middle-of-the-pack among 8 peer cities. But PRT is the **only peer where fare revenue per trip increased** ($1.57→$1.70), while every other city saw effective fares decline — some sharply (Minneapolis $1.27→$0.92, Portland $1.19→$0.92). This suggests PRT maintained its fare structure while peers adopted reduced-fare or fare-free programs. Farebox recovery ratios collapsed everywhere (PRT from 23.2% to 12.8%), but Pittsburgh's ratio remains the second-highest among peers. NTD does not collect reliability data, so on-time performance comparisons across cities are not possible with public data.
 
+## 41. Operating Cost Drivers (Analysis 41)
+
+PRT spends **$3.34 per trip on vehicle maintenance** — the highest of 8 peer cities and 47% above the peer average ($2.27). The other cost categories are mid-pack or lean (general admin is the second-lowest at $2.23/trip). Bus fleet age does not explain the gap: PRT's buses average 7.1 years, younger than Minneapolis (10.5) or Buffalo (9.1). However, PRT's **light rail fleet averages 32.4 years old** (3rd oldest among peers), which likely contributes to the elevated maintenance bill. Vehicle maintenance costs per trip spiked during COVID and have not recovered, suggesting these costs are largely fixed and do not scale with ridership.
+
 ## Key Takeaways
 
 ### What drives OTP
@@ -374,4 +378,5 @@ Pittsburgh lost 41% of riders and 13% of service hours between 2019 and 2024 —
 | 37 | [Peer City Ridership](analyses/37_peer_city_ridership/) | Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits. |
 | 38 | [Downtown Recovery](analyses/38_downtown_recovery/) | Tests PRT claim that poor downtown business recovery explains system-wide ridership lag vs peer cities |
 | 39 | [National Service Cuts](analyses/39_national_service_cuts/) | Compare vehicle revenue hour changes 2019-2024 across the 150 largest US transit agencies; rank PRT; contrast supply-side service cuts with demand-side ridership loss. |
-| 40 | [Peer City Dashboard](analyses/40_peer_city_dashboard/) | Compare PRT to 7 peer cities across ridership recovery, service hours, and fare burden using NTD data from 2019 to 2023. |
+| 40 | [Peer City Dashboard](analyses/40_peer_city_dashboard/) | Compare PRT to 7 peer cities across ridership recovery, service hours, and fare burden using NTD data from 2019 to 2024. |
+| 41 | [Operating Cost Drivers](analyses/41_operating_cost_drivers/) | Decompose PRT's operating cost premium into vehicle operations, maintenance, non-vehicle maintenance, and general admin; correlate with fleet age data from the NTD. |

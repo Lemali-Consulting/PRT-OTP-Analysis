@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>41 - Operating Cost Drivers - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>41 - Operating Cost Drivers</h1>
+  <p class="lede">Equity and Strategic Planning</p>
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../40_peer_city_dashboard/index.html">← 40 - Peer City Dashboard</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  41_operating_cost_drivers(["41 - Operating Cost Drivers"])
+  t_ntd_annual_service[("ntd_annual_service")] --> 41_operating_cost_drivers
+  06_ntd_service[["NTD Annual Service ETL"]] --> t_ntd_annual_service
+  u1_06_ntd_service[/"data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx"/] --> 06_ntd_service
+  t_ntd_fleet_age[("ntd_fleet_age")] --> 41_operating_cost_drivers
+  d1_41_operating_cost_drivers(("polars (lib)")) --> 41_operating_cost_drivers
+  d2_41_operating_cost_drivers(("numpy (lib)")) --> 41_operating_cost_drivers
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 41_operating_cost_drivers page;
+  class t_ntd_annual_service,t_ntd_fleet_age table;
+  class d1_41_operating_cost_drivers,d2_41_operating_cost_drivers dep;
+  class u1_06_ntd_service file;
+  class 06_ntd_service pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Operating Cost Drivers</h1>
+<h2>Key findings</h2>
+<ol>
+<li><p><strong>PRT's cost premium is concentrated in vehicle maintenance.</strong> At $3.34 per trip, Pittsburgh's vehicle maintenance cost is the highest among all 8 peers — 47% above the peer average ($2.27). The other three cost categories (vehicle operations, non-vehicle maintenance, general admin) are mid-pack or below average.</p>
+</li>
+<li><p><strong>General administration is PRT's leanest category.</strong> At $2.23 per trip, PRT's gen admin cost is the second-lowest among peers (only Buffalo is lower at $1.60). Baltimore ($4.07), Denver ($3.79), and St. Louis ($3.69) spend far more on admin per trip.</p>
+</li>
+<li><p><strong>Bus fleet age does not explain the maintenance premium.</strong> A scatter plot of bus average age vs vehicle maintenance cost per trip shows a negative correlation (r = -0.52) — the opposite of what we'd expect if older buses drove higher costs. Pittsburgh's bus fleet (avg 7.1 years) is younger than Minneapolis (10.5) and Buffalo (9.1), yet its maintenance costs are far higher. The negative correlation likely reflects that cities with older buses (Minneapolis, Buffalo) are smaller systems with lower cost-of-labor.</p>
+</li>
+<li><p><strong>PRT's light rail fleet is the 3rd oldest among peers at 32.4 years.</strong> Only Cleveland (43.0) and Buffalo (40.0) have older light rail vehicles. Denver (16.6) and Minneapolis (10.8) have much newer fleets. The aging light rail fleet likely contributes to PRT's elevated vehicle maintenance costs — rail vehicle maintenance is more expensive per unit than bus maintenance, and older rail vehicles require more intensive overhaul.</p>
+</li>
+<li><p><strong>Vehicle maintenance costs spiked in 2020-2021 and stayed elevated.</strong> The cost trends show PRT's vehicle maintenance per trip jumped sharply when ridership cratered (fixed maintenance costs spread across fewer trips), but unlike most peers, it has not recovered. This suggests PRT's maintenance costs are largely fixed rather than variable with ridership.</p>
+</li>
+<li><p><strong>All per-trip costs spiked during COVID due to the denominator effect.</strong> When ridership drops 40% but expenses don't drop proportionally, per-trip costs mechanically increase. The key question is which costs recovered as ridership partially stabilized — and for PRT, vehicle maintenance did not.</p>
+</li>
+</ol>
+<h2>Limitations</h2>
+<ul>
+<li><strong>Per-trip normalization amplifies fixed costs.</strong> Agencies with large fixed infrastructure (rail, maintenance facilities) will show higher per-trip costs when ridership drops, even if absolute spending is unchanged.</li>
+<li><strong>NTD cost categories are broad.</strong> &quot;Vehicle maintenance&quot; includes both bus and rail maintenance. We cannot separate the light rail maintenance premium from bus maintenance in this data.</li>
+<li><strong>Fleet age is a proxy.</strong> Average age doesn't capture fleet condition, maintenance practices, or rebuild history. Two fleets of the same age can have very different maintenance needs.</li>
+<li><strong>8 peers is a small sample for correlation analysis.</strong> The r = -0.52 is suggestive but not statistically robust with n = 8.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified.</strong> Cost sub-categories from NTD TS2.2 OpExp sheets (VO, VM, NVM, GA). Fleet age from NTD Socrata API dataset <code>6abt-uhgq</code>.</li>
+<li><strong>Aggregates sanity-checked.</strong> OpExp sub-categories sum exactly to OpExp Total for all peers and years.</li>
+<li><strong>Direction of effects checked.</strong> Per-trip costs spiked in 2020-2021 (consistent with ridership crash) and partially recovered (consistent with partial ridership recovery). No anomalies.</li>
+<li><strong>Surprising result investigated.</strong> The negative bus-age-vs-maintenance correlation is counterintuitive but likely reflects a confound: smaller cities (Buffalo, Minneapolis) have older fleets AND lower labor costs. With n = 8 we cannot control for this.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (5)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (1)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/41_operating_cost_drivers/cost_breakdown.png" alt="cost_breakdown" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/41_operating_cost_drivers/cost_breakdown.png" target="_blank" rel="noopener noreferrer">cost_breakdown.png</a>
+          <p class="artifact-desc">stacked bar chart of per-trip cost by category for each peer city.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/41_operating_cost_drivers/cost_change.png" alt="cost_change" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/41_operating_cost_drivers/cost_change.png" target="_blank" rel="noopener noreferrer">cost_change.png</a>
+          <p class="artifact-desc">2x2 panel comparing 2019 vs 2024 per-trip costs by category.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/41_operating_cost_drivers/fleet_age_vs_maintenance.png" alt="fleet_age_vs_maintenance" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/41_operating_cost_drivers/fleet_age_vs_maintenance.png" target="_blank" rel="noopener noreferrer">fleet_age_vs_maintenance.png</a>
+          <p class="artifact-desc">scatter plot of bus fleet age vs vehicle maintenance cost per trip.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/41_operating_cost_drivers/fleet_age_comparison.png" alt="fleet_age_comparison" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/41_operating_cost_drivers/fleet_age_comparison.png" target="_blank" rel="noopener noreferrer">fleet_age_comparison.png</a>
+          <p class="artifact-desc">bar chart comparing bus and light rail fleet age across peers.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/41_operating_cost_drivers/cost_trends.png" alt="cost_trends" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/41_operating_cost_drivers/cost_trends.png" target="_blank" rel="noopener noreferrer">cost_trends.png</a>
+          <p class="artifact-desc">2x2 line chart of per-trip cost trajectories by category 2019-2024.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/41_operating_cost_drivers/cost_breakdown.csv" target="_blank" rel="noopener noreferrer">cost_breakdown.csv</a>
+          <p class="artifact-desc">per-trip cost data and fleet age metrics for all peers.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/41_operating_cost_drivers/cost_breakdown.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Operating Cost Drivers</h1>
+<h2>Question</h2>
+<p>Where does PRT's operating cost premium come from relative to peers, and does fleet age explain the vehicle maintenance gap?</p>
+<h2>Approach</h2>
+<ul>
+<li>Pull OpExp sub-categories (VO, VM, NVM, GA) and UPT from <code>ntd_annual_service</code> for 8 peers, 2019 and 2024.</li>
+<li>Normalize all costs to per-trip amounts (<code>opexp_xx / upt</code>) to control for agency size.</li>
+<li>Pull fleet age data from <code>ntd_fleet_age</code> for 2024 (bus and light rail vehicle types).</li>
+<li>Scatter-plot bus average age vs vehicle maintenance cost per trip to test whether older fleets explain higher maintenance costs.</li>
+<li>Show cost-per-trip breakdown as stacked bars and time trends (2019–2024).</li>
+</ul>
+<h2>Data</h2>
+<ul>
+<li><code>ntd_annual_service</code>: columns <code>ntd_id</code>, <code>year</code>, <code>upt</code>, <code>opexp_vo</code>, <code>opexp_vm</code>, <code>opexp_nvm</code>, <code>opexp_ga</code>.</li>
+<li><code>ntd_fleet_age</code>: columns <code>ntd_id</code>, <code>year</code>, <code>vehicle_type</code>, <code>avg_age</code>, <code>total_vehicles</code>.</li>
+<li>Filtered to the 8 peer city NTD IDs defined in <code>PEERS</code>.</li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>output/cost_breakdown.png</code> — stacked bar chart of per-trip cost by category for each peer (2024).</li>
+<li><code>output/cost_change.png</code> — grouped bars showing 2019 vs 2024 per-trip cost by category for Pittsburgh.</li>
+<li><code>output/fleet_age_vs_maintenance.png</code> — scatter plot correlating bus fleet age with vehicle maintenance cost per trip.</li>
+<li><code>output/fleet_age_comparison.png</code> — bar chart of average bus and light rail fleet age per peer.</li>
+<li><code>output/cost_trends.png</code> — 2×2 line chart panel showing per-trip cost trajectories by category (2019–2024).</li>
+<li><code>output/cost_breakdown.csv</code> — full per-trip cost data and fleet age metrics for all peers.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Decompose PRT&#x27;s operating cost premium and correlate with fleet age.&quot;&quot;&quot;
+
+import numpy as np
+import polars as pl
+
+from prt_otp_analysis.common import (
+    PEERS,
+    analysis_dir,
+    get_db,
+    phase,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+
+OUT = analysis_dir(__file__)
+
+PRT_NTD_ID = 30022
+BASELINE_YEAR = 2019
+COMPARE_YEAR = 2024
+
+COLORS = {
+    &quot;Pittsburgh&quot;: &quot;#E24A33&quot;,
+    &quot;Baltimore&quot;: &quot;#4878CF&quot;,
+    &quot;Cleveland&quot;: &quot;#6ACC65&quot;,
+    &quot;Denver&quot;: &quot;#D65F5F&quot;,
+    &quot;St. Louis&quot;: &quot;#B47CC7&quot;,
+    &quot;Buffalo&quot;: &quot;#C4AD66&quot;,
+    &quot;Portland&quot;: &quot;#77BEDB&quot;,
+    &quot;Minneapolis&quot;: &quot;#FFB347&quot;,
+}
+
+# Cost category display names and colors
+COST_CATS = {
+    &quot;opexp_vo&quot;: (&quot;Vehicle Ops&quot;, &quot;#4878CF&quot;),
+    &quot;opexp_vm&quot;: (&quot;Vehicle Maint&quot;, &quot;#E24A33&quot;),
+    &quot;opexp_nvm&quot;: (&quot;Non-Veh Maint&quot;, &quot;#6ACC65&quot;),
+    &quot;opexp_ga&quot;: (&quot;Gen Admin&quot;, &quot;#B47CC7&quot;),
+}
+
+
+def load_cost_data(conn) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load OpExp sub-categories and UPT for peers across all years.&quot;&quot;&quot;
+    id_list = &quot;,&quot;.join(str(i) for i in PEERS)
+    rows = conn.execute(f&quot;&quot;&quot;
+        SELECT ntd_id, year, upt, opexp, opexp_vo, opexp_vm, opexp_nvm, opexp_ga
+        FROM ntd_annual_service
+        WHERE ntd_id IN ({id_list})
+          AND year BETWEEN {BASELINE_YEAR} AND {COMPARE_YEAR}
+    &quot;&quot;&quot;).fetchall()
+    peer_map = pl.DataFrame({
+        &quot;ntd_id&quot;: list(PEERS.keys()),
+        &quot;city&quot;: list(PEERS.values()),
+    })
+    df = pl.DataFrame([dict(r) for r in rows])
+    df = df.join(peer_map, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+
+    # Compute per-trip costs
+    for cat in COST_CATS:
+        df = df.with_columns((pl.col(cat) / pl.col(&quot;upt&quot;)).alias(f&quot;{cat}_pt&quot;))
+    df = df.with_columns((pl.col(&quot;opexp&quot;) / pl.col(&quot;upt&quot;)).alias(&quot;cost_per_trip&quot;))
+    return df.sort(&quot;city&quot;, &quot;year&quot;)
+
+
+def load_fleet_age(conn) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load 2024 fleet age data for peer cities.&quot;&quot;&quot;
+    id_list = &quot;,&quot;.join(str(i) for i in PEERS)
+    rows = conn.execute(f&quot;&quot;&quot;
+        SELECT ntd_id, vehicle_type, total_vehicles, avg_age, avg_miles
+        FROM ntd_fleet_age
+        WHERE ntd_id IN ({id_list})
+          AND year = {COMPARE_YEAR}
+    &quot;&quot;&quot;).fetchall()
+    peer_map = pl.DataFrame({
+        &quot;ntd_id&quot;: list(PEERS.keys()),
+        &quot;city&quot;: list(PEERS.values()),
+    })
+    df = pl.DataFrame([dict(r) for r in rows])
+    return df.join(peer_map, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+
+
+def chart_cost_breakdown(plt, cost_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Stacked bar: per-trip cost breakdown by category (2024).&quot;&quot;&quot;
+    df_2024 = cost_df.filter(pl.col(&quot;year&quot;) == COMPARE_YEAR).sort(&quot;cost_per_trip&quot;, descending=True)
+    cities = df_2024[&quot;city&quot;].to_list()
+    x = np.arange(len(cities))
+
+    fig, ax = plt.subplots(figsize=(12, 7))
+    bottom = np.zeros(len(cities))
+
+    for cat, (label, color) in COST_CATS.items():
+        vals = df_2024[f&quot;{cat}_pt&quot;].to_list()
+        ax.bar(x, vals, bottom=bottom, label=label, color=color, edgecolor=&quot;white&quot;, linewidth=0.5)
+        bottom += np.array(vals)
+
+    # Label totals on top
+    for i, total in enumerate(df_2024[&quot;cost_per_trip&quot;].to_list()):
+        ax.text(i, total + 0.15, f&quot;${total:.2f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=9, fontweight=&quot;bold&quot;)
+
+    ax.set_xticks(x)
+    labels = ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
+    for label in labels:
+        if label.get_text() == &quot;Pittsburgh&quot;:
+            label.set_fontweight(&quot;bold&quot;)
+
+    ax.set_ylabel(&quot;Cost per Trip ($)&quot;)
+    ax.set_title(f&quot;Operating Cost per Trip by Category \u2014 Peer Cities ({COMPARE_YEAR})&quot;)
+    ax.legend(loc=&quot;upper right&quot;)
+    save_chart(fig, OUT / &quot;cost_breakdown.png&quot;)
+
+
+def chart_cost_change(plt, cost_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Grouped bar: per-trip cost by category, 2019 vs 2024, all peers.&quot;&quot;&quot;
+    df_base = cost_df.filter(pl.col(&quot;year&quot;) == BASELINE_YEAR).sort(&quot;city&quot;)
+    df_comp = cost_df.filter(pl.col(&quot;year&quot;) == COMPARE_YEAR).sort(&quot;city&quot;)
+    cities = df_comp[&quot;city&quot;].to_list()
+    x = np.arange(len(cities))
+
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    for idx, (cat, (label, color)) in enumerate(COST_CATS.items()):
+        ax = axes[idx // 2, idx % 2]
+        vals_base = df_base[f&quot;{cat}_pt&quot;].to_list()
+        vals_comp = df_comp[f&quot;{cat}_pt&quot;].to_list()
+        width = 0.35
+
+        ax.bar(x - width / 2, vals_base, width, label=str(BASELINE_YEAR), color=&quot;#4878CF&quot;, alpha=0.8)
+        ax.bar(x + width / 2, vals_comp, width, label=str(COMPARE_YEAR), color=&quot;#E24A33&quot;, alpha=0.8)
+        ax.set_xticks(x)
+        xlabels = ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
+        for xl in xlabels:
+            if xl.get_text() == &quot;Pittsburgh&quot;:
+                xl.set_fontweight(&quot;bold&quot;)
+        ax.set_ylabel(&quot;$/Trip&quot;)
+        ax.set_title(label)
+        ax.legend(fontsize=8)
+
+    fig.suptitle(f&quot;Cost per Trip by Category \u2014 {BASELINE_YEAR} vs {COMPARE_YEAR}&quot;,
+                 fontsize=14, fontweight=&quot;bold&quot;, y=0.98)
+    save_chart(fig, OUT / &quot;cost_change.png&quot;)
+
+
+def chart_fleet_age_vs_maintenance(plt, cost_df: pl.DataFrame, fleet_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter: bus fleet age vs vehicle maintenance cost/trip.&quot;&quot;&quot;
+    bus_age_df = fleet_df.filter(pl.col(&quot;vehicle_type&quot;) == &quot;Bus&quot;).select(&quot;ntd_id&quot;, &quot;city&quot;, &quot;avg_age&quot;)
+    maint_df = cost_df.filter(pl.col(&quot;year&quot;) == COMPARE_YEAR).select(&quot;ntd_id&quot;, &quot;city&quot;, &quot;opexp_vm_pt&quot;)
+    merged_df = maint_df.join(bus_age_df, on=[&quot;ntd_id&quot;, &quot;city&quot;], how=&quot;inner&quot;)
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    for row in merged_df.iter_rows(named=True):
+        city = row[&quot;city&quot;]
+        color = COLORS[city]
+        size = 120 if city == &quot;Pittsburgh&quot; else 80
+        zorder = 10 if city == &quot;Pittsburgh&quot; else 1
+        ax.scatter(row[&quot;avg_age&quot;], row[&quot;opexp_vm_pt&quot;], color=color, s=size,
+                   zorder=zorder, edgecolors=&quot;white&quot;, linewidth=1)
+        offset_y = 0.08 if city != &quot;Baltimore&quot; else -0.12
+        ax.annotate(city, (row[&quot;avg_age&quot;], row[&quot;opexp_vm_pt&quot;]),
+                    textcoords=&quot;offset points&quot;, xytext=(8, offset_y * 50),
+                    fontsize=9, fontweight=&quot;bold&quot; if city == &quot;Pittsburgh&quot; else &quot;normal&quot;)
+
+    # Trendline
+    ages = merged_df[&quot;avg_age&quot;].to_list()
+    costs = merged_df[&quot;opexp_vm_pt&quot;].to_list()
+    z = np.polyfit(ages, costs, 1)
+    p = np.poly1d(z)
+    age_range = np.linspace(min(ages) - 0.5, max(ages) + 0.5, 50)
+    ax.plot(age_range, p(age_range), &quot;--&quot;, color=&quot;#999999&quot;, linewidth=1, alpha=0.7)
+
+    # Correlation
+    corr = np.corrcoef(ages, costs)[0, 1]
+    ax.text(0.05, 0.95, f&quot;r = {corr:.2f}&quot;, transform=ax.transAxes,
+            fontsize=11, verticalalignment=&quot;top&quot;, color=&quot;#666666&quot;)
+
+    ax.set_xlabel(&quot;Average Bus Fleet Age (years)&quot;)
+    ax.set_ylabel(&quot;Vehicle Maintenance Cost per Trip ($)&quot;)
+    ax.set_title(f&quot;Bus Fleet Age vs Vehicle Maintenance Cost \u2014 Peer Cities ({COMPARE_YEAR})&quot;)
+    save_chart(fig, OUT / &quot;fleet_age_vs_maintenance.png&quot;)
+
+
+def chart_fleet_age_comparison(plt, fleet_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bar chart: average bus and light rail age per peer.&quot;&quot;&quot;
+    bus_df = (fleet_df.filter(pl.col(&quot;vehicle_type&quot;) == &quot;Bus&quot;)
+              .select(&quot;city&quot;, &quot;avg_age&quot;).rename({&quot;avg_age&quot;: &quot;bus_age&quot;}).sort(&quot;city&quot;))
+    lrv_df = (fleet_df.filter(pl.col(&quot;vehicle_type&quot;) == &quot;Light Rail Vehicle&quot;)
+              .select(&quot;city&quot;, &quot;avg_age&quot;).rename({&quot;avg_age&quot;: &quot;lrv_age&quot;}).sort(&quot;city&quot;))
+
+    # Only cities with bus data (all should have it)
+    cities = bus_df[&quot;city&quot;].to_list()
+    bus_ages = bus_df[&quot;bus_age&quot;].to_list()
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    x = np.arange(len(cities))
+    width = 0.35
+
+    ax.bar(x - width / 2, bus_ages, width, label=&quot;Bus&quot;, color=&quot;#4878CF&quot;)
+
+    # Add LRV bars where available
+    lrv_ages = []
+    for city in cities:
+        lrv_row = lrv_df.filter(pl.col(&quot;city&quot;) == city)
+        lrv_ages.append(lrv_row[&quot;lrv_age&quot;][0] if len(lrv_row) &gt; 0 else 0)
+    ax.bar(x + width / 2, lrv_ages, width, label=&quot;Light Rail&quot;, color=&quot;#E24A33&quot;)
+
+    for i, (ba, la) in enumerate(zip(bus_ages, lrv_ages)):
+        ax.text(i - width / 2, ba + 0.3, f&quot;{ba:.1f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+        if la &gt; 0:
+            ax.text(i + width / 2, la + 0.3, f&quot;{la:.1f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+
+    ax.set_xticks(x)
+    xlabels = ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
+    for xl in xlabels:
+        if xl.get_text() == &quot;Pittsburgh&quot;:
+            xl.set_fontweight(&quot;bold&quot;)
+
+    ax.set_ylabel(&quot;Average Fleet Age (years)&quot;)
+    ax.set_title(f&quot;Revenue Vehicle Fleet Age \u2014 Peer Cities ({COMPARE_YEAR})&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;fleet_age_comparison.png&quot;)
+
+
+def chart_cost_trends(plt, cost_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;2×2 line chart: per-trip cost trajectories by category.&quot;&quot;&quot;
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+
+    for idx, (cat, (label, _)) in enumerate(COST_CATS.items()):
+        ax = axes[idx // 2, idx % 2]
+        for city in sorted(PEERS.values()):
+            city_df = cost_df.filter(pl.col(&quot;city&quot;) == city).sort(&quot;year&quot;)
+            years = city_df[&quot;year&quot;].to_list()
+            vals = city_df[f&quot;{cat}_pt&quot;].to_list()
+            lw = 2.5 if city == &quot;Pittsburgh&quot; else 1.2
+            alpha = 1.0 if city == &quot;Pittsburgh&quot; else 0.6
+            zorder = 10 if city == &quot;Pittsburgh&quot; else 1
+            ax.plot(years, vals, label=city, color=COLORS[city],
+                    linewidth=lw, alpha=alpha, zorder=zorder, marker=&quot;o&quot;, markersize=3)
+        ax.set_ylabel(&quot;$/Trip&quot;)
+        ax.set_title(label)
+        ax.set_xticks(list(range(BASELINE_YEAR, COMPARE_YEAR + 1)))
+
+    axes[0, 0].legend(loc=&quot;upper left&quot;, fontsize=7)
+    fig.suptitle(f&quot;Cost per Trip Trends \u2014 Pittsburgh vs 7 Peers ({BASELINE_YEAR}\u2013{COMPARE_YEAR})&quot;,
+                 fontsize=14, fontweight=&quot;bold&quot;, y=0.98)
+    save_chart(fig, OUT / &quot;cost_trends.png&quot;)
+
+
+@run_analysis(41, &quot;Operating Cost Drivers&quot;)
+def main():
+    plt = setup_plotting()
+    conn = get_db()
+
+    with phase(&quot;Loading cost data&quot;):
+        cost_df = load_cost_data(conn)
+        print(f&quot;   {len(cost_df)} rows ({BASELINE_YEAR}-{COMPARE_YEAR})&quot;)
+
+    with phase(&quot;Loading fleet age data&quot;):
+        fleet_df = load_fleet_age(conn)
+        conn.close()
+        print(f&quot;   {len(fleet_df)} vehicle type rows&quot;)
+
+    # Print summary table
+    with phase(&quot;Cost per trip breakdown (2024)&quot;):
+        df_2024 = cost_df.filter(pl.col(&quot;year&quot;) == COMPARE_YEAR).sort(&quot;cost_per_trip&quot;, descending=True)
+        print(f&quot;\n   {&#x27;City&#x27;:&lt;15s} {&#x27;Veh Ops&#x27;:&gt;8s} {&#x27;Veh Maint&#x27;:&gt;10s} {&#x27;Non-Veh&#x27;:&gt;8s} {&#x27;Gen Adm&#x27;:&gt;8s} {&#x27;Total&#x27;:&gt;8s}&quot;)
+        for row in df_2024.iter_rows(named=True):
+            marker = &quot; &lt;&lt;&lt;&quot; if row[&quot;ntd_id&quot;] == PRT_NTD_ID else &quot;&quot;
+            print(&quot;   %-15s $%6.2f    $%6.2f  $%6.2f  $%6.2f  $%6.2f%s&quot; % (
+                row[&quot;city&quot;], row[&quot;opexp_vo_pt&quot;], row[&quot;opexp_vm_pt&quot;],
+                row[&quot;opexp_nvm_pt&quot;], row[&quot;opexp_ga_pt&quot;], row[&quot;cost_per_trip&quot;], marker))
+
+    with phase(&quot;Fleet age summary (2024)&quot;):
+        bus_df = fleet_df.filter(pl.col(&quot;vehicle_type&quot;) == &quot;Bus&quot;).sort(&quot;avg_age&quot;, descending=True)
+        print(f&quot;\n   {&#x27;City&#x27;:&lt;15s} {&#x27;Buses&#x27;:&gt;6s} {&#x27;Avg Age&#x27;:&gt;8s}&quot;)
+        for row in bus_df.iter_rows(named=True):
+            marker = &quot; &lt;&lt;&lt;&quot; if row[&quot;ntd_id&quot;] == PRT_NTD_ID else &quot;&quot;
+            age = f&quot;{row[&#x27;avg_age&#x27;]:.1f}&quot; if row[&quot;avg_age&quot;] else &quot;N/A&quot;
+            print(f&quot;   {row[&#x27;city&#x27;]:&lt;15s} {row[&#x27;total_vehicles&#x27;]:&gt;6d} {age:&gt;8s}{marker}&quot;)
+
+    # Save CSV
+    with phase(&quot;Saving data&quot;):
+        csv_df = df_2024.select(
+            &quot;city&quot;, &quot;cost_per_trip&quot;, &quot;opexp_vo_pt&quot;, &quot;opexp_vm_pt&quot;, &quot;opexp_nvm_pt&quot;, &quot;opexp_ga_pt&quot;,
+        )
+        # Join fleet age
+        bus_age_for_csv = (fleet_df.filter(pl.col(&quot;vehicle_type&quot;) == &quot;Bus&quot;)
+                           .select(&quot;city&quot;, avg_bus_age=pl.col(&quot;avg_age&quot;)))
+        lrv_age_for_csv = (fleet_df.filter(pl.col(&quot;vehicle_type&quot;) == &quot;Light Rail Vehicle&quot;)
+                           .select(&quot;city&quot;, avg_lrv_age=pl.col(&quot;avg_age&quot;)))
+        csv_df = csv_df.join(bus_age_for_csv, on=&quot;city&quot;, how=&quot;left&quot;)
+        csv_df = csv_df.join(lrv_age_for_csv, on=&quot;city&quot;, how=&quot;left&quot;)
+        save_csv(csv_df, OUT / &quot;cost_breakdown.csv&quot;)
+
+    # Charts
+    with phase(&quot;Generating cost breakdown chart&quot;):
+        chart_cost_breakdown(plt, cost_df)
+
+    with phase(&quot;Generating cost change chart&quot;):
+        chart_cost_change(plt, cost_df)
+
+    with phase(&quot;Generating fleet age vs maintenance chart&quot;):
+        chart_fleet_age_vs_maintenance(plt, cost_df, fleet_df)
+
+    with phase(&quot;Generating fleet age comparison chart&quot;):
+        chart_fleet_age_comparison(plt, fleet_df)
+
+    with phase(&quot;Generating cost trend lines&quot;):
+        chart_cost_trends(plt, cost_df)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>ntd_annual_service</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by NTD Annual Service ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</strong> — NTD TS2.2 workbook with annual service data by system.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>ntd_fleet_age</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Project pipeline owner not linked.</td>
+          <td>Refresh cadence unknown.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
