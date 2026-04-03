@@ -36,7 +36,7 @@
   <h1>34 - Ridership Concentration (Pareto)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -278,29 +278,11 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Quantify ridership concentration across stops and test whether it correlates with OTP.&quot;&quot;&quot;
 
-from pathlib import Path
-
-import numpy as np
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, correlate, gini, mode_scatter, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / &quot;data&quot;
-
-
-def gini(values: list[float]) -&gt; float:
-    &quot;&quot;&quot;Compute the Gini coefficient for a list of non-negative values.&quot;&quot;&quot;
-    arr = np.array(values, dtype=float)
-    arr = arr[~np.isnan(arr)]
-    if len(arr) &lt; 2 or arr.sum() == 0:
-        return float(&quot;nan&quot;)
-    arr = np.sort(arr)
-    n = len(arr)
-    index = np.arange(1, n + 1)
-    return (2 * np.sum(index * arr) - (n + 1) * np.sum(arr)) / (n * np.sum(arr))
+OUT = analysis_dir(__file__)
 
 
 def load_stop_usage() -&gt; pl.DataFrame:
@@ -414,102 +396,67 @@ def make_charts(pareto: pl.DataFrame, gini_otp: pl.DataFrame) -&gt; None:
     ax.set_xlim(0, 100)
     ax.set_ylim(0, 100)
     ax.legend(loc=&quot;lower right&quot;)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;pareto_curve.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Saved {OUT / &#x27;pareto_curve.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;pareto_curve.png&quot;)
 
     # --- Gini vs OTP scatter ---
     fig, ax = plt.subplots(figsize=(10, 7))
-    mode_colors = {&quot;BUS&quot;: &quot;#3b82f6&quot;, &quot;RAIL&quot;: &quot;#22c55e&quot;, &quot;INCLINE&quot;: &quot;#f59e0b&quot;, &quot;UNKNOWN&quot;: &quot;#9ca3af&quot;}
-
-    for mode, color in mode_colors.items():
-        sub = gini_otp.filter(pl.col(&quot;mode&quot;) == mode)
-        if len(sub) == 0:
-            continue
-        ax.scatter(
-            sub[&quot;gini&quot;].to_list(), sub[&quot;avg_otp&quot;].to_list(),
-            color=color, label=mode, s=50, alpha=0.7, edgecolors=&quot;white&quot;, linewidths=0.5,
-        )
-
-    # Bus-only regression
-    bus = gini_otp.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;).drop_nulls(subset=[&quot;gini&quot;, &quot;avg_otp&quot;])
-    if len(bus) &gt;= 3:
-        x = bus[&quot;gini&quot;].to_list()
-        y = bus[&quot;avg_otp&quot;].to_list()
-        lr = stats.linregress(x, y)
-        r, p = stats.pearsonr(x, y)
-        x_line = [min(x), max(x)]
-        y_line = [lr.slope * xi + lr.intercept for xi in x_line]
-        ax.plot(x_line, y_line, color=&quot;#1e40af&quot;, linewidth=1.5, linestyle=&quot;--&quot;,
-                label=f&quot;BUS trend (r={r:.3f}, p={p:.3f})&quot;)
-
+    mode_scatter(ax, gini_otp, &quot;gini&quot;, &quot;avg_otp&quot;)
     ax.set_xlabel(&quot;Gini Coefficient (ridership concentration)&quot;)
     ax.set_ylabel(&quot;Average OTP&quot;)
     ax.set_title(&quot;Route-Level Ridership Concentration vs On-Time Performance&quot;)
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;gini_vs_otp.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Saved {OUT / &#x27;gini_vs_otp.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;gini_vs_otp.png&quot;)
 
 
+@run_analysis(34, &quot;Ridership Concentration (Pareto)&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, compute Pareto and Gini, correlate with OTP.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 34: Ridership Concentration (Pareto)&quot;)
-    print(&quot;=&quot; * 60)
 
-    print(&quot;\nLoading stop-level usage (pre-pandemic weekday)...&quot;)
-    usage = load_stop_usage()
-    print(f&quot;  {len(usage):,} stop-route combinations&quot;)
+    with phase(&quot;Loading stop-level usage (pre-pandemic weekday)&quot;):
+        usage = load_stop_usage()
+        print(f&quot;  {len(usage):,} stop-route combinations&quot;)
 
-    print(&quot;\nComputing system-wide Pareto curve...&quot;)
-    pareto = system_pareto(usage)
-    cum = pareto[&quot;cum_pct_ridership&quot;].to_list()
-    pct = pareto[&quot;pct_stops&quot;].to_list()
-    for target in [50, 80, 90]:
-        for i, cr in enumerate(cum):
-            if cr &gt;= target:
-                print(f&quot;  {target}% of ridership served by top {pct[i]:.1f}% of stops&quot;)
-                break
+    with phase(&quot;Computing system-wide Pareto curve&quot;):
+        pareto = system_pareto(usage)
+        cum = pareto[&quot;cum_pct_ridership&quot;].to_list()
+        pct = pareto[&quot;pct_stops&quot;].to_list()
+        for target in [50, 80, 90]:
+            for i, cr in enumerate(cum):
+                if cr &gt;= target:
+                    print(f&quot;  {target}% of ridership served by top {pct[i]:.1f}% of stops&quot;)
+                    break
 
-    sys_gini = gini(
-        usage.group_by(&quot;stop_id&quot;).agg(pl.col(&quot;avg_daily_usage&quot;).sum())[&quot;avg_daily_usage&quot;].to_list()
-    )
-    print(f&quot;  System-wide Gini: {sys_gini:.3f}&quot;)
+        sys_gini = gini(
+            usage.group_by(&quot;stop_id&quot;).agg(pl.col(&quot;avg_daily_usage&quot;).sum())[&quot;avg_daily_usage&quot;].to_list()
+        )
+        print(f&quot;  System-wide Gini: {sys_gini:.3f}&quot;)
 
-    print(&quot;\nComputing per-route Gini coefficients...&quot;)
-    route_g = route_gini(usage)
-    print(f&quot;  {len(route_g)} routes with &gt;= 3 stops&quot;)
-    print(f&quot;  Gini range: {route_g[&#x27;gini&#x27;].min():.3f} - {route_g[&#x27;gini&#x27;].max():.3f}&quot;)
-    print(f&quot;  Median Gini: {route_g[&#x27;gini&#x27;].median():.3f}&quot;)
+    with phase(&quot;Computing per-route Gini coefficients&quot;):
+        route_g = route_gini(usage)
+        print(f&quot;  {len(route_g)} routes with &gt;= 3 stops&quot;)
+        print(f&quot;  Gini range: {route_g[&#x27;gini&#x27;].min():.3f} - {route_g[&#x27;gini&#x27;].max():.3f}&quot;)
+        print(f&quot;  Median Gini: {route_g[&#x27;gini&#x27;].median():.3f}&quot;)
 
-    print(&quot;\nLoading route OTP...&quot;)
-    route_otp = load_route_otp()
+    with phase(&quot;Loading route OTP&quot;):
+        route_otp = load_route_otp()
 
-    # Join Gini with OTP (CSV route_name = DB route_id)
-    gini_otp = route_g.join(route_otp, left_on=&quot;route_name&quot;, right_on=&quot;route_id&quot;, how=&quot;inner&quot;)
-    print(f&quot;  {len(gini_otp)} routes matched&quot;)
+        # Join Gini with OTP (CSV route_name = DB route_id)
+        gini_otp = route_g.join(route_otp, left_on=&quot;route_name&quot;, right_on=&quot;route_id&quot;, how=&quot;inner&quot;)
+        print(f&quot;  {len(gini_otp)} routes matched&quot;)
 
-    bus = gini_otp.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;).drop_nulls(subset=[&quot;gini&quot;, &quot;avg_otp&quot;])
-    if len(bus) &gt;= 3:
-        r, p = stats.pearsonr(bus[&quot;gini&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
-        rho, p_rho = stats.spearmanr(bus[&quot;gini&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
-        print(f&quot;  Bus-only Pearson r = {r:.3f} (p = {p:.3f})&quot;)
-        print(f&quot;  Bus-only Spearman rho = {rho:.3f} (p = {p_rho:.3f})&quot;)
+        bus = gini_otp.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;).drop_nulls(subset=[&quot;gini&quot;, &quot;avg_otp&quot;])
+        if len(bus) &gt;= 3:
+            corr = correlate(bus, &quot;gini&quot;, &quot;avg_otp&quot;)
+            print(f&quot;  Bus-only Pearson r = {corr[&#x27;pearson_r&#x27;]:.3f} (p = {corr[&#x27;pearson_p&#x27;]:.3f})&quot;)
+            print(f&quot;  Bus-only Spearman rho = {corr[&#x27;spearman_r&#x27;]:.3f} (p = {corr[&#x27;spearman_p&#x27;]:.3f})&quot;)
 
-    print(&quot;\nSaving CSVs...&quot;)
-    pareto.write_csv(OUT / &quot;pareto_system.csv&quot;)
-    print(f&quot;  Saved {OUT / &#x27;pareto_system.csv&#x27;}&quot;)
-    gini_otp.write_csv(OUT / &quot;route_gini.csv&quot;)
-    print(f&quot;  Saved {OUT / &#x27;route_gini.csv&#x27;}&quot;)
+    with phase(&quot;Saving CSVs&quot;):
+        save_csv(pareto, OUT / &quot;pareto_system.csv&quot;)
+        save_csv(gini_otp, OUT / &quot;route_gini.csv&quot;)
 
-    print(&quot;\nGenerating charts...&quot;)
-    make_charts(pareto, gini_otp)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_charts(pareto, gini_otp)
 
 
 if __name__ == &quot;__main__&quot;:

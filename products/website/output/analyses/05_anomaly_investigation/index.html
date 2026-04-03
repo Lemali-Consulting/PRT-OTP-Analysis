@@ -36,7 +36,7 @@
   <h1>05 - Anomaly Investigation</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -338,14 +338,11 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Anomaly detection: flag and investigate sharp OTP deviations (both drops and spikes).&quot;&quot;&quot;
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 KNOWN_EVENTS = {
     &quot;2020-03&quot;: &quot;COVID-19 shutdown begins&quot;,
@@ -465,96 +462,88 @@ def make_chart(full_df: pl.DataFrame, anomalies: pl.DataFrame) -&gt; None:
 
     axes[-1].set_xlabel(&quot;Month&quot;)
     fig.suptitle(&quot;Routes with Most OTP Anomalies&quot;, fontsize=13, y=1.01)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;anomaly_profiles.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;anomaly_profiles.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;anomaly_profiles.png&quot;)
 
 
+@run_analysis(5, &quot;Anomaly Investigation&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, detect anomalies, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 05: Anomaly Investigation&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        print(f&quot;  {len(df):,} OTP observations loaded&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    print(f&quot;  {len(df):,} OTP observations loaded&quot;)
+    with phase(&quot;Detecting anomalies&quot;):
+        full_df, anomalies = analyze(df)
+        n_routes_with = anomalies[&quot;route_id&quot;].n_unique()
+        print(f&quot;  {len(anomalies)} anomalous months flagged across {n_routes_with} routes&quot;)
+        print(f&quot;  (threshold: |z-score| &gt; {Z_THRESHOLD}, rolling window = {ROLLING_WINDOW} months)&quot;)
 
-    print(&quot;\nDetecting anomalies...&quot;)
-    full_df, anomalies = analyze(df)
-    n_routes_with = anomalies[&quot;route_id&quot;].n_unique()
-    print(f&quot;  {len(anomalies)} anomalous months flagged across {n_routes_with} routes&quot;)
-    print(f&quot;  (threshold: |z-score| &gt; {Z_THRESHOLD}, rolling window = {ROLLING_WINDOW} months)&quot;)
-
-    # Top offenders
-    top = (
-        anomalies.group_by([&quot;route_id&quot;, &quot;route_name&quot;])
-        .agg(pl.len().alias(&quot;count&quot;))
-        .sort(&quot;count&quot;, descending=True)
-        .head(5)
-    )
-    print(&quot;\n  Top 5 routes by anomaly count:&quot;)
-    for row in top.iter_rows(named=True):
-        print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5} - {row[&#x27;route_name&#x27;]}: {row[&#x27;count&#x27;]} anomalies&quot;)
-
-    # Mode-stratified anomaly rates
-    mode_summary = (
-        full_df.filter(pl.col(&quot;rolling_mean&quot;).is_not_null())
-        .group_by(&quot;mode&quot;)
-        .agg(
-            total_months=pl.len(),
-            anomaly_count=pl.col(&quot;is_anomaly&quot;).sum(),
+        # Top offenders
+        top = (
+            anomalies.group_by([&quot;route_id&quot;, &quot;route_name&quot;])
+            .agg(pl.len().alias(&quot;count&quot;))
+            .sort(&quot;count&quot;, descending=True)
+            .head(5)
         )
-        .with_columns(
-            anomaly_rate=(pl.col(&quot;anomaly_count&quot;) / pl.col(&quot;total_months&quot;)),
+        print(&quot;\n  Top 5 routes by anomaly count:&quot;)
+        for row in top.iter_rows(named=True):
+            print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5} - {row[&#x27;route_name&#x27;]}: {row[&#x27;count&#x27;]} anomalies&quot;)
+
+        # Mode-stratified anomaly rates
+        mode_summary = (
+            full_df.filter(pl.col(&quot;rolling_mean&quot;).is_not_null())
+            .group_by(&quot;mode&quot;)
+            .agg(
+                total_months=pl.len(),
+                anomaly_count=pl.col(&quot;is_anomaly&quot;).sum(),
+            )
+            .with_columns(
+                anomaly_rate=(pl.col(&quot;anomaly_count&quot;) / pl.col(&quot;total_months&quot;)),
+            )
+            .sort(&quot;mode&quot;)
         )
-        .sort(&quot;mode&quot;)
-    )
-    print(&quot;\n  Anomaly rates by mode:&quot;)
-    print(f&quot;    {&#x27;Mode&#x27;:&lt;10} {&#x27;Anomalies&#x27;:&gt;10} {&#x27;Total Months&#x27;:&gt;13} {&#x27;Rate&#x27;:&gt;8}&quot;)
-    print(f&quot;    {&#x27;-&#x27; * 43}&quot;)
-    for row in mode_summary.iter_rows(named=True):
-        print(f&quot;    {row[&#x27;mode&#x27;]:&lt;10} {row[&#x27;anomaly_count&#x27;]:&gt;10} {row[&#x27;total_months&#x27;]:&gt;13} {row[&#x27;anomaly_rate&#x27;]:&gt;8.1%}&quot;)
+        print(&quot;\n  Anomaly rates by mode:&quot;)
+        print(f&quot;    {&#x27;Mode&#x27;:&lt;10} {&#x27;Anomalies&#x27;:&gt;10} {&#x27;Total Months&#x27;:&gt;13} {&#x27;Rate&#x27;:&gt;8}&quot;)
+        print(f&quot;    {&#x27;-&#x27; * 43}&quot;)
+        for row in mode_summary.iter_rows(named=True):
+            print(f&quot;    {row[&#x27;mode&#x27;]:&lt;10} {row[&#x27;anomaly_count&#x27;]:&gt;10} {row[&#x27;total_months&#x27;]:&gt;13} {row[&#x27;anomaly_rate&#x27;]:&gt;8.1%}&quot;)
 
-    # Expected false-positive rate comparison
-    evaluated_obs = full_df.filter(pl.col(&quot;rolling_mean&quot;).is_not_null()).height
-    expected_fp = int(round(evaluated_obs * 0.0455))  # ~4.55% for 2-sigma two-sided
-    actual_anomalies = len(anomalies)
-    print(f&quot;\n  False-positive context (2-sigma, two-sided):&quot;)
-    print(f&quot;    Evaluated observations: {evaluated_obs:,}&quot;)
-    print(f&quot;    Expected under normality (~4.6%): ~{expected_fp}&quot;)
-    print(f&quot;    Actual anomalies flagged: {actual_anomalies}&quot;)
-    print(f&quot;    Ratio (actual / expected): {actual_anomalies / expected_fp:.2f}x&quot;)
+        # Expected false-positive rate comparison
+        evaluated_obs = full_df.filter(pl.col(&quot;rolling_mean&quot;).is_not_null()).height
+        expected_fp = int(round(evaluated_obs * 0.0455))  # ~4.55% for 2-sigma two-sided
+        actual_anomalies = len(anomalies)
+        print(f&quot;\n  False-positive context (2-sigma, two-sided):&quot;)
+        print(f&quot;    Evaluated observations: {evaluated_obs:,}&quot;)
+        print(f&quot;    Expected under normality (~4.6%): ~{expected_fp}&quot;)
+        print(f&quot;    Actual anomalies flagged: {actual_anomalies}&quot;)
+        print(f&quot;    Ratio (actual / expected): {actual_anomalies / expected_fp:.2f}x&quot;)
 
-    # Excluded routes (fewer than 7 months of data)
-    route_month_counts = df.group_by(&quot;route_id&quot;).agg(pl.len().alias(&quot;n_months&quot;))
-    excluded = route_month_counts.filter(pl.col(&quot;n_months&quot;) &lt; 7)
-    excluded_with_names = excluded.join(
-        df.select(&quot;route_id&quot;, &quot;route_name&quot;).unique(),
-        on=&quot;route_id&quot;,
-    )
-    print(f&quot;\n  Routes excluded from anomaly detection (&lt; 7 months of data): {len(excluded)}&quot;)
-    for row in excluded_with_names.iter_rows(named=True):
-        print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]} ({row[&#x27;n_months&#x27;]} months)&quot;)
+        # Excluded routes (fewer than 7 months of data)
+        route_month_counts = df.group_by(&quot;route_id&quot;).agg(pl.len().alias(&quot;n_months&quot;))
+        excluded = route_month_counts.filter(pl.col(&quot;n_months&quot;) &lt; 7)
+        excluded_with_names = excluded.join(
+            df.select(&quot;route_id&quot;, &quot;route_name&quot;).unique(),
+            on=&quot;route_id&quot;,
+        )
+        print(f&quot;\n  Routes excluded from anomaly detection (&lt; 7 months of data): {len(excluded)}&quot;)
+        for row in excluded_with_names.iter_rows(named=True):
+            print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]} ({row[&#x27;n_months&#x27;]} months)&quot;)
 
-    # UNKNOWN-mode routes
-    unknown_routes = df.filter(pl.col(&quot;mode&quot;) == &quot;UNKNOWN&quot;).select(&quot;route_id&quot;, &quot;route_name&quot;).unique()
-    print(f&quot;\n  UNKNOWN-mode routes included: {len(unknown_routes)}&quot;)
-    for row in unknown_routes.iter_rows(named=True):
-        print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]}&quot;)
+        # UNKNOWN-mode routes
+        unknown_routes = df.filter(pl.col(&quot;mode&quot;) == &quot;UNKNOWN&quot;).select(&quot;route_id&quot;, &quot;route_name&quot;).unique()
+        print(f&quot;\n  UNKNOWN-mode routes included: {len(unknown_routes)}&quot;)
+        for row in unknown_routes.iter_rows(named=True):
+            print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]}&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    anomalies.select(
-        &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;month&quot;, &quot;otp&quot;,
-        &quot;rolling_mean&quot;, &quot;rolling_std&quot;, &quot;z_score&quot;, &quot;known_event&quot;,
-    ).write_csv(OUT / &quot;anomalies.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;anomalies.csv&#x27;}&quot;)
+    with phase(&quot;Saving CSV&quot;):
+        anomalies_out = anomalies.select(
+            &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;month&quot;, &quot;otp&quot;,
+            &quot;rolling_mean&quot;, &quot;rolling_std&quot;, &quot;z_score&quot;, &quot;known_event&quot;,
+        )
+        save_csv(anomalies_out, OUT / &quot;anomalies.csv&quot;)
 
-    print(&quot;\nGenerating chart...&quot;)
-    make_chart(full_df, anomalies)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating chart&quot;):
+        make_chart(full_df, anomalies)
 
 
 if __name__ == &quot;__main__&quot;:

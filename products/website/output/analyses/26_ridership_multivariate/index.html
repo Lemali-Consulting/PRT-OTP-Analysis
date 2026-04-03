@@ -36,7 +36,7 @@
   <h1>26 - Ridership in Multivariate OTP Model</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -383,21 +383,24 @@
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 26: Test whether ridership adds explanatory power to the Analysis 18 multivariate OTP model.&quot;&quot;&quot;
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
+    analysis_dir,
     classify_bus_route,
-    output_dir,
+    correlate,
+    phase,
     query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
     setup_plotting,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12
 
@@ -658,10 +661,7 @@ def make_coefficient_chart(base: dict, expanded: dict) -&gt; None:
     ax.legend(loc=&quot;lower right&quot;, fontsize=9)
     ax.invert_yaxis()
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;coefficient_comparison.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;coefficient_comparison.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;coefficient_comparison.png&quot;)
 
 
 def make_partial_residual_chart(df: pl.DataFrame, base: dict) -&gt; None:
@@ -687,29 +687,24 @@ def make_partial_residual_chart(df: pl.DataFrame, base: dict) -&gt; None:
     ax.set_title(&quot;Partial Residual: Does Ridership Explain Remaining OTP Variance?&quot;)
     ax.legend(fontsize=9)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;partial_residual.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;partial_residual.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;partial_residual.png&quot;)
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
+@run_analysis(26, &quot;Ridership in Multivariate OTP Model&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load features, fit models, compare, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 26: Ridership in Multivariate OTP Model&quot;)
-    print(&quot;=&quot; * 60)
 
-    print(&quot;\nLoading and assembling features...&quot;)
-    df = load_features()
-    n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
-    n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
-    print(f&quot;  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)&quot;)
-    print(f&quot;  Ridership range: {df[&#x27;avg_riders&#x27;].min():.0f} -- {df[&#x27;avg_riders&#x27;].max():.0f}&quot;)
-    print(f&quot;  Log ridership range: {df[&#x27;log_riders&#x27;].min():.2f} -- {df[&#x27;log_riders&#x27;].max():.2f}&quot;)
+    with phase(&quot;Loading and assembling features&quot;):
+        df = load_features()
+        n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
+        n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+        print(f&quot;  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)&quot;)
+        print(f&quot;  Ridership range: {df[&#x27;avg_riders&#x27;].min():.0f} -- {df[&#x27;avg_riders&#x27;].max():.0f}&quot;)
+        print(f&quot;  Log ridership range: {df[&#x27;log_riders&#x27;].min():.2f} -- {df[&#x27;log_riders&#x27;].max():.2f}&quot;)
 
     y = df[&quot;avg_otp&quot;].to_numpy()
 
@@ -717,42 +712,42 @@ def main() -&gt; None:
     base_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
                      &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
     X_base = np.column_stack([df[f].to_numpy().astype(float) for f in base_features])
-    print(&quot;\nFitting base model (6 features, Analysis 18 replication)...&quot;)
-    base = fit_ols(y, X_base, base_features)
-    print_model(base, &quot;Base model (6 features)&quot;)
+    with phase(&quot;Fitting base model (6 features, Analysis 18 replication)&quot;):
+        base = fit_ols(y, X_base, base_features)
+        print_model(base, &quot;Base model (6 features)&quot;)
 
     # --- Model 2: Expanded (+ log_riders) ---
     exp_features = base_features + [&quot;log_riders&quot;]
     X_exp = np.column_stack([df[f].to_numpy().astype(float) for f in exp_features])
-    print(&quot;\nFitting expanded model (+ log_riders)...&quot;)
-    expanded = fit_ols(y, X_exp, exp_features)
-    print_model(expanded, &quot;Expanded model (+ log_riders)&quot;)
+    with phase(&quot;Fitting expanded model (+ log_riders)&quot;):
+        expanded = fit_ols(y, X_exp, exp_features)
+        print_model(expanded, &quot;Expanded model (+ log_riders)&quot;)
 
-    # F-test
-    f_stat, f_p = f_test_nested(base, expanded)
-    print(f&quot;\n  F-test for log_riders: F = {f_stat:.3f}, p = {f_p:.4f}&quot;)
-    print(f&quot;  R2 change: {base[&#x27;r_squared&#x27;]:.4f} -&gt; {expanded[&#x27;r_squared&#x27;]:.4f} &quot;
-          f&quot;(+{expanded[&#x27;r_squared&#x27;] - base[&#x27;r_squared&#x27;]:.4f})&quot;)
-    print(f&quot;  Adj R2 change: {base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {expanded[&#x27;adj_r_squared&#x27;]:.4f} &quot;
-          f&quot;(+{expanded[&#x27;adj_r_squared&#x27;] - base[&#x27;adj_r_squared&#x27;]:.4f})&quot;)
-    if f_p &lt; 0.05:
-        print(&quot;  =&gt; Ridership IS significant after controlling for structural features.&quot;)
-    else:
-        print(&quot;  =&gt; Ridership is NOT significant after controlling for structural features.&quot;)
+        # F-test
+        f_stat, f_p = f_test_nested(base, expanded)
+        print(f&quot;\n  F-test for log_riders: F = {f_stat:.3f}, p = {f_p:.4f}&quot;)
+        print(f&quot;  R2 change: {base[&#x27;r_squared&#x27;]:.4f} -&gt; {expanded[&#x27;r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{expanded[&#x27;r_squared&#x27;] - base[&#x27;r_squared&#x27;]:.4f})&quot;)
+        print(f&quot;  Adj R2 change: {base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {expanded[&#x27;adj_r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{expanded[&#x27;adj_r_squared&#x27;] - base[&#x27;adj_r_squared&#x27;]:.4f})&quot;)
+        if f_p &lt; 0.05:
+            print(&quot;  =&gt; Ridership IS significant after controlling for structural features.&quot;)
+        else:
+            print(&quot;  =&gt; Ridership is NOT significant after controlling for structural features.&quot;)
 
-    # --- VIF for expanded model ---
-    print(&quot;\n--- VIF (Expanded Model) ---&quot;)
-    vifs = compute_vif(X_exp, exp_features)
-    for feat, vif in vifs.items():
-        flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
-        print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
+        # --- VIF for expanded model ---
+        print(&quot;\n--- VIF (Expanded Model) ---&quot;)
+        vifs = compute_vif(X_exp, exp_features)
+        for feat, vif in vifs.items():
+            flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
 
     # --- Model 3: Ridership-only (log_riders + is_rail) ---
     rider_features = [&quot;log_riders&quot;, &quot;is_rail&quot;]
     X_rider = np.column_stack([df[f].to_numpy().astype(float) for f in rider_features])
-    print(&quot;\nFitting ridership-only model (log_riders + is_rail)...&quot;)
-    rider_only = fit_ols(y, X_rider, rider_features)
-    print_model(rider_only, &quot;Ridership-only model&quot;)
+    with phase(&quot;Fitting ridership-only model (log_riders + is_rail)&quot;):
+        rider_only = fit_ols(y, X_rider, rider_features)
+        print_model(rider_only, &quot;Ridership-only model&quot;)
 
     # --- Model 4: Bus-only expanded ---
     bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
@@ -763,59 +758,54 @@ def main() -&gt; None:
     X_bus_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_base_feats])
     X_bus_exp = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_exp_feats])
 
-    print(f&quot;\nFitting bus-only base model ({len(bus_df)} routes)...&quot;)
-    bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
-    print_model(bus_base, &quot;Bus-only base (5 features)&quot;)
+    with phase(f&quot;Fitting bus-only models ({len(bus_df)} routes)&quot;):
+        bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
+        print_model(bus_base, &quot;Bus-only base (5 features)&quot;)
 
-    print(f&quot;\nFitting bus-only expanded model (+ log_riders)...&quot;)
-    bus_expanded = fit_ols(y_bus, X_bus_exp, bus_exp_feats)
-    print_model(bus_expanded, &quot;Bus-only expanded (+ log_riders)&quot;)
+        bus_expanded = fit_ols(y_bus, X_bus_exp, bus_exp_feats)
+        print_model(bus_expanded, &quot;Bus-only expanded (+ log_riders)&quot;)
 
-    f_bus, fp_bus = f_test_nested(bus_base, bus_expanded)
-    print(f&quot;\n  Bus-only F-test for log_riders: F = {f_bus:.3f}, p = {fp_bus:.4f}&quot;)
-    print(f&quot;  R2 change: {bus_base[&#x27;r_squared&#x27;]:.4f} -&gt; {bus_expanded[&#x27;r_squared&#x27;]:.4f} &quot;
-          f&quot;(+{bus_expanded[&#x27;r_squared&#x27;] - bus_base[&#x27;r_squared&#x27;]:.4f})&quot;)
+        f_bus, fp_bus = f_test_nested(bus_base, bus_expanded)
+        print(f&quot;\n  Bus-only F-test for log_riders: F = {f_bus:.3f}, p = {fp_bus:.4f}&quot;)
+        print(f&quot;  R2 change: {bus_base[&#x27;r_squared&#x27;]:.4f} -&gt; {bus_expanded[&#x27;r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{bus_expanded[&#x27;r_squared&#x27;] - bus_base[&#x27;r_squared&#x27;]:.4f})&quot;)
 
-    # --- Correlation between ridership and existing predictors ---
-    print(&quot;\n--- Correlations: log_riders vs structural features ---&quot;)
-    for feat in base_features:
-        r, p = stats.pearsonr(df[feat].to_numpy().astype(float), df[&quot;log_riders&quot;].to_numpy())
-        sig = &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
-        print(f&quot;  log_riders vs {feat:&lt;20s}: r = {r:+.3f}, p = {p:.4f} {sig}&quot;)
+        # --- Correlation between ridership and existing predictors ---
+        print(&quot;\n--- Correlations: log_riders vs structural features ---&quot;)
+        for feat in base_features:
+            corr = correlate(df, feat, &quot;log_riders&quot;)
+            sig = &quot;*&quot; if corr[&quot;pearson_p&quot;] &lt; 0.05 else &quot;&quot;
+            print(f&quot;  log_riders vs {feat:&lt;20s}: r = {corr[&#x27;pearson_r&#x27;]:+.3f}, p = {corr[&#x27;pearson_p&#x27;]:.4f} {sig}&quot;)
 
-    # --- Save outputs ---
-    print(&quot;\nSaving CSVs...&quot;)
+    with phase(&quot;Saving CSVs&quot;):
+        # Model comparison
+        rows = []
+        for model, label in [(base, &quot;base_6feat&quot;), (expanded, &quot;expanded_7feat&quot;),
+                              (rider_only, &quot;ridership_only&quot;), (bus_base, &quot;bus_base&quot;),
+                              (bus_expanded, &quot;bus_expanded&quot;)]:
+            for i, feat in enumerate(model[&quot;features&quot;]):
+                rows.append({
+                    &quot;model&quot;: label,
+                    &quot;feature&quot;: feat,
+                    &quot;coefficient&quot;: model[&quot;coefficients&quot;][i],
+                    &quot;std_error&quot;: model[&quot;std_errors&quot;][i],
+                    &quot;p_value&quot;: model[&quot;p_values&quot;][i],
+                    &quot;beta_weight&quot;: model[&quot;beta_weights&quot;][i] if model[&quot;beta_weights&quot;][i] is not None else float(&quot;nan&quot;),
+                    &quot;r_squared&quot;: model[&quot;r_squared&quot;],
+                    &quot;adj_r_squared&quot;: model[&quot;adj_r_squared&quot;],
+                    &quot;n&quot;: model[&quot;n&quot;],
+                })
+        model_comparison_df = pl.DataFrame(rows)
+        save_csv(model_comparison_df, OUT / &quot;model_comparison.csv&quot;)
 
-    # Model comparison
-    rows = []
-    for model, label in [(base, &quot;base_6feat&quot;), (expanded, &quot;expanded_7feat&quot;),
-                          (rider_only, &quot;ridership_only&quot;), (bus_base, &quot;bus_base&quot;),
-                          (bus_expanded, &quot;bus_expanded&quot;)]:
-        for i, feat in enumerate(model[&quot;features&quot;]):
-            rows.append({
-                &quot;model&quot;: label,
-                &quot;feature&quot;: feat,
-                &quot;coefficient&quot;: model[&quot;coefficients&quot;][i],
-                &quot;std_error&quot;: model[&quot;std_errors&quot;][i],
-                &quot;p_value&quot;: model[&quot;p_values&quot;][i],
-                &quot;beta_weight&quot;: model[&quot;beta_weights&quot;][i] if model[&quot;beta_weights&quot;][i] is not None else float(&quot;nan&quot;),
-                &quot;r_squared&quot;: model[&quot;r_squared&quot;],
-                &quot;adj_r_squared&quot;: model[&quot;adj_r_squared&quot;],
-                &quot;n&quot;: model[&quot;n&quot;],
-            })
-    pl.DataFrame(rows).write_csv(OUT / &quot;model_comparison.csv&quot;)
-    print(f&quot;  {OUT / &#x27;model_comparison.csv&#x27;}&quot;)
+        # VIF table
+        vif_rows = [{&quot;feature&quot;: f, &quot;vif&quot;: v} for f, v in vifs.items()]
+        vif_df = pl.DataFrame(vif_rows)
+        save_csv(vif_df, OUT / &quot;vif_table.csv&quot;)
 
-    # VIF table
-    vif_rows = [{&quot;feature&quot;: f, &quot;vif&quot;: v} for f, v in vifs.items()]
-    pl.DataFrame(vif_rows).write_csv(OUT / &quot;vif_table.csv&quot;)
-    print(f&quot;  {OUT / &#x27;vif_table.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating charts...&quot;)
-    make_coefficient_chart(base, expanded)
-    make_partial_residual_chart(df, base)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_coefficient_chart(base, expanded)
+        make_partial_residual_chart(df, base)
 
 
 if __name__ == &quot;__main__&quot;:

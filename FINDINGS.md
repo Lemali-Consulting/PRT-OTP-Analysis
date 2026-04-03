@@ -285,6 +285,10 @@ Downtown dependence is a significant but modest predictor of worse ridership rec
 
 PRT cut **13.1% of vehicle revenue hours** between 2019 and 2024, ranking **104th of 150** large US transit agencies (median cut: −6.8%). 48 of 150 agencies (32%) recovered to 2019 service levels. However, PRT's ridership dropped **40.8%** over the same period — a **27.7 percentage point gap** that strongly suggests the ridership decline is primarily demand-driven, not a consequence of service cuts. This pattern holds nationally: 130 of 150 agencies lost proportionally more riders than service. Among peers, Cleveland cut the least (−3.2% VRH), while St. Louis cut the most (−29.3%). PRT sits mid-pack between Portland (−10.7%) and Buffalo (−14.8%). Even agencies that grew service (e.g. Sacramento +29% VRH) still lost riders, reinforcing that the post-COVID ridership shortfall reflects structural demand shifts rather than service austerity.
 
+## 40. Peer City Dashboard (Analysis 40)
+
+Pittsburgh lost 41% of riders and 15% of service hours between 2019 and 2023 — roughly middle-of-the-pack among 8 peer cities. But PRT is the **only peer where fare revenue per trip increased** ($1.57→$1.63), while every other city saw effective fares decline — some sharply (Denver $1.47→$0.98, Minneapolis $1.27→$0.99). This suggests PRT maintained its fare structure while peers adopted reduced-fare or fare-free programs. Farebox recovery ratios collapsed everywhere (PRT from 23.2% to 12.8%), but Pittsburgh's ratio remains the second-highest among peers. NTD does not collect reliability data, so on-time performance comparisons across cities are not possible with public data.
+
 ## Key Takeaways
 
 ### What drives OTP
@@ -370,3 +374,4 @@ PRT cut **13.1% of vehicle revenue hours** between 2019 and 2024, ranking **104t
 | 37 | [Peer City Ridership](analyses/37_peer_city_ridership/) | Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits. |
 | 38 | [Downtown Recovery](analyses/38_downtown_recovery/) | Tests PRT claim that poor downtown business recovery explains system-wide ridership lag vs peer cities |
 | 39 | [National Service Cuts](analyses/39_national_service_cuts/) | Compare vehicle revenue hour changes 2019-2024 across the 150 largest US transit agencies; rank PRT; contrast supply-side service cuts with demand-side ridership loss. |
+| 40 | [Peer City Dashboard](analyses/40_peer_city_dashboard/) | Compare PRT to 7 peer cities across ridership recovery, service hours, and fare burden using NTD data from 2019 to 2023. |

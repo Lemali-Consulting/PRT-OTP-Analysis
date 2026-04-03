@@ -36,7 +36,7 @@
   <h1>07: Stop Count vs OTP</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -253,15 +253,11 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Scatter analysis of route stop count versus average on-time performance.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate_by_mode, mode_scatter, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -&gt; pl.DataFrame:
@@ -284,101 +280,41 @@ def load_data() -&gt; pl.DataFrame:
 
 def analyze(df: pl.DataFrame) -&gt; tuple[pl.DataFrame, dict]:
     &quot;&quot;&quot;Compute Pearson and Spearman correlations, overall and bus-only.&quot;&quot;&quot;
-    results = {}
-
-    # All routes
-    results[&quot;all_n&quot;] = len(df)
-    if len(df) &gt;= 3:
-        r_all, p_all = stats.pearsonr(df[&quot;stop_count&quot;].to_list(), df[&quot;avg_otp&quot;].to_list())
-    else:
-        r_all, p_all = float(&quot;nan&quot;), float(&quot;nan&quot;)
-    results[&quot;all_pearson_r&quot;] = r_all
-    results[&quot;all_pearson_p&quot;] = p_all
-
-    # Bus only
-    bus = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
-    results[&quot;bus_n&quot;] = len(bus)
-    if len(bus) &gt;= 3:
-        r_bus, p_bus = stats.pearsonr(bus[&quot;stop_count&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
-        rho_bus, p_rho = stats.spearmanr(bus[&quot;stop_count&quot;].to_list(), bus[&quot;avg_otp&quot;].to_list())
-    else:
-        r_bus, p_bus = float(&quot;nan&quot;), float(&quot;nan&quot;)
-        rho_bus, p_rho = float(&quot;nan&quot;), float(&quot;nan&quot;)
-    results[&quot;bus_pearson_r&quot;] = r_bus
-    results[&quot;bus_pearson_p&quot;] = p_bus
-    results[&quot;bus_spearman_r&quot;] = rho_bus
-    results[&quot;bus_spearman_p&quot;] = p_rho
-
-    return df, results
+    return df, correlate_by_mode(df, &quot;stop_count&quot;, &quot;avg_otp&quot;)
 
 
-def make_chart(df: pl.DataFrame, results: dict) -&gt; None:
+def make_chart(df: pl.DataFrame) -&gt; None:
     &quot;&quot;&quot;Generate scatter plot of stop count vs OTP with bus-only trendline.&quot;&quot;&quot;
     plt = setup_plotting()
     fig, ax = plt.subplots(figsize=(10, 7))
-
-    mode_colors = {&quot;BUS&quot;: &quot;#3b82f6&quot;, &quot;RAIL&quot;: &quot;#22c55e&quot;, &quot;INCLINE&quot;: &quot;#f59e0b&quot;, &quot;UNKNOWN&quot;: &quot;#9ca3af&quot;}
-
-    for mode, color in mode_colors.items():
-        subset = df.filter(pl.col(&quot;mode&quot;) == mode)
-        if len(subset) == 0:
-            continue
-        ax.scatter(
-            subset[&quot;stop_count&quot;].to_list(),
-            subset[&quot;avg_otp&quot;].to_list(),
-            color=color, label=mode, s=40, alpha=0.7, edgecolors=&quot;white&quot;, linewidths=0.5,
-        )
-
-    # Bus-only regression line using linregress for consistency with Pearson r
-    bus = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
-    x_vals = bus[&quot;stop_count&quot;].to_list()
-    y_vals = bus[&quot;avg_otp&quot;].to_list()
-    if len(x_vals) &gt;= 3:
-        lr = stats.linregress(x_vals, y_vals)
-        x_line = [min(x_vals), max(x_vals)]
-        y_line = [lr.slope * xi + lr.intercept for xi in x_line]
-        r_bus = results[&quot;bus_pearson_r&quot;]
-        p_bus = results[&quot;bus_pearson_p&quot;]
-        ax.plot(x_line, y_line, color=&quot;#1e40af&quot;, linewidth=1.5, linestyle=&quot;--&quot;,
-                label=f&quot;BUS trend (r={r_bus:.3f}, p={p_bus:.3f})&quot;)
-
+    mode_scatter(ax, df, &quot;stop_count&quot;, &quot;avg_otp&quot;)
     ax.set_xlabel(&quot;Number of Stops&quot;)
     ax.set_ylabel(&quot;Average OTP&quot;)
     ax.set_title(&quot;Stop Count vs On-Time Performance by Route&quot;)
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
-
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;stop_count_vs_otp.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;stop_count_vs_otp.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;stop_count_vs_otp.png&quot;)
 
 
+@run_analysis(7, &quot;Stop Count vs OTP&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 07: Stop Count vs OTP&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        print(f&quot;  {len(df)} routes with both stop count and OTP data&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    print(f&quot;  {len(df)} routes with both stop count and OTP data&quot;)
+    with phase(&quot;Analyzing&quot;):
+        df, results = analyze(df)
+        print(f&quot;  All routes:  Pearson r = {results[&#x27;all_pearson_r&#x27;]:.4f} (p = {results[&#x27;all_pearson_p&#x27;]:.4f}), n = {results[&#x27;all_n&#x27;]}&quot;)
+        print(f&quot;  Bus only:    Pearson r = {results[&#x27;bus_pearson_r&#x27;]:.4f} (p = {results[&#x27;bus_pearson_p&#x27;]:.4f})&quot;)
+        print(f&quot;               Spearman r = {results[&#x27;bus_spearman_r&#x27;]:.4f} (p = {results[&#x27;bus_spearman_p&#x27;]:.4f})&quot;)
+        print(f&quot;               n = {results[&#x27;bus_n&#x27;]} bus routes&quot;)
 
-    print(&quot;\nAnalyzing...&quot;)
-    df, results = analyze(df)
-    print(f&quot;  All routes:  Pearson r = {results[&#x27;all_pearson_r&#x27;]:.4f} (p = {results[&#x27;all_pearson_p&#x27;]:.4f}), n = {results[&#x27;all_n&#x27;]}&quot;)
-    print(f&quot;  Bus only:    Pearson r = {results[&#x27;bus_pearson_r&#x27;]:.4f} (p = {results[&#x27;bus_pearson_p&#x27;]:.4f})&quot;)
-    print(f&quot;               Spearman r = {results[&#x27;bus_spearman_r&#x27;]:.4f} (p = {results[&#x27;bus_spearman_p&#x27;]:.4f})&quot;)
-    print(f&quot;               n = {results[&#x27;bus_n&#x27;]} bus routes&quot;)
+    with phase(&quot;Saving CSV&quot;):
+        save_csv(df, OUT / &quot;stop_count_otp.csv&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    df.write_csv(OUT / &quot;stop_count_otp.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;stop_count_otp.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating chart...&quot;)
-    make_chart(df, results)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating chart&quot;):
+        make_chart(df)
 
 
 if __name__ == &quot;__main__&quot;:

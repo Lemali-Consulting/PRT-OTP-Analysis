@@ -36,7 +36,7 @@
   <h1>25 - Ridership Concentration & Equity</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -277,15 +277,12 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 25: Measure ridership concentration on low-OTP routes using Lorenz curves and Gini coefficients.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12
 
@@ -454,10 +451,7 @@ def make_lorenz_chart(lorenz_all: dict, lorenz_bus: dict) -&gt; None:
         ax.set_aspect(&quot;equal&quot;)
 
     fig.suptitle(&quot;Ridership Concentration on Low-OTP Routes&quot;, fontsize=13, y=1.02)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;ridership_lorenz.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;ridership_lorenz.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;ridership_lorenz.png&quot;)
 
 
 def make_quintile_chart(quintiles_all: pl.DataFrame, quintiles_bus: pl.DataFrame) -&gt; None:
@@ -505,85 +499,74 @@ def make_quintile_chart(quintiles_all: pl.DataFrame, quintiles_bus: pl.DataFrame
         ax.legend(lines, labels, loc=&quot;upper left&quot;, fontsize=8)
 
     fig.suptitle(&quot;Ridership and OTP by Quintile&quot;, fontsize=13, y=1.02)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;quintile_summary.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;quintile_summary.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;quintile_summary.png&quot;)
 
 
+@run_analysis(25, &quot;Ridership Concentration &amp; Equity&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, compute Lorenz/Gini, quintiles, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 25: Ridership Concentration &amp; Equity&quot;)
-    print(&quot;=&quot; * 60)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    n_routes = df[&quot;route_id&quot;].n_unique()
-    print(f&quot;  {len(df):,} route-month observations ({n_routes} routes)&quot;)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        n_routes = df[&quot;route_id&quot;].n_unique()
+        print(f&quot;  {len(df):,} route-month observations ({n_routes} routes)&quot;)
 
-    print(&quot;\nComputing route-level summaries...&quot;)
-    routes_all = route_summary(df)
-    routes_bus = routes_all.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
-    print(f&quot;  All routes: {len(routes_all)}, Bus only: {len(routes_bus)}&quot;)
+    with phase(&quot;Computing route-level summaries&quot;):
+        routes_all = route_summary(df)
+        routes_bus = routes_all.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        print(f&quot;  All routes: {len(routes_all)}, Bus only: {len(routes_bus)}&quot;)
 
-    # Lorenz curves
-    print(&quot;\nComputing Lorenz curves...&quot;)
-    lorenz_all = compute_lorenz(routes_all)
-    lorenz_bus = compute_lorenz(routes_bus)
+    with phase(&quot;Computing Lorenz curves&quot;):
+        lorenz_all = compute_lorenz(routes_all)
+        lorenz_bus = compute_lorenz(routes_bus)
 
-    print(f&quot;\n  All routes:&quot;)
-    print(f&quot;    Gini concentration index: {lorenz_all[&#x27;gini&#x27;]:.3f}&quot;)
-    print(f&quot;    50% of ridership carried by {lorenz_all[&#x27;routes_for_50_pct&#x27;]}/{lorenz_all[&#x27;n_routes&#x27;]} &quot;
-          f&quot;routes (OTP &lt; {lorenz_all[&#x27;otp_at_50_pct&#x27;]:.1%})&quot;)
-    print(f&quot;  Bus only:&quot;)
-    print(f&quot;    Gini concentration index: {lorenz_bus[&#x27;gini&#x27;]:.3f}&quot;)
-    print(f&quot;    50% of ridership carried by {lorenz_bus[&#x27;routes_for_50_pct&#x27;]}/{lorenz_bus[&#x27;n_routes&#x27;]} &quot;
-          f&quot;routes (OTP &lt; {lorenz_bus[&#x27;otp_at_50_pct&#x27;]:.1%})&quot;)
+        print(f&quot;\n  All routes:&quot;)
+        print(f&quot;    Gini concentration index: {lorenz_all[&#x27;gini&#x27;]:.3f}&quot;)
+        print(f&quot;    50% of ridership carried by {lorenz_all[&#x27;routes_for_50_pct&#x27;]}/{lorenz_all[&#x27;n_routes&#x27;]} &quot;
+              f&quot;routes (OTP &lt; {lorenz_all[&#x27;otp_at_50_pct&#x27;]:.1%})&quot;)
+        print(f&quot;  Bus only:&quot;)
+        print(f&quot;    Gini concentration index: {lorenz_bus[&#x27;gini&#x27;]:.3f}&quot;)
+        print(f&quot;    50% of ridership carried by {lorenz_bus[&#x27;routes_for_50_pct&#x27;]}/{lorenz_bus[&#x27;n_routes&#x27;]} &quot;
+              f&quot;routes (OTP &lt; {lorenz_bus[&#x27;otp_at_50_pct&#x27;]:.1%})&quot;)
 
-    # Quintiles
-    print(&quot;\nComputing quintile breakdowns...&quot;)
-    quintiles_all = compute_quintiles(routes_all)
-    quintiles_bus = compute_quintiles(routes_bus)
+    with phase(&quot;Computing quintile breakdowns&quot;):
+        quintiles_all = compute_quintiles(routes_all)
+        quintiles_bus = compute_quintiles(routes_bus)
 
-    print(&quot;\n  All routes quintiles:&quot;)
-    print(f&quot;  {&#x27;Quintile&#x27;:&lt;10} {&#x27;Routes&#x27;:&gt;7} {&#x27;Avg OTP&#x27;:&gt;9} {&#x27;OTP Range&#x27;:&gt;18} {&#x27;Ridership%&#x27;:&gt;11}&quot;)
-    for row in quintiles_all.iter_rows(named=True):
-        print(f&quot;  {row[&#x27;quintile&#x27;]:&lt;10} {row[&#x27;n_routes&#x27;]:&gt;7} {row[&#x27;avg_otp&#x27;]:&gt;9.1%} &quot;
-              f&quot;{row[&#x27;min_otp&#x27;]:&gt;8.1%} - {row[&#x27;max_otp&#x27;]:.1%} {row[&#x27;ridership_share_pct&#x27;]:&gt;10.1f}%&quot;)
+        print(&quot;\n  All routes quintiles:&quot;)
+        print(f&quot;  {&#x27;Quintile&#x27;:&lt;10} {&#x27;Routes&#x27;:&gt;7} {&#x27;Avg OTP&#x27;:&gt;9} {&#x27;OTP Range&#x27;:&gt;18} {&#x27;Ridership%&#x27;:&gt;11}&quot;)
+        for row in quintiles_all.iter_rows(named=True):
+            print(f&quot;  {row[&#x27;quintile&#x27;]:&lt;10} {row[&#x27;n_routes&#x27;]:&gt;7} {row[&#x27;avg_otp&#x27;]:&gt;9.1%} &quot;
+                  f&quot;{row[&#x27;min_otp&#x27;]:&gt;8.1%} - {row[&#x27;max_otp&#x27;]:.1%} {row[&#x27;ridership_share_pct&#x27;]:&gt;10.1f}%&quot;)
 
-    print(&quot;\n  Bus-only quintiles:&quot;)
-    print(f&quot;  {&#x27;Quintile&#x27;:&lt;10} {&#x27;Routes&#x27;:&gt;7} {&#x27;Avg OTP&#x27;:&gt;9} {&#x27;OTP Range&#x27;:&gt;18} {&#x27;Ridership%&#x27;:&gt;11}&quot;)
-    for row in quintiles_bus.iter_rows(named=True):
-        print(f&quot;  {row[&#x27;quintile&#x27;]:&lt;10} {row[&#x27;n_routes&#x27;]:&gt;7} {row[&#x27;avg_otp&#x27;]:&gt;9.1%} &quot;
-              f&quot;{row[&#x27;min_otp&#x27;]:&gt;8.1%} - {row[&#x27;max_otp&#x27;]:.1%} {row[&#x27;ridership_share_pct&#x27;]:&gt;10.1f}%&quot;)
+        print(&quot;\n  Bus-only quintiles:&quot;)
+        print(f&quot;  {&#x27;Quintile&#x27;:&lt;10} {&#x27;Routes&#x27;:&gt;7} {&#x27;Avg OTP&#x27;:&gt;9} {&#x27;OTP Range&#x27;:&gt;18} {&#x27;Ridership%&#x27;:&gt;11}&quot;)
+        for row in quintiles_bus.iter_rows(named=True):
+            print(f&quot;  {row[&#x27;quintile&#x27;]:&lt;10} {row[&#x27;n_routes&#x27;]:&gt;7} {row[&#x27;avg_otp&#x27;]:&gt;9.1%} &quot;
+                  f&quot;{row[&#x27;min_otp&#x27;]:&gt;8.1%} - {row[&#x27;max_otp&#x27;]:.1%} {row[&#x27;ridership_share_pct&#x27;]:&gt;10.1f}%&quot;)
 
-    # Equity metrics CSV
-    print(&quot;\nSaving CSV...&quot;)
-    metrics = pl.DataFrame([
-        {&quot;metric&quot;: &quot;gini_all&quot;, &quot;value&quot;: lorenz_all[&quot;gini&quot;]},
-        {&quot;metric&quot;: &quot;gini_bus&quot;, &quot;value&quot;: lorenz_bus[&quot;gini&quot;]},
-        {&quot;metric&quot;: &quot;otp_at_50pct_all&quot;, &quot;value&quot;: lorenz_all[&quot;otp_at_50_pct&quot;]},
-        {&quot;metric&quot;: &quot;otp_at_50pct_bus&quot;, &quot;value&quot;: lorenz_bus[&quot;otp_at_50_pct&quot;]},
-        {&quot;metric&quot;: &quot;routes_for_50pct_all&quot;, &quot;value&quot;: float(lorenz_all[&quot;routes_for_50_pct&quot;])},
-        {&quot;metric&quot;: &quot;routes_for_50pct_bus&quot;, &quot;value&quot;: float(lorenz_bus[&quot;routes_for_50_pct&quot;])},
-        {&quot;metric&quot;: &quot;n_routes_all&quot;, &quot;value&quot;: float(lorenz_all[&quot;n_routes&quot;])},
-        {&quot;metric&quot;: &quot;n_routes_bus&quot;, &quot;value&quot;: float(lorenz_bus[&quot;n_routes&quot;])},
-    ])
-    metrics.write_csv(OUT / &quot;equity_metrics.csv&quot;)
-    print(f&quot;  {OUT / &#x27;equity_metrics.csv&#x27;}&quot;)
+    with phase(&quot;Saving CSV&quot;):
+        metrics = pl.DataFrame([
+            {&quot;metric&quot;: &quot;gini_all&quot;, &quot;value&quot;: lorenz_all[&quot;gini&quot;]},
+            {&quot;metric&quot;: &quot;gini_bus&quot;, &quot;value&quot;: lorenz_bus[&quot;gini&quot;]},
+            {&quot;metric&quot;: &quot;otp_at_50pct_all&quot;, &quot;value&quot;: lorenz_all[&quot;otp_at_50_pct&quot;]},
+            {&quot;metric&quot;: &quot;otp_at_50pct_bus&quot;, &quot;value&quot;: lorenz_bus[&quot;otp_at_50_pct&quot;]},
+            {&quot;metric&quot;: &quot;routes_for_50pct_all&quot;, &quot;value&quot;: float(lorenz_all[&quot;routes_for_50_pct&quot;])},
+            {&quot;metric&quot;: &quot;routes_for_50pct_bus&quot;, &quot;value&quot;: float(lorenz_bus[&quot;routes_for_50_pct&quot;])},
+            {&quot;metric&quot;: &quot;n_routes_all&quot;, &quot;value&quot;: float(lorenz_all[&quot;n_routes&quot;])},
+            {&quot;metric&quot;: &quot;n_routes_bus&quot;, &quot;value&quot;: float(lorenz_bus[&quot;n_routes&quot;])},
+        ])
+        save_csv(metrics, OUT / &quot;equity_metrics.csv&quot;)
 
-    # Also save quintile detail
-    quintiles_all.with_columns(pl.lit(&quot;all&quot;).alias(&quot;subset&quot;)).vstack(
-        quintiles_bus.with_columns(pl.lit(&quot;bus&quot;).alias(&quot;subset&quot;))
-    ).write_csv(OUT / &quot;quintile_detail.csv&quot;)
-    print(f&quot;  {OUT / &#x27;quintile_detail.csv&#x27;}&quot;)
+        # Also save quintile detail
+        quintile_detail_df = quintiles_all.with_columns(pl.lit(&quot;all&quot;).alias(&quot;subset&quot;)).vstack(
+            quintiles_bus.with_columns(pl.lit(&quot;bus&quot;).alias(&quot;subset&quot;))
+        )
+        save_csv(quintile_detail_df, OUT / &quot;quintile_detail.csv&quot;)
 
-    print(&quot;\nGenerating charts...&quot;)
-    make_lorenz_chart(lorenz_all, lorenz_bus)
-    make_quintile_chart(quintiles_all, quintiles_bus)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_lorenz_chart(lorenz_all, lorenz_bus)
+        make_quintile_chart(quintiles_all, quintiles_bus)
 
 
 if __name__ == &quot;__main__&quot;:

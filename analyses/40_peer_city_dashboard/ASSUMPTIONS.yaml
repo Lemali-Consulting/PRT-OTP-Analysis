@@ -1,0 +1,4 @@
+# Assumptions for Peer City Dashboard
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions: []

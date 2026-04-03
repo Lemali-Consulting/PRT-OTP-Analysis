@@ -36,7 +36,7 @@
   <h1>17: Weekend vs Weekday Service Profile</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -279,15 +279,15 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Weekend vs weekday service profile analysis of on-time performance.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, mode_scatter, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
+
+# Weekend-to-weekday service ratio boundaries for tier classification.
+WEEKEND_RATIO_LOW = 0.3   # below = weekday-heavy
+WEEKEND_RATIO_HIGH = 0.7  # above = weekend-heavy
 
 
 def load_data() -&gt; pl.DataFrame:
@@ -318,10 +318,13 @@ def load_data() -&gt; pl.DataFrame:
     )
 
     # Classify service profile
+    wkday_label = f&quot;weekday-heavy (&lt;{WEEKEND_RATIO_LOW})&quot;
+    balanced_label = f&quot;balanced ({WEEKEND_RATIO_LOW}-{WEEKEND_RATIO_HIGH})&quot;
+    wkend_label = f&quot;weekend-heavy (&gt;{WEEKEND_RATIO_HIGH})&quot;
     df = df.with_columns(
-        pl.when(pl.col(&quot;weekend_ratio&quot;) &lt; 0.3).then(pl.lit(&quot;weekday-heavy (&lt;0.3)&quot;))
-        .when(pl.col(&quot;weekend_ratio&quot;) &lt;= 0.7).then(pl.lit(&quot;balanced (0.3-0.7)&quot;))
-        .otherwise(pl.lit(&quot;weekend-heavy (&gt;0.7)&quot;))
+        pl.when(pl.col(&quot;weekend_ratio&quot;) &lt; WEEKEND_RATIO_LOW).then(pl.lit(wkday_label))
+        .when(pl.col(&quot;weekend_ratio&quot;) &lt;= WEEKEND_RATIO_HIGH).then(pl.lit(balanced_label))
+        .otherwise(pl.lit(wkend_label))
         .alias(&quot;service_tier&quot;)
     )
 
@@ -336,23 +339,21 @@ def analyze(df: pl.DataFrame) -&gt; dict:
     # Filter to routes with weekday service for meaningful ratio
     with_wd = df.filter(pl.col(&quot;max_wd&quot;) &gt; 0)
 
-    r, p = stats.pearsonr(with_wd[&quot;weekend_ratio&quot;].to_list(), with_wd[&quot;avg_otp&quot;].to_list())
-    results[&quot;ratio_r&quot;] = r
-    results[&quot;ratio_p&quot;] = p
-
-    rho, p_rho = stats.spearmanr(with_wd[&quot;weekend_ratio&quot;].to_list(), with_wd[&quot;avg_otp&quot;].to_list())
-    results[&quot;ratio_rho&quot;] = rho
-    results[&quot;ratio_rho_p&quot;] = p_rho
+    all_corr = correlate(with_wd, &quot;weekend_ratio&quot;, &quot;avg_otp&quot;)
+    results[&quot;ratio_r&quot;] = all_corr[&quot;pearson_r&quot;]
+    results[&quot;ratio_p&quot;] = all_corr[&quot;pearson_p&quot;]
+    results[&quot;ratio_rho&quot;] = all_corr[&quot;spearman_r&quot;]
+    results[&quot;ratio_rho_p&quot;] = all_corr[&quot;spearman_p&quot;]
 
     # Bus-only (avoids Simpson&#x27;s paradox)
     bus_wd = with_wd.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
-    r, p = stats.pearsonr(bus_wd[&quot;weekend_ratio&quot;].to_list(), bus_wd[&quot;avg_otp&quot;].to_list())
-    results[&quot;bus_ratio_r&quot;] = r
-    results[&quot;bus_ratio_p&quot;] = p
-    results[&quot;n_bus&quot;] = len(bus_wd)
+    bus_corr = correlate(bus_wd, &quot;weekend_ratio&quot;, &quot;avg_otp&quot;)
+    results[&quot;bus_ratio_r&quot;] = bus_corr[&quot;pearson_r&quot;]
+    results[&quot;bus_ratio_p&quot;] = bus_corr[&quot;pearson_p&quot;]
+    results[&quot;n_bus&quot;] = bus_corr[&quot;n&quot;]
 
     # Tier stats
-    for tier_label in [&quot;weekday-heavy (&lt;0.3)&quot;, &quot;balanced (0.3-0.7)&quot;, &quot;weekend-heavy (&gt;0.7)&quot;]:
+    for tier_label in [f&quot;weekday-heavy (&lt;{WEEKEND_RATIO_LOW})&quot;, f&quot;balanced ({WEEKEND_RATIO_LOW}-{WEEKEND_RATIO_HIGH})&quot;, f&quot;weekend-heavy (&gt;{WEEKEND_RATIO_HIGH})&quot;]:
         subset = df.filter(pl.col(&quot;service_tier&quot;) == tier_label)
         key = tier_label.split(&quot; &quot;)[0]
         results[f&quot;{key}_n&quot;] = len(subset)
@@ -366,30 +367,20 @@ def analyze(df: pl.DataFrame) -&gt; dict:
 def make_charts(df: pl.DataFrame, results: dict) -&gt; None:
     &quot;&quot;&quot;Generate scatter and box plots.&quot;&quot;&quot;
     plt = setup_plotting()
-    mode_colors = {&quot;BUS&quot;: &quot;#3b82f6&quot;, &quot;RAIL&quot;: &quot;#22c55e&quot;, &quot;INCLINE&quot;: &quot;#f59e0b&quot;, &quot;UNKNOWN&quot;: &quot;#9ca3af&quot;}
-
     # Scatter: weekend ratio vs OTP
     fig, ax = plt.subplots(figsize=(10, 7))
-    for mode, color in mode_colors.items():
-        subset = df.filter(pl.col(&quot;mode&quot;) == mode)
-        if len(subset) == 0:
-            continue
-        ax.scatter(subset[&quot;weekend_ratio&quot;].to_list(), subset[&quot;avg_otp&quot;].to_list(),
-                   color=color, label=mode, s=40, alpha=0.7, edgecolors=&quot;white&quot;, linewidths=0.5)
+    mode_scatter(ax, df, &quot;weekend_ratio&quot;, &quot;avg_otp&quot;, trend=False)
     ax.set_xlabel(&quot;Weekend/Weekday Service Ratio&quot;)
     ax.set_ylabel(&quot;Average OTP&quot;)
     ax.set_title(f&quot;Weekend Service Ratio vs OTP (r={results[&#x27;ratio_r&#x27;]:.3f}, p={results[&#x27;ratio_p&#x27;]:.3f})&quot;)
     ax.legend(fontsize=9)
     ax.set_ylim(0, 1)
     ax.set_xlim(-0.05, 1.5)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;weekend_ratio_vs_otp.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;weekend_ratio_vs_otp.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;weekend_ratio_vs_otp.png&quot;)
 
     # Box plot by service tier
     fig, ax = plt.subplots(figsize=(8, 6))
-    tiers = [&quot;weekday-heavy (&lt;0.3)&quot;, &quot;balanced (0.3-0.7)&quot;, &quot;weekend-heavy (&gt;0.7)&quot;]
+    tiers = [f&quot;weekday-heavy (&lt;{WEEKEND_RATIO_LOW})&quot;, f&quot;balanced ({WEEKEND_RATIO_LOW}-{WEEKEND_RATIO_HIGH})&quot;, f&quot;weekend-heavy (&gt;{WEEKEND_RATIO_HIGH})&quot;]
     box_data = []
     box_labels = []
     for tier in tiers:
@@ -404,41 +395,31 @@ def make_charts(df: pl.DataFrame, results: dict) -&gt; None:
         patch.set_alpha(0.6)
     ax.set_ylabel(&quot;Average OTP&quot;)
     ax.set_title(&quot;OTP by Service Profile Tier&quot;)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;service_tier_comparison.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;service_tier_comparison.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;service_tier_comparison.png&quot;)
 
 
+@run_analysis(17, &quot;Weekend vs Weekday Service Profile&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 17: Weekend vs Weekday Service Profile&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        print(f&quot;  {len(df)} routes with service profile and OTP data&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    print(f&quot;  {len(df)} routes with service profile and OTP data&quot;)
+    with phase(&quot;Analyzing&quot;):
+        results = analyze(df)
+        print(f&quot;  All-mode:  Pearson r = {results[&#x27;ratio_r&#x27;]:.4f} (p = {results[&#x27;ratio_p&#x27;]:.4f})&quot;)
+        print(f&quot;             Spearman rho = {results[&#x27;ratio_rho&#x27;]:.4f} (p = {results[&#x27;ratio_rho_p&#x27;]:.4f})&quot;)
+        print(f&quot;  Bus-only:  Pearson r = {results[&#x27;bus_ratio_r&#x27;]:.4f} (p = {results[&#x27;bus_ratio_p&#x27;]:.4f}), &quot;
+              f&quot;n = {results[&#x27;n_bus&#x27;]}&quot;)
+        for tier, key in [(&quot;Weekday-heavy&quot;, &quot;weekday-heavy&quot;), (&quot;Balanced&quot;, &quot;balanced&quot;), (&quot;Weekend-heavy&quot;, &quot;weekend-heavy&quot;)]:
+            n = results.get(f&quot;{key}_n&quot;, 0)
+            if n &gt; 0:
+                print(f&quot;  {tier}: n={n}, mean OTP={results[f&#x27;{key}_mean_otp&#x27;]:.1%}&quot;)
 
-    print(&quot;\nAnalyzing...&quot;)
-    results = analyze(df)
-    print(f&quot;  All-mode:  Pearson r = {results[&#x27;ratio_r&#x27;]:.4f} (p = {results[&#x27;ratio_p&#x27;]:.4f})&quot;)
-    print(f&quot;             Spearman rho = {results[&#x27;ratio_rho&#x27;]:.4f} (p = {results[&#x27;ratio_rho_p&#x27;]:.4f})&quot;)
-    print(f&quot;  Bus-only:  Pearson r = {results[&#x27;bus_ratio_r&#x27;]:.4f} (p = {results[&#x27;bus_ratio_p&#x27;]:.4f}), &quot;
-          f&quot;n = {results[&#x27;n_bus&#x27;]}&quot;)
-    for tier, key in [(&quot;Weekday-heavy&quot;, &quot;weekday-heavy&quot;), (&quot;Balanced&quot;, &quot;balanced&quot;), (&quot;Weekend-heavy&quot;, &quot;weekend-heavy&quot;)]:
-        n = results.get(f&quot;{key}_n&quot;, 0)
-        if n &gt; 0:
-            print(f&quot;  {tier}: n={n}, mean OTP={results[f&#x27;{key}_mean_otp&#x27;]:.1%}&quot;)
+        save_csv(df, OUT / &quot;service_profile.csv&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    df.write_csv(OUT / &quot;service_profile.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;service_profile.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating charts...&quot;)
-    make_charts(df, results)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_charts(df, results)
 
 
 if __name__ == &quot;__main__&quot;:

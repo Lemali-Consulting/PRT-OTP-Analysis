@@ -36,7 +36,7 @@
   <h1>20 - OTP → Ridership Causality</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -281,17 +281,13 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 20: Test whether OTP declines predict subsequent ridership losses using lagged cross-correlation and Granger causality.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
-from scipy import stats as sp_stats
 from statsmodels.tsa.stattools import adfuller, grangercausalitytests
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 36
 MAX_LAG = 6
@@ -342,15 +338,16 @@ def compute_lagged_crosscorr(df: pl.DataFrame) -&gt; pl.DataFrame:
 
         for lag in range(0, MAX_LAG + 1):
             if lag == 0:
-                r, p = sp_stats.pearsonr(otp, riders)
+                lag_df = pl.DataFrame({&quot;otp&quot;: otp, &quot;riders&quot;: riders})
             else:
                 # OTP at time t correlated with ridership at time t+lag
-                r, p = sp_stats.pearsonr(otp[:-lag], riders[lag:])
+                lag_df = pl.DataFrame({&quot;otp&quot;: otp[:-lag], &quot;riders&quot;: riders[lag:]})
+            corr = correlate(lag_df, &quot;otp&quot;, &quot;riders&quot;)
             results.append({
                 &quot;route_id&quot;: route,
                 &quot;lag&quot;: lag,
-                &quot;correlation&quot;: r,
-                &quot;p_value&quot;: p,
+                &quot;correlation&quot;: corr[&quot;pearson_r&quot;],
+                &quot;p_value&quot;: corr[&quot;pearson_p&quot;],
             })
 
     return pl.DataFrame(results)
@@ -502,10 +499,7 @@ def make_crosscorr_chart(agg: pl.DataFrame) -&gt; None:
     ax.set_xticks(lags)
     ax.legend()
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;lagged_crosscorr.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;lagged_crosscorr.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;lagged_crosscorr.png&quot;)
 
 
 def make_granger_chart(gdf: pl.DataFrame) -&gt; None:
@@ -538,71 +532,61 @@ def make_granger_chart(gdf: pl.DataFrame) -&gt; None:
     ax2.set_title(f&quot;Optimal Lag for Significant Routes (n={len(sig_lags)})&quot;)
     ax2.set_xticks(range(1, MAX_LAG + 1))
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;granger_summary.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;granger_summary.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;granger_summary.png&quot;)
 
 
+@run_analysis(20, &quot;OTP -&gt; Ridership Causality&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load, detrend, cross-correlate, Granger test, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 20: OTP -&gt; Ridership Causality&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        n_routes = df[&quot;route_id&quot;].n_unique()
+        print(f&quot;  {len(df):,} route-month observations ({n_routes} routes, {MIN_MONTHS}+ months each)&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    n_routes = df[&quot;route_id&quot;].n_unique()
-    print(f&quot;  {len(df):,} route-month observations ({n_routes} routes, {MIN_MONTHS}+ months each)&quot;)
+    with phase(&quot;Detrending (subtracting system monthly mean)&quot;):
+        df = detrend(df)
 
-    print(&quot;\nDetrending (subtracting system monthly mean)...&quot;)
-    df = detrend(df)
+    with phase(&quot;Computing lagged cross-correlations (lags 0--6)&quot;):
+        ccdf = compute_lagged_crosscorr(df)
+        agg = aggregate_crosscorr(ccdf)
+        print(&quot;\n  Lag  Median r   IQR              Sig+ routes&quot;)
+        print(&quot;  ---  --------   ---------------  -----------&quot;)
+        for row in agg.iter_rows(named=True):
+            print(f&quot;  {row[&#x27;lag&#x27;]:&gt;3d}  {row[&#x27;median_r&#x27;]:&gt;8.4f}   &quot;
+                  f&quot;[{row[&#x27;q25_r&#x27;]:+.4f}, {row[&#x27;q75_r&#x27;]:+.4f}]  &quot;
+                  f&quot;{row[&#x27;n_significant&#x27;]}/{row[&#x27;n_routes&#x27;]}&quot;)
 
-    print(&quot;\nComputing lagged cross-correlations (lags 0--6)...&quot;)
-    ccdf = compute_lagged_crosscorr(df)
-    agg = aggregate_crosscorr(ccdf)
-    print(&quot;\n  Lag  Median r   IQR              Sig+ routes&quot;)
-    print(&quot;  ---  --------   ---------------  -----------&quot;)
-    for row in agg.iter_rows(named=True):
-        print(f&quot;  {row[&#x27;lag&#x27;]:&gt;3d}  {row[&#x27;median_r&#x27;]:&gt;8.4f}   &quot;
-              f&quot;[{row[&#x27;q25_r&#x27;]:+.4f}, {row[&#x27;q75_r&#x27;]:+.4f}]  &quot;
-              f&quot;{row[&#x27;n_significant&#x27;]}/{row[&#x27;n_routes&#x27;]}&quot;)
+    with phase(&quot;Checking stationarity (ADF tests on detrended series)&quot;):
+        adf_results = check_stationarity(df)
+        print(f&quot;  OTP stationary:      {adf_results[&#x27;n_otp_stationary&#x27;]}/{adf_results[&#x27;n_routes&#x27;]} routes&quot;)
+        print(f&quot;  Ridership stationary: {adf_results[&#x27;n_riders_stationary&#x27;]}/{adf_results[&#x27;n_routes&#x27;]} routes&quot;)
+        print(f&quot;  Both stationary:     {adf_results[&#x27;n_both_stationary&#x27;]}/{adf_results[&#x27;n_routes&#x27;]} routes&quot;)
+        n_diff = adf_results[&#x27;n_routes&#x27;] - adf_results[&#x27;n_both_stationary&#x27;]
+        print(f&quot;  Will first-difference {n_diff} routes before Granger testing&quot;)
 
-    print(&quot;\nChecking stationarity (ADF tests on detrended series)...&quot;)
-    adf_results = check_stationarity(df)
-    print(f&quot;  OTP stationary:      {adf_results[&#x27;n_otp_stationary&#x27;]}/{adf_results[&#x27;n_routes&#x27;]} routes&quot;)
-    print(f&quot;  Ridership stationary: {adf_results[&#x27;n_riders_stationary&#x27;]}/{adf_results[&#x27;n_routes&#x27;]} routes&quot;)
-    print(f&quot;  Both stationary:     {adf_results[&#x27;n_both_stationary&#x27;]}/{adf_results[&#x27;n_routes&#x27;]} routes&quot;)
-    n_diff = adf_results[&#x27;n_routes&#x27;] - adf_results[&#x27;n_both_stationary&#x27;]
-    print(f&quot;  Will first-difference {n_diff} routes before Granger testing&quot;)
+    with phase(&quot;Running Granger causality tests&quot;):
+        gdf = run_granger_tests(df, adf_results[&quot;adf_df&quot;])
+        valid = gdf.filter(pl.col(&quot;p_value&quot;).is_not_null())
+        n_sig = valid.filter(pl.col(&quot;p_value&quot;) &lt; 0.05).height
+        n_bonf = valid.filter(pl.col(&quot;p_bonferroni&quot;) &lt; 0.05).height
+        print(f&quot;  {n_sig}/{valid.height} routes significant at p &lt; 0.05&quot;)
+        print(f&quot;  {n_bonf}/{valid.height} routes significant after Bonferroni correction&quot;)
 
-    print(&quot;\nRunning Granger causality tests...&quot;)
-    gdf = run_granger_tests(df, adf_results[&quot;adf_df&quot;])
-    valid = gdf.filter(pl.col(&quot;p_value&quot;).is_not_null())
-    n_sig = valid.filter(pl.col(&quot;p_value&quot;) &lt; 0.05).height
-    n_bonf = valid.filter(pl.col(&quot;p_bonferroni&quot;) &lt; 0.05).height
-    print(f&quot;  {n_sig}/{valid.height} routes significant at p &lt; 0.05&quot;)
-    print(f&quot;  {n_bonf}/{valid.height} routes significant after Bonferroni correction&quot;)
+        # Most significant routes
+        top = valid.sort(&quot;p_value&quot;).head(10)
+        print(&quot;\n  Top 10 routes by Granger significance:&quot;)
+        print(f&quot;  {&#x27;Route&#x27;:&lt;10} {&#x27;Lag&#x27;:&gt;4} {&#x27;F-stat&#x27;:&gt;8} {&#x27;p-value&#x27;:&gt;10} {&#x27;p-Bonf&#x27;:&gt;10}&quot;)
+        for row in top.iter_rows(named=True):
+            print(f&quot;  {row[&#x27;route_id&#x27;]:&lt;10} {row[&#x27;best_lag&#x27;]:&gt;4d} {row[&#x27;f_stat&#x27;]:&gt;8.2f} &quot;
+                  f&quot;{row[&#x27;p_value&#x27;]:&gt;10.4f} {row[&#x27;p_bonferroni&#x27;]:&gt;10.4f}&quot;)
 
-    # Most significant routes
-    top = valid.sort(&quot;p_value&quot;).head(10)
-    print(&quot;\n  Top 10 routes by Granger significance:&quot;)
-    print(f&quot;  {&#x27;Route&#x27;:&lt;10} {&#x27;Lag&#x27;:&gt;4} {&#x27;F-stat&#x27;:&gt;8} {&#x27;p-value&#x27;:&gt;10} {&#x27;p-Bonf&#x27;:&gt;10}&quot;)
-    for row in top.iter_rows(named=True):
-        print(f&quot;  {row[&#x27;route_id&#x27;]:&lt;10} {row[&#x27;best_lag&#x27;]:&gt;4d} {row[&#x27;f_stat&#x27;]:&gt;8.2f} &quot;
-              f&quot;{row[&#x27;p_value&#x27;]:&gt;10.4f} {row[&#x27;p_bonferroni&#x27;]:&gt;10.4f}&quot;)
+    with phase(&quot;Saving CSVs&quot;):
+        save_csv(ccdf, OUT / &quot;lagged_crosscorr.csv&quot;)
+        save_csv(gdf, OUT / &quot;granger_results.csv&quot;)
 
-    print(&quot;\nSaving CSVs...&quot;)
-    ccdf.write_csv(OUT / &quot;lagged_crosscorr.csv&quot;)
-    print(f&quot;  {OUT / &#x27;lagged_crosscorr.csv&#x27;}&quot;)
-    gdf.write_csv(OUT / &quot;granger_results.csv&quot;)
-    print(f&quot;  {OUT / &#x27;granger_results.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating charts...&quot;)
-    make_crosscorr_chart(agg)
-    make_granger_chart(gdf)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_crosscorr_chart(agg)
+        make_granger_chart(gdf)
 
 
 if __name__ == &quot;__main__&quot;:

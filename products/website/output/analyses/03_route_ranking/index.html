@@ -36,7 +36,7 @@
   <h1>03 - Route Ranking</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -459,16 +459,13 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Route ranking by average OTP, trend slope, and volatility.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import MODE_COLORS, Z_CRITICAL_95, analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12  # minimum months of data to include in rankings
 POST_COVID_START = &quot;2022-01&quot;  # start of post-COVID period for slope calculation
@@ -563,8 +560,8 @@ def analyze(otp: pl.DataFrame, stop_counts: pl.DataFrame) -&gt; pl.DataFrame:
         # Convert to per-year units
         slope_yr = slope_per_month * 12
         stderr_yr = stderr_per_month * 12
-        ci_lo = slope_yr - 1.96 * stderr_yr
-        ci_hi = slope_yr + 1.96 * stderr_yr
+        ci_lo = slope_yr - Z_CRITICAL_95 * stderr_yr
+        ci_hi = slope_yr + Z_CRITICAL_95 * stderr_yr
         # Significant if 95% CI excludes zero
         significant = (ci_lo &gt; 0) or (ci_hi &lt; 0)
 
@@ -640,7 +637,6 @@ def make_chart(df: pl.DataFrame) -&gt; None:
     from matplotlib.patches import Patch
 
     rankable = df.filter(~pl.col(&quot;limited_data&quot;))
-    mode_colors = {&quot;BUS&quot;: &quot;#3b82f6&quot;, &quot;RAIL&quot;: &quot;#22c55e&quot;, &quot;INCLINE&quot;: &quot;#f59e0b&quot;, &quot;UNKNOWN&quot;: &quot;#9ca3af&quot;}
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 8))
 
@@ -653,7 +649,7 @@ def make_chart(df: pl.DataFrame) -&gt; None:
 
     labels = [f&quot;{r} - {n}&quot; for r, n in zip(combined[&quot;route_id&quot;].to_list(), combined[&quot;route_name&quot;].to_list())]
     values = combined[&quot;recent_mean_otp&quot;].to_list()
-    colors = [mode_colors.get(m, &quot;#9ca3af&quot;) for m in combined[&quot;mode&quot;].to_list()]
+    colors = [MODE_COLORS.get(m, &quot;#9ca3af&quot;) for m in combined[&quot;mode&quot;].to_list()]
 
     y_pos = range(len(labels))
     ax.barh(y_pos, values, color=colors)
@@ -684,59 +680,50 @@ def make_chart(df: pl.DataFrame) -&gt; None:
     ax.invert_yaxis()
     ax.axvline(0, color=&quot;black&quot;, linewidth=0.5)
 
-    legend_patches = [Patch(facecolor=c, label=m) for m, c in mode_colors.items() if m != &quot;UNKNOWN&quot;]
+    legend_patches = [Patch(facecolor=c, label=m) for m, c in MODE_COLORS.items() if m != &quot;UNKNOWN&quot;]
     axes[0].legend(handles=legend_patches, loc=&quot;lower right&quot;, fontsize=8)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;top_bottom_routes.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;top_bottom_routes.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;top_bottom_routes.png&quot;)
 
 
+@run_analysis(3, &quot;Route Ranking&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 03: Route Ranking&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        otp, stop_counts = load_data()
+        print(f&quot;  {len(otp):,} OTP observations, {len(stop_counts)} routes with stop data&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    otp, stop_counts = load_data()
-    print(f&quot;  {len(otp):,} OTP observations, {len(stop_counts)} routes with stop data&quot;)
+    with phase(&quot;Analyzing&quot;):
+        result = analyze(otp, stop_counts)
+        rankable = result.filter(~pl.col(&quot;limited_data&quot;))
+        limited = result.filter(pl.col(&quot;limited_data&quot;))
+        print(f&quot;  {len(rankable)} routes ranked ({MIN_MONTHS}+ months of data)&quot;)
+        print(f&quot;  {len(limited)} routes excluded (fewer than {MIN_MONTHS} months)&quot;)
+        hv = result.filter(pl.col(&quot;high_volatility&quot;))
+        print(f&quot;  {len(hv)} high-volatility routes flagged&quot;)
+        print(f&quot;  Slope period: {POST_COVID_START} onward (per-year units)&quot;)
 
-    print(&quot;\nAnalyzing...&quot;)
-    result = analyze(otp, stop_counts)
-    rankable = result.filter(~pl.col(&quot;limited_data&quot;))
-    limited = result.filter(pl.col(&quot;limited_data&quot;))
-    print(f&quot;  {len(rankable)} routes ranked ({MIN_MONTHS}+ months of data)&quot;)
-    print(f&quot;  {len(limited)} routes excluded (fewer than {MIN_MONTHS} months)&quot;)
-    hv = result.filter(pl.col(&quot;high_volatility&quot;))
-    print(f&quot;  {len(hv)} high-volatility routes flagged&quot;)
-    print(f&quot;  Slope period: {POST_COVID_START} onward (per-year units)&quot;)
+        # Report slope significance
+        has_slope = result.filter(pl.col(&quot;slope&quot;).is_not_null())
+        sig_slopes = has_slope.filter(pl.col(&quot;slope_significant&quot;) == True)
+        print(f&quot;  {len(sig_slopes)} of {len(has_slope)} slopes are statistically significant (95% CI excludes zero)&quot;)
 
-    # Report slope significance
-    has_slope = result.filter(pl.col(&quot;slope&quot;).is_not_null())
-    sig_slopes = has_slope.filter(pl.col(&quot;slope_significant&quot;) == True)
-    print(f&quot;  {len(sig_slopes)} of {len(has_slope)} slopes are statistically significant (95% CI excludes zero)&quot;)
+        # Report routes with null stop counts
+        null_stops = result.filter(pl.col(&quot;stop_count&quot;).is_null())
+        if len(null_stops) &gt; 0:
+            ids = null_stops[&quot;route_id&quot;].to_list()
+            print(f&quot;  {len(null_stops)} routes lack stop count data: {&#x27;, &#x27;.join(str(r) for r in ids)}&quot;)
 
-    # Report routes with null stop counts
-    null_stops = result.filter(pl.col(&quot;stop_count&quot;).is_null())
-    if len(null_stops) &gt; 0:
-        ids = null_stops[&quot;route_id&quot;].to_list()
-        print(f&quot;  {len(null_stops)} routes lack stop count data: {&#x27;, &#x27;.join(str(r) for r in ids)}&quot;)
+        # Report modes
+        for mode in sorted(rankable[&quot;mode&quot;].unique().to_list()):
+            mode_count = len(rankable.filter(pl.col(&quot;mode&quot;) == mode))
+            print(f&quot;  Mode {mode}: {mode_count} routes ranked&quot;)
 
-    # Report modes
-    for mode in sorted(rankable[&quot;mode&quot;].unique().to_list()):
-        mode_count = len(rankable.filter(pl.col(&quot;mode&quot;) == mode))
-        print(f&quot;  Mode {mode}: {mode_count} routes ranked&quot;)
+    with phase(&quot;Saving CSV&quot;):
+        save_csv(result, OUT / &quot;route_ranking.csv&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    result.write_csv(OUT / &quot;route_ranking.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;route_ranking.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating chart...&quot;)
-    make_chart(result)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating chart&quot;):
+        make_chart(result)
 
 
 if __name__ == &quot;__main__&quot;:

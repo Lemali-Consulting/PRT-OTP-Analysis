@@ -36,7 +36,7 @@
   <h1>01 - System-Wide OTP Trend</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2016-11 to 2025-11 (from otp_monthly, scheduled_trips_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -285,14 +285,11 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;System-wide OTP trend analysis: weighted and unweighted monthly averages, with bus-only stratification.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -&gt; pl.DataFrame:
@@ -327,9 +324,7 @@ def _compute_monthly(df: pl.DataFrame) -&gt; pl.DataFrame:
     monthly = (
         df.group_by(&quot;month&quot;)
         .agg(
-            weighted_otp=pl.when(pl.col(&quot;trips_weight&quot;).sum() &gt; 0)
-            .then((pl.col(&quot;otp&quot;) * pl.col(&quot;trips_weight&quot;)).sum() / pl.col(&quot;trips_weight&quot;).sum())
-            .otherwise(pl.col(&quot;otp&quot;).mean()),
+            weighted_otp=weighted_mean(&quot;otp&quot;, &quot;trips_weight&quot;, safe=True),
             unweighted_otp=pl.col(&quot;otp&quot;).mean(),
             route_count=pl.col(&quot;route_id&quot;).n_unique(),
             pct_time_varying=(pl.col(&quot;sched_trips&quot;).is_not_null().sum().cast(pl.Float64)
@@ -417,66 +412,56 @@ def make_chart(all_df: pl.DataFrame, bus_df: pl.DataFrame) -&gt; None:
     ax2.set_xticks(tick_positions)
     ax2.set_xticklabels(tick_labels)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;system_trend.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;system_trend.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;system_trend.png&quot;)
 
 
+@run_analysis(1, &quot;System-Wide OTP Trend&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 01: System-Wide OTP Trend&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        print(f&quot;  {len(df):,} OTP observations loaded&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    print(f&quot;  {len(df):,} OTP observations loaded&quot;)
+        # Weight source diagnostics
+        has_sched = df.filter(pl.col(&quot;sched_trips&quot;).is_not_null())
+        has_static = df.filter(pl.col(&quot;sched_trips&quot;).is_null() &amp; (pl.col(&quot;trips_weight&quot;) &gt; 0))
+        has_none = df.filter(pl.col(&quot;trips_weight&quot;) == 0)
+        print(f&quot;  Weight sources: {len(has_sched):,} time-varying, {len(has_static):,} static fallback, {len(has_none):,} zero-weight&quot;)
 
-    # Weight source diagnostics
-    has_sched = df.filter(pl.col(&quot;sched_trips&quot;).is_not_null())
-    has_static = df.filter(pl.col(&quot;sched_trips&quot;).is_null() &amp; (pl.col(&quot;trips_weight&quot;) &gt; 0))
-    has_none = df.filter(pl.col(&quot;trips_weight&quot;) == 0)
-    print(f&quot;  Weight sources: {len(has_sched):,} time-varying, {len(has_static):,} static fallback, {len(has_none):,} zero-weight&quot;)
+        if len(has_sched) &gt; 0:
+            sched_months = has_sched[&quot;month&quot;].unique().sort()
+            print(f&quot;  Time-varying range: {sched_months[0]} to {sched_months[-1]} ({len(sched_months)} months)&quot;)
 
-    if len(has_sched) &gt; 0:
-        sched_months = has_sched[&quot;month&quot;].unique().sort()
-        print(f&quot;  Time-varying range: {sched_months[0]} to {sched_months[-1]} ({len(sched_months)} months)&quot;)
+    with phase(&quot;Analyzing&quot;):
+        all_result, bus_result = analyze(df)
+        print(f&quot;  {len(all_result)} months computed (all modes)&quot;)
+        print(f&quot;  {len(bus_result)} months computed (bus only)&quot;)
 
-    print(&quot;\nAnalyzing...&quot;)
-    all_result, bus_result = analyze(df)
-    print(f&quot;  {len(all_result)} months computed (all modes)&quot;)
-    print(f&quot;  {len(bus_result)} months computed (bus only)&quot;)
+        # Print summary
+        latest = all_result.tail(1)
+        earliest = all_result.head(1)
+        print(f&quot;  Period: {earliest[&#x27;month&#x27;][0]} to {latest[&#x27;month&#x27;][0]}&quot;)
+        print(f&quot;  Latest all-mode weighted OTP: {latest[&#x27;weighted_otp&#x27;][0]:.1%}&quot;)
 
-    # Print summary
-    latest = all_result.tail(1)
-    earliest = all_result.head(1)
-    print(f&quot;  Period: {earliest[&#x27;month&#x27;][0]} to {latest[&#x27;month&#x27;][0]}&quot;)
-    print(f&quot;  Latest all-mode weighted OTP: {latest[&#x27;weighted_otp&#x27;][0]:.1%}&quot;)
+        bus_latest = bus_result.tail(1)
+        print(f&quot;  Latest bus-only weighted OTP: {bus_latest[&#x27;weighted_otp&#x27;][0]:.1%}&quot;)
 
-    bus_latest = bus_result.tail(1)
-    print(f&quot;  Latest bus-only weighted OTP: {bus_latest[&#x27;weighted_otp&#x27;][0]:.1%}&quot;)
+        # Route count range
+        min_rc = all_result[&quot;route_count&quot;].min()
+        max_rc = all_result[&quot;route_count&quot;].max()
+        print(f&quot;  Route count range: {min_rc}--{max_rc}&quot;)
 
-    # Route count range
-    min_rc = all_result[&quot;route_count&quot;].min()
-    max_rc = all_result[&quot;route_count&quot;].max()
-    print(f&quot;  Route count range: {min_rc}--{max_rc}&quot;)
+        # Zero-weight routes
+        zero_routes = sorted(df.filter(pl.col(&quot;trips_weight&quot;) == 0)[&quot;route_id&quot;].unique().to_list())
+        if zero_routes:
+            print(f&quot;  Routes with zero weight (excluded from weighted avg): {zero_routes}&quot;)
 
-    # Zero-weight routes
-    zero_routes = sorted(df.filter(pl.col(&quot;trips_weight&quot;) == 0)[&quot;route_id&quot;].unique().to_list())
-    if zero_routes:
-        print(f&quot;  Routes with zero weight (excluded from weighted avg): {zero_routes}&quot;)
+    with phase(&quot;Saving CSVs&quot;):
+        save_csv(all_result, OUT / &quot;system_trend.csv&quot;)
+        save_csv(bus_result, OUT / &quot;system_trend_bus_only.csv&quot;)
 
-    print(&quot;\nSaving CSVs...&quot;)
-    all_result.write_csv(OUT / &quot;system_trend.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;system_trend.csv&#x27;}&quot;)
-    bus_result.write_csv(OUT / &quot;system_trend_bus_only.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;system_trend_bus_only.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating chart...&quot;)
-    make_chart(all_result, bus_result)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating chart&quot;):
+        make_chart(all_result, bus_result)
 
 
 if __name__ == &quot;__main__&quot;:

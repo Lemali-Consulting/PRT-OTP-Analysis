@@ -36,7 +36,7 @@
   <h1>15: Municipal/County Equity</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -272,15 +272,12 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Municipal and county equity analysis of on-time performance.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 MIN_STOPS = 10
 
@@ -302,13 +299,12 @@ def load_data() -&gt; tuple[pl.DataFrame, pl.DataFrame]:
     # Per-municipality: trip-weighted average OTP
     muni_otp = (
         stop_otp
-        .with_columns((pl.col(&quot;route_avg_otp&quot;) * pl.col(&quot;trips_wd&quot;)).alias(&quot;weighted_otp&quot;))
         .group_by(&quot;muni&quot;, &quot;county&quot;)
         .agg(
-            (pl.col(&quot;weighted_otp&quot;).sum() / pl.col(&quot;trips_wd&quot;).sum()).alias(&quot;avg_otp&quot;),
-            pl.col(&quot;stop_id&quot;).n_unique().alias(&quot;n_stops&quot;),
-            pl.col(&quot;route_id&quot;).n_unique().alias(&quot;n_routes&quot;),
-            pl.col(&quot;trips_wd&quot;).sum().alias(&quot;total_trips&quot;),
+            avg_otp=weighted_mean(&quot;route_avg_otp&quot;, &quot;trips_wd&quot;),
+            n_stops=pl.col(&quot;stop_id&quot;).n_unique(),
+            n_routes=pl.col(&quot;route_id&quot;).n_unique(),
+            total_trips=pl.col(&quot;trips_wd&quot;).sum(),
         )
         .filter(pl.col(&quot;n_stops&quot;) &gt;= MIN_STOPS)
         .sort(&quot;avg_otp&quot;, descending=True)
@@ -394,7 +390,7 @@ def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) 
     fig, ax = plt.subplots(figsize=(12, 8))
     munis = combined[&quot;muni&quot;].to_list()
     otps = combined[&quot;avg_otp&quot;].to_list()
-    colors = [&quot;#22c55e&quot; if v &gt;= 0.70 else &quot;#f59e0b&quot; if v &gt;= 0.65 else &quot;#ef4444&quot; for v in otps]
+    colors = [&quot;#22c55e&quot; if v &gt;= OTP_GOOD_THRESHOLD else &quot;#f59e0b&quot; if v &gt;= OTP_WARNING_THRESHOLD else &quot;#ef4444&quot; for v in otps]
     bars = ax.barh(range(len(munis)), otps, color=colors, edgecolor=&quot;white&quot;)
     ax.set_yticks(range(len(munis)))
     ax.set_yticklabels(munis, fontsize=8)
@@ -402,10 +398,7 @@ def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) 
     ax.set_title(f&quot;Top &amp; Bottom Municipalities by OTP (min {MIN_STOPS} stops)&quot;)
     ax.set_xlim(0.4, 1.0)
     ax.invert_yaxis()
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;top_bottom_municipalities.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;top_bottom_municipalities.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;top_bottom_municipalities.png&quot;)
 
     # Pittsburgh vs suburban
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -422,45 +415,35 @@ def make_charts(muni_otp: pl.DataFrame, cross_jur: pl.DataFrame, results: dict) 
     ax.set_ylim(0.5, 0.85)
     for i, v in enumerate(values):
         ax.text(i, v + 0.005, f&quot;{v:.1%}&quot;, ha=&quot;center&quot;, fontsize=10)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;pittsburgh_vs_suburban.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;pittsburgh_vs_suburban.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;pittsburgh_vs_suburban.png&quot;)
 
 
+@run_analysis(15, &quot;Municipal/County Equity&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 15: Municipal/County Equity&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        muni_otp, cross_jur = load_data()
+        print(f&quot;  {len(muni_otp)} municipalities with {MIN_STOPS}+ stops&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    muni_otp, cross_jur = load_data()
-    print(f&quot;  {len(muni_otp)} municipalities with {MIN_STOPS}+ stops&quot;)
+    with phase(&quot;Analyzing&quot;):
+        results = analyze(muni_otp, cross_jur)
+        print(f&quot;  Best:  {results[&#x27;best_muni&#x27;]} ({results[&#x27;best_otp&#x27;]:.1%})&quot;)
+        print(f&quot;  Worst: {results[&#x27;worst_muni&#x27;]} ({results[&#x27;worst_otp&#x27;]:.1%})&quot;)
+        print(f&quot;  Spread: {results[&#x27;spread&#x27;]:.1%}&quot;)
+        if &quot;pgh_otp&quot; in results:
+            print(f&quot;  Pittsburgh: {results[&#x27;pgh_otp&#x27;]:.1%} ({results[&#x27;pgh_stops&#x27;]} stops)&quot;)
+        print(f&quot;  Suburban median: {results[&#x27;suburban_median_otp&#x27;]:.1%}&quot;)
+        print(f&quot;  Cross-jurisdictional routes: {results[&#x27;n_cross&#x27;]} &quot;
+              f&quot;(avg OTP={results[&#x27;cross_mean_otp&#x27;]:.1%})&quot;)
+        print(f&quot;  Single-municipality routes: {results[&#x27;n_single&#x27;]} &quot;
+              f&quot;(avg OTP={results[&#x27;single_mean_otp&#x27;]:.1%})&quot;)
+        if &quot;cross_p&quot; in results:
+            print(f&quot;  Difference t-test: t={results[&#x27;cross_t&#x27;]:.3f}, p={results[&#x27;cross_p&#x27;]:.4f}&quot;)
 
-    print(&quot;\nAnalyzing...&quot;)
-    results = analyze(muni_otp, cross_jur)
-    print(f&quot;  Best:  {results[&#x27;best_muni&#x27;]} ({results[&#x27;best_otp&#x27;]:.1%})&quot;)
-    print(f&quot;  Worst: {results[&#x27;worst_muni&#x27;]} ({results[&#x27;worst_otp&#x27;]:.1%})&quot;)
-    print(f&quot;  Spread: {results[&#x27;spread&#x27;]:.1%}&quot;)
-    if &quot;pgh_otp&quot; in results:
-        print(f&quot;  Pittsburgh: {results[&#x27;pgh_otp&#x27;]:.1%} ({results[&#x27;pgh_stops&#x27;]} stops)&quot;)
-    print(f&quot;  Suburban median: {results[&#x27;suburban_median_otp&#x27;]:.1%}&quot;)
-    print(f&quot;  Cross-jurisdictional routes: {results[&#x27;n_cross&#x27;]} &quot;
-          f&quot;(avg OTP={results[&#x27;cross_mean_otp&#x27;]:.1%})&quot;)
-    print(f&quot;  Single-municipality routes: {results[&#x27;n_single&#x27;]} &quot;
-          f&quot;(avg OTP={results[&#x27;single_mean_otp&#x27;]:.1%})&quot;)
-    if &quot;cross_p&quot; in results:
-        print(f&quot;  Difference t-test: t={results[&#x27;cross_t&#x27;]:.3f}, p={results[&#x27;cross_p&#x27;]:.4f}&quot;)
+        save_csv(muni_otp, OUT / &quot;municipal_otp.csv&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    muni_otp.write_csv(OUT / &quot;municipal_otp.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;municipal_otp.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating charts...&quot;)
-    make_charts(muni_otp, cross_jur, results)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_charts(muni_otp, cross_jur, results)
 
 
 if __name__ == &quot;__main__&quot;:

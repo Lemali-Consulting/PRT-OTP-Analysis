@@ -36,7 +36,7 @@
   <h1>28 - Weather Impact</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2019-01 to 2025-12 (from otp_monthly, weather_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -328,16 +328,13 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 28: Test whether weather explains OTP variance or the counterintuitive seasonal pattern.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 COMPLETE_YEAR_START = &quot;2019-01&quot;
 COMPLETE_YEAR_END = &quot;2024-12&quot;
@@ -457,9 +454,7 @@ def load_system_otp() -&gt; pl.DataFrame:
     system = (
         df.group_by(&quot;month&quot;)
         .agg(
-            weighted_otp=pl.when(pl.col(&quot;trips_7d&quot;).sum() &gt; 0)
-            .then((pl.col(&quot;otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum())
-            .otherwise(pl.col(&quot;otp&quot;).mean()),
+            weighted_otp=weighted_mean(&quot;otp&quot;, &quot;trips_7d&quot;, safe=True),
         )
         .sort(&quot;month&quot;)
     )
@@ -505,17 +500,14 @@ def block_a(system: pl.DataFrame, weather: pl.DataFrame) -&gt; pl.DataFrame:
     print(f&quot;  {&#x27;-&#x27;*60}&quot;)
     corr_rows = []
     for var in WEATHER_VARS:
-        x = merged[var].to_numpy().astype(float)
-        mask = ~np.isnan(x)
-        if mask.sum() &lt; 10:
+        c = correlate(merged, var, &quot;weighted_otp&quot;, min_n=10)
+        if np.isnan(c[&quot;pearson_r&quot;]):
             continue
-        r_p, p_p = stats.pearsonr(x[mask], otp[mask])
-        r_s, p_s = stats.spearmanr(x[mask], otp[mask])
-        sig = &quot;*&quot; if p_p &lt; 0.05 else &quot;&quot;
-        print(f&quot;  {var:&lt;22s} {r_p:&gt;+10.3f} {p_p:&gt;8.4f} {r_s:&gt;+10.3f} {p_s:&gt;8.4f} {sig}&quot;)
+        sig = &quot;*&quot; if c[&quot;pearson_p&quot;] &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {var:&lt;22s} {c[&#x27;pearson_r&#x27;]:&gt;+10.3f} {c[&#x27;pearson_p&#x27;]:&gt;8.4f} {c[&#x27;spearman_r&#x27;]:&gt;+10.3f} {c[&#x27;spearman_p&#x27;]:&gt;8.4f} {sig}&quot;)
         corr_rows.append({
-            &quot;variable&quot;: var, &quot;pearson_r&quot;: r_p, &quot;pearson_p&quot;: p_p,
-            &quot;spearman_r&quot;: r_s, &quot;spearman_p&quot;: p_s, &quot;type&quot;: &quot;raw&quot;,
+            &quot;variable&quot;: var, &quot;pearson_r&quot;: c[&quot;pearson_r&quot;], &quot;pearson_p&quot;: c[&quot;pearson_p&quot;],
+            &quot;spearman_r&quot;: c[&quot;spearman_r&quot;], &quot;spearman_p&quot;: c[&quot;spearman_p&quot;], &quot;type&quot;: &quot;raw&quot;,
         })
 
     # --- Detrended correlations ---
@@ -542,20 +534,16 @@ def block_a(system: pl.DataFrame, weather: pl.DataFrame) -&gt; pl.DataFrame:
     print(f&quot;\n  Detrended correlations ({len(dt)} months):&quot;)
     print(f&quot;  {&#x27;Variable&#x27;:&lt;22s} {&#x27;Pearson r&#x27;:&gt;10s} {&#x27;p&#x27;:&gt;8s} {&#x27;Spearman r&#x27;:&gt;10s} {&#x27;p&#x27;:&gt;8s}&quot;)
     print(f&quot;  {&#x27;-&#x27;*60}&quot;)
-    otp_dt = dt[&quot;otp_detrended&quot;].to_numpy()
     for var in WEATHER_VARS:
         col = f&quot;{var}_detrended&quot;
-        x = dt[col].to_numpy().astype(float)
-        mask = ~np.isnan(x) &amp; ~np.isnan(otp_dt)
-        if mask.sum() &lt; 10:
+        c = correlate(dt, col, &quot;otp_detrended&quot;, min_n=10)
+        if np.isnan(c[&quot;pearson_r&quot;]):
             continue
-        r_p, p_p = stats.pearsonr(x[mask], otp_dt[mask])
-        r_s, p_s = stats.spearmanr(x[mask], otp_dt[mask])
-        sig = &quot;*&quot; if p_p &lt; 0.05 else &quot;&quot;
-        print(f&quot;  {var:&lt;22s} {r_p:&gt;+10.3f} {p_p:&gt;8.4f} {r_s:&gt;+10.3f} {p_s:&gt;8.4f} {sig}&quot;)
+        sig = &quot;*&quot; if c[&quot;pearson_p&quot;] &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {var:&lt;22s} {c[&#x27;pearson_r&#x27;]:&gt;+10.3f} {c[&#x27;pearson_p&#x27;]:&gt;8.4f} {c[&#x27;spearman_r&#x27;]:&gt;+10.3f} {c[&#x27;spearman_p&#x27;]:&gt;8.4f} {sig}&quot;)
         corr_rows.append({
-            &quot;variable&quot;: var, &quot;pearson_r&quot;: r_p, &quot;pearson_p&quot;: p_p,
-            &quot;spearman_r&quot;: r_s, &quot;spearman_p&quot;: p_s, &quot;type&quot;: &quot;detrended&quot;,
+            &quot;variable&quot;: var, &quot;pearson_r&quot;: c[&quot;pearson_r&quot;], &quot;pearson_p&quot;: c[&quot;pearson_p&quot;],
+            &quot;spearman_r&quot;: c[&quot;spearman_r&quot;], &quot;spearman_p&quot;: c[&quot;spearman_p&quot;], &quot;type&quot;: &quot;detrended&quot;,
         })
 
     # --- Multiple regression: system OTP ~ weather + trend ---
@@ -588,8 +576,7 @@ def block_a(system: pl.DataFrame, weather: pl.DataFrame) -&gt; pl.DataFrame:
           f&quot;(+{weather_reg[&#x27;r_squared&#x27;] - trend_only[&#x27;r_squared&#x27;]:.4f})&quot;)
 
     corr_df = pl.DataFrame(corr_rows)
-    corr_df.write_csv(OUT / &quot;weather_otp_correlation.csv&quot;)
-    print(f&quot;\n  Saved {OUT / &#x27;weather_otp_correlation.csv&#x27;}&quot;)
+    save_csv(corr_df, OUT / &quot;weather_otp_correlation.csv&quot;)
 
     return merged
 
@@ -867,10 +854,7 @@ def chart_timeseries(merged: pl.DataFrame) -&gt; None:
     ax.set_xticklabels([months[i] for i in tick_idx], rotation=45, ha=&quot;right&quot;, fontsize=8)
 
     fig.suptitle(&quot;Weather Variables vs System OTP (2019-2024)&quot;, fontsize=13)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;weather_otp_timeseries.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;weather_otp_timeseries.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;weather_otp_timeseries.png&quot;)
 
 
 def chart_seasonal_adjusted(seasonal_raw: dict, seasonal_adj: dict) -&gt; None:
@@ -899,10 +883,7 @@ def chart_seasonal_adjusted(seasonal_raw: dict, seasonal_adj: dict) -&gt; None:
         y_pos = max(raw_vals[m], adj_vals[m]) + 0.5
         ax.annotate(f&quot;{diff:+.1f}pp&quot;, xy=(m, y_pos), ha=&quot;center&quot;, fontsize=9, color=&quot;#666&quot;)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;seasonal_weather_adjusted.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;seasonal_weather_adjusted.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;seasonal_weather_adjusted.png&quot;)
 
 
 def chart_scatter_matrix(merged: pl.DataFrame) -&gt; None:
@@ -937,10 +918,7 @@ def chart_scatter_matrix(merged: pl.DataFrame) -&gt; None:
             ax.set_ylabel(&quot;Detrended OTP (pp)&quot;)
 
     fig.suptitle(&quot;Detrended Weather Variables vs Detrended System OTP&quot;, fontsize=12)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;weather_scatter_matrix.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;weather_scatter_matrix.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;weather_scatter_matrix.png&quot;)
 
 
 def chart_weather_heatmap(weather: pl.DataFrame) -&gt; None:
@@ -972,10 +950,7 @@ def chart_weather_heatmap(weather: pl.DataFrame) -&gt; None:
 
     fig.colorbar(im, ax=ax, label=&quot;Pearson Correlation&quot;, shrink=0.8)
     ax.set_title(&quot;Weather Variable Inter-Correlations&quot;)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;weather_correlation_heatmap.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;weather_correlation_heatmap.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;weather_correlation_heatmap.png&quot;)
 
 
 # ---------------------------------------------------------------------------
@@ -1005,27 +980,24 @@ def save_model_comparison(block_a_reg: dict, block_b_results: dict, block_c_resu
                 &quot;n&quot;: model[&quot;n&quot;],
             })
 
-    pl.DataFrame(rows).write_csv(OUT / &quot;model_comparison.csv&quot;)
-    print(f&quot;  Saved {OUT / &#x27;model_comparison.csv&#x27;}&quot;)
+    save_csv(pl.DataFrame(rows), OUT / &quot;model_comparison.csv&quot;)
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
+@run_analysis(28, &quot;Weather Impact on OTP&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, run three analysis blocks, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 28: Weather Impact on OTP&quot;)
-    print(&quot;=&quot; * 60)
 
-    print(&quot;\nLoading data...&quot;)
-    system = load_system_otp()
-    weather = load_weather()
-    route_otp = load_route_otp()
-    print(f&quot;  System OTP: {len(system)} months&quot;)
-    print(f&quot;  Weather: {len(weather)} months&quot;)
-    print(f&quot;  Route OTP: {len(route_otp)} route-month observations&quot;)
+    with phase(&quot;Loading data&quot;):
+        system = load_system_otp()
+        weather = load_weather()
+        route_otp = load_route_otp()
+        print(f&quot;  System OTP: {len(system)} months&quot;)
+        print(f&quot;  Weather: {len(weather)} months&quot;)
+        print(f&quot;  Route OTP: {len(route_otp)} route-month observations&quot;)
 
     # Block A: System-level correlations
     merged = block_a(system, weather)
@@ -1036,20 +1008,17 @@ def main() -&gt; None:
     # Block C: Route-level panel regression
     block_c_results = block_c(route_otp, weather)
 
-    # Charts
-    print(&quot;\n&quot; + &quot;=&quot; * 60)
-    print(&quot;Charts&quot;)
-    print(&quot;=&quot; * 60)
-    chart_timeseries(merged)
-    chart_seasonal_adjusted(block_b_results[&quot;seasonal_raw&quot;], block_b_results[&quot;seasonal_adj&quot;])
-    chart_scatter_matrix(merged)
-    chart_weather_heatmap(weather)
+    with phase(&quot;Generating charts&quot;):
+        print(&quot;\n&quot; + &quot;=&quot; * 60)
+        print(&quot;Charts&quot;)
+        print(&quot;=&quot; * 60)
+        chart_timeseries(merged)
+        chart_seasonal_adjusted(block_b_results[&quot;seasonal_raw&quot;], block_b_results[&quot;seasonal_adj&quot;])
+        chart_scatter_matrix(merged)
+        chart_weather_heatmap(weather)
 
-    # Save model comparison
-    print(&quot;\nSaving CSVs...&quot;)
-    save_model_comparison(None, block_b_results, block_c_results)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Saving CSVs&quot;):
+        save_model_comparison(None, block_b_results, block_c_results)
 
 
 if __name__ == &quot;__main__&quot;:

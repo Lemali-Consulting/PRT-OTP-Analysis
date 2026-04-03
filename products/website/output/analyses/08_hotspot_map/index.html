@@ -36,7 +36,7 @@
   <h1>08: Hot-Spot Map</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -294,10 +294,13 @@ import folium
 import polars as pl
 from branca.colormap import LinearColormap
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
+
+# OTP color-scale bounds for geographic maps.
+OTP_MAP_VMIN = 0.5
+OTP_MAP_VMAX = 0.9
 GTFS = Path(__file__).resolve().parent.parent.parent / &quot;data&quot; / &quot;GTFS&quot;
 
 
@@ -336,7 +339,7 @@ def analyze(df: pl.DataFrame) -&gt; pl.DataFrame:
     stop_otp_raw = (
         df.group_by([&quot;stop_id&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;hood&quot;, &quot;muni&quot;])
         .agg(
-            weighted_otp=(pl.col(&quot;avg_otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum(),
+            weighted_otp=weighted_mean(&quot;avg_otp&quot;, &quot;trips_7d&quot;),
             route_count=pl.col(&quot;route_id&quot;).n_unique(),
             total_trips_7d=pl.col(&quot;trips_7d&quot;).sum(),
         )
@@ -371,7 +374,7 @@ def make_chart(df: pl.DataFrame) -&gt; None:
     lat = df[&quot;lat&quot;].to_list()
     otp = df[&quot;weighted_otp&quot;].to_list()
 
-    norm = Normalize(vmin=0.5, vmax=0.9)
+    norm = Normalize(vmin=OTP_MAP_VMIN, vmax=OTP_MAP_VMAX)
     sc = ax.scatter(
         lon, lat, c=otp, cmap=&quot;RdYlGn&quot;, norm=norm,
         s=4, alpha=0.6, edgecolors=&quot;none&quot;,
@@ -385,10 +388,7 @@ def make_chart(df: pl.DataFrame) -&gt; None:
     ax.set_title(f&quot;PRT Route-Weighted OTP at Stop (unweighted stop avg: {system_avg:.1%})&quot;)
     ax.set_aspect(&quot;equal&quot;)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;hotspot_map.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;hotspot_map.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;hotspot_map.png&quot;)
 
 
 def load_route_shapes() -&gt; dict[str, list[tuple[float, float]]]:
@@ -453,7 +453,7 @@ def make_interactive_map(
 
     colormap = LinearColormap(
         colors=[&quot;#d73027&quot;, &quot;#fee08b&quot;, &quot;#1a9850&quot;],  # red -&gt; yellow -&gt; green
-        vmin=0.5, vmax=0.9,
+        vmin=OTP_MAP_VMIN, vmax=OTP_MAP_VMAX,
         caption=&quot;Route-Weighted OTP&quot;,
     )
 
@@ -528,49 +528,44 @@ def make_interactive_map(
     print(f&quot;  Interactive map saved to {OUT / &#x27;hotspot_map.html&#x27;}&quot;)
 
 
+@run_analysis(8, &quot;Hot-Spot Map&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, compute stop OTP, map, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 08: Hot-Spot Map&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        raw = load_data()
+        print(f&quot;  {len(raw):,} route-stop records loaded&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    raw = load_data()
-    print(f&quot;  {len(raw):,} route-stop records loaded&quot;)
+    with phase(&quot;Analyzing&quot;):
+        stop_otp = analyze(raw)
+        print(f&quot;  {len(stop_otp):,} stops with OTP computed&quot;)
 
-    print(&quot;\nAnalyzing...&quot;)
-    stop_otp = analyze(raw)
-    print(f&quot;  {len(stop_otp):,} stops with OTP computed&quot;)
+        best = stop_otp.sort(&quot;weighted_otp&quot;, descending=True).head(3)
+        worst = stop_otp.sort(&quot;weighted_otp&quot;).head(3)
+        print(&quot;\n  Best-performing stops (route-weighted OTP):&quot;)
+        for row in best.iter_rows(named=True):
+            hood = row[&quot;hood&quot;] if row[&quot;hood&quot;] and row[&quot;hood&quot;] != &quot;0&quot; else &quot;N/A&quot;
+            modes = &quot;, &quot;.join(sorted(row[&quot;modes&quot;])) if row.get(&quot;modes&quot;) else &quot;N/A&quot;
+            print(f&quot;    {row[&#x27;stop_id&#x27;]} ({hood}, {modes}): {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
+        print(&quot;  Worst-performing stops (route-weighted OTP):&quot;)
+        for row in worst.iter_rows(named=True):
+            hood = row[&quot;hood&quot;] if row[&quot;hood&quot;] and row[&quot;hood&quot;] != &quot;0&quot; else &quot;N/A&quot;
+            modes = &quot;, &quot;.join(sorted(row[&quot;modes&quot;])) if row.get(&quot;modes&quot;) else &quot;N/A&quot;
+            print(f&quot;    {row[&#x27;stop_id&#x27;]} ({hood}, {modes}): {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
 
-    best = stop_otp.sort(&quot;weighted_otp&quot;, descending=True).head(3)
-    worst = stop_otp.sort(&quot;weighted_otp&quot;).head(3)
-    print(&quot;\n  Best-performing stops (route-weighted OTP):&quot;)
-    for row in best.iter_rows(named=True):
-        hood = row[&quot;hood&quot;] if row[&quot;hood&quot;] and row[&quot;hood&quot;] != &quot;0&quot; else &quot;N/A&quot;
-        modes = &quot;, &quot;.join(sorted(row[&quot;modes&quot;])) if row.get(&quot;modes&quot;) else &quot;N/A&quot;
-        print(f&quot;    {row[&#x27;stop_id&#x27;]} ({hood}, {modes}): {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
-    print(&quot;  Worst-performing stops (route-weighted OTP):&quot;)
-    for row in worst.iter_rows(named=True):
-        hood = row[&quot;hood&quot;] if row[&quot;hood&quot;] and row[&quot;hood&quot;] != &quot;0&quot; else &quot;N/A&quot;
-        modes = &quot;, &quot;.join(sorted(row[&quot;modes&quot;])) if row.get(&quot;modes&quot;) else &quot;N/A&quot;
-        print(f&quot;    {row[&#x27;stop_id&#x27;]} ({hood}, {modes}): {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
+    with phase(&quot;Saving CSV&quot;):
+        stop_otp_out = stop_otp.drop(&quot;modes&quot;)
+        save_csv(stop_otp_out, OUT / &quot;hotspot_map.csv&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    stop_otp.drop(&quot;modes&quot;).write_csv(OUT / &quot;hotspot_map.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;hotspot_map.csv&#x27;}&quot;)
+    with phase(&quot;Generating chart&quot;):
+        make_chart(stop_otp)
 
-    print(&quot;\nGenerating chart...&quot;)
-    make_chart(stop_otp)
+    with phase(&quot;Loading GTFS route shapes&quot;):
+        route_shapes = load_route_shapes()
+        route_otp = load_route_otp()
+        print(f&quot;  {len(route_shapes)} route shapes loaded&quot;)
 
-    print(&quot;\nLoading GTFS route shapes...&quot;)
-    route_shapes = load_route_shapes()
-    route_otp = load_route_otp()
-    print(f&quot;  {len(route_shapes)} route shapes loaded&quot;)
-
-    print(&quot;\nGenerating interactive map...&quot;)
-    make_interactive_map(stop_otp, route_shapes, route_otp)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating interactive map&quot;):
+        make_interactive_map(stop_otp, route_shapes, route_otp)
 
 
 if __name__ == &quot;__main__&quot;:

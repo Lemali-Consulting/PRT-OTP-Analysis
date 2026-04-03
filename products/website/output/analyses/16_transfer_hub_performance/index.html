@@ -36,7 +36,7 @@
   <h1>16: Transfer Hub Performance</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -304,15 +304,13 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Transfer hub analysis: do high-connectivity stops have worse OTP?&quot;&quot;&quot;
 
-from pathlib import Path
+import math
 
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -&gt; tuple[pl.DataFrame, pl.DataFrame]:
@@ -332,12 +330,11 @@ def load_data() -&gt; tuple[pl.DataFrame, pl.DataFrame]:
     # Per-stop: trip-weighted OTP and route count
     stop_otp = (
         stop_route_otp
-        .with_columns((pl.col(&quot;route_avg_otp&quot;) * pl.col(&quot;trips_wd&quot;)).alias(&quot;weighted_otp&quot;))
         .group_by(&quot;stop_id&quot;, &quot;stop_name&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;muni&quot;)
         .agg(
-            (pl.col(&quot;weighted_otp&quot;).sum() / pl.col(&quot;trips_wd&quot;).sum()).alias(&quot;avg_otp&quot;),
-            pl.col(&quot;route_id&quot;).n_unique().alias(&quot;n_routes&quot;),
-            pl.col(&quot;trips_wd&quot;).sum().alias(&quot;total_trips&quot;),
+            avg_otp=weighted_mean(&quot;route_avg_otp&quot;, &quot;trips_wd&quot;),
+            n_routes=pl.col(&quot;route_id&quot;).n_unique(),
+            total_trips=pl.col(&quot;trips_wd&quot;).sum(),
         )
     )
     stop_otp = stop_otp.with_columns(
@@ -391,28 +388,24 @@ def analyze(stop_df: pl.DataFrame, route_df: pl.DataFrame) -&gt; dict:
         results[f&quot;{key}_median_otp&quot;] = subset[&quot;avg_otp&quot;].median()
 
     # Stop-level correlation (inflated n, caveat in output)
-    r, p = stats.pearsonr(clean[&quot;n_routes&quot;].to_list(), clean[&quot;avg_otp&quot;].to_list())
-    results[&quot;stop_connectivity_r&quot;] = r
-    results[&quot;stop_connectivity_p&quot;] = p
-    rho, p_rho = stats.spearmanr(clean[&quot;n_routes&quot;].to_list(), clean[&quot;avg_otp&quot;].to_list())
-    results[&quot;stop_connectivity_rho&quot;] = rho
-    results[&quot;stop_connectivity_rho_p&quot;] = p_rho
+    stop_corr = correlate(clean, &quot;n_routes&quot;, &quot;avg_otp&quot;)
+    results[&quot;stop_connectivity_r&quot;] = stop_corr[&quot;pearson_r&quot;]
+    results[&quot;stop_connectivity_p&quot;] = stop_corr[&quot;pearson_p&quot;]
+    results[&quot;stop_connectivity_rho&quot;] = stop_corr[&quot;spearman_r&quot;]
+    results[&quot;stop_connectivity_rho_p&quot;] = stop_corr[&quot;spearman_p&quot;]
 
     # Route-level correlation (independent observations)
-    r, p = stats.pearsonr(route_df[&quot;avg_stop_connectivity&quot;].to_list(),
-                          route_df[&quot;route_otp&quot;].to_list())
-    results[&quot;route_connectivity_r&quot;] = r
-    results[&quot;route_connectivity_p&quot;] = p
+    route_corr = correlate(route_df, &quot;avg_stop_connectivity&quot;, &quot;route_otp&quot;)
+    results[&quot;route_connectivity_r&quot;] = route_corr[&quot;pearson_r&quot;]
+    results[&quot;route_connectivity_p&quot;] = route_corr[&quot;pearson_p&quot;]
     results[&quot;n_routes&quot;] = len(route_df)
 
     # Bus-only route-level
     bus = route_df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
-    if len(bus) &gt; 5:
-        r, p = stats.pearsonr(bus[&quot;avg_stop_connectivity&quot;].to_list(),
-                              bus[&quot;route_otp&quot;].to_list())
-        results[&quot;bus_route_connectivity_r&quot;] = r
-        results[&quot;bus_route_connectivity_p&quot;] = p
-        results[&quot;n_bus_routes&quot;] = len(bus)
+    bus_corr = correlate(bus, &quot;avg_stop_connectivity&quot;, &quot;route_otp&quot;, min_n=6)
+    results[&quot;bus_route_connectivity_r&quot;] = bus_corr[&quot;pearson_r&quot;]
+    results[&quot;bus_route_connectivity_p&quot;] = bus_corr[&quot;pearson_p&quot;]
+    results[&quot;n_bus_routes&quot;] = bus_corr[&quot;n&quot;]
 
     return results
 
@@ -435,10 +428,7 @@ def make_charts(df: pl.DataFrame, results: dict) -&gt; None:
                  f&quot;route-level r={results[&#x27;route_connectivity_r&#x27;]:.3f})&quot;)
     ax.legend(fontsize=9)
     ax.set_ylim(0.4, 1.0)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;connectivity_vs_otp.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;connectivity_vs_otp.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;connectivity_vs_otp.png&quot;)
 
     # Hub tier box plot
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -452,55 +442,45 @@ def make_charts(df: pl.DataFrame, results: dict) -&gt; None:
         patch.set_alpha(0.6)
     ax.set_ylabel(&quot;Trip-Weighted Average OTP&quot;)
     ax.set_title(&quot;OTP by Stop Connectivity Tier&quot;)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;hub_tier_comparison.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;hub_tier_comparison.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;hub_tier_comparison.png&quot;)
 
 
+@run_analysis(16, &quot;Transfer Hub Performance&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 16: Transfer Hub Performance&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        stop_df, route_df = load_data()
+        print(f&quot;  {len(stop_df)} stops with OTP and connectivity data&quot;)
+        print(f&quot;  {len(route_df)} routes with avg stop connectivity&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    stop_df, route_df = load_data()
-    print(f&quot;  {len(stop_df)} stops with OTP and connectivity data&quot;)
-    print(f&quot;  {len(route_df)} routes with avg stop connectivity&quot;)
+    with phase(&quot;Analyzing&quot;):
+        results = analyze(stop_df, route_df)
+        for tier, key in [(&quot;Hub (5+)&quot;, &quot;hub&quot;), (&quot;Medium (2-4)&quot;, &quot;medium&quot;), (&quot;Simple (1)&quot;, &quot;simple&quot;)]:
+            print(f&quot;  {tier}: n={results[f&#x27;{key}_n&#x27;]}, &quot;
+                  f&quot;mean OTP={results[f&#x27;{key}_mean_otp&#x27;]:.1%}, &quot;
+                  f&quot;median OTP={results[f&#x27;{key}_median_otp&#x27;]:.1%}&quot;)
 
-    print(&quot;\nAnalyzing...&quot;)
-    results = analyze(stop_df, route_df)
-    for tier, key in [(&quot;Hub (5+)&quot;, &quot;hub&quot;), (&quot;Medium (2-4)&quot;, &quot;medium&quot;), (&quot;Simple (1)&quot;, &quot;simple&quot;)]:
-        print(f&quot;  {tier}: n={results[f&#x27;{key}_n&#x27;]}, &quot;
-              f&quot;mean OTP={results[f&#x27;{key}_mean_otp&#x27;]:.1%}, &quot;
-              f&quot;median OTP={results[f&#x27;{key}_median_otp&#x27;]:.1%}&quot;)
+        print(f&quot;\n  Stop-level (n={results[&#x27;n_stops&#x27;]}, non-independent -- inflated power):&quot;)
+        print(f&quot;    Pearson r = {results[&#x27;stop_connectivity_r&#x27;]:.4f} (p = {results[&#x27;stop_connectivity_p&#x27;]:.4f})&quot;)
+        print(f&quot;    Spearman rho = {results[&#x27;stop_connectivity_rho&#x27;]:.4f} (p = {results[&#x27;stop_connectivity_rho_p&#x27;]:.4f})&quot;)
+        print(f&quot;\n  Route-level (n={results[&#x27;n_routes&#x27;]}, independent observations):&quot;)
+        print(f&quot;    Pearson r = {results[&#x27;route_connectivity_r&#x27;]:.4f} (p = {results[&#x27;route_connectivity_p&#x27;]:.4f})&quot;)
+        if not math.isnan(results[&quot;bus_route_connectivity_r&quot;]):
+            print(f&quot;\n  Route-level, bus only (n={results[&#x27;n_bus_routes&#x27;]}):&quot;)
+            print(f&quot;    Pearson r = {results[&#x27;bus_route_connectivity_r&#x27;]:.4f} &quot;
+                  f&quot;(p = {results[&#x27;bus_route_connectivity_p&#x27;]:.4f})&quot;)
 
-    print(f&quot;\n  Stop-level (n={results[&#x27;n_stops&#x27;]}, non-independent -- inflated power):&quot;)
-    print(f&quot;    Pearson r = {results[&#x27;stop_connectivity_r&#x27;]:.4f} (p = {results[&#x27;stop_connectivity_p&#x27;]:.4f})&quot;)
-    print(f&quot;    Spearman rho = {results[&#x27;stop_connectivity_rho&#x27;]:.4f} (p = {results[&#x27;stop_connectivity_rho_p&#x27;]:.4f})&quot;)
-    print(f&quot;\n  Route-level (n={results[&#x27;n_routes&#x27;]}, independent observations):&quot;)
-    print(f&quot;    Pearson r = {results[&#x27;route_connectivity_r&#x27;]:.4f} (p = {results[&#x27;route_connectivity_p&#x27;]:.4f})&quot;)
-    if &quot;bus_route_connectivity_r&quot; in results:
-        print(f&quot;\n  Route-level, bus only (n={results[&#x27;n_bus_routes&#x27;]}):&quot;)
-        print(f&quot;    Pearson r = {results[&#x27;bus_route_connectivity_r&#x27;]:.4f} &quot;
-              f&quot;(p = {results[&#x27;bus_route_connectivity_p&#x27;]:.4f})&quot;)
+        # Top hubs
+        print(&quot;\nBusiest hubs:&quot;)
+        hubs = stop_df.filter(pl.col(&quot;tier&quot;) == &quot;hub (5+)&quot;).sort(&quot;n_routes&quot;, descending=True).head(10)
+        for row in hubs.iter_rows(named=True):
+            print(f&quot;  {row[&#x27;stop_name&#x27;]:&lt;40s} {row[&#x27;n_routes&#x27;]} routes, &quot;
+                  f&quot;OTP={row[&#x27;avg_otp&#x27;]:.1%}, {row[&#x27;total_trips&#x27;]} trips/wk&quot;)
 
-    # Top hubs
-    print(&quot;\nBusiest hubs:&quot;)
-    hubs = stop_df.filter(pl.col(&quot;tier&quot;) == &quot;hub (5+)&quot;).sort(&quot;n_routes&quot;, descending=True).head(10)
-    for row in hubs.iter_rows(named=True):
-        print(f&quot;  {row[&#x27;stop_name&#x27;]:&lt;40s} {row[&#x27;n_routes&#x27;]} routes, &quot;
-              f&quot;OTP={row[&#x27;avg_otp&#x27;]:.1%}, {row[&#x27;total_trips&#x27;]} trips/wk&quot;)
+        save_csv(stop_df, OUT / &quot;hub_performance.csv&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    stop_df.write_csv(OUT / &quot;hub_performance.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;hub_performance.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating charts...&quot;)
-    make_charts(stop_df, results)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_charts(stop_df, results)
 
 
 if __name__ == &quot;__main__&quot;:

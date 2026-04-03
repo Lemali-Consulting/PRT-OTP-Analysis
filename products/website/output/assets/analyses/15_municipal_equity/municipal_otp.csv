@@ -5,9 +5,9 @@ muni,county,avg_otp,n_stops,n_routes,total_trips
 "Versailles borough (Allegheny, PA)","Allegheny County, PA",0.7806905751818819,16,2,249
 "Ingram borough (Allegheny, PA)","Allegheny County, PA",0.7748137625537919,29,7,1182
 "Edgeworth borough (Allegheny, PA)","Allegheny County, PA",0.7563674698795182,13,1,312
-"Leetsdale borough (Allegheny, PA)","Allegheny County, PA",0.7563674698795181,20,1,480
-"Glen Osborne borough (Allegheny, PA)","Allegheny County, PA",0.7563674698795181,11,1,264
 "Ambridge borough (Beaver, PA)","Beaver County, PA",0.7563674698795181,15,1,360
+"Glen Osborne borough (Allegheny, PA)","Allegheny County, PA",0.7563674698795181,11,1,264
+"Leetsdale borough (Allegheny, PA)","Allegheny County, PA",0.7563674698795181,20,1,480
 "Mount Lebanon township (Allegheny, PA)","Allegheny County, PA",0.7534660192606375,100,4,2329
 "Sewickley borough (Allegheny, PA)","Allegheny County, PA",0.751562889011878,27,2,566
 "Reserve township (Allegheny, PA)","Allegheny County, PA",0.7480923553154685,47,2,794
@@ -67,9 +67,9 @@ muni,county,avg_otp,n_stops,n_routes,total_trips
 "Monroeville municipality (Allegheny, PA)","Allegheny County, PA",0.6244934886506531,125,7,3152
 "North Braddock borough (Allegheny, PA)","Allegheny County, PA",0.623441190032766,53,6,2449
 "Tarentum borough (Allegheny, PA)","Allegheny County, PA",0.6226737844173063,30,2,559
+"East Deer township (Allegheny, PA)","Allegheny County, PA",0.6199856488856582,20,2,760
 "Springdale borough (Allegheny, PA)","Allegheny County, PA",0.6199856488856582,21,2,798
 "Cheswick borough (Allegheny, PA)","Allegheny County, PA",0.6199856488856582,12,2,456
-"East Deer township (Allegheny, PA)","Allegheny County, PA",0.6199856488856582,20,2,760
 "Churchill borough (Allegheny, PA)","Allegheny County, PA",0.6199585568495762,10,3,269
 "Penn Hills township (Allegheny, PA)","Allegheny County, PA",0.6168901389360059,264,5,5180
 "Blawnox borough (Allegheny, PA)","Allegheny County, PA",0.6164829268292682,13,1,429

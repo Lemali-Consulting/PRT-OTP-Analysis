@@ -36,7 +36,7 @@
   <h1>33 - Pandemic Ridership Geography</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -255,17 +255,14 @@
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Map the spatial pattern of stop-level ridership loss and recovery during the pandemic.&quot;&quot;&quot;
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
-from prt_otp_analysis.common import output_dir, setup_plotting
+from prt_otp_analysis.common import DATA_DIR, analysis_dir, phase, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
-DATA_DIR = HERE.parents[1] / &quot;data&quot;
+OUT = analysis_dir(__file__)
 
 # Downtown Pittsburgh centroid
 DT_LAT, DT_LON = 40.4406, -79.9959
@@ -400,10 +397,7 @@ def make_charts(df: pl.DataFrame) -&gt; None:
     ax.set_xlabel(&quot;Longitude&quot;)
     ax.set_ylabel(&quot;Latitude&quot;)
     ax.set_title(&quot;Pandemic Ridership Change by Stop (Pre-pandemic -&gt; Pandemic)&quot;)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;ridership_change_map.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Saved {OUT / &#x27;ridership_change_map.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;ridership_change_map.png&quot;)
 
     # --- Zone summary + histogram ---
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -440,92 +434,84 @@ def make_charts(df: pl.DataFrame) -&gt; None:
     axes[1].set_title(&quot;Distribution of Stop-Level Ridership Changes&quot;)
     axes[1].legend()
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;change_by_zone.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Saved {OUT / &#x27;change_by_zone.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;change_by_zone.png&quot;)
 
 
+@run_analysis(33, &quot;Pandemic Ridership Geography&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, analyze pandemic ridership geography.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 33: Pandemic Ridership Geography&quot;)
-    print(&quot;=&quot; * 60)
 
-    print(&quot;\nLoading and computing stop-level pandemic changes...&quot;)
-    df = load_data()
-    valid = df.filter(pl.col(&quot;pre_usage&quot;) &gt; 0)
-    print(f&quot;  {len(df):,} stops with both pre and post data&quot;)
-    print(f&quot;  {len(valid):,} stops with pre-pandemic usage &gt; 0&quot;)
+    with phase(&quot;Loading and computing stop-level pandemic changes&quot;):
+        df = load_data()
+        valid = df.filter(pl.col(&quot;pre_usage&quot;) &gt; 0)
+        print(f&quot;  {len(df):,} stops with both pre and post data&quot;)
+        print(f&quot;  {len(valid):,} stops with pre-pandemic usage &gt; 0&quot;)
 
-    print(&quot;\nSystem-wide summary:&quot;)
-    med_pct = valid[&quot;pct_change&quot;].median()
-    mean_pct = valid[&quot;pct_change&quot;].mean()
-    total_pre = df[&quot;pre_usage&quot;].sum()
-    total_post = df[&quot;post_usage&quot;].sum()
-    sys_pct = (total_post - total_pre) / total_pre * 100
-    print(f&quot;  Median stop-level change: {med_pct:.1f}%&quot;)
-    print(f&quot;  Mean stop-level change: {mean_pct:.1f}%&quot;)
-    print(f&quot;  System total: {total_pre:,.0f} -&gt; {total_post:,.0f} ({sys_pct:+.1f}%)&quot;)
+        print(&quot;\nSystem-wide summary:&quot;)
+        med_pct = valid[&quot;pct_change&quot;].median()
+        mean_pct = valid[&quot;pct_change&quot;].mean()
+        total_pre = df[&quot;pre_usage&quot;].sum()
+        total_post = df[&quot;post_usage&quot;].sum()
+        sys_pct = (total_post - total_pre) / total_pre * 100
+        print(f&quot;  Median stop-level change: {med_pct:.1f}%&quot;)
+        print(f&quot;  Mean stop-level change: {mean_pct:.1f}%&quot;)
+        print(f&quot;  System total: {total_pre:,.0f} -&gt; {total_post:,.0f} ({sys_pct:+.1f}%)&quot;)
 
-    print(&quot;\nBy zone:&quot;)
-    for z in [&quot;Downtown (&lt; 2 km)&quot;, &quot;Inner ring (2-8 km)&quot;, &quot;Outer ring (&gt; 8 km)&quot;]:
-        sub = valid.filter(pl.col(&quot;zone&quot;) == z)
-        pre_sum = sub[&quot;pre_usage&quot;].sum()
-        post_sum = sub[&quot;post_usage&quot;].sum()
-        z_pct = (post_sum - pre_sum) / pre_sum * 100 if pre_sum &gt; 0 else 0
-        print(f&quot;  {z}: median {sub[&#x27;pct_change&#x27;].median():+.0f}%, &quot;
-              f&quot;aggregate {z_pct:+.1f}%, n={len(sub):,}&quot;)
+        print(&quot;\nBy zone:&quot;)
+        for z in [&quot;Downtown (&lt; 2 km)&quot;, &quot;Inner ring (2-8 km)&quot;, &quot;Outer ring (&gt; 8 km)&quot;]:
+            sub = valid.filter(pl.col(&quot;zone&quot;) == z)
+            pre_sum = sub[&quot;pre_usage&quot;].sum()
+            post_sum = sub[&quot;post_usage&quot;].sum()
+            z_pct = (post_sum - pre_sum) / pre_sum * 100 if pre_sum &gt; 0 else 0
+            print(f&quot;  {z}: median {sub[&#x27;pct_change&#x27;].median():+.0f}%, &quot;
+                  f&quot;aggregate {z_pct:+.1f}%, n={len(sub):,}&quot;)
 
-    # Formal tests for zone differences
-    zone_order = [&quot;Downtown (&lt; 2 km)&quot;, &quot;Inner ring (2-8 km)&quot;, &quot;Outer ring (&gt; 8 km)&quot;]
-    zone_groups = [
-        valid.filter(pl.col(&quot;zone&quot;) == z)[&quot;pct_change&quot;].drop_nulls().to_list()
-        for z in zone_order
-    ]
-    if all(len(g) &gt;= 3 for g in zone_groups):
-        h_stat, kw_p = stats.kruskal(*zone_groups)
-        print(f&quot;\n  Kruskal-Wallis (zones): H={h_stat:.2f}, p={kw_p:.4f}&quot;)
-        if kw_p &lt; 0.05:
-            # Pairwise Mann-Whitney with Bonferroni correction (3 pairs)
-            pairs = [(0, 1), (0, 2), (1, 2)]
-            print(&quot;  Pairwise Mann-Whitney (Bonferroni-corrected, 3 tests):&quot;)
-            for i, j in pairs:
-                u_stat, mw_p = stats.mannwhitneyu(zone_groups[i], zone_groups[j], alternative=&quot;two-sided&quot;)
-                adj_p = min(mw_p * 3, 1.0)
-                sig = &quot;*&quot; if adj_p &lt; 0.05 else &quot;&quot;
-                print(f&quot;    {zone_order[i]} vs {zone_order[j]}: U={u_stat:.0f}, p={adj_p:.4f} {sig}&quot;)
+        # Formal tests for zone differences
+        zone_order = [&quot;Downtown (&lt; 2 km)&quot;, &quot;Inner ring (2-8 km)&quot;, &quot;Outer ring (&gt; 8 km)&quot;]
+        zone_groups = [
+            valid.filter(pl.col(&quot;zone&quot;) == z)[&quot;pct_change&quot;].drop_nulls().to_list()
+            for z in zone_order
+        ]
+        if all(len(g) &gt;= 3 for g in zone_groups):
+            h_stat, kw_p = stats.kruskal(*zone_groups)
+            print(f&quot;\n  Kruskal-Wallis (zones): H={h_stat:.2f}, p={kw_p:.4f}&quot;)
+            if kw_p &lt; 0.05:
+                # Pairwise Mann-Whitney with Bonferroni correction (3 pairs)
+                pairs = [(0, 1), (0, 2), (1, 2)]
+                print(&quot;  Pairwise Mann-Whitney (Bonferroni-corrected, 3 tests):&quot;)
+                for i, j in pairs:
+                    u_stat, mw_p = stats.mannwhitneyu(zone_groups[i], zone_groups[j], alternative=&quot;two-sided&quot;)
+                    adj_p = min(mw_p * 3, 1.0)
+                    sig = &quot;*&quot; if adj_p &lt; 0.05 else &quot;&quot;
+                    print(f&quot;    {zone_order[i]} vs {zone_order[j]}: U={u_stat:.0f}, p={adj_p:.4f} {sig}&quot;)
 
-    print(&quot;\nBy mode:&quot;)
-    for mode in valid[&quot;mode&quot;].unique().drop_nulls().sort().to_list():
-        sub = valid.filter(pl.col(&quot;mode&quot;) == mode)
-        print(f&quot;  {mode:12s}: median {sub[&#x27;pct_change&#x27;].median():+.0f}%, n={len(sub):,}&quot;)
+        print(&quot;\nBy mode:&quot;)
+        for mode in valid[&quot;mode&quot;].unique().drop_nulls().sort().to_list():
+            sub = valid.filter(pl.col(&quot;mode&quot;) == mode)
+            print(f&quot;  {mode:12s}: median {sub[&#x27;pct_change&#x27;].median():+.0f}%, n={len(sub):,}&quot;)
 
-    # Formal test for mode differences
-    mode_groups = []
-    mode_names = []
-    for mode in valid[&quot;mode&quot;].unique().drop_nulls().sort().to_list():
-        vals = valid.filter(pl.col(&quot;mode&quot;) == mode)[&quot;pct_change&quot;].drop_nulls().to_list()
-        if len(vals) &gt;= 3:
-            mode_groups.append(vals)
-            mode_names.append(mode)
-    if len(mode_groups) &gt;= 2:
-        h_stat, kw_p = stats.kruskal(*mode_groups)
-        print(f&quot;  Kruskal-Wallis (modes): H={h_stat:.2f}, p={kw_p:.4f}&quot;)
+        # Formal test for mode differences
+        mode_groups = []
+        mode_names = []
+        for mode in valid[&quot;mode&quot;].unique().drop_nulls().sort().to_list():
+            vals = valid.filter(pl.col(&quot;mode&quot;) == mode)[&quot;pct_change&quot;].drop_nulls().to_list()
+            if len(vals) &gt;= 3:
+                mode_groups.append(vals)
+                mode_names.append(mode)
+        if len(mode_groups) &gt;= 2:
+            h_stat, kw_p = stats.kruskal(*mode_groups)
+            print(f&quot;  Kruskal-Wallis (modes): H={h_stat:.2f}, p={kw_p:.4f}&quot;)
 
-    print(&quot;\nTop 10 stops with largest absolute loss:&quot;)
-    biggest_loss = valid.sort(&quot;abs_change&quot;).head(10)
-    for row in biggest_loss.iter_rows(named=True):
-        print(f&quot;  {row[&#x27;stop_name&#x27;][:40]:40s} {row[&#x27;pre_usage&#x27;]:8.0f} -&gt; {row[&#x27;post_usage&#x27;]:8.0f} ({row[&#x27;pct_change&#x27;]:+.0f}%)&quot;)
+        print(&quot;\nTop 10 stops with largest absolute loss:&quot;)
+        biggest_loss = valid.sort(&quot;abs_change&quot;).head(10)
+        for row in biggest_loss.iter_rows(named=True):
+            print(f&quot;  {row[&#x27;stop_name&#x27;][:40]:40s} {row[&#x27;pre_usage&#x27;]:8.0f} -&gt; {row[&#x27;post_usage&#x27;]:8.0f} ({row[&#x27;pct_change&#x27;]:+.0f}%)&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    df.write_csv(OUT / &quot;pandemic_change_by_stop.csv&quot;)
-    print(f&quot;  Saved {OUT / &#x27;pandemic_change_by_stop.csv&#x27;}&quot;)
+    with phase(&quot;Saving CSV&quot;):
+        save_csv(df, OUT / &quot;pandemic_change_by_stop.csv&quot;)
 
-    print(&quot;\nGenerating charts...&quot;)
-    make_charts(df)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_charts(df)
 
 
 if __name__ == &quot;__main__&quot;:

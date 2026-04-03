@@ -21,7 +21,7 @@ Pittsburgh Regional Transit (PRT) on-time performance and system data, normalize
 | `otp_monthly`    | 7,651   | Fact: monthly on-time performance        |
 | `ntd_agency`     | 2,340   | Dimension: NTD agency-mode-TOS combos    |
 | `ntd_ridership`  | 673,920 | Fact: monthly UPT by agency/mode/TOS     |
-| `ntd_annual_service` | 90,057 | Fact: annual VRH/VRM/UPT/VOMS by agency |
+| `ntd_annual_service` | 93,188 | Fact: annual VRH/VRM/UPT/VOMS/fares/opexp by agency |
 | `otp_null_classification` | 1,064 | Ref: why each missing OTP value is null |
 
 ### `routes`
@@ -122,7 +122,7 @@ Primary key: `(ntd_id, mode, tos, month)`. Source: NTD Monthly Module Excel, UPT
 
 ### `ntd_annual_service`
 
-Annual service metrics from the NTD TS2.2 "Service Data by System" workbook, 1991–2023. System-level (all modes aggregated).
+Annual service and financial metrics from the NTD TS2.2 "Service Data and Operating Expenses Time-Series by System" workbook, 1991–2024. System-level (all modes aggregated).
 
 | Column        | Type        | Description                         |
 |---------------|-------------|-------------------------------------|
@@ -131,11 +131,13 @@ Annual service metrics from the NTD TS2.2 "Service Data by System" workbook, 199
 | `city`        | TEXT        | Headquarters city                    |
 | `state`       | TEXT        | Headquarters state                   |
 | `uza_name`    | TEXT        | Primary urbanized area name          |
-| `year`        | INTEGER PK  | Report year (1991–2023)              |
+| `year`        | INTEGER PK  | Report year (1991–2024)              |
 | `vrh`         | REAL        | Vehicle Revenue Hours (nullable)     |
 | `vrm`         | REAL        | Vehicle Revenue Miles (nullable)     |
 | `upt`         | REAL        | Unlinked Passenger Trips (nullable)  |
 | `voms`        | REAL        | Vehicles Operated in Maximum Service (nullable) |
+| `fares`       | REAL        | Fare revenue in USD (nullable)       |
+| `opexp`       | REAL        | Total operating expenses in USD (nullable) |
 
 Primary key: `(ntd_id, year)`. Source: NTD TS2.2 Excel workbook. Built by `src/prt_otp_analysis/ntd_service.py`.
 

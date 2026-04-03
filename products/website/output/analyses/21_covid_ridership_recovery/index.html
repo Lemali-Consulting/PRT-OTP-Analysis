@@ -36,7 +36,7 @@
   <h1>21 - COVID Ridership vs OTP Recovery</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -272,23 +272,26 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 21: Compare ridership recovery trajectories with OTP recovery trajectories post-COVID.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
+    PRE_COVID_BASELINE_MONTH,
+    analysis_dir,
     classify_bus_route,
-    output_dir,
+    correlate,
+    phase,
     query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
     setup_plotting,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
-PRE_COVID_START = &quot;2019-01&quot;
+PRE_COVID_START = PRE_COVID_BASELINE_MONTH
 PRE_COVID_END = &quot;2020-02&quot;
 RECOVERY_START = &quot;2023-01&quot;
 RECOVERY_END = &quot;2024-10&quot;
@@ -362,21 +365,17 @@ def analyze(df: pl.DataFrame) -&gt; dict:
     otp_d = df[&quot;otp_delta&quot;].to_numpy()
     rider_r = df[&quot;ridership_pct_change&quot;].to_numpy()
 
-    # Pearson
-    r_p, p_p = stats.pearsonr(rider_r, otp_d)
-    results[&quot;pearson_r&quot;] = r_p
-    results[&quot;pearson_p&quot;] = p_p
-
-    # Spearman
-    r_s, p_s = stats.spearmanr(rider_r, otp_d)
-    results[&quot;spearman_r&quot;] = r_s
-    results[&quot;spearman_p&quot;] = p_s
+    # Pearson + Spearman
+    corr = correlate(df, &quot;ridership_pct_change&quot;, &quot;otp_delta&quot;)
+    results[&quot;pearson_r&quot;] = corr[&quot;pearson_r&quot;]
+    results[&quot;pearson_p&quot;] = corr[&quot;pearson_p&quot;]
+    results[&quot;spearman_r&quot;] = corr[&quot;spearman_r&quot;]
+    results[&quot;spearman_p&quot;] = corr[&quot;spearman_p&quot;]
 
     # Regression to the mean test: corr(baseline_otp, otp_delta)
-    baseline_otp = df[&quot;baseline_otp&quot;].to_numpy()
-    rtm_r, rtm_p = stats.pearsonr(baseline_otp, otp_d)
-    results[&quot;rtm_r&quot;] = rtm_r
-    results[&quot;rtm_p&quot;] = rtm_p
+    rtm_corr = correlate(df, &quot;baseline_otp&quot;, &quot;otp_delta&quot;)
+    results[&quot;rtm_r&quot;] = rtm_corr[&quot;pearson_r&quot;]
+    results[&quot;rtm_p&quot;] = rtm_corr[&quot;pearson_p&quot;]
 
     # Summary counts
     results[&quot;n_both_improved&quot;] = int(((otp_d &gt; 0) &amp; (rider_r &gt; 0)).sum())
@@ -454,10 +453,7 @@ def make_scatter(df: pl.DataFrame, results: dict) -&gt; None:
     ax.set_title(&quot;COVID Recovery: Ridership vs OTP by Route&quot;)
     ax.legend(loc=&quot;upper left&quot;, fontsize=8)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;recovery_scatter.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;recovery_scatter.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;recovery_scatter.png&quot;)
 
 
 def make_subtype_chart(df: pl.DataFrame) -&gt; None:
@@ -502,86 +498,78 @@ def make_subtype_chart(df: pl.DataFrame) -&gt; None:
     ax2.set_ylabel(&quot;Ridership Change (recovery / baseline - 1)&quot;)
     ax2.set_title(&quot;Ridership Recovery by Subtype&quot;)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;recovery_by_subtype.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;recovery_by_subtype.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;recovery_by_subtype.png&quot;)
 
 
+@run_analysis(21, &quot;COVID Ridership vs OTP Recovery&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load, analyze, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 21: COVID Ridership vs OTP Recovery&quot;)
-    print(&quot;=&quot; * 60)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    print(f&quot;  {len(df)} routes with both pre-COVID and recovery data&quot;)
-    print(f&quot;  Pre-COVID: {PRE_COVID_START} to {PRE_COVID_END}&quot;)
-    print(f&quot;  Recovery:  {RECOVERY_START} to {RECOVERY_END}&quot;)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        print(f&quot;  {len(df)} routes with both pre-COVID and recovery data&quot;)
+        print(f&quot;  Pre-COVID: {PRE_COVID_START} to {PRE_COVID_END}&quot;)
+        print(f&quot;  Recovery:  {RECOVERY_START} to {RECOVERY_END}&quot;)
 
-    print(&quot;\nAnalyzing...&quot;)
-    results = analyze(df)
+    with phase(&quot;Analyzing&quot;):
+        results = analyze(df)
 
-    print(f&quot;\n  Quadrant breakdown:&quot;)
-    print(f&quot;    Both improved:           {results[&#x27;n_both_improved&#x27;]}&quot;)
-    print(f&quot;    Both declined:           {results[&#x27;n_both_declined&#x27;]}&quot;)
-    print(f&quot;    OTP up, riders down:     {results[&#x27;n_otp_up_riders_down&#x27;]}&quot;)
-    print(f&quot;    OTP down, riders up:     {results[&#x27;n_otp_down_riders_up&#x27;]}&quot;)
+        print(f&quot;\n  Quadrant breakdown:&quot;)
+        print(f&quot;    Both improved:           {results[&#x27;n_both_improved&#x27;]}&quot;)
+        print(f&quot;    Both declined:           {results[&#x27;n_both_declined&#x27;]}&quot;)
+        print(f&quot;    OTP up, riders down:     {results[&#x27;n_otp_up_riders_down&#x27;]}&quot;)
+        print(f&quot;    OTP down, riders up:     {results[&#x27;n_otp_down_riders_up&#x27;]}&quot;)
 
-    print(f&quot;\n  Ridership recovery vs OTP recovery:&quot;)
-    print(f&quot;    Pearson:  r = {results[&#x27;pearson_r&#x27;]:.4f}, p = {results[&#x27;pearson_p&#x27;]:.4f}&quot;)
-    print(f&quot;    Spearman: r = {results[&#x27;spearman_r&#x27;]:.4f}, p = {results[&#x27;spearman_p&#x27;]:.4f}&quot;)
+        print(f&quot;\n  Ridership recovery vs OTP recovery:&quot;)
+        print(f&quot;    Pearson:  r = {results[&#x27;pearson_r&#x27;]:.4f}, p = {results[&#x27;pearson_p&#x27;]:.4f}&quot;)
+        print(f&quot;    Spearman: r = {results[&#x27;spearman_r&#x27;]:.4f}, p = {results[&#x27;spearman_p&#x27;]:.4f}&quot;)
 
-    print(f&quot;\n  Regression to the mean test (baseline OTP vs OTP delta):&quot;)
-    print(f&quot;    Pearson:  r = {results[&#x27;rtm_r&#x27;]:.4f}, p = {results[&#x27;rtm_p&#x27;]:.4f}&quot;)
-    if results[&#x27;rtm_p&#x27;] &lt; 0.05:
-        print(&quot;    =&gt; RTM detected: routes with extreme baseline OTP regress toward the mean.&quot;)
-        print(&quot;       The ridership-OTP correlation may be partly artifactual.&quot;)
+        print(f&quot;\n  Regression to the mean test (baseline OTP vs OTP delta):&quot;)
+        print(f&quot;    Pearson:  r = {results[&#x27;rtm_r&#x27;]:.4f}, p = {results[&#x27;rtm_p&#x27;]:.4f}&quot;)
+        if results[&#x27;rtm_p&#x27;] &lt; 0.05:
+            print(&quot;    =&gt; RTM detected: routes with extreme baseline OTP regress toward the mean.&quot;)
+            print(&quot;       The ridership-OTP correlation may be partly artifactual.&quot;)
 
-    if &quot;kruskal_h&quot; in results:
-        print(f&quot;\n  Kruskal-Wallis (OTP delta by subtype):&quot;)
-        print(f&quot;    H = {results[&#x27;kruskal_h&#x27;]:.3f}, p = {results[&#x27;kruskal_p&#x27;]:.4f}&quot;)
+        if &quot;kruskal_h&quot; in results:
+            print(f&quot;\n  Kruskal-Wallis (OTP delta by subtype):&quot;)
+            print(f&quot;    H = {results[&#x27;kruskal_h&#x27;]:.3f}, p = {results[&#x27;kruskal_p&#x27;]:.4f}&quot;)
 
-    # System-wide ridership recovery
-    median_rider = df[&quot;ridership_pct_change&quot;].median()
-    mean_rider = df[&quot;ridership_pct_change&quot;].mean()
-    print(f&quot;\n  System ridership recovery:&quot;)
-    print(f&quot;    Median: {median_rider:+.1%}&quot;)
-    print(f&quot;    Mean:   {mean_rider:+.1%}&quot;)
-    n_rider_recovered = df.filter(pl.col(&quot;ridership_pct_change&quot;) &gt;= 0).height
-    print(f&quot;    Routes at/above pre-COVID: {n_rider_recovered}/{len(df)}&quot;)
+        # System-wide ridership recovery
+        median_rider = df[&quot;ridership_pct_change&quot;].median()
+        mean_rider = df[&quot;ridership_pct_change&quot;].mean()
+        print(f&quot;\n  System ridership recovery:&quot;)
+        print(f&quot;    Median: {median_rider:+.1%}&quot;)
+        print(f&quot;    Mean:   {mean_rider:+.1%}&quot;)
+        n_rider_recovered = df.filter(pl.col(&quot;ridership_pct_change&quot;) &gt;= 0).height
+        print(f&quot;    Routes at/above pre-COVID: {n_rider_recovered}/{len(df)}&quot;)
 
-    # Extreme routes
-    print(&quot;\n  Most ridership recovery with OTP decline:&quot;)
-    worst = (
-        df.filter((pl.col(&quot;ridership_pct_change&quot;) &gt; 0) &amp; (pl.col(&quot;otp_delta&quot;) &lt; -0.05))
-        .sort(&quot;otp_delta&quot;)
-        .head(5)
-    )
-    for row in worst.iter_rows(named=True):
-        print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5s} - {row[&#x27;route_name&#x27;]:&lt;30s}  &quot;
-              f&quot;riders {row[&#x27;ridership_pct_change&#x27;]:+.0%}, OTP {row[&#x27;otp_delta&#x27;]:+.1%}&quot;)
+        # Extreme routes
+        print(&quot;\n  Most ridership recovery with OTP decline:&quot;)
+        worst = (
+            df.filter((pl.col(&quot;ridership_pct_change&quot;) &gt; 0) &amp; (pl.col(&quot;otp_delta&quot;) &lt; -0.05))
+            .sort(&quot;otp_delta&quot;)
+            .head(5)
+        )
+        for row in worst.iter_rows(named=True):
+            print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5s} - {row[&#x27;route_name&#x27;]:&lt;30s}  &quot;
+                  f&quot;riders {row[&#x27;ridership_pct_change&#x27;]:+.0%}, OTP {row[&#x27;otp_delta&#x27;]:+.1%}&quot;)
 
-    print(&quot;\n  Most ridership loss with OTP improvement:&quot;)
-    best = (
-        df.filter((pl.col(&quot;ridership_pct_change&quot;) &lt; -0.1) &amp; (pl.col(&quot;otp_delta&quot;) &gt; 0))
-        .sort(&quot;otp_delta&quot;, descending=True)
-        .head(5)
-    )
-    for row in best.iter_rows(named=True):
-        print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5s} - {row[&#x27;route_name&#x27;]:&lt;30s}  &quot;
-              f&quot;riders {row[&#x27;ridership_pct_change&#x27;]:+.0%}, OTP {row[&#x27;otp_delta&#x27;]:+.1%}&quot;)
+        print(&quot;\n  Most ridership loss with OTP improvement:&quot;)
+        best = (
+            df.filter((pl.col(&quot;ridership_pct_change&quot;) &lt; -0.1) &amp; (pl.col(&quot;otp_delta&quot;) &gt; 0))
+            .sort(&quot;otp_delta&quot;, descending=True)
+            .head(5)
+        )
+        for row in best.iter_rows(named=True):
+            print(f&quot;    {row[&#x27;route_id&#x27;]:&gt;5s} - {row[&#x27;route_name&#x27;]:&lt;30s}  &quot;
+                  f&quot;riders {row[&#x27;ridership_pct_change&#x27;]:+.0%}, OTP {row[&#x27;otp_delta&#x27;]:+.1%}&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    df.write_csv(OUT / &quot;recovery_data.csv&quot;)
-    print(f&quot;  {OUT / &#x27;recovery_data.csv&#x27;}&quot;)
+    with phase(&quot;Saving CSV&quot;):
+        save_csv(df, OUT / &quot;recovery_data.csv&quot;)
 
-    print(&quot;\nGenerating charts...&quot;)
-    make_scatter(df, results)
-    make_subtype_chart(df)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_scatter(df, results)
+        make_subtype_chart(df)
 
 
 if __name__ == &quot;__main__&quot;:

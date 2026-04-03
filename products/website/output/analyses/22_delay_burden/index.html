@@ -36,7 +36,7 @@
   <h1>22 - Passenger-Weighted Delay Burden</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -336,15 +336,11 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 22: Estimate late rider-trips per route per month to identify where the most total human impact occurs.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import polars as pl
-from scipy import stats
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import OTP_GOOD_THRESHOLD, OTP_WARNING_THRESHOLD, analysis_dir, correlate, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def load_data() -&gt; pl.DataFrame:
@@ -405,9 +401,7 @@ def monthly_system(df: pl.DataFrame) -&gt; pl.DataFrame:
         .agg(
             system_late=pl.col(&quot;late_rider_trips&quot;).sum(),
             system_total=pl.col(&quot;total_rider_trips&quot;).sum(),
-            system_otp=(
-                (pl.col(&quot;otp&quot;) * pl.col(&quot;avg_riders&quot;)).sum() / pl.col(&quot;avg_riders&quot;).sum()
-            ),
+            system_otp=weighted_mean(&quot;otp&quot;, &quot;avg_riders&quot;),
             route_count=pl.col(&quot;route_id&quot;).n_unique(),
         )
         .sort(&quot;month&quot;)
@@ -440,10 +434,7 @@ def make_trend_chart(monthly: pl.DataFrame) -&gt; None:
     ax.set_xticks(tick_positions)
     ax.set_xticklabels(tick_labels)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;delay_burden_trend.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;delay_burden_trend.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;delay_burden_trend.png&quot;)
 
 
 def make_top10_chart(ranking: pl.DataFrame) -&gt; None:
@@ -456,7 +447,7 @@ def make_top10_chart(ranking: pl.DataFrame) -&gt; None:
     values = [v / 1_000_000 for v in top10[&quot;total_late&quot;].to_list()]  # millions
     otp_vals = top10[&quot;avg_otp&quot;].to_list()
 
-    colors = [&quot;#e11d48&quot; if o &lt; 0.65 else &quot;#f59e0b&quot; if o &lt; 0.70 else &quot;#3b82f6&quot; for o in otp_vals]
+    colors = [&quot;#e11d48&quot; if o &lt; OTP_WARNING_THRESHOLD else &quot;#f59e0b&quot; if o &lt; OTP_GOOD_THRESHOLD else &quot;#3b82f6&quot; for o in otp_vals]
     bars = ax.barh(range(len(labels)), values, color=colors, edgecolor=&quot;white&quot;, alpha=0.8)
 
     # Annotate with OTP
@@ -468,10 +459,7 @@ def make_top10_chart(ranking: pl.DataFrame) -&gt; None:
     ax.set_xlabel(&quot;Cumulative Late Rider-Trips (millions, Jan 2019 - Oct 2024)&quot;)
     ax.set_title(&quot;Top 10 Routes by Delay Burden&quot;)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;top10_burden.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;top10_burden.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;top10_burden.png&quot;)
 
 
 def make_rate_vs_burden_chart(ranking: pl.DataFrame) -&gt; None:
@@ -503,8 +491,8 @@ def make_rate_vs_burden_chart(ranking: pl.DataFrame) -&gt; None:
         )
 
     # Spearman rank correlation
-    r_s, p_s = stats.spearmanr(ranking[&quot;otp_rank&quot;].to_list(), ranking[&quot;burden_rank&quot;].to_list())
-    ax.text(0.05, 0.95, f&quot;Spearman r = {r_s:.3f}\np = {p_s:.4f}&quot;,
+    rank_corr = correlate(ranking, &quot;otp_rank&quot;, &quot;burden_rank&quot;)
+    ax.text(0.05, 0.95, f&quot;Spearman r = {rank_corr[&#x27;spearman_r&#x27;]:.3f}\np = {rank_corr[&#x27;spearman_p&#x27;]:.4f}&quot;,
             transform=ax.transAxes, fontsize=9, va=&quot;top&quot;,
             bbox=dict(boxstyle=&quot;round&quot;, facecolor=&quot;white&quot;, alpha=0.8))
 
@@ -515,74 +503,65 @@ def make_rate_vs_burden_chart(ranking: pl.DataFrame) -&gt; None:
     ax.invert_yaxis()
     ax.legend(loc=&quot;lower right&quot;, fontsize=8)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;rate_vs_burden.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;rate_vs_burden.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;rate_vs_burden.png&quot;)
 
 
+@run_analysis(22, &quot;Passenger-Weighted Delay Burden&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load, compute burden, rank, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 22: Passenger-Weighted Delay Burden&quot;)
-    print(&quot;=&quot; * 60)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    n_routes = df[&quot;route_id&quot;].n_unique()
-    print(f&quot;  {len(df):,} route-month observations ({n_routes} routes)&quot;)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        n_routes = df[&quot;route_id&quot;].n_unique()
+        print(f&quot;  {len(df):,} route-month observations ({n_routes} routes)&quot;)
 
-    print(&quot;\nRanking routes by delay burden...&quot;)
-    ranking = route_ranking(df)
+    with phase(&quot;Ranking routes by delay burden&quot;):
+        ranking = route_ranking(df)
 
-    print(&quot;\n  Top 10 routes by cumulative late rider-trips:&quot;)
-    print(f&quot;  {&#x27;Rank&#x27;:&gt;4} {&#x27;Route&#x27;:&lt;8} {&#x27;Name&#x27;:&lt;32} {&#x27;Late trips&#x27;:&gt;12} {&#x27;Avg OTP&#x27;:&gt;8} {&#x27;OTP Rank&#x27;:&gt;9}&quot;)
-    for row in ranking.head(10).iter_rows(named=True):
-        print(f&quot;  {row[&#x27;burden_rank&#x27;]:&gt;4} {row[&#x27;route_id&#x27;]:&lt;8} {row[&#x27;route_name&#x27;]:&lt;32} &quot;
-              f&quot;{row[&#x27;total_late&#x27;]:&gt;12,.0f} {row[&#x27;avg_otp&#x27;]:&gt;8.1%} {row[&#x27;otp_rank&#x27;]:&gt;9}&quot;)
+        print(&quot;\n  Top 10 routes by cumulative late rider-trips:&quot;)
+        print(f&quot;  {&#x27;Rank&#x27;:&gt;4} {&#x27;Route&#x27;:&lt;8} {&#x27;Name&#x27;:&lt;32} {&#x27;Late trips&#x27;:&gt;12} {&#x27;Avg OTP&#x27;:&gt;8} {&#x27;OTP Rank&#x27;:&gt;9}&quot;)
+        for row in ranking.head(10).iter_rows(named=True):
+            print(f&quot;  {row[&#x27;burden_rank&#x27;]:&gt;4} {row[&#x27;route_id&#x27;]:&lt;8} {row[&#x27;route_name&#x27;]:&lt;32} &quot;
+                  f&quot;{row[&#x27;total_late&#x27;]:&gt;12,.0f} {row[&#x27;avg_otp&#x27;]:&gt;8.1%} {row[&#x27;otp_rank&#x27;]:&gt;9}&quot;)
 
-    # Routes that shift most between rankings
-    ranking_annotated = ranking.with_columns(
-        rank_shift=(pl.col(&quot;otp_rank&quot;).cast(pl.Int64) - pl.col(&quot;burden_rank&quot;).cast(pl.Int64)),
-    )
+        # Routes that shift most between rankings
+        ranking_annotated = ranking.with_columns(
+            rank_shift=(pl.col(&quot;otp_rank&quot;).cast(pl.Int64) - pl.col(&quot;burden_rank&quot;).cast(pl.Int64)),
+        )
 
-    print(&quot;\n  Biggest rank shifts (burden rank - OTP rank):&quot;)
-    print(&quot;  Positive = higher burden than OTP rank suggests (high-ridership route)&quot;)
-    print(&quot;  Negative = lower burden than OTP rank suggests (low-ridership route)&quot;)
-    shifted = ranking_annotated.sort(&quot;rank_shift&quot;, descending=True)
-    print(f&quot;\n  {&#x27;Route&#x27;:&lt;8} {&#x27;Name&#x27;:&lt;32} {&#x27;OTP Rank&#x27;:&gt;9} {&#x27;Burden Rank&#x27;:&gt;12} {&#x27;Shift&#x27;:&gt;6}&quot;)
-    for row in shifted.head(5).iter_rows(named=True):
-        print(f&quot;  {row[&#x27;route_id&#x27;]:&lt;8} {row[&#x27;route_name&#x27;]:&lt;32} &quot;
-              f&quot;{row[&#x27;otp_rank&#x27;]:&gt;9} {row[&#x27;burden_rank&#x27;]:&gt;12} {row[&#x27;rank_shift&#x27;]:&gt;+6}&quot;)
-    print(&quot;  ...&quot;)
-    for row in shifted.tail(5).iter_rows(named=True):
-        print(f&quot;  {row[&#x27;route_id&#x27;]:&lt;8} {row[&#x27;route_name&#x27;]:&lt;32} &quot;
-              f&quot;{row[&#x27;otp_rank&#x27;]:&gt;9} {row[&#x27;burden_rank&#x27;]:&gt;12} {row[&#x27;rank_shift&#x27;]:&gt;+6}&quot;)
+        print(&quot;\n  Biggest rank shifts (burden rank - OTP rank):&quot;)
+        print(&quot;  Positive = higher burden than OTP rank suggests (high-ridership route)&quot;)
+        print(&quot;  Negative = lower burden than OTP rank suggests (low-ridership route)&quot;)
+        shifted = ranking_annotated.sort(&quot;rank_shift&quot;, descending=True)
+        print(f&quot;\n  {&#x27;Route&#x27;:&lt;8} {&#x27;Name&#x27;:&lt;32} {&#x27;OTP Rank&#x27;:&gt;9} {&#x27;Burden Rank&#x27;:&gt;12} {&#x27;Shift&#x27;:&gt;6}&quot;)
+        for row in shifted.head(5).iter_rows(named=True):
+            print(f&quot;  {row[&#x27;route_id&#x27;]:&lt;8} {row[&#x27;route_name&#x27;]:&lt;32} &quot;
+                  f&quot;{row[&#x27;otp_rank&#x27;]:&gt;9} {row[&#x27;burden_rank&#x27;]:&gt;12} {row[&#x27;rank_shift&#x27;]:&gt;+6}&quot;)
+        print(&quot;  ...&quot;)
+        for row in shifted.tail(5).iter_rows(named=True):
+            print(f&quot;  {row[&#x27;route_id&#x27;]:&lt;8} {row[&#x27;route_name&#x27;]:&lt;32} &quot;
+                  f&quot;{row[&#x27;otp_rank&#x27;]:&gt;9} {row[&#x27;burden_rank&#x27;]:&gt;12} {row[&#x27;rank_shift&#x27;]:&gt;+6}&quot;)
 
-    print(&quot;\nComputing system-wide monthly trend...&quot;)
-    monthly = monthly_system(df)
-    total_late = monthly[&quot;system_late&quot;].sum()
-    total_trips = monthly[&quot;system_total&quot;].sum()
-    print(f&quot;  Total late rider-trips (all time): {total_late:,.0f}&quot;)
-    print(f&quot;  Total rider-trips (all time):      {total_trips:,.0f}&quot;)
-    print(f&quot;  System late rate:                  {total_late / total_trips:.1%}&quot;)
+    with phase(&quot;Computing system-wide monthly trend&quot;):
+        monthly = monthly_system(df)
+        total_late = monthly[&quot;system_late&quot;].sum()
+        total_trips = monthly[&quot;system_total&quot;].sum()
+        print(f&quot;  Total late rider-trips (all time): {total_late:,.0f}&quot;)
+        print(f&quot;  Total rider-trips (all time):      {total_trips:,.0f}&quot;)
+        print(f&quot;  System late rate:                  {total_late / total_trips:.1%}&quot;)
 
-    # Top 10 share of system burden
-    top10_late = ranking.head(10)[&quot;total_late&quot;].sum()
-    print(f&quot;\n  Top 10 routes account for {top10_late / total_late:.1%} of all late rider-trips&quot;)
+        # Top 10 share of system burden
+        top10_late = ranking.head(10)[&quot;total_late&quot;].sum()
+        print(f&quot;\n  Top 10 routes account for {top10_late / total_late:.1%} of all late rider-trips&quot;)
 
-    print(&quot;\nSaving CSVs...&quot;)
-    ranking.write_csv(OUT / &quot;delay_burden_ranking.csv&quot;)
-    print(f&quot;  {OUT / &#x27;delay_burden_ranking.csv&#x27;}&quot;)
-    monthly.write_csv(OUT / &quot;delay_burden_monthly.csv&quot;)
-    print(f&quot;  {OUT / &#x27;delay_burden_monthly.csv&#x27;}&quot;)
+    with phase(&quot;Saving CSVs&quot;):
+        save_csv(ranking, OUT / &quot;delay_burden_ranking.csv&quot;)
+        save_csv(monthly, OUT / &quot;delay_burden_monthly.csv&quot;)
 
-    print(&quot;\nGenerating charts...&quot;)
-    make_trend_chart(monthly)
-    make_top10_chart(ranking)
-    make_rate_vs_burden_chart(ranking)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_trend_chart(monthly)
+        make_top10_chart(ranking)
+        make_rate_vs_burden_chart(ranking)
 
 
 if __name__ == &quot;__main__&quot;:

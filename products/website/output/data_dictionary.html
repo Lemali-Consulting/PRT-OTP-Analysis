@@ -35,7 +35,7 @@
   <p class="kicker">Reference</p>
   <h1>Data Dictionary</h1>
   <p class="lede">Database tables, columns, types, and known data quality notes for the PRT OTP dataset.</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 <section class="panel">
   <div class="markdown-body">
@@ -111,8 +111,13 @@
 </tr>
 <tr>
   <td><code>ntd_annual_service</code></td>
-  <td>90,057</td>
-  <td>Fact: annual VRH/VRM/UPT/VOMS by agency</td>
+  <td>93,188</td>
+  <td>Fact: annual VRH/VRM/UPT/VOMS/fares/opexp by agency</td>
+</tr>
+<tr>
+  <td><code>otp_null_classification</code></td>
+  <td>1,064</td>
+  <td>Ref: why each missing OTP value is null</td>
 </tr>
 </tbody>
 </table>
@@ -443,7 +448,7 @@
 </table>
 <p>Primary key: <code>(ntd_id, mode, tos, month)</code>. Source: NTD Monthly Module Excel, UPT sheet. Built by <code>src/prt_otp_analysis/ntd_ridership.py</code>.</p>
 <h3><code>ntd_annual_service</code></h3>
-<p>Annual service metrics from the NTD TS2.2 &quot;Service Data by System&quot; workbook, 1991–2023. System-level (all modes aggregated).</p>
+<p>Annual service and financial metrics from the NTD TS2.2 &quot;Service Data and Operating Expenses Time-Series by System&quot; workbook, 1991–2024. System-level (all modes aggregated).</p>
 <table>
 <thead>
 <tr>
@@ -481,7 +486,7 @@
 <tr>
   <td><code>year</code></td>
   <td>INTEGER PK</td>
-  <td>Report year (1991–2023)</td>
+  <td>Report year (1991–2024)</td>
 </tr>
 <tr>
   <td><code>vrh</code></td>
@@ -502,6 +507,16 @@
   <td><code>voms</code></td>
   <td>REAL</td>
   <td>Vehicles Operated in Maximum Service (nullable)</td>
+</tr>
+<tr>
+  <td><code>fares</code></td>
+  <td>REAL</td>
+  <td>Fare revenue in USD (nullable)</td>
+</tr>
+<tr>
+  <td><code>opexp</code></td>
+  <td>REAL</td>
+  <td>Total operating expenses in USD (nullable)</td>
 </tr>
 </tbody>
 </table>
@@ -530,6 +545,46 @@
 </tr>
 </tbody>
 </table>
+<h3><code>otp_null_classification</code></h3>
+<p>Classification of every route-month in the OTP date range that lacks an OTP value, cross-referenced against scheduled trips and ridership data.</p>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>route_id</code></td>
+  <td>TEXT PK</td>
+  <td>References <code>routes.route_id</code></td>
+</tr>
+<tr>
+  <td><code>month</code></td>
+  <td>TEXT PK</td>
+  <td><code>&quot;2019-01&quot;</code> through <code>&quot;2025-11&quot;</code></td>
+</tr>
+<tr>
+  <td><code>reason</code></td>
+  <td>TEXT</td>
+  <td><code>unreported</code> / <code>not_operating</code> / <code>no_coverage</code></td>
+</tr>
+<tr>
+  <td><code>evidence</code></td>
+  <td>TEXT</td>
+  <td><code>schedule</code> / <code>ridership</code> / <code>both</code> / <code>none</code></td>
+</tr>
+</tbody>
+</table>
+<p>Primary key: <code>(route_id, month)</code>. Only rows <em>missing</em> from <code>otp_monthly</code> appear here. Built by <code>src/prt_otp_analysis/otp_null_classification.py</code>.</p>
+<p><strong>Reason definitions:</strong></p>
+<ul>
+<li><code>unreported</code>: evidence the route was operating (schedule or ridership data exists) but OTP was not reported</li>
+<li><code>not_operating</code>: within temporal coverage of at least one cross-reference source, but no evidence the route operated</li>
+<li><code>no_coverage</code>: month falls outside both the schedule data range (through 2021-03) and ridership data range (through 2024-10)</li>
+</ul>
 <h2>Source Files</h2>
 <table>
 <thead>

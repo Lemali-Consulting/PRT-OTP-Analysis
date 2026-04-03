@@ -36,7 +36,7 @@
   <h1>ntd_annual_service</h1>
   <p class="lede">Annual VRH, VRM, UPT, VOMS by NTD system (1991-2023). Produced by NTD Annual Service ETL.</p>
   <p class="lede">Owner: Produced by NTD Annual Service ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 
@@ -44,7 +44,8 @@
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
   src["ntd_annual_service"]
-  src --> c1["39 — National Service Cuts (2019 vs 2023)"]
+  src --> c1["39 — National Service Cuts (2019 vs 2024)"]
+  src --> c2["40 - Peer City Dashboard"]
 </pre>
 </section>
 
@@ -67,7 +68,12 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/39_national_service_cuts/index.html">39 — National Service Cuts (2019 vs 2023)</a></h3>
+      <h3><a href="analyses/39_national_service_cuts/index.html">39 — National Service Cuts (2019 vs 2024)</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/40_peer_city_dashboard/index.html">40 - Peer City Dashboard</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

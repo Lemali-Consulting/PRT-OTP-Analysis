@@ -36,7 +36,7 @@
   <h1>18: Multivariate OTP Model</h1>
   <p class="lede">Route and Service Drivers</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -331,21 +331,23 @@
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Multivariate OLS model combining structural predictors of OTP.&quot;&quot;&quot;
 
 import math
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from scipy import stats
 
 from prt_otp_analysis.common import (
+    analysis_dir,
     classify_bus_route,
-    output_dir,
+    phase,
     query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
     setup_plotting,
 )
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 
 def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
@@ -548,10 +550,7 @@ def make_charts(df: pl.DataFrame, results: dict, y_hat: np.ndarray) -&gt; None:
                 ha=&quot;left&quot; if b &gt;= 0 else &quot;right&quot;, va=&quot;center&quot;, fontsize=10)
 
     ax.invert_yaxis()
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;coefficient_plot.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;coefficient_plot.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;coefficient_plot.png&quot;)
 
     # Predicted vs actual
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -566,23 +565,17 @@ def make_charts(df: pl.DataFrame, results: dict, y_hat: np.ndarray) -&gt; None:
     ax.set_xlim(lims)
     ax.set_ylim(lims)
     ax.set_aspect(&quot;equal&quot;)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;predicted_vs_actual.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;predicted_vs_actual.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;predicted_vs_actual.png&quot;)
 
 
+@run_analysis(18, &quot;Multivariate OTP Model&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load features, fit models, report, and visualize.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 18: Multivariate OTP Model&quot;)
-    print(&quot;=&quot; * 60)
-
-    print(&quot;\nLoading and assembling features...&quot;)
-    df = load_features()
-    n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
-    n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
-    print(f&quot;  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)&quot;)
+    with phase(&quot;Loading and assembling features&quot;):
+        df = load_features()
+        n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
+        n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+        print(f&quot;  {len(df)} routes with complete feature set ({n_bus} BUS, {n_rail} RAIL)&quot;)
 
     # --- Full model (all 6 features) ---
     full_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
@@ -590,48 +583,45 @@ def main() -&gt; None:
     y = np.array(df[&quot;avg_otp&quot;].to_list())
     X_full = np.column_stack([np.array(df[f].to_list(), dtype=float) for f in full_features])
 
-    print(&quot;\n--- VIF (Variance Inflation Factors) ---&quot;)
-    vifs = compute_vif(X_full, full_features)
-    for feat, vif in vifs.items():
-        flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
-        print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
+    with phase(&quot;Computing VIF (Variance Inflation Factors)&quot;):
+        vifs = compute_vif(X_full, full_features)
+        for feat, vif in vifs.items():
+            flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
 
-    print(&quot;\nFitting full model (6 features)...&quot;)
-    full_results, y_hat_full = fit_ols(y, X_full, full_features)
-    print_model(full_results, &quot;Full model&quot;)
+    with phase(&quot;Fitting full model (6 features)&quot;):
+        full_results, y_hat_full = fit_ols(y, X_full, full_features)
+        print_model(full_results, &quot;Full model&quot;)
 
     # --- Reduced model (without n_munis suppressor) ---
     reduced_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;, &quot;weekend_ratio&quot;]
     X_reduced = np.column_stack([np.array(df[f].to_list(), dtype=float) for f in reduced_features])
-    print(&quot;\nFitting reduced model (without n_munis)...&quot;)
-    reduced_results, _ = fit_ols(y, X_reduced, reduced_features)
-    print_model(reduced_results, &quot;Reduced model (no n_munis)&quot;)
+    with phase(&quot;Fitting reduced model (without n_munis)&quot;):
+        reduced_results, _ = fit_ols(y, X_reduced, reduced_features)
+        print_model(reduced_results, &quot;Reduced model (no n_munis)&quot;)
 
     # --- Bus-only model ---
     bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
     bus_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_premium_bus&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
     y_bus = np.array(bus_df[&quot;avg_otp&quot;].to_list())
     X_bus = np.column_stack([np.array(bus_df[f].to_list(), dtype=float) for f in bus_features])
-    print(f&quot;\nFitting bus-only model ({len(bus_df)} routes)...&quot;)
-    bus_results, _ = fit_ols(y_bus, X_bus, bus_features)
-    print_model(bus_results, &quot;Bus-only model&quot;)
+    with phase(f&quot;Fitting bus-only model ({len(bus_df)} routes)&quot;):
+        bus_results, _ = fit_ols(y_bus, X_bus, bus_features)
+        print_model(bus_results, &quot;Bus-only model&quot;)
 
-    # Save full model coefficients
-    coeff_df = pl.DataFrame({
-        &quot;feature&quot;: full_results[&quot;features&quot;],
-        &quot;coefficient&quot;: full_results[&quot;coefficients&quot;],
-        &quot;std_error&quot;: full_results[&quot;std_errors&quot;],
-        &quot;t_value&quot;: full_results[&quot;t_values&quot;],
-        &quot;p_value&quot;: full_results[&quot;p_values&quot;],
-        &quot;beta_weight&quot;: [b if b is not None else float(&quot;nan&quot;) for b in full_results[&quot;beta_weights&quot;]],
-    })
-    coeff_df.write_csv(OUT / &quot;model_coefficients.csv&quot;)
-    print(f&quot;\n  Saved to {OUT / &#x27;model_coefficients.csv&#x27;}&quot;)
+        # Save full model coefficients
+        coeff_df = pl.DataFrame({
+            &quot;feature&quot;: full_results[&quot;features&quot;],
+            &quot;coefficient&quot;: full_results[&quot;coefficients&quot;],
+            &quot;std_error&quot;: full_results[&quot;std_errors&quot;],
+            &quot;t_value&quot;: full_results[&quot;t_values&quot;],
+            &quot;p_value&quot;: full_results[&quot;p_values&quot;],
+            &quot;beta_weight&quot;: [b if b is not None else float(&quot;nan&quot;) for b in full_results[&quot;beta_weights&quot;]],
+        })
+        save_csv(coeff_df, OUT / &quot;model_coefficients.csv&quot;)
 
-    print(&quot;\nGenerating charts...&quot;)
-    make_charts(df, full_results, y_hat_full)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating charts&quot;):
+        make_charts(df, full_results, y_hat_full)
 
 
 if __name__ == &quot;__main__&quot;:

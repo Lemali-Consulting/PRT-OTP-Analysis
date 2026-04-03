@@ -36,7 +36,7 @@
   <h1>06: Seasonal Patterns</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -352,14 +352,15 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Seasonal decomposition of OTP into trend, seasonal, and residual components.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import output_dir, query_to_polars, setup_plotting
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
+
+# OTP color-scale bounds for the seasonal heatmap.
+OTP_HEATMAP_VMIN = 0.3
+OTP_HEATMAP_VMAX = 1.0
 
 MONTH_LABELS = [&quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;, &quot;Apr&quot;, &quot;May&quot;, &quot;Jun&quot;,
                 &quot;Jul&quot;, &quot;Aug&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot;]
@@ -416,9 +417,7 @@ def analyze(df: pl.DataFrame) -&gt; tuple[pl.DataFrame, pl.DataFrame, pl.DataFra
     system_monthly = (
         df_balanced.group_by(&quot;month&quot;)
         .agg(
-            weighted_otp=pl.when(pl.col(&quot;trips_7d&quot;).sum() &gt; 0)
-            .then((pl.col(&quot;otp&quot;) * pl.col(&quot;trips_7d&quot;)).sum() / pl.col(&quot;trips_7d&quot;).sum())
-            .otherwise(pl.col(&quot;otp&quot;).mean()),
+            weighted_otp=weighted_mean(&quot;otp&quot;, &quot;trips_7d&quot;, safe=True),
         )
         .sort(&quot;month&quot;)
     )
@@ -539,7 +538,7 @@ def make_chart(
     import numpy as np
     matrix_arr = np.array(matrix, dtype=float).T  # routes x months
 
-    im = ax.imshow(matrix_arr, aspect=&quot;auto&quot;, cmap=&quot;RdYlGn&quot;, vmin=0.3, vmax=1.0)
+    im = ax.imshow(matrix_arr, aspect=&quot;auto&quot;, cmap=&quot;RdYlGn&quot;, vmin=OTP_HEATMAP_VMIN, vmax=OTP_HEATMAP_VMAX)
     ax.set_xticks(range(len(month_cols)))
     ax.set_xticklabels([MONTH_LABELS[int(c) - 1] for c in month_cols], fontsize=8)
     ax.set_yticks(range(len(route_labels)))
@@ -558,47 +557,38 @@ def make_chart(
     ax.set_ylim(0, 1)
 
     fig.suptitle(&quot;Seasonal Patterns in PRT On-Time Performance&quot;, fontsize=13)
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;seasonal_patterns.png&quot;, bbox_inches=&quot;tight&quot;)
-    plt.close(fig)
-    print(f&quot;  Chart saved to {OUT / &#x27;seasonal_patterns.png&#x27;}&quot;)
+    save_chart(fig, OUT / &quot;seasonal_patterns.png&quot;)
 
 
+@run_analysis(6, &quot;Seasonal Patterns&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: load data, analyze seasonal patterns, chart, and save.&quot;&quot;&quot;
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 06: Seasonal Patterns&quot;)
-    print(&quot;=&quot; * 60)
+    with phase(&quot;Loading data&quot;):
+        df = load_data()
+        print(f&quot;  {len(df):,} OTP observations loaded&quot;)
 
-    print(&quot;\nLoading data...&quot;)
-    df = load_data()
-    print(f&quot;  {len(df):,} OTP observations loaded&quot;)
+    with phase(&quot;Analyzing&quot;):
+        system_seasonal, route_seasonal, route_amplitude = analyze(df)
 
-    print(&quot;\nAnalyzing...&quot;)
-    system_seasonal, route_seasonal, route_amplitude = analyze(df)
+        # Summary
+        best_sys = system_seasonal.sort(&quot;weighted_otp&quot;, descending=True).head(1)
+        worst_sys = system_seasonal.sort(&quot;weighted_otp&quot;).head(1)
+        print(f&quot;  Best system month:  {MONTH_LABELS[best_sys[&#x27;month_num&#x27;][0] - 1]} ({best_sys[&#x27;weighted_otp&#x27;][0]:.1%})&quot;)
+        print(f&quot;  Worst system month: {MONTH_LABELS[worst_sys[&#x27;month_num&#x27;][0] - 1]} ({worst_sys[&#x27;weighted_otp&#x27;][0]:.1%})&quot;)
 
-    # Summary
-    best_sys = system_seasonal.sort(&quot;weighted_otp&quot;, descending=True).head(1)
-    worst_sys = system_seasonal.sort(&quot;weighted_otp&quot;).head(1)
-    print(f&quot;  Best system month:  {MONTH_LABELS[best_sys[&#x27;month_num&#x27;][0] - 1]} ({best_sys[&#x27;weighted_otp&#x27;][0]:.1%})&quot;)
-    print(f&quot;  Worst system month: {MONTH_LABELS[worst_sys[&#x27;month_num&#x27;][0] - 1]} ({worst_sys[&#x27;weighted_otp&#x27;][0]:.1%})&quot;)
+        n_eligible = route_amplitude.height
+        print(f&quot;  {n_eligible} routes with {MIN_YEARS}+ years of data for seasonal ranking&quot;)
 
-    n_eligible = route_amplitude.height
-    print(f&quot;  {n_eligible} routes with {MIN_YEARS}+ years of data for seasonal ranking&quot;)
+        top3 = route_amplitude.head(3)
+        print(&quot;\n  Most seasonally affected routes (detrended):&quot;)
+        for row in top3.iter_rows(named=True):
+            print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]}: amplitude = {row[&#x27;seasonal_amplitude&#x27;]:.3f}&quot;)
 
-    top3 = route_amplitude.head(3)
-    print(&quot;\n  Most seasonally affected routes (detrended):&quot;)
-    for row in top3.iter_rows(named=True):
-        print(f&quot;    {row[&#x27;route_id&#x27;]} - {row[&#x27;route_name&#x27;]}: amplitude = {row[&#x27;seasonal_amplitude&#x27;]:.3f}&quot;)
+    with phase(&quot;Saving CSV&quot;):
+        save_csv(route_amplitude, OUT / &quot;seasonal_patterns.csv&quot;)
 
-    print(&quot;\nSaving CSV...&quot;)
-    route_amplitude.write_csv(OUT / &quot;seasonal_patterns.csv&quot;)
-    print(f&quot;  Saved to {OUT / &#x27;seasonal_patterns.csv&#x27;}&quot;)
-
-    print(&quot;\nGenerating chart...&quot;)
-    make_chart(system_seasonal, route_seasonal, route_amplitude)
-
-    print(&quot;\nDone.&quot;)
+    with phase(&quot;Generating chart&quot;):
+        make_chart(system_seasonal, route_seasonal, route_amplitude)
 
 
 if __name__ == &quot;__main__&quot;:

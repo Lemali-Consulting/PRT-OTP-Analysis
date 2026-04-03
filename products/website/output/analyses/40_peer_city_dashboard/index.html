@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>40 - Peer City Dashboard - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>40 - Peer City Dashboard</h1>
+  <p class="lede">Equity and Strategic Planning</p>
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../39_national_service_cuts/index.html">← 39 — National Service Cuts (2019 vs 2024)</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  40_peer_city_dashboard(["40 - Peer City Dashboard"])
+  t_ntd_annual_service[("ntd_annual_service")] --> 40_peer_city_dashboard
+  06_ntd_service[["NTD Annual Service ETL"]] --> t_ntd_annual_service
+  u1_06_ntd_service[/"data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx"/] --> 06_ntd_service
+  d1_40_peer_city_dashboard(("polars (lib)")) --> 40_peer_city_dashboard
+  d2_40_peer_city_dashboard(("numpy (lib)")) --> 40_peer_city_dashboard
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 40_peer_city_dashboard page;
+  class t_ntd_annual_service table;
+  class d1_40_peer_city_dashboard,d2_40_peer_city_dashboard dep;
+  class u1_06_ntd_service file;
+  class 06_ntd_service pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Peer City Dashboard</h1>
+<h2>Key findings</h2>
+<ol>
+<li><p><strong>Pittsburgh's ridership loss (-40.8%) is near the peer <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>.</strong> All 8 cities lost 30–46% of riders between 2019 and 2023. Cleveland fared best (-30.3%), St. Louis worst (-46.3%). Pittsburgh's loss is middle-of-the-pack.</p>
+</li>
+<li><p><strong>Service cuts (-15.0%) are also mid-range.</strong> PRT's 15% reduction in vehicle revenue hours is comparable to Baltimore (-12.0%), Buffalo (-15.6%), and Portland (-16.1%). Denver (-25.8%), Minneapolis (-26.5%), and St. Louis (-34.2%) cut far more deeply.</p>
+</li>
+<li><p><strong>Pittsburgh is the only peer city where fare revenue per trip increased.</strong> PRT's effective fare rose from $1.57 to $1.63 per trip (+3.8%), while every other peer saw fare-per-trip decline — some sharply (Denver $1.47→$0.98, Minneapolis $1.27→$0.99). This likely reflects peer cities adopting reduced-fare programs or fare-free experiments during and after the pandemic, while PRT maintained its fare structure.</p>
+</li>
+<li><p><strong>Farebox recovery collapsed everywhere, but Pittsburgh retained a relative advantage.</strong> PRT's farebox recovery ratio fell from 23.2% to 12.8%, but this is the second-highest among peers (after Buffalo at 17.5%). Denver dropped from 24.0% to 8.4%, and Baltimore from 16.1% to 7.1%.</p>
+</li>
+<li><p><strong>Fare revenue fell less steeply at PRT (-38.8%) than at most peers</strong> despite comparable ridership losses. Baltimore (-51.9%), Denver (-58.8%), Minneapolis (-54.9%), Portland (-50.1%), and St. Louis (-50.7%) all lost over half their fare revenue. This is consistent with PRT maintaining fare levels while peers discounted.</p>
+</li>
+</ol>
+<h2>Limitations</h2>
+<ul>
+<li><strong>No reliability data.</strong> The NTD does not collect <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a>; peer reliability comparisons are not possible with public data.</li>
+<li><strong>Fare revenue is not the same as fare price.</strong> NTD reports total fare revenue, not fare schedules. A city that introduced fare-free service would show lower fare-per-trip even if the base fare didn't change.</li>
+<li><strong>2023 is the latest year with complete financial data.</strong> The NTD TS2.2 workbook covers through 2023 for fares and operating expenses (2024 for service metrics only).</li>
+<li><strong>System-level aggregation only.</strong> NTD data is agency-wide; we cannot break down by route, mode, or neighborhood.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified.</strong> All metrics sourced from NTD TS2.2 workbook (<code>ntd_annual_service</code> table: <code>upt</code>, <code>vrh</code>, <code>fares</code>, <code>opexp</code> columns).</li>
+<li><strong>Aggregates sanity-checked.</strong> PRT 2019 fare revenue ($100.8M) and operating expenses ($433.5M) are consistent with PRT's published financial reports.</li>
+<li><strong>Direction of effects checked.</strong> All cities show ridership decline, service cuts, and fare revenue loss — consistent with known pandemic impacts on transit. No directional anomalies.</li>
+<li><strong>Surprising result investigated.</strong> Pittsburgh's fare-per-trip increase is surprising but explained by PRT maintaining its fare structure while peers adopted discounts or fare-free programs. This is a real policy difference, not a data error.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (1)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/40_peer_city_dashboard/peer_dashboard.png" alt="peer_dashboard" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/40_peer_city_dashboard/peer_dashboard.png" target="_blank" rel="noopener noreferrer">peer_dashboard.png</a>
+          <p class="artifact-desc">2x2 dashboard comparing ridership, service, fare per trip, and farebox recovery across 8 peer cities.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/40_peer_city_dashboard/indexed_change.png" alt="indexed_change" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/40_peer_city_dashboard/indexed_change.png" target="_blank" rel="noopener noreferrer">indexed_change.png</a>
+          <p class="artifact-desc">grouped bar chart showing percent change in ridership, service hours, and fare revenue per peer city.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/40_peer_city_dashboard/fare_per_trip.png" alt="fare_per_trip" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/40_peer_city_dashboard/fare_per_trip.png" target="_blank" rel="noopener noreferrer">fare_per_trip.png</a>
+          <p class="artifact-desc">paired bars comparing fare revenue per trip in 2019 vs 2023.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/40_peer_city_dashboard/farebox_recovery.png" alt="farebox_recovery" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/40_peer_city_dashboard/farebox_recovery.png" target="_blank" rel="noopener noreferrer">farebox_recovery.png</a>
+          <p class="artifact-desc">paired bars comparing farebox recovery ratio in 2019 vs 2023.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/40_peer_city_dashboard/peer_comparison.csv" target="_blank" rel="noopener noreferrer">peer_comparison.csv</a>
+          <p class="artifact-desc">full metrics table with raw values, percent changes, and derived ratios.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/40_peer_city_dashboard/peer_comparison.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Peer City Dashboard</h1>
+<h2>Question</h2>
+<p>How does PRT compare to peer cities across ridership recovery, service supply, and fare burden — and do these dimensions tell a consistent story about Pittsburgh's post-pandemic transit trajectory?</p>
+<h2>Approach</h2>
+<ul>
+<li>Pull 2019 and 2023 annual data for 8 peer cities from <code>ntd_annual_service</code>.</li>
+<li>Compute percent change (2019→2023) for ridership (UPT), service hours (VRH), and fare revenue.</li>
+<li>Compute derived metrics: fare per trip (<code>fares / upt</code>), farebox recovery ratio (<code>fares / opexp</code>), and cost per trip (<code>opexp / upt</code>).</li>
+<li>Visualize changes as grouped bars with Pittsburgh highlighted, and derived metrics as paired 2019-vs-2023 bars.</li>
+<li>Combine key views into a multi-panel dashboard figure.</li>
+</ul>
+<h2>Data</h2>
+<ul>
+<li><code>ntd_annual_service</code>: columns <code>ntd_id</code>, <code>year</code>, <code>upt</code>, <code>vrh</code>, <code>fares</code>, <code>opexp</code>.</li>
+<li>Filtered to <code>year IN (2019, 2023)</code> and the 8 peer city NTD IDs defined in <code>PEERS</code>.</li>
+<li>No null handling needed — all 8 peers have complete data for both years.</li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>output/peer_comparison.csv</code> — full metrics table with raw values, percent changes, and derived ratios for all peers.</li>
+<li><code>output/peer_dashboard.png</code> — 2×2 multi-panel figure: percent changes, fare per trip, farebox recovery, and cost per trip.</li>
+<li><code>output/indexed_change.png</code> — grouped bar chart showing percent change in ridership, service hours, and fare revenue side-by-side per city.</li>
+<li><code>output/fare_per_trip.png</code> — paired bars (2019 vs 2023) for fare revenue per unlinked trip.</li>
+<li><code>output/farebox_recovery.png</code> — paired bars (2019 vs 2023) for farebox recovery ratio.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Compare PRT to 7 peer cities across ridership, service hours, and fare burden.&quot;&quot;&quot;
+
+import numpy as np
+import polars as pl
+
+from prt_otp_analysis.common import (
+    PEERS,
+    analysis_dir,
+    get_db,
+    phase,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+
+OUT = analysis_dir(__file__)
+
+PRT_NTD_ID = 30022
+
+# Consistent color scheme — Pittsburgh highlighted
+COLORS = {
+    &quot;Pittsburgh&quot;: &quot;#E24A33&quot;,
+    &quot;Baltimore&quot;: &quot;#4878CF&quot;,
+    &quot;Cleveland&quot;: &quot;#6ACC65&quot;,
+    &quot;Denver&quot;: &quot;#D65F5F&quot;,
+    &quot;St. Louis&quot;: &quot;#B47CC7&quot;,
+    &quot;Buffalo&quot;: &quot;#C4AD66&quot;,
+    &quot;Portland&quot;: &quot;#77BEDB&quot;,
+    &quot;Minneapolis&quot;: &quot;#FFB347&quot;,
+}
+
+
+def load_peer_data(conn) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load 2019 and 2023 annual metrics for all peer cities.&quot;&quot;&quot;
+    id_list = &quot;,&quot;.join(str(i) for i in PEERS)
+    rows = conn.execute(f&quot;&quot;&quot;
+        SELECT ntd_id, year, upt, vrh, fares, opexp
+        FROM ntd_annual_service
+        WHERE ntd_id IN ({id_list})
+          AND year IN (2019, 2023)
+    &quot;&quot;&quot;).fetchall()
+    return pl.DataFrame(
+        [dict(r) for r in rows],
+        schema={&quot;ntd_id&quot;: pl.Int64, &quot;year&quot;: pl.Int64, &quot;upt&quot;: pl.Float64,
+                &quot;vrh&quot;: pl.Float64, &quot;fares&quot;: pl.Float64, &quot;opexp&quot;: pl.Float64},
+    )
+
+
+def compute_metrics(raw_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute derived metrics and percent changes for each peer city.&quot;&quot;&quot;
+    peer_map = pl.DataFrame({
+        &quot;ntd_id&quot;: list(PEERS.keys()),
+        &quot;city&quot;: list(PEERS.values()),
+    })
+    df = raw_df.join(peer_map, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+
+    # Derived metrics
+    df = df.with_columns(
+        fare_per_trip=(pl.col(&quot;fares&quot;) / pl.col(&quot;upt&quot;)),
+        farebox_recovery=(pl.col(&quot;fares&quot;) / pl.col(&quot;opexp&quot;) * 100),
+        cost_per_trip=(pl.col(&quot;opexp&quot;) / pl.col(&quot;upt&quot;)),
+    )
+
+    # Pivot to wide: one row per city with 2019 and 2023 values
+    y2019 = df.filter(pl.col(&quot;year&quot;) == 2019).drop(&quot;year&quot;)
+    y2023 = df.filter(pl.col(&quot;year&quot;) == 2023).drop(&quot;year&quot;)
+
+    metrics = y2019.join(y2023, on=[&quot;ntd_id&quot;, &quot;city&quot;], suffix=&quot;_2023&quot;)
+
+    # Rename base columns to _2019
+    value_cols = [&quot;upt&quot;, &quot;vrh&quot;, &quot;fares&quot;, &quot;opexp&quot;, &quot;fare_per_trip&quot;, &quot;farebox_recovery&quot;, &quot;cost_per_trip&quot;]
+    rename_map = {c: f&quot;{c}_2019&quot; for c in value_cols}
+    metrics = metrics.rename(rename_map)
+
+    # Percent changes
+    for col in [&quot;upt&quot;, &quot;vrh&quot;, &quot;fares&quot;]:
+        metrics = metrics.with_columns(
+            ((pl.col(f&quot;{col}_2023&quot;) - pl.col(f&quot;{col}_2019&quot;)) / pl.col(f&quot;{col}_2019&quot;) * 100)
+            .alias(f&quot;{col}_pct_change&quot;)
+        )
+
+    return metrics.sort(&quot;city&quot;)
+
+
+def _bar_colors(cities: list[str]) -&gt; list[str]:
+    &quot;&quot;&quot;Return bar colors with Pittsburgh highlighted.&quot;&quot;&quot;
+    return [COLORS.get(c, &quot;#9ca3af&quot;) for c in cities]
+
+
+def chart_indexed_change(plt, metrics_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Grouped bar chart: % change in ridership, service hours, and fare revenue.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    cities = metrics_df[&quot;city&quot;].to_list()
+    x = np.arange(len(cities))
+    width = 0.25
+
+    upt_pct = metrics_df[&quot;upt_pct_change&quot;].to_list()
+    vrh_pct = metrics_df[&quot;vrh_pct_change&quot;].to_list()
+    fares_pct = metrics_df[&quot;fares_pct_change&quot;].to_list()
+
+    ax.bar(x - width, upt_pct, width, label=&quot;Ridership&quot;, color=&quot;#4878CF&quot;)
+    ax.bar(x, vrh_pct, width, label=&quot;Service Hours&quot;, color=&quot;#6ACC65&quot;)
+    ax.bar(x + width, fares_pct, width, label=&quot;Fare Revenue&quot;, color=&quot;#D65F5F&quot;)
+
+    # Highlight Pittsburgh labels
+    ax.set_xticks(x)
+    labels = ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
+    for label in labels:
+        if label.get_text() == &quot;Pittsburgh&quot;:
+            label.set_fontweight(&quot;bold&quot;)
+
+    ax.axhline(0, color=&quot;#999999&quot;, linestyle=&quot;-&quot;, linewidth=0.8)
+    ax.set_ylabel(&quot;% Change (2019 → 2023)&quot;)
+    ax.set_title(&quot;Ridership, Service, and Fare Revenue Change — Peer Cities (2019 → 2023)&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;indexed_change.png&quot;)
+
+
+def chart_fare_per_trip(plt, metrics_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Paired bars showing fare per trip in 2019 vs 2023.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    cities = metrics_df[&quot;city&quot;].to_list()
+    x = np.arange(len(cities))
+    width = 0.35
+
+    vals_2019 = metrics_df[&quot;fare_per_trip_2019&quot;].to_list()
+    vals_2023 = metrics_df[&quot;fare_per_trip_2023&quot;].to_list()
+
+    ax.bar(x - width / 2, vals_2019, width, label=&quot;2019&quot;, color=&quot;#4878CF&quot;, alpha=0.8)
+    ax.bar(x + width / 2, vals_2023, width, label=&quot;2023&quot;, color=&quot;#E24A33&quot;, alpha=0.8)
+
+    ax.set_xticks(x)
+    labels = ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
+    for label in labels:
+        if label.get_text() == &quot;Pittsburgh&quot;:
+            label.set_fontweight(&quot;bold&quot;)
+
+    for i, (v19, v23) in enumerate(zip(vals_2019, vals_2023)):
+        ax.text(i - width / 2, v19 + 0.02, f&quot;${v19:.2f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+        ax.text(i + width / 2, v23 + 0.02, f&quot;${v23:.2f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+
+    ax.set_ylabel(&quot;Fare Revenue per Trip ($)&quot;)
+    ax.set_title(&quot;Fare Revenue per Trip — Peer Cities (2019 vs 2023)&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;fare_per_trip.png&quot;)
+
+
+def chart_farebox_recovery(plt, metrics_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Paired bars showing farebox recovery ratio in 2019 vs 2023.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    cities = metrics_df[&quot;city&quot;].to_list()
+    x = np.arange(len(cities))
+    width = 0.35
+
+    vals_2019 = metrics_df[&quot;farebox_recovery_2019&quot;].to_list()
+    vals_2023 = metrics_df[&quot;farebox_recovery_2023&quot;].to_list()
+
+    ax.bar(x - width / 2, vals_2019, width, label=&quot;2019&quot;, color=&quot;#4878CF&quot;, alpha=0.8)
+    ax.bar(x + width / 2, vals_2023, width, label=&quot;2023&quot;, color=&quot;#E24A33&quot;, alpha=0.8)
+
+    ax.set_xticks(x)
+    labels = ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
+    for label in labels:
+        if label.get_text() == &quot;Pittsburgh&quot;:
+            label.set_fontweight(&quot;bold&quot;)
+
+    for i, (v19, v23) in enumerate(zip(vals_2019, vals_2023)):
+        ax.text(i - width / 2, v19 + 0.3, f&quot;{v19:.1f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+        ax.text(i + width / 2, v23 + 0.3, f&quot;{v23:.1f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+
+    ax.set_ylabel(&quot;Farebox Recovery Ratio (%)&quot;)
+    ax.set_title(&quot;Farebox Recovery Ratio — Peer Cities (2019 vs 2023)&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;farebox_recovery.png&quot;)
+
+
+def chart_dashboard(plt, metrics_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;2×2 multi-panel dashboard combining key views.&quot;&quot;&quot;
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+
+    cities = metrics_df[&quot;city&quot;].to_list()
+    x = np.arange(len(cities))
+    bar_cols = _bar_colors(cities)
+
+    # Panel 1: Ridership change
+    ax = axes[0, 0]
+    vals = metrics_df[&quot;upt_pct_change&quot;].to_list()
+    ax.bar(x, vals, color=bar_cols, edgecolor=&quot;white&quot;)
+    ax.set_xticks(x)
+    ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
+    ax.axhline(0, color=&quot;#999999&quot;, linestyle=&quot;-&quot;, linewidth=0.8)
+    ax.set_ylabel(&quot;% Change&quot;)
+    ax.set_title(&quot;Ridership Change (2019 → 2023)&quot;)
+    for i, v in enumerate(vals):
+        ax.text(i, v + (1 if v &gt;= 0 else -2.5), f&quot;{v:.0f}%&quot;, ha=&quot;center&quot;, fontsize=8)
+
+    # Panel 2: Service hours change
+    ax = axes[0, 1]
+    vals = metrics_df[&quot;vrh_pct_change&quot;].to_list()
+    ax.bar(x, vals, color=bar_cols, edgecolor=&quot;white&quot;)
+    ax.set_xticks(x)
+    ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
+    ax.axhline(0, color=&quot;#999999&quot;, linestyle=&quot;-&quot;, linewidth=0.8)
+    ax.set_ylabel(&quot;% Change&quot;)
+    ax.set_title(&quot;Service Hours Change (2019 → 2023)&quot;)
+    for i, v in enumerate(vals):
+        ax.text(i, v + (1 if v &gt;= 0 else -2.5), f&quot;{v:.0f}%&quot;, ha=&quot;center&quot;, fontsize=8)
+
+    # Panel 3: Fare per trip (2019 vs 2023)
+    ax = axes[1, 0]
+    width = 0.35
+    v19 = metrics_df[&quot;fare_per_trip_2019&quot;].to_list()
+    v23 = metrics_df[&quot;fare_per_trip_2023&quot;].to_list()
+    ax.bar(x - width / 2, v19, width, label=&quot;2019&quot;, color=&quot;#4878CF&quot;, alpha=0.8)
+    ax.bar(x + width / 2, v23, width, label=&quot;2023&quot;, color=&quot;#E24A33&quot;, alpha=0.8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
+    ax.set_ylabel(&quot;$/Trip&quot;)
+    ax.set_title(&quot;Fare Revenue per Trip&quot;)
+    ax.legend(fontsize=8)
+
+    # Panel 4: Farebox recovery (2019 vs 2023)
+    ax = axes[1, 1]
+    v19 = metrics_df[&quot;farebox_recovery_2019&quot;].to_list()
+    v23 = metrics_df[&quot;farebox_recovery_2023&quot;].to_list()
+    ax.bar(x - width / 2, v19, width, label=&quot;2019&quot;, color=&quot;#4878CF&quot;, alpha=0.8)
+    ax.bar(x + width / 2, v23, width, label=&quot;2023&quot;, color=&quot;#E24A33&quot;, alpha=0.8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
+    ax.set_ylabel(&quot;Recovery Ratio (%)&quot;)
+    ax.set_title(&quot;Farebox Recovery Ratio&quot;)
+    ax.legend(fontsize=8)
+
+    fig.suptitle(&quot;Peer City Dashboard — Pittsburgh vs 7 Peers (2019 → 2023)&quot;,
+                 fontsize=14, fontweight=&quot;bold&quot;, y=0.98)
+    save_chart(fig, OUT / &quot;peer_dashboard.png&quot;)
+
+
+@run_analysis(40, &quot;Peer City Dashboard&quot;)
+def main():
+    plt = setup_plotting()
+    conn = get_db()
+
+    with phase(&quot;Loading peer city data&quot;):
+        raw_df = load_peer_data(conn)
+        conn.close()
+        print(f&quot;   {len(raw_df)} rows loaded ({len(raw_df) // 2} city-year pairs)&quot;)
+
+    with phase(&quot;Computing metrics&quot;):
+        metrics_df = compute_metrics(raw_df)
+
+        # Print summary table
+        print(&quot;\n   %-15s %8s %8s %8s %8s %8s %8s&quot; % (
+            &quot;City&quot;, &quot;UPT%&quot;, &quot;VRH%&quot;, &quot;Fares%&quot;, &quot;$/Trip19&quot;, &quot;$/Trip23&quot;, &quot;FBR%23&quot;))
+        for row in metrics_df.iter_rows(named=True):
+            marker = &quot; &lt;&lt;&lt;&quot; if row[&quot;ntd_id&quot;] == PRT_NTD_ID else &quot;&quot;
+            print(&quot;   %-15s %+7.1f%% %+7.1f%% %+7.1f%% %8.2f %8.2f %7.1f%%%s&quot; % (
+                row[&quot;city&quot;],
+                row[&quot;upt_pct_change&quot;],
+                row[&quot;vrh_pct_change&quot;],
+                row[&quot;fares_pct_change&quot;],
+                row[&quot;fare_per_trip_2019&quot;],
+                row[&quot;fare_per_trip_2023&quot;],
+                row[&quot;farebox_recovery_2023&quot;],
+                marker,
+            ))
+
+    # Save CSV
+    with phase(&quot;Saving comparison data&quot;):
+        csv_cols = [
+            &quot;city&quot;, &quot;upt_2019&quot;, &quot;upt_2023&quot;, &quot;upt_pct_change&quot;,
+            &quot;vrh_2019&quot;, &quot;vrh_2023&quot;, &quot;vrh_pct_change&quot;,
+            &quot;fares_2019&quot;, &quot;fares_2023&quot;, &quot;fares_pct_change&quot;,
+            &quot;fare_per_trip_2019&quot;, &quot;fare_per_trip_2023&quot;,
+            &quot;farebox_recovery_2019&quot;, &quot;farebox_recovery_2023&quot;,
+            &quot;cost_per_trip_2019&quot;, &quot;cost_per_trip_2023&quot;,
+        ]
+        save_csv(metrics_df.select(csv_cols), OUT / &quot;peer_comparison.csv&quot;)
+
+    # Charts
+    with phase(&quot;Generating indexed change chart&quot;):
+        chart_indexed_change(plt, metrics_df)
+
+    with phase(&quot;Generating fare per trip chart&quot;):
+        chart_fare_per_trip(plt, metrics_df)
+
+    with phase(&quot;Generating farebox recovery chart&quot;):
+        chart_farebox_recovery(plt, metrics_df)
+
+    with phase(&quot;Generating dashboard&quot;):
+        chart_dashboard(plt, metrics_df)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>ntd_annual_service</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by NTD Annual Service ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</strong> — NTD TS2.2 workbook with annual service data by system.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

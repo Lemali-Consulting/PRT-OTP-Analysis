@@ -36,7 +36,7 @@
   <h1>36 - National Ridership Growth (2019 vs 2024)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
-  <p class="lede">Built 2026-03-28 00:29 UTC · Commit b203c34</p>
+  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
 </section>
 
 <section class="panel toc-panel">
@@ -235,14 +235,11 @@
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies; rank PRT.&quot;&quot;&quot;
 
-from pathlib import Path
-
 import polars as pl
 
-from prt_otp_analysis.common import get_db, output_dir, setup_plotting
+from prt_otp_analysis.common import PRE_COVID_BASELINE_YEAR, analysis_dir, get_db, phase, run_analysis, save_chart, save_csv, setup_plotting
 
-HERE = Path(__file__).resolve().parent
-OUT = output_dir(HERE)
+OUT = analysis_dir(__file__)
 
 PRT_NTD_ID = 30022
 MIN_MONTHS = 10  # require at least 10 months of data per year
@@ -258,9 +255,9 @@ def load_agency_totals(conn) -&gt; pl.DataFrame:
             SUM(upt) AS total_upt,
             COUNT(CASE WHEN upt IS NOT NULL THEN 1 END) AS n_months
         FROM ntd_ridership
-        WHERE SUBSTR(month, 1, 4) IN (&#x27;2019&#x27;, &#x27;2024&#x27;)
+        WHERE SUBSTR(month, 1, 4) IN (?, &#x27;2024&#x27;)
         GROUP BY ntd_id, SUBSTR(month, 1, 4)
-    &quot;&quot;&quot;).fetchall()
+    &quot;&quot;&quot;, (PRE_COVID_BASELINE_YEAR,)).fetchall()
 
     df = pl.DataFrame([dict(r) for r in rows])
 
@@ -279,18 +276,15 @@ def load_agency_totals(conn) -&gt; pl.DataFrame:
     return wide
 
 
+@run_analysis(36, &quot;National Ridership Growth (2019 vs 2024)&quot;)
 def main():
     plt = setup_plotting()
     conn = get_db()
 
-    print(&quot;=&quot; * 60)
-    print(&quot;Analysis 36: National Ridership Growth (2019 vs 2024)&quot;)
-    print(&quot;=&quot; * 60)
-
     # Load data
-    print(&quot;\n1. Loading agency totals...&quot;)
-    wide = load_agency_totals(conn)
-    print(f&quot;   {len(wide)} agencies with valid data in both 2019 and 2024&quot;)
+    with phase(&quot;Loading agency totals&quot;):
+        wide = load_agency_totals(conn)
+        print(f&quot;   {len(wide)} agencies with valid data in both 2019 and 2024&quot;)
 
     # Rank by 2019 UPT and take top N
     wide = wide.sort(&quot;upt_2019&quot;, descending=True).head(TOP_N)
@@ -340,57 +334,50 @@ def main():
         print(&quot;\n   WARNING: PRT not found in top 150&quot;)
 
     # Save CSV
-    csv_path = OUT / &quot;ridership_growth_data.csv&quot;
-    result.write_csv(csv_path)
-    print(f&quot;\n3. Saved {csv_path}&quot;)
+    print()
+    save_csv(result, OUT / &quot;ridership_growth_data.csv&quot;)
 
     # --- Chart 1: Histogram ---
-    print(&quot;\n4. Generating histogram...&quot;)
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.hist(pct.to_list(), bins=30, color=&quot;#4878CF&quot;, edgecolor=&quot;white&quot;, alpha=0.8)
-    ax.axvline(median_pct, color=&quot;#333333&quot;, linestyle=&quot;--&quot;, linewidth=1.5, label=f&quot;Median: {median_pct:.1f}%&quot;)
-    ax.axvline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
-    if len(prt) &gt; 0:
-        prt_pct = prt_row[&quot;pct_change&quot;]
-        ax.axvline(prt_pct, color=&quot;#E24A33&quot;, linestyle=&quot;-&quot;, linewidth=2.5,
-                   label=f&quot;PRT: {prt_pct:+.1f}%&quot;)
-    ax.set_xlabel(&quot;Ridership Change 2019 → 2024 (%)&quot;)
-    ax.set_ylabel(&quot;Number of Agencies&quot;)
-    ax.set_title(f&quot;Ridership Recovery Distribution — Top {TOP_N} US Transit Agencies&quot;)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;ridership_growth_distribution.png&quot;)
-    plt.close(fig)
-    print(f&quot;   Saved ridership_growth_distribution.png&quot;)
+    with phase(&quot;Generating histogram&quot;):
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.hist(pct.to_list(), bins=30, color=&quot;#4878CF&quot;, edgecolor=&quot;white&quot;, alpha=0.8)
+        ax.axvline(median_pct, color=&quot;#333333&quot;, linestyle=&quot;--&quot;, linewidth=1.5, label=f&quot;Median: {median_pct:.1f}%&quot;)
+        ax.axvline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+        if len(prt) &gt; 0:
+            prt_pct = prt_row[&quot;pct_change&quot;]
+            ax.axvline(prt_pct, color=&quot;#E24A33&quot;, linestyle=&quot;-&quot;, linewidth=2.5,
+                       label=f&quot;PRT: {prt_pct:+.1f}%&quot;)
+        ax.set_xlabel(&quot;Ridership Change 2019 → 2024 (%)&quot;)
+        ax.set_ylabel(&quot;Number of Agencies&quot;)
+        ax.set_title(f&quot;Ridership Recovery Distribution — Top {TOP_N} US Transit Agencies&quot;)
+        ax.legend()
+        save_chart(fig, OUT / &quot;ridership_growth_distribution.png&quot;)
 
     # --- Chart 2: Horizontal bar ranking ---
-    print(&quot;\n5. Generating ranking bar chart...&quot;)
-    sorted_df = result.sort(&quot;pct_change&quot;)
-    agencies = sorted_df[&quot;agency_name&quot;].to_list()
-    changes = sorted_df[&quot;pct_change&quot;].to_list()
-    ntd_ids = sorted_df[&quot;ntd_id&quot;].to_list()
-    colors = [&quot;#E24A33&quot; if nid == PRT_NTD_ID else &quot;#4878CF&quot; for nid in ntd_ids]
+    with phase(&quot;Generating ranking bar chart&quot;):
+        sorted_df = result.sort(&quot;pct_change&quot;)
+        agencies = sorted_df[&quot;agency_name&quot;].to_list()
+        changes = sorted_df[&quot;pct_change&quot;].to_list()
+        ntd_ids = sorted_df[&quot;ntd_id&quot;].to_list()
+        colors = [&quot;#E24A33&quot; if nid == PRT_NTD_ID else &quot;#4878CF&quot; for nid in ntd_ids]
 
-    fig, ax = plt.subplots(figsize=(14, max(30, TOP_N * 0.22)))
-    bars = ax.barh(range(len(agencies)), changes, color=colors, height=0.8)
-    ax.set_yticks(range(len(agencies)))
-    ax.set_yticklabels(agencies, fontsize=6)
-    ax.set_xlabel(&quot;Ridership Change 2019 → 2024 (%)&quot;)
-    ax.set_title(f&quot;Ridership Recovery Ranking — Top {TOP_N} US Transit Agencies&quot;)
-    ax.axvline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
+        fig, ax = plt.subplots(figsize=(14, max(30, TOP_N * 0.22)))
+        bars = ax.barh(range(len(agencies)), changes, color=colors, height=0.8)
+        ax.set_yticks(range(len(agencies)))
+        ax.set_yticklabels(agencies, fontsize=6)
+        ax.set_xlabel(&quot;Ridership Change 2019 → 2024 (%)&quot;)
+        ax.set_title(f&quot;Ridership Recovery Ranking — Top {TOP_N} US Transit Agencies&quot;)
+        ax.axvline(0, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1)
 
-    # Highlight PRT label
-    if len(prt) &gt; 0:
-        prt_idx = [i for i, nid in enumerate(ntd_ids) if nid == PRT_NTD_ID]
-        if prt_idx:
-            ax.get_yticklabels()[prt_idx[0]].set_color(&quot;#E24A33&quot;)
-            ax.get_yticklabels()[prt_idx[0]].set_fontweight(&quot;bold&quot;)
-            ax.get_yticklabels()[prt_idx[0]].set_fontsize(7)
+        # Highlight PRT label
+        if len(prt) &gt; 0:
+            prt_idx = [i for i, nid in enumerate(ntd_ids) if nid == PRT_NTD_ID]
+            if prt_idx:
+                ax.get_yticklabels()[prt_idx[0]].set_color(&quot;#E24A33&quot;)
+                ax.get_yticklabels()[prt_idx[0]].set_fontweight(&quot;bold&quot;)
+                ax.get_yticklabels()[prt_idx[0]].set_fontsize(7)
 
-    fig.tight_layout()
-    fig.savefig(OUT / &quot;ridership_growth_ranking.png&quot;)
-    plt.close(fig)
-    print(f&quot;   Saved ridership_growth_ranking.png&quot;)
+        save_chart(fig, OUT / &quot;ridership_growth_ranking.png&quot;)
 
     # Top and bottom 10
     print(&quot;\n6. Top 10 recoveries:&quot;)
@@ -400,8 +387,6 @@ def main():
     print(&quot;\n   Bottom 10:&quot;)
     for row in result.tail(10).iter_rows(named=True):
         print(f&quot;   {row[&#x27;rank&#x27;]:&gt;3d}. {row[&#x27;agency_name&#x27;]:&lt;50s} {row[&#x27;pct_change&#x27;]:&gt;+7.1f}%&quot;)
-
-    print(&quot;\nDone.&quot;)
 
 
 if __name__ == &quot;__main__&quot;:
