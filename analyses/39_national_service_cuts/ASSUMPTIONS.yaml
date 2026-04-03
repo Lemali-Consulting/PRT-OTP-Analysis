@@ -1,4 +1,4 @@
-# Assumptions for National Service Cuts (2019 vs 2023)
+# Assumptions for National Service Cuts (2019 vs 2024)
 # Each assumption is something the code relies on that could silently produce wrong results if violated.
 
 assumptions: []
