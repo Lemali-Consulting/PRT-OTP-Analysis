@@ -1,4 +1,4 @@
-# Methods: National Service Cuts (2019 vs 2023)
+# Methods: National Service Cuts (2019 vs 2024)
 
 ## Question
 
@@ -6,7 +6,7 @@ How much service have the largest US transit agencies cut since 2019, where does
 
 ## Approach
 
-1. Load annual VRH (Vehicle Revenue Hours) and UPT (Unlinked Passenger Trips) from `ntd_annual_service` for 2019 and 2023.
+1. Load annual VRH (Vehicle Revenue Hours) and UPT (Unlinked Passenger Trips) from `ntd_annual_service` for 2019 and 2024.
 2. Filter to agencies with non-null VRH in both years.
 3. Rank agencies by 2019 VRH (descending) and take the top 150 to match Analysis 36's size-based approach.
 4. Compute percent change in VRH and UPT for each agency.
@@ -18,7 +18,7 @@ How much service have the largest US transit agencies cut since 2019, where does
 
 | Name | Description | Source |
 |------|-------------|--------|
-| `ntd_annual_service` | Annual VRH, VRM, UPT, VOMS per agency (1991–2023) | `prt.db` table (pipeline 06) |
+| `ntd_annual_service` | Annual VRH, VRM, UPT, VOMS per agency (1991–2024) | `prt.db` table (pipeline 06, TS2.2 2023+2024 editions) |
 
 ## Output
 

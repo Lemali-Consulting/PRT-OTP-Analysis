@@ -126,8 +126,10 @@ NTD_ANNUAL_SERVICE = Schema(
         "vrm": pl.Float64,
         "upt": pl.Float64,
         "voms": pl.Float64,
+        "fares": pl.Float64,
+        "opexp": pl.Float64,
     },
-    nullable=frozenset({"vrh", "vrm", "upt", "voms"}),
+    nullable=frozenset({"vrh", "vrm", "upt", "voms", "fares", "opexp"}),
 )
 
 
@@ -168,6 +170,9 @@ def validate(
             continue
         expected = schema.columns[col]
         actual = df.schema[col]
+        # All-null columns infer as pl.Null; accept if the column is nullable.
+        if actual == pl.Null and col in schema.nullable:
+            continue
         if actual != expected:
             raise TypeError(
                 f"{label}: column '{col}' expected {expected}, got {actual}"

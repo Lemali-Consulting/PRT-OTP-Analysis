@@ -1,4 +1,4 @@
-"""Compare 2019-to-2023 service changes (VRH) across 150 largest US transit agencies; rank PRT."""
+"""Compare 2019-to-2024 service changes (VRH) across 150 largest US transit agencies; rank PRT."""
 
 import polars as pl
 
@@ -11,38 +11,38 @@ TOP_N = 150
 
 
 def load_service_data(conn) -> pl.DataFrame:
-    """Load VRH and UPT for 2019 and 2023, pivot to wide format."""
+    """Load VRH and UPT for 2019 and 2024, pivot to wide format."""
     rows = conn.execute("""
         SELECT ntd_id, agency_name, city, state, year, vrh, upt
         FROM ntd_annual_service
-        WHERE year IN (?, 2023)
+        WHERE year IN (?, 2024)
           AND vrh IS NOT NULL
     """, (int(PRE_COVID_BASELINE_YEAR),)).fetchall()
     df = pl.DataFrame([dict(r) for r in rows])
 
-    # Pivot to one row per agency with vrh_2019, vrh_2023, upt_2019, upt_2023
+    # Pivot to one row per agency with vrh_2019, vrh_2024, upt_2019, upt_2024
     vrh_wide = (
         df.select("ntd_id", "agency_name", "city", "state", "year", "vrh")
         .pivot(on="year", index=["ntd_id", "agency_name", "city", "state"], values="vrh")
-        .rename({"2019": "vrh_2019", "2023": "vrh_2023"})
+        .rename({"2019": "vrh_2019", "2024": "vrh_2024"})
     )
     upt_wide = (
         df.select("ntd_id", "year", "upt")
         .pivot(on="year", index="ntd_id", values="upt")
-        .rename({"2019": "upt_2019", "2023": "upt_2023"})
+        .rename({"2019": "upt_2019", "2024": "upt_2024"})
     )
 
     wide = vrh_wide.join(upt_wide, on="ntd_id", how="left")
 
     # Keep only agencies with VRH data in both years
     wide = wide.filter(
-        pl.col("vrh_2019").is_not_null() & pl.col("vrh_2023").is_not_null()
+        pl.col("vrh_2019").is_not_null() & pl.col("vrh_2024").is_not_null()
     )
 
     return wide
 
 
-@run_analysis(39, "National Service Cuts (2019 vs 2023)")
+@run_analysis(39, "National Service Cuts (2019 vs 2024)")
 def main():
     plt = setup_plotting()
     conn = get_db()
@@ -51,7 +51,7 @@ def main():
     with phase("Loading service data"):
         wide = load_service_data(conn)
         conn.close()
-        print(f"   {len(wide)} agencies with VRH data in both 2019 and 2023")
+        print(f"   {len(wide)} agencies with VRH data in both 2019 and 2024")
 
     # Rank by 2019 VRH and take top N
     wide = wide.sort("vrh_2019", descending=True).head(TOP_N)
@@ -59,8 +59,8 @@ def main():
 
     # Compute percent changes
     wide = wide.with_columns(
-        vrh_pct_change=((pl.col("vrh_2023") - pl.col("vrh_2019")) / pl.col("vrh_2019") * 100),
-        upt_pct_change=((pl.col("upt_2023") - pl.col("upt_2019")) / pl.col("upt_2019") * 100),
+        vrh_pct_change=((pl.col("vrh_2024") - pl.col("vrh_2019")) / pl.col("vrh_2019") * 100),
+        upt_pct_change=((pl.col("upt_2024") - pl.col("upt_2019")) / pl.col("upt_2019") * 100),
     )
 
     # Rank by VRH change (best recovery = rank 1)
@@ -69,8 +69,8 @@ def main():
 
     result = wide.select(
         "rank", "ntd_id", "agency_name", "city", "state",
-        "vrh_2019", "vrh_2023", "vrh_pct_change",
-        "upt_2019", "upt_2023", "upt_pct_change",
+        "vrh_2019", "vrh_2024", "vrh_pct_change",
+        "upt_2019", "upt_2024", "upt_pct_change",
     )
 
     # Summary statistics
@@ -94,8 +94,8 @@ def main():
         print(f"\n   PRT: rank {prt_row['rank']}/{TOP_N}, "
               f"VRH {prt_row['vrh_pct_change']:+.1f}%, "
               f"UPT {prt_row['upt_pct_change']:+.1f}%")
-        print(f"   VRH: {prt_row['vrh_2019']:,.0f} → {prt_row['vrh_2023']:,.0f}")
-        print(f"   UPT: {prt_row['upt_2019']:,.0f} → {prt_row['upt_2023']:,.0f}")
+        print(f"   VRH: {prt_row['vrh_2019']:,.0f} → {prt_row['vrh_2024']:,.0f}")
+        print(f"   UPT: {prt_row['upt_2019']:,.0f} → {prt_row['upt_2024']:,.0f}")
     else:
         print("\n   WARNING: PRT not found in top 150")
         prt_row = None
@@ -115,7 +115,7 @@ def main():
             prt_vrh_pct = prt_row["vrh_pct_change"]
             ax.axvline(prt_vrh_pct, color="#E24A33", linestyle="-", linewidth=2.5,
                        label=f"PRT: {prt_vrh_pct:+.1f}%")
-        ax.set_xlabel("Vehicle Revenue Hours Change 2019 → 2023 (%)")
+        ax.set_xlabel("Vehicle Revenue Hours Change 2019 → 2024 (%)")
         ax.set_ylabel("Number of Agencies")
         ax.set_title(f"Service Change Distribution — Top {TOP_N} US Transit Agencies")
         ax.legend()
@@ -133,7 +133,7 @@ def main():
         ax.barh(range(len(agencies)), changes, color=colors, height=0.8)
         ax.set_yticks(range(len(agencies)))
         ax.set_yticklabels(agencies, fontsize=6)
-        ax.set_xlabel("Vehicle Revenue Hours Change 2019 → 2023 (%)")
+        ax.set_xlabel("Vehicle Revenue Hours Change 2019 → 2024 (%)")
         ax.set_title(f"Service Change Ranking — Top {TOP_N} US Transit Agencies")
         ax.axvline(0, color="#999999", linestyle=":", linewidth=1)
 
@@ -174,7 +174,7 @@ def main():
             ax.set_xticks(list(x))
             ax.set_xticklabels(cities, rotation=35, ha="right")
             ax.axhline(0, color="#999999", linestyle=":", linewidth=1)
-            ax.set_ylabel("Change 2019 → 2023 (%)")
+            ax.set_ylabel("Change 2019 → 2024 (%)")
             ax.set_title("Service Cuts vs Ridership Loss — Peer Cities")
             ax.legend()
 
@@ -251,8 +251,8 @@ def main():
 
         ax.axhline(0, color="#CCCCCC", linestyle=":", linewidth=0.8)
         ax.axvline(0, color="#CCCCCC", linestyle=":", linewidth=0.8)
-        ax.set_xlabel("Vehicle Revenue Hours Change 2019 → 2023 (%)")
-        ax.set_ylabel("Ridership (UPT) Change 2019 → 2023 (%)")
+        ax.set_xlabel("Vehicle Revenue Hours Change 2019 → 2024 (%)")
+        ax.set_ylabel("Ridership (UPT) Change 2019 → 2024 (%)")
         ax.set_title("Supply vs Demand: Service Cuts vs Ridership Loss")
         ax.legend(loc="upper left")
         ax.set_aspect("equal", adjustable="datalim")
