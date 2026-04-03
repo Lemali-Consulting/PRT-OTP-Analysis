@@ -36,7 +36,7 @@
   <h1>40 - Peer City Dashboard</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
+  <p class="lede">Built 2026-04-03 19:46 UTC · Commit 59585ac</p>
 </section>
 
 <section class="panel toc-panel">
@@ -95,22 +95,21 @@
     <div class="markdown"><h1>Findings: Peer City Dashboard</h1>
 <h2>Key findings</h2>
 <ol>
-<li><p><strong>Pittsburgh's ridership loss (-40.8%) is near the peer <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>.</strong> All 8 cities lost 30–46% of riders between 2019 and 2023. Cleveland fared best (-30.3%), St. Louis worst (-46.3%). Pittsburgh's loss is middle-of-the-pack.</p>
+<li><p><strong>Pittsburgh's ridership loss (-40.8%) is near the peer <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>.</strong> All 8 cities lost 23–45% of riders between 2019 and 2024. Cleveland fared best (-22.6%), St. Louis worst (-45.2%). Pittsburgh's loss is among the steepest.</p>
 </li>
-<li><p><strong>Service cuts (-15.0%) are also mid-range.</strong> PRT's 15% reduction in vehicle revenue hours is comparable to Baltimore (-12.0%), Buffalo (-15.6%), and Portland (-16.1%). Denver (-25.8%), Minneapolis (-26.5%), and St. Louis (-34.2%) cut far more deeply.</p>
+<li><p><strong>Service cuts (-13.1%) are mid-range.</strong> PRT's 13% reduction in vehicle revenue hours is comparable to Portland (-10.7%) and Buffalo (-14.8%). Denver (-23.6%), Minneapolis (-22.5%), and St. Louis (-29.3%) cut far more deeply. Cleveland cut the least (-3.2%).</p>
 </li>
-<li><p><strong>Pittsburgh is the only peer city where fare revenue per trip increased.</strong> PRT's effective fare rose from $1.57 to $1.63 per trip (+3.8%), while every other peer saw fare-per-trip decline — some sharply (Denver $1.47→$0.98, Minneapolis $1.27→$0.99). This likely reflects peer cities adopting reduced-fare programs or fare-free experiments during and after the pandemic, while PRT maintained its fare structure.</p>
+<li><p><strong>Pittsburgh is the only peer city where fare revenue per trip increased.</strong> PRT's effective fare rose from $1.57 to $1.70 per trip (+8.3%), while every other peer saw fare-per-trip decline — some sharply (Minneapolis $1.27→$0.92, Portland $1.19→$0.92). This likely reflects peer cities adopting reduced-fare programs or fare-free experiments during and after the pandemic, while PRT maintained its fare structure.</p>
 </li>
-<li><p><strong>Farebox recovery collapsed everywhere, but Pittsburgh retained a relative advantage.</strong> PRT's farebox recovery ratio fell from 23.2% to 12.8%, but this is the second-highest among peers (after Buffalo at 17.5%). Denver dropped from 24.0% to 8.4%, and Baltimore from 16.1% to 7.1%.</p>
+<li><p><strong>Farebox recovery collapsed everywhere, but Pittsburgh retained a relative advantage.</strong> PRT's farebox recovery ratio fell from 23.2% to 12.8%, but this is the second-highest among peers (after Buffalo at 18.0%). Denver dropped from 24.0% to 7.2%, and Baltimore from 16.1% to 6.2%.</p>
 </li>
-<li><p><strong>Fare revenue fell less steeply at PRT (-38.8%) than at most peers</strong> despite comparable ridership losses. Baltimore (-51.9%), Denver (-58.8%), Minneapolis (-54.9%), Portland (-50.1%), and St. Louis (-50.7%) all lost over half their fare revenue. This is consistent with PRT maintaining fare levels while peers discounted.</p>
+<li><p><strong>Fare revenue fell less steeply at PRT (-36.2%) than at most peers</strong> despite comparable ridership losses. Baltimore (-51.4%), Denver (-58.6%), Minneapolis (-55.6%), Portland (-48.0%), and St. Louis (-51.3%) all lost about half their fare revenue. This is consistent with PRT maintaining fare levels while peers discounted.</p>
 </li>
 </ol>
 <h2>Limitations</h2>
 <ul>
 <li><strong>No reliability data.</strong> The NTD does not collect <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a>; peer reliability comparisons are not possible with public data.</li>
 <li><strong>Fare revenue is not the same as fare price.</strong> NTD reports total fare revenue, not fare schedules. A city that introduced fare-free service would show lower fare-per-trip even if the base fare didn't change.</li>
-<li><strong>2023 is the latest year with complete financial data.</strong> The NTD TS2.2 workbook covers through 2023 for fares and operating expenses (2024 for service metrics only).</li>
 <li><strong>System-level aggregation only.</strong> NTD data is agency-wide; we cannot break down by route, mode, or neighborhood.</li>
 </ul>
 <h2>Validation</h2>
@@ -216,8 +215,8 @@
 <p>How does PRT compare to peer cities across ridership recovery, service supply, and fare burden — and do these dimensions tell a consistent story about Pittsburgh's post-pandemic transit trajectory?</p>
 <h2>Approach</h2>
 <ul>
-<li>Pull 2019 and 2023 annual data for 8 peer cities from <code>ntd_annual_service</code>.</li>
-<li>Compute percent change (2019→2023) for ridership (UPT), service hours (VRH), and fare revenue.</li>
+<li>Pull 2019 and 2024 annual data for 8 peer cities from <code>ntd_annual_service</code>.</li>
+<li>Compute percent change (2019→2024) for ridership (UPT), service hours (VRH), and fare revenue.</li>
 <li>Compute derived metrics: fare per trip (<code>fares / upt</code>), farebox recovery ratio (<code>fares / opexp</code>), and cost per trip (<code>opexp / upt</code>).</li>
 <li>Visualize changes as grouped bars with Pittsburgh highlighted, and derived metrics as paired 2019-vs-2023 bars.</li>
 <li>Combine key views into a multi-panel dashboard figure.</li>
@@ -225,7 +224,7 @@
 <h2>Data</h2>
 <ul>
 <li><code>ntd_annual_service</code>: columns <code>ntd_id</code>, <code>year</code>, <code>upt</code>, <code>vrh</code>, <code>fares</code>, <code>opexp</code>.</li>
-<li>Filtered to <code>year IN (2019, 2023)</code> and the 8 peer city NTD IDs defined in <code>PEERS</code>.</li>
+<li>Filtered to <code>year IN (2019, 2024)</code> and the 8 peer city NTD IDs defined in <code>PEERS</code>.</li>
 <li>No null handling needed — all 8 peers have complete data for both years.</li>
 </ul>
 <h2>Output</h2>
@@ -267,6 +266,8 @@ from prt_otp_analysis.common import (
 OUT = analysis_dir(__file__)
 
 PRT_NTD_ID = 30022
+BASELINE_YEAR = 2019
+COMPARE_YEAR = 2024
 
 # Consistent color scheme — Pittsburgh highlighted
 COLORS = {
@@ -280,15 +281,19 @@ COLORS = {
     &quot;Minneapolis&quot;: &quot;#FFB347&quot;,
 }
 
+# Column name helpers
+BY = str(BASELINE_YEAR)
+CY = str(COMPARE_YEAR)
+
 
 def load_peer_data(conn) -&gt; pl.DataFrame:
-    &quot;&quot;&quot;Load 2019 and 2023 annual metrics for all peer cities.&quot;&quot;&quot;
+    &quot;&quot;&quot;Load baseline and comparison year annual metrics for all peer cities.&quot;&quot;&quot;
     id_list = &quot;,&quot;.join(str(i) for i in PEERS)
     rows = conn.execute(f&quot;&quot;&quot;
         SELECT ntd_id, year, upt, vrh, fares, opexp
         FROM ntd_annual_service
         WHERE ntd_id IN ({id_list})
-          AND year IN (2019, 2023)
+          AND year IN ({BASELINE_YEAR}, {COMPARE_YEAR})
     &quot;&quot;&quot;).fetchall()
     return pl.DataFrame(
         [dict(r) for r in rows],
@@ -312,21 +317,23 @@ def compute_metrics(raw_df: pl.DataFrame) -&gt; pl.DataFrame:
         cost_per_trip=(pl.col(&quot;opexp&quot;) / pl.col(&quot;upt&quot;)),
     )
 
-    # Pivot to wide: one row per city with 2019 and 2023 values
-    y2019 = df.filter(pl.col(&quot;year&quot;) == 2019).drop(&quot;year&quot;)
-    y2023 = df.filter(pl.col(&quot;year&quot;) == 2023).drop(&quot;year&quot;)
+    # Pivot to wide: one row per city with baseline and comparison year values
+    y_base = df.filter(pl.col(&quot;year&quot;) == BASELINE_YEAR).drop(&quot;year&quot;)
+    y_comp = df.filter(pl.col(&quot;year&quot;) == COMPARE_YEAR).drop(&quot;year&quot;)
 
-    metrics = y2019.join(y2023, on=[&quot;ntd_id&quot;, &quot;city&quot;], suffix=&quot;_2023&quot;)
+    suffix = f&quot;_{CY}&quot;
+    metrics = y_base.join(y_comp, on=[&quot;ntd_id&quot;, &quot;city&quot;], suffix=suffix)
 
-    # Rename base columns to _2019
+    # Rename base columns to _&lt;BASELINE_YEAR&gt;
     value_cols = [&quot;upt&quot;, &quot;vrh&quot;, &quot;fares&quot;, &quot;opexp&quot;, &quot;fare_per_trip&quot;, &quot;farebox_recovery&quot;, &quot;cost_per_trip&quot;]
-    rename_map = {c: f&quot;{c}_2019&quot; for c in value_cols}
+    rename_map = {c: f&quot;{c}_{BY}&quot; for c in value_cols}
     metrics = metrics.rename(rename_map)
 
     # Percent changes
     for col in [&quot;upt&quot;, &quot;vrh&quot;, &quot;fares&quot;]:
         metrics = metrics.with_columns(
-            ((pl.col(f&quot;{col}_2023&quot;) - pl.col(f&quot;{col}_2019&quot;)) / pl.col(f&quot;{col}_2019&quot;) * 100)
+            ((pl.col(f&quot;{col}_{CY}&quot;) - pl.col(f&quot;{col}_{BY}&quot;))
+             / pl.col(f&quot;{col}_{BY}&quot;) * 100)
             .alias(f&quot;{col}_pct_change&quot;)
         )
 
@@ -362,25 +369,25 @@ def chart_indexed_change(plt, metrics_df: pl.DataFrame) -&gt; None:
             label.set_fontweight(&quot;bold&quot;)
 
     ax.axhline(0, color=&quot;#999999&quot;, linestyle=&quot;-&quot;, linewidth=0.8)
-    ax.set_ylabel(&quot;% Change (2019 → 2023)&quot;)
-    ax.set_title(&quot;Ridership, Service, and Fare Revenue Change — Peer Cities (2019 → 2023)&quot;)
+    ax.set_ylabel(f&quot;% Change ({BY} \u2192 {CY})&quot;)
+    ax.set_title(f&quot;Ridership, Service, and Fare Revenue Change \u2014 Peer Cities ({BY} \u2192 {CY})&quot;)
     ax.legend()
     save_chart(fig, OUT / &quot;indexed_change.png&quot;)
 
 
 def chart_fare_per_trip(plt, metrics_df: pl.DataFrame) -&gt; None:
-    &quot;&quot;&quot;Paired bars showing fare per trip in 2019 vs 2023.&quot;&quot;&quot;
+    &quot;&quot;&quot;Paired bars showing fare per trip in baseline vs comparison year.&quot;&quot;&quot;
     fig, ax = plt.subplots(figsize=(10, 6))
 
     cities = metrics_df[&quot;city&quot;].to_list()
     x = np.arange(len(cities))
     width = 0.35
 
-    vals_2019 = metrics_df[&quot;fare_per_trip_2019&quot;].to_list()
-    vals_2023 = metrics_df[&quot;fare_per_trip_2023&quot;].to_list()
+    vals_base = metrics_df[f&quot;fare_per_trip_{BY}&quot;].to_list()
+    vals_comp = metrics_df[f&quot;fare_per_trip_{CY}&quot;].to_list()
 
-    ax.bar(x - width / 2, vals_2019, width, label=&quot;2019&quot;, color=&quot;#4878CF&quot;, alpha=0.8)
-    ax.bar(x + width / 2, vals_2023, width, label=&quot;2023&quot;, color=&quot;#E24A33&quot;, alpha=0.8)
+    ax.bar(x - width / 2, vals_base, width, label=BY, color=&quot;#4878CF&quot;, alpha=0.8)
+    ax.bar(x + width / 2, vals_comp, width, label=CY, color=&quot;#E24A33&quot;, alpha=0.8)
 
     ax.set_xticks(x)
     labels = ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
@@ -388,29 +395,29 @@ def chart_fare_per_trip(plt, metrics_df: pl.DataFrame) -&gt; None:
         if label.get_text() == &quot;Pittsburgh&quot;:
             label.set_fontweight(&quot;bold&quot;)
 
-    for i, (v19, v23) in enumerate(zip(vals_2019, vals_2023)):
-        ax.text(i - width / 2, v19 + 0.02, f&quot;${v19:.2f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
-        ax.text(i + width / 2, v23 + 0.02, f&quot;${v23:.2f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+    for i, (vb, vc) in enumerate(zip(vals_base, vals_comp)):
+        ax.text(i - width / 2, vb + 0.02, f&quot;${vb:.2f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+        ax.text(i + width / 2, vc + 0.02, f&quot;${vc:.2f}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
 
     ax.set_ylabel(&quot;Fare Revenue per Trip ($)&quot;)
-    ax.set_title(&quot;Fare Revenue per Trip — Peer Cities (2019 vs 2023)&quot;)
+    ax.set_title(f&quot;Fare Revenue per Trip \u2014 Peer Cities ({BY} vs {CY})&quot;)
     ax.legend()
     save_chart(fig, OUT / &quot;fare_per_trip.png&quot;)
 
 
 def chart_farebox_recovery(plt, metrics_df: pl.DataFrame) -&gt; None:
-    &quot;&quot;&quot;Paired bars showing farebox recovery ratio in 2019 vs 2023.&quot;&quot;&quot;
+    &quot;&quot;&quot;Paired bars showing farebox recovery ratio in baseline vs comparison year.&quot;&quot;&quot;
     fig, ax = plt.subplots(figsize=(10, 6))
 
     cities = metrics_df[&quot;city&quot;].to_list()
     x = np.arange(len(cities))
     width = 0.35
 
-    vals_2019 = metrics_df[&quot;farebox_recovery_2019&quot;].to_list()
-    vals_2023 = metrics_df[&quot;farebox_recovery_2023&quot;].to_list()
+    vals_base = metrics_df[f&quot;farebox_recovery_{BY}&quot;].to_list()
+    vals_comp = metrics_df[f&quot;farebox_recovery_{CY}&quot;].to_list()
 
-    ax.bar(x - width / 2, vals_2019, width, label=&quot;2019&quot;, color=&quot;#4878CF&quot;, alpha=0.8)
-    ax.bar(x + width / 2, vals_2023, width, label=&quot;2023&quot;, color=&quot;#E24A33&quot;, alpha=0.8)
+    ax.bar(x - width / 2, vals_base, width, label=BY, color=&quot;#4878CF&quot;, alpha=0.8)
+    ax.bar(x + width / 2, vals_comp, width, label=CY, color=&quot;#E24A33&quot;, alpha=0.8)
 
     ax.set_xticks(x)
     labels = ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;)
@@ -418,18 +425,18 @@ def chart_farebox_recovery(plt, metrics_df: pl.DataFrame) -&gt; None:
         if label.get_text() == &quot;Pittsburgh&quot;:
             label.set_fontweight(&quot;bold&quot;)
 
-    for i, (v19, v23) in enumerate(zip(vals_2019, vals_2023)):
-        ax.text(i - width / 2, v19 + 0.3, f&quot;{v19:.1f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
-        ax.text(i + width / 2, v23 + 0.3, f&quot;{v23:.1f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+    for i, (vb, vc) in enumerate(zip(vals_base, vals_comp)):
+        ax.text(i - width / 2, vb + 0.3, f&quot;{vb:.1f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
+        ax.text(i + width / 2, vc + 0.3, f&quot;{vc:.1f}%&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8)
 
     ax.set_ylabel(&quot;Farebox Recovery Ratio (%)&quot;)
-    ax.set_title(&quot;Farebox Recovery Ratio — Peer Cities (2019 vs 2023)&quot;)
+    ax.set_title(f&quot;Farebox Recovery Ratio \u2014 Peer Cities ({BY} vs {CY})&quot;)
     ax.legend()
     save_chart(fig, OUT / &quot;farebox_recovery.png&quot;)
 
 
 def chart_dashboard(plt, metrics_df: pl.DataFrame) -&gt; None:
-    &quot;&quot;&quot;2×2 multi-panel dashboard combining key views.&quot;&quot;&quot;
+    &quot;&quot;&quot;2x2 multi-panel dashboard combining key views.&quot;&quot;&quot;
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
 
     cities = metrics_df[&quot;city&quot;].to_list()
@@ -444,7 +451,7 @@ def chart_dashboard(plt, metrics_df: pl.DataFrame) -&gt; None:
     ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
     ax.axhline(0, color=&quot;#999999&quot;, linestyle=&quot;-&quot;, linewidth=0.8)
     ax.set_ylabel(&quot;% Change&quot;)
-    ax.set_title(&quot;Ridership Change (2019 → 2023)&quot;)
+    ax.set_title(f&quot;Ridership Change ({BY} \u2192 {CY})&quot;)
     for i, v in enumerate(vals):
         ax.text(i, v + (1 if v &gt;= 0 else -2.5), f&quot;{v:.0f}%&quot;, ha=&quot;center&quot;, fontsize=8)
 
@@ -456,36 +463,36 @@ def chart_dashboard(plt, metrics_df: pl.DataFrame) -&gt; None:
     ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
     ax.axhline(0, color=&quot;#999999&quot;, linestyle=&quot;-&quot;, linewidth=0.8)
     ax.set_ylabel(&quot;% Change&quot;)
-    ax.set_title(&quot;Service Hours Change (2019 → 2023)&quot;)
+    ax.set_title(f&quot;Service Hours Change ({BY} \u2192 {CY})&quot;)
     for i, v in enumerate(vals):
         ax.text(i, v + (1 if v &gt;= 0 else -2.5), f&quot;{v:.0f}%&quot;, ha=&quot;center&quot;, fontsize=8)
 
-    # Panel 3: Fare per trip (2019 vs 2023)
+    # Panel 3: Fare per trip
     ax = axes[1, 0]
     width = 0.35
-    v19 = metrics_df[&quot;fare_per_trip_2019&quot;].to_list()
-    v23 = metrics_df[&quot;fare_per_trip_2023&quot;].to_list()
-    ax.bar(x - width / 2, v19, width, label=&quot;2019&quot;, color=&quot;#4878CF&quot;, alpha=0.8)
-    ax.bar(x + width / 2, v23, width, label=&quot;2023&quot;, color=&quot;#E24A33&quot;, alpha=0.8)
+    vb = metrics_df[f&quot;fare_per_trip_{BY}&quot;].to_list()
+    vc = metrics_df[f&quot;fare_per_trip_{CY}&quot;].to_list()
+    ax.bar(x - width / 2, vb, width, label=BY, color=&quot;#4878CF&quot;, alpha=0.8)
+    ax.bar(x + width / 2, vc, width, label=CY, color=&quot;#E24A33&quot;, alpha=0.8)
     ax.set_xticks(x)
     ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
     ax.set_ylabel(&quot;$/Trip&quot;)
     ax.set_title(&quot;Fare Revenue per Trip&quot;)
     ax.legend(fontsize=8)
 
-    # Panel 4: Farebox recovery (2019 vs 2023)
+    # Panel 4: Farebox recovery
     ax = axes[1, 1]
-    v19 = metrics_df[&quot;farebox_recovery_2019&quot;].to_list()
-    v23 = metrics_df[&quot;farebox_recovery_2023&quot;].to_list()
-    ax.bar(x - width / 2, v19, width, label=&quot;2019&quot;, color=&quot;#4878CF&quot;, alpha=0.8)
-    ax.bar(x + width / 2, v23, width, label=&quot;2023&quot;, color=&quot;#E24A33&quot;, alpha=0.8)
+    vb = metrics_df[f&quot;farebox_recovery_{BY}&quot;].to_list()
+    vc = metrics_df[f&quot;farebox_recovery_{CY}&quot;].to_list()
+    ax.bar(x - width / 2, vb, width, label=BY, color=&quot;#4878CF&quot;, alpha=0.8)
+    ax.bar(x + width / 2, vc, width, label=CY, color=&quot;#E24A33&quot;, alpha=0.8)
     ax.set_xticks(x)
     ax.set_xticklabels(cities, rotation=35, ha=&quot;right&quot;, fontsize=8)
     ax.set_ylabel(&quot;Recovery Ratio (%)&quot;)
     ax.set_title(&quot;Farebox Recovery Ratio&quot;)
     ax.legend(fontsize=8)
 
-    fig.suptitle(&quot;Peer City Dashboard — Pittsburgh vs 7 Peers (2019 → 2023)&quot;,
+    fig.suptitle(f&quot;Peer City Dashboard \u2014 Pittsburgh vs 7 Peers ({BY} \u2192 {CY})&quot;,
                  fontsize=14, fontweight=&quot;bold&quot;, y=0.98)
     save_chart(fig, OUT / &quot;peer_dashboard.png&quot;)
 
@@ -504,8 +511,8 @@ def main():
         metrics_df = compute_metrics(raw_df)
 
         # Print summary table
-        print(&quot;\n   %-15s %8s %8s %8s %8s %8s %8s&quot; % (
-            &quot;City&quot;, &quot;UPT%&quot;, &quot;VRH%&quot;, &quot;Fares%&quot;, &quot;$/Trip19&quot;, &quot;$/Trip23&quot;, &quot;FBR%23&quot;))
+        print(f&quot;\n   {&#x27;City&#x27;:&lt;15s} {&#x27;UPT%&#x27;:&gt;8s} {&#x27;VRH%&#x27;:&gt;8s} {&#x27;Fares%&#x27;:&gt;8s} &quot;
+              f&quot;{&#x27;$/Trip&#x27;+BY:&gt;8s} {&#x27;$/Trip&#x27;+CY:&gt;8s} {&#x27;FBR%&#x27;+CY:&gt;8s}&quot;)
         for row in metrics_df.iter_rows(named=True):
             marker = &quot; &lt;&lt;&lt;&quot; if row[&quot;ntd_id&quot;] == PRT_NTD_ID else &quot;&quot;
             print(&quot;   %-15s %+7.1f%% %+7.1f%% %+7.1f%% %8.2f %8.2f %7.1f%%%s&quot; % (
@@ -513,21 +520,22 @@ def main():
                 row[&quot;upt_pct_change&quot;],
                 row[&quot;vrh_pct_change&quot;],
                 row[&quot;fares_pct_change&quot;],
-                row[&quot;fare_per_trip_2019&quot;],
-                row[&quot;fare_per_trip_2023&quot;],
-                row[&quot;farebox_recovery_2023&quot;],
+                row[f&quot;fare_per_trip_{BY}&quot;],
+                row[f&quot;fare_per_trip_{CY}&quot;],
+                row[f&quot;farebox_recovery_{CY}&quot;],
                 marker,
             ))
 
     # Save CSV
     with phase(&quot;Saving comparison data&quot;):
         csv_cols = [
-            &quot;city&quot;, &quot;upt_2019&quot;, &quot;upt_2023&quot;, &quot;upt_pct_change&quot;,
-            &quot;vrh_2019&quot;, &quot;vrh_2023&quot;, &quot;vrh_pct_change&quot;,
-            &quot;fares_2019&quot;, &quot;fares_2023&quot;, &quot;fares_pct_change&quot;,
-            &quot;fare_per_trip_2019&quot;, &quot;fare_per_trip_2023&quot;,
-            &quot;farebox_recovery_2019&quot;, &quot;farebox_recovery_2023&quot;,
-            &quot;cost_per_trip_2019&quot;, &quot;cost_per_trip_2023&quot;,
+            &quot;city&quot;,
+            f&quot;upt_{BY}&quot;, f&quot;upt_{CY}&quot;, &quot;upt_pct_change&quot;,
+            f&quot;vrh_{BY}&quot;, f&quot;vrh_{CY}&quot;, &quot;vrh_pct_change&quot;,
+            f&quot;fares_{BY}&quot;, f&quot;fares_{CY}&quot;, &quot;fares_pct_change&quot;,
+            f&quot;fare_per_trip_{BY}&quot;, f&quot;fare_per_trip_{CY}&quot;,
+            f&quot;farebox_recovery_{BY}&quot;, f&quot;farebox_recovery_{CY}&quot;,
+            f&quot;cost_per_trip_{BY}&quot;, f&quot;cost_per_trip_{CY}&quot;,
         ]
         save_csv(metrics_df.select(csv_cols), OUT / &quot;peer_comparison.csv&quot;)
 

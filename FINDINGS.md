@@ -287,7 +287,7 @@ PRT cut **13.1% of vehicle revenue hours** between 2019 and 2024, ranking **104t
 
 ## 40. Peer City Dashboard (Analysis 40)
 
-Pittsburgh lost 41% of riders and 15% of service hours between 2019 and 2023 — roughly middle-of-the-pack among 8 peer cities. But PRT is the **only peer where fare revenue per trip increased** ($1.57→$1.63), while every other city saw effective fares decline — some sharply (Denver $1.47→$0.98, Minneapolis $1.27→$0.99). This suggests PRT maintained its fare structure while peers adopted reduced-fare or fare-free programs. Farebox recovery ratios collapsed everywhere (PRT from 23.2% to 12.8%), but Pittsburgh's ratio remains the second-highest among peers. NTD does not collect reliability data, so on-time performance comparisons across cities are not possible with public data.
+Pittsburgh lost 41% of riders and 13% of service hours between 2019 and 2024 — roughly middle-of-the-pack among 8 peer cities. But PRT is the **only peer where fare revenue per trip increased** ($1.57→$1.70), while every other city saw effective fares decline — some sharply (Minneapolis $1.27→$0.92, Portland $1.19→$0.92). This suggests PRT maintained its fare structure while peers adopted reduced-fare or fare-free programs. Farebox recovery ratios collapsed everywhere (PRT from 23.2% to 12.8%), but Pittsburgh's ratio remains the second-highest among peers. NTD does not collect reliability data, so on-time performance comparisons across cities are not possible with public data.
 
 ## Key Takeaways
 

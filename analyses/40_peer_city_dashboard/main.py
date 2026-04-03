@@ -17,6 +17,8 @@ from prt_otp_analysis.common import (
 OUT = analysis_dir(__file__)
 
 PRT_NTD_ID = 30022
+BASELINE_YEAR = 2019
+COMPARE_YEAR = 2024
 
 # Consistent color scheme — Pittsburgh highlighted
 COLORS = {
@@ -30,15 +32,19 @@ COLORS = {
     "Minneapolis": "#FFB347",
 }
 
+# Column name helpers
+BY = str(BASELINE_YEAR)
+CY = str(COMPARE_YEAR)
+
 
 def load_peer_data(conn) -> pl.DataFrame:
-    """Load 2019 and 2023 annual metrics for all peer cities."""
+    """Load baseline and comparison year annual metrics for all peer cities."""
     id_list = ",".join(str(i) for i in PEERS)
     rows = conn.execute(f"""
         SELECT ntd_id, year, upt, vrh, fares, opexp
         FROM ntd_annual_service
         WHERE ntd_id IN ({id_list})
-          AND year IN (2019, 2023)
+          AND year IN ({BASELINE_YEAR}, {COMPARE_YEAR})
     """).fetchall()
     return pl.DataFrame(
         [dict(r) for r in rows],
@@ -62,21 +68,23 @@ def compute_metrics(raw_df: pl.DataFrame) -> pl.DataFrame:
         cost_per_trip=(pl.col("opexp") / pl.col("upt")),
     )
 
-    # Pivot to wide: one row per city with 2019 and 2023 values
-    y2019 = df.filter(pl.col("year") == 2019).drop("year")
-    y2023 = df.filter(pl.col("year") == 2023).drop("year")
+    # Pivot to wide: one row per city with baseline and comparison year values
+    y_base = df.filter(pl.col("year") == BASELINE_YEAR).drop("year")
+    y_comp = df.filter(pl.col("year") == COMPARE_YEAR).drop("year")
 
-    metrics = y2019.join(y2023, on=["ntd_id", "city"], suffix="_2023")
+    suffix = f"_{CY}"
+    metrics = y_base.join(y_comp, on=["ntd_id", "city"], suffix=suffix)
 
-    # Rename base columns to _2019
+    # Rename base columns to _<BASELINE_YEAR>
     value_cols = ["upt", "vrh", "fares", "opexp", "fare_per_trip", "farebox_recovery", "cost_per_trip"]
-    rename_map = {c: f"{c}_2019" for c in value_cols}
+    rename_map = {c: f"{c}_{BY}" for c in value_cols}
     metrics = metrics.rename(rename_map)
 
     # Percent changes
     for col in ["upt", "vrh", "fares"]:
         metrics = metrics.with_columns(
-            ((pl.col(f"{col}_2023") - pl.col(f"{col}_2019")) / pl.col(f"{col}_2019") * 100)
+            ((pl.col(f"{col}_{CY}") - pl.col(f"{col}_{BY}"))
+             / pl.col(f"{col}_{BY}") * 100)
             .alias(f"{col}_pct_change")
         )
 
@@ -112,25 +120,25 @@ def chart_indexed_change(plt, metrics_df: pl.DataFrame) -> None:
             label.set_fontweight("bold")
 
     ax.axhline(0, color="#999999", linestyle="-", linewidth=0.8)
-    ax.set_ylabel("% Change (2019 → 2023)")
-    ax.set_title("Ridership, Service, and Fare Revenue Change — Peer Cities (2019 → 2023)")
+    ax.set_ylabel(f"% Change ({BY} \u2192 {CY})")
+    ax.set_title(f"Ridership, Service, and Fare Revenue Change \u2014 Peer Cities ({BY} \u2192 {CY})")
     ax.legend()
     save_chart(fig, OUT / "indexed_change.png")
 
 
 def chart_fare_per_trip(plt, metrics_df: pl.DataFrame) -> None:
-    """Paired bars showing fare per trip in 2019 vs 2023."""
+    """Paired bars showing fare per trip in baseline vs comparison year."""
     fig, ax = plt.subplots(figsize=(10, 6))
 
     cities = metrics_df["city"].to_list()
     x = np.arange(len(cities))
     width = 0.35
 
-    vals_2019 = metrics_df["fare_per_trip_2019"].to_list()
-    vals_2023 = metrics_df["fare_per_trip_2023"].to_list()
+    vals_base = metrics_df[f"fare_per_trip_{BY}"].to_list()
+    vals_comp = metrics_df[f"fare_per_trip_{CY}"].to_list()
 
-    ax.bar(x - width / 2, vals_2019, width, label="2019", color="#4878CF", alpha=0.8)
-    ax.bar(x + width / 2, vals_2023, width, label="2023", color="#E24A33", alpha=0.8)
+    ax.bar(x - width / 2, vals_base, width, label=BY, color="#4878CF", alpha=0.8)
+    ax.bar(x + width / 2, vals_comp, width, label=CY, color="#E24A33", alpha=0.8)
 
     ax.set_xticks(x)
     labels = ax.set_xticklabels(cities, rotation=35, ha="right")
@@ -138,29 +146,29 @@ def chart_fare_per_trip(plt, metrics_df: pl.DataFrame) -> None:
         if label.get_text() == "Pittsburgh":
             label.set_fontweight("bold")
 
-    for i, (v19, v23) in enumerate(zip(vals_2019, vals_2023)):
-        ax.text(i - width / 2, v19 + 0.02, f"${v19:.2f}", ha="center", va="bottom", fontsize=8)
-        ax.text(i + width / 2, v23 + 0.02, f"${v23:.2f}", ha="center", va="bottom", fontsize=8)
+    for i, (vb, vc) in enumerate(zip(vals_base, vals_comp)):
+        ax.text(i - width / 2, vb + 0.02, f"${vb:.2f}", ha="center", va="bottom", fontsize=8)
+        ax.text(i + width / 2, vc + 0.02, f"${vc:.2f}", ha="center", va="bottom", fontsize=8)
 
     ax.set_ylabel("Fare Revenue per Trip ($)")
-    ax.set_title("Fare Revenue per Trip — Peer Cities (2019 vs 2023)")
+    ax.set_title(f"Fare Revenue per Trip \u2014 Peer Cities ({BY} vs {CY})")
     ax.legend()
     save_chart(fig, OUT / "fare_per_trip.png")
 
 
 def chart_farebox_recovery(plt, metrics_df: pl.DataFrame) -> None:
-    """Paired bars showing farebox recovery ratio in 2019 vs 2023."""
+    """Paired bars showing farebox recovery ratio in baseline vs comparison year."""
     fig, ax = plt.subplots(figsize=(10, 6))
 
     cities = metrics_df["city"].to_list()
     x = np.arange(len(cities))
     width = 0.35
 
-    vals_2019 = metrics_df["farebox_recovery_2019"].to_list()
-    vals_2023 = metrics_df["farebox_recovery_2023"].to_list()
+    vals_base = metrics_df[f"farebox_recovery_{BY}"].to_list()
+    vals_comp = metrics_df[f"farebox_recovery_{CY}"].to_list()
 
-    ax.bar(x - width / 2, vals_2019, width, label="2019", color="#4878CF", alpha=0.8)
-    ax.bar(x + width / 2, vals_2023, width, label="2023", color="#E24A33", alpha=0.8)
+    ax.bar(x - width / 2, vals_base, width, label=BY, color="#4878CF", alpha=0.8)
+    ax.bar(x + width / 2, vals_comp, width, label=CY, color="#E24A33", alpha=0.8)
 
     ax.set_xticks(x)
     labels = ax.set_xticklabels(cities, rotation=35, ha="right")
@@ -168,18 +176,18 @@ def chart_farebox_recovery(plt, metrics_df: pl.DataFrame) -> None:
         if label.get_text() == "Pittsburgh":
             label.set_fontweight("bold")
 
-    for i, (v19, v23) in enumerate(zip(vals_2019, vals_2023)):
-        ax.text(i - width / 2, v19 + 0.3, f"{v19:.1f}%", ha="center", va="bottom", fontsize=8)
-        ax.text(i + width / 2, v23 + 0.3, f"{v23:.1f}%", ha="center", va="bottom", fontsize=8)
+    for i, (vb, vc) in enumerate(zip(vals_base, vals_comp)):
+        ax.text(i - width / 2, vb + 0.3, f"{vb:.1f}%", ha="center", va="bottom", fontsize=8)
+        ax.text(i + width / 2, vc + 0.3, f"{vc:.1f}%", ha="center", va="bottom", fontsize=8)
 
     ax.set_ylabel("Farebox Recovery Ratio (%)")
-    ax.set_title("Farebox Recovery Ratio — Peer Cities (2019 vs 2023)")
+    ax.set_title(f"Farebox Recovery Ratio \u2014 Peer Cities ({BY} vs {CY})")
     ax.legend()
     save_chart(fig, OUT / "farebox_recovery.png")
 
 
 def chart_dashboard(plt, metrics_df: pl.DataFrame) -> None:
-    """2×2 multi-panel dashboard combining key views."""
+    """2x2 multi-panel dashboard combining key views."""
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
 
     cities = metrics_df["city"].to_list()
@@ -194,7 +202,7 @@ def chart_dashboard(plt, metrics_df: pl.DataFrame) -> None:
     ax.set_xticklabels(cities, rotation=35, ha="right", fontsize=8)
     ax.axhline(0, color="#999999", linestyle="-", linewidth=0.8)
     ax.set_ylabel("% Change")
-    ax.set_title("Ridership Change (2019 → 2023)")
+    ax.set_title(f"Ridership Change ({BY} \u2192 {CY})")
     for i, v in enumerate(vals):
         ax.text(i, v + (1 if v >= 0 else -2.5), f"{v:.0f}%", ha="center", fontsize=8)
 
@@ -206,36 +214,36 @@ def chart_dashboard(plt, metrics_df: pl.DataFrame) -> None:
     ax.set_xticklabels(cities, rotation=35, ha="right", fontsize=8)
     ax.axhline(0, color="#999999", linestyle="-", linewidth=0.8)
     ax.set_ylabel("% Change")
-    ax.set_title("Service Hours Change (2019 → 2023)")
+    ax.set_title(f"Service Hours Change ({BY} \u2192 {CY})")
     for i, v in enumerate(vals):
         ax.text(i, v + (1 if v >= 0 else -2.5), f"{v:.0f}%", ha="center", fontsize=8)
 
-    # Panel 3: Fare per trip (2019 vs 2023)
+    # Panel 3: Fare per trip
     ax = axes[1, 0]
     width = 0.35
-    v19 = metrics_df["fare_per_trip_2019"].to_list()
-    v23 = metrics_df["fare_per_trip_2023"].to_list()
-    ax.bar(x - width / 2, v19, width, label="2019", color="#4878CF", alpha=0.8)
-    ax.bar(x + width / 2, v23, width, label="2023", color="#E24A33", alpha=0.8)
+    vb = metrics_df[f"fare_per_trip_{BY}"].to_list()
+    vc = metrics_df[f"fare_per_trip_{CY}"].to_list()
+    ax.bar(x - width / 2, vb, width, label=BY, color="#4878CF", alpha=0.8)
+    ax.bar(x + width / 2, vc, width, label=CY, color="#E24A33", alpha=0.8)
     ax.set_xticks(x)
     ax.set_xticklabels(cities, rotation=35, ha="right", fontsize=8)
     ax.set_ylabel("$/Trip")
     ax.set_title("Fare Revenue per Trip")
     ax.legend(fontsize=8)
 
-    # Panel 4: Farebox recovery (2019 vs 2023)
+    # Panel 4: Farebox recovery
     ax = axes[1, 1]
-    v19 = metrics_df["farebox_recovery_2019"].to_list()
-    v23 = metrics_df["farebox_recovery_2023"].to_list()
-    ax.bar(x - width / 2, v19, width, label="2019", color="#4878CF", alpha=0.8)
-    ax.bar(x + width / 2, v23, width, label="2023", color="#E24A33", alpha=0.8)
+    vb = metrics_df[f"farebox_recovery_{BY}"].to_list()
+    vc = metrics_df[f"farebox_recovery_{CY}"].to_list()
+    ax.bar(x - width / 2, vb, width, label=BY, color="#4878CF", alpha=0.8)
+    ax.bar(x + width / 2, vc, width, label=CY, color="#E24A33", alpha=0.8)
     ax.set_xticks(x)
     ax.set_xticklabels(cities, rotation=35, ha="right", fontsize=8)
     ax.set_ylabel("Recovery Ratio (%)")
     ax.set_title("Farebox Recovery Ratio")
     ax.legend(fontsize=8)
 
-    fig.suptitle("Peer City Dashboard — Pittsburgh vs 7 Peers (2019 → 2023)",
+    fig.suptitle(f"Peer City Dashboard \u2014 Pittsburgh vs 7 Peers ({BY} \u2192 {CY})",
                  fontsize=14, fontweight="bold", y=0.98)
     save_chart(fig, OUT / "peer_dashboard.png")
 
@@ -254,8 +262,8 @@ def main():
         metrics_df = compute_metrics(raw_df)
 
         # Print summary table
-        print("\n   %-15s %8s %8s %8s %8s %8s %8s" % (
-            "City", "UPT%", "VRH%", "Fares%", "$/Trip19", "$/Trip23", "FBR%23"))
+        print(f"\n   {'City':<15s} {'UPT%':>8s} {'VRH%':>8s} {'Fares%':>8s} "
+              f"{'$/Trip'+BY:>8s} {'$/Trip'+CY:>8s} {'FBR%'+CY:>8s}")
         for row in metrics_df.iter_rows(named=True):
             marker = " <<<" if row["ntd_id"] == PRT_NTD_ID else ""
             print("   %-15s %+7.1f%% %+7.1f%% %+7.1f%% %8.2f %8.2f %7.1f%%%s" % (
@@ -263,21 +271,22 @@ def main():
                 row["upt_pct_change"],
                 row["vrh_pct_change"],
                 row["fares_pct_change"],
-                row["fare_per_trip_2019"],
-                row["fare_per_trip_2023"],
-                row["farebox_recovery_2023"],
+                row[f"fare_per_trip_{BY}"],
+                row[f"fare_per_trip_{CY}"],
+                row[f"farebox_recovery_{CY}"],
                 marker,
             ))
 
     # Save CSV
     with phase("Saving comparison data"):
         csv_cols = [
-            "city", "upt_2019", "upt_2023", "upt_pct_change",
-            "vrh_2019", "vrh_2023", "vrh_pct_change",
-            "fares_2019", "fares_2023", "fares_pct_change",
-            "fare_per_trip_2019", "fare_per_trip_2023",
-            "farebox_recovery_2019", "farebox_recovery_2023",
-            "cost_per_trip_2019", "cost_per_trip_2023",
+            "city",
+            f"upt_{BY}", f"upt_{CY}", "upt_pct_change",
+            f"vrh_{BY}", f"vrh_{CY}", "vrh_pct_change",
+            f"fares_{BY}", f"fares_{CY}", "fares_pct_change",
+            f"fare_per_trip_{BY}", f"fare_per_trip_{CY}",
+            f"farebox_recovery_{BY}", f"farebox_recovery_{CY}",
+            f"cost_per_trip_{BY}", f"cost_per_trip_{CY}",
         ]
         save_csv(metrics_df.select(csv_cols), OUT / "peer_comparison.csv")
 

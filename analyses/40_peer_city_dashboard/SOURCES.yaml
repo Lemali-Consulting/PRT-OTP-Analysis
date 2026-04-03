@@ -5,9 +5,9 @@ tables:
 - ntd_annual_service
 files: []
 analyses: []
-description: Pittsburgh lost 41% of riders and 15% of service hours between 2019 and
-  2023 — roughly middle-of-the-pack among 8 peer cities. But it is the only peer where
-  fare revenue per trip increased ($1.57 to $1.63), suggesting PRT maintained fares
+description: Pittsburgh lost 41% of riders and 13% of service hours between 2019 and
+  2024 — roughly middle-of-the-pack among 8 peer cities. But it is the only peer where
+  fare revenue per trip increased ($1.57 to $1.70), suggesting PRT maintained fares
   while others discounted. Farebox recovery fell everywhere, though Pittsburgh's 12.8%
   remains second-highest among peers.
 dependencies:
