@@ -21,6 +21,7 @@ PRT cut 13.1% of vehicle revenue hours between 2019 and 2024, ranking 104th of 1
 - **Supply–demand gaps vary significantly.** Cleveland maintained 97% of service but lost 23% of riders (19 pp gap). Baltimore cut 7% but lost 32% (25 pp gap). The gap ranges from 15 pp (Denver) to 28 pp (Pittsburgh) among peers.
 - **Service recovery is slow but ongoing.** By 2024, 48 of 150 agencies (32%) had recovered to 2019 VRH levels, up from 26 (17%) at the 2023 mark. The median cut narrowed from -10.8% to -6.8%, indicating gradual national service restoration.
 - **Service growth does not guarantee ridership recovery.** Of the 48 agencies that grew VRH, many still have not recovered ridership. Sacramento grew VRH by 29% but still lost riders.
+- **Trajectory charts reveal distinct recovery shapes.** Cleveland's VRH barely dipped and recovered quickly (V-shape), while St. Louis and Denver show L-shaped stagnation at ~70–75% of 2019 levels. PRT's service trajectory shows a gradual decline through 2023 followed by a modest uptick in 2024 — not the sharp COVID-era drop-and-bounce seen in some peers. Ridership trajectories are uniformly worse: all peers collapsed to 40–60% of baseline in 2020 and have only partially recovered, with Pittsburgh among the slowest to rebound.
 
 ## Discussion
 

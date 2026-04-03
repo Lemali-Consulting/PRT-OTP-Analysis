@@ -50,6 +50,20 @@ def main():
     # Load data
     with phase("Loading service data"):
         wide = load_service_data(conn)
+
+        # Load annual time-series for peer cities (for trajectory chart)
+        peer_ids = list(PEERS.keys())
+        ts_rows = conn.execute("""
+            SELECT ntd_id, year, vrh, upt
+            FROM ntd_annual_service
+            WHERE ntd_id IN ({})
+              AND year BETWEEN ? AND 2024
+              AND vrh IS NOT NULL
+        """.format(",".join("?" * len(peer_ids))),
+            peer_ids + [int(PRE_COVID_BASELINE_YEAR)],
+        ).fetchall()
+        peer_ts_df = pl.DataFrame([dict(r) for r in ts_rows])
+
         conn.close()
         print(f"   {len(wide)} agencies with VRH data in both 2019 and 2024")
 
@@ -196,7 +210,67 @@ def main():
         else:
             print("   WARNING: No peer cities found in top 150")
 
-    # --- Chart 4: Supply vs demand scatter ---
+    # --- Chart 4: Peer city trajectory (indexed line charts) ---
+    with phase("Generating peer city trajectory"):
+        peer_map = {nid: label for nid, label in PEERS.items()}
+        peer_colors = {
+            "Pittsburgh": "#E24A33",
+            "Baltimore": "#4878CF",
+            "Cleveland": "#6ACC65",
+            "Denver": "#D65F5F",
+            "St. Louis": "#B47CC7",
+            "Buffalo": "#C4AD66",
+            "Portland": "#77BEDB",
+            "Minneapolis": "#FFB347",
+        }
+
+        # Index each city to 2019 = 100
+        baseline_df = peer_ts_df.filter(pl.col("year") == int(PRE_COVID_BASELINE_YEAR))
+        indexed_df = peer_ts_df.join(
+            baseline_df.select(
+                "ntd_id",
+                vrh_base=pl.col("vrh"),
+                upt_base=pl.col("upt"),
+            ),
+            on="ntd_id",
+        ).with_columns(
+            vrh_idx=(pl.col("vrh") / pl.col("vrh_base") * 100),
+            upt_idx=(pl.col("upt") / pl.col("upt_base") * 100),
+        ).with_columns(
+            city_label=pl.col("ntd_id").replace_strict(peer_map),
+        ).sort("year")
+
+        fig, (ax_vrh, ax_upt) = plt.subplots(1, 2, figsize=(16, 7), sharey=True)
+
+        for city_label in peer_map.values():
+            city_df = indexed_df.filter(pl.col("city_label") == city_label)
+            years = city_df["year"].to_list()
+            color = peer_colors.get(city_label, "#333333")
+            is_prt = city_label == "Pittsburgh"
+            lw = 2.5 if is_prt else 1.2
+            alpha = 1.0 if is_prt else 0.7
+            zorder = 3 if is_prt else 2
+
+            ax_vrh.plot(years, city_df["vrh_idx"].to_list(),
+                        color=color, linewidth=lw, alpha=alpha, zorder=zorder,
+                        label=city_label, marker="o", markersize=4 if is_prt else 3)
+            ax_upt.plot(years, city_df["upt_idx"].to_list(),
+                        color=color, linewidth=lw, alpha=alpha, zorder=zorder,
+                        label=city_label, marker="o", markersize=4 if is_prt else 3)
+
+        for ax, title in [(ax_vrh, "Service (VRH)"), (ax_upt, "Ridership (UPT)")]:
+            ax.axhline(100, color="#999999", linestyle=":", linewidth=1, zorder=1)
+            ax.set_xlabel("Year")
+            ax.set_title(title)
+            ax.set_xticks(list(range(int(PRE_COVID_BASELINE_YEAR), 2025)))
+
+        ax_vrh.set_ylabel("Index (2019 = 100)")
+        ax_upt.legend(loc="lower right", fontsize=8)
+        fig.suptitle("Peer City Recovery Trajectories (2019–2024)", fontsize=14, y=0.98)
+        fig.tight_layout()
+        save_chart(fig, OUT / "peer_trajectory.png")
+
+    # --- Chart 5: Supply vs demand scatter ---
     with phase("Generating supply vs demand scatter"):
         scatter_data = result.filter(
             pl.col("vrh_pct_change").is_not_null() & pl.col("upt_pct_change").is_not_null()

@@ -30,6 +30,9 @@ outputs:
   - path: peer_service_vs_ridership.png
     kind: image
     description: Grouped bars comparing VRH and UPT change for 8 peer cities.
+  - path: peer_trajectory.png
+    kind: image
+    description: Indexed line charts showing VRH and UPT recovery trajectories for 8 peer cities (2019-2024).
   - path: supply_vs_demand_scatter.png
     kind: image
     description: Scatter plot of VRH change vs UPT change for top 150.

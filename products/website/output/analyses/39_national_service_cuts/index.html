@@ -36,7 +36,7 @@
   <h1>39 — National Service Cuts (2019 vs 2024)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-04-03 19:39 UTC · Commit 11cddd4</p>
+  <p class="lede">Built 2026-04-03 19:44 UTC · Commit cd13f29</p>
 </section>
 
 <section class="panel toc-panel">
@@ -112,6 +112,7 @@
 <li><strong>Supply–demand gaps vary significantly.</strong> Cleveland maintained 97% of service but lost 23% of riders (19 pp gap). Baltimore cut 7% but lost 32% (25 pp gap). The gap ranges from 15 pp (Denver) to 28 pp (Pittsburgh) among peers.</li>
 <li><strong>Service recovery is slow but ongoing.</strong> By 2024, 48 of 150 agencies (32%) had recovered to 2019 VRH levels, up from 26 (17%) at the 2023 mark. The <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> cut narrowed from -10.8% to -6.8%, indicating gradual national service restoration.</li>
 <li><strong>Service growth does not guarantee ridership recovery.</strong> Of the 48 agencies that grew VRH, many still have not recovered ridership. Sacramento grew VRH by 29% but still lost riders.</li>
+<li><strong>Trajectory charts reveal distinct recovery shapes.</strong> Cleveland's VRH barely dipped and recovered quickly (V-shape), while St. Louis and Denver show L-shaped stagnation at ~70–75% of 2019 levels. PRT's service trajectory shows a gradual decline through 2023 followed by a modest uptick in 2024 — not the sharp COVID-era drop-and-bounce seen in some peers. Ridership trajectories are uniformly worse: all peers collapsed to 40–60% of baseline in 2020 and have only partially recovered, with Pittsburgh among the slowest to rebound.</li>
 </ul>
 <h2>Discussion</h2>
 <p>The dominant national pattern is that transit agencies lost far more riders than they cut service. This suggests the post-COVID ridership shortfall is primarily driven by changed travel patterns (remote work, shifted commuting) rather than by service austerity. PRT fits this pattern: even if all 2019 service hours were restored tomorrow, the data suggests ridership would remain well below 2019 levels.</p>
@@ -139,7 +140,7 @@
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn active" data-target="charts">Charts (5)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
     <button class="tab-btn" data-target="data">Data (1)</button>
   </div>
@@ -171,6 +172,15 @@
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/peer_service_vs_ridership.png" target="_blank" rel="noopener noreferrer">peer_service_vs_ridership.png</a>
           <p class="artifact-desc">Grouped bars comparing VRH and UPT change for 8 peer cities.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/39_national_service_cuts/peer_trajectory.png" alt="peer_trajectory" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/39_national_service_cuts/peer_trajectory.png" target="_blank" rel="noopener noreferrer">peer_trajectory.png</a>
+          <p class="artifact-desc">Indexed line charts showing VRH and UPT recovery trajectories for 8 peer cities (2019-2024).</p>
         </figcaption>
       </figure>
     
@@ -232,6 +242,7 @@
 <li>Compute percent change in VRH and UPT for each agency.</li>
 <li>Rank PRT nationally by VRH percent change (best recovery = rank 1).</li>
 <li>Compare PRT to 7 peer cities (Baltimore, Cleveland, Denver, St. Louis, Buffalo, Portland, Minneapolis) on both VRH and UPT change.</li>
+<li>Plot year-by-year VRH and UPT trajectories (indexed to 2019 = 100) for all 8 peer cities to reveal recovery shape and timing.</li>
 <li>Classify agencies into quadrants based on whether they lost more service (VRH) or more riders (UPT) relative to each other.</li>
 </ol>
 <h2>Data</h2>
@@ -271,6 +282,10 @@
 <tr>
   <td><code>peer_service_vs_ridership.png</code></td>
   <td>Grouped bars: VRH change vs UPT change for 8 peer cities</td>
+</tr>
+<tr>
+  <td><code>peer_trajectory.png</code></td>
+  <td>Side-by-side line charts: VRH and UPT indexed to 2019=100 for 8 peer cities</td>
 </tr>
 <tr>
   <td><code>supply_vs_demand_scatter.png</code></td>
@@ -346,6 +361,20 @@ def main():
     # Load data
     with phase(&quot;Loading service data&quot;):
         wide = load_service_data(conn)
+
+        # Load annual time-series for peer cities (for trajectory chart)
+        peer_ids = list(PEERS.keys())
+        ts_rows = conn.execute(&quot;&quot;&quot;
+            SELECT ntd_id, year, vrh, upt
+            FROM ntd_annual_service
+            WHERE ntd_id IN ({})
+              AND year BETWEEN ? AND 2024
+              AND vrh IS NOT NULL
+        &quot;&quot;&quot;.format(&quot;,&quot;.join(&quot;?&quot; * len(peer_ids))),
+            peer_ids + [int(PRE_COVID_BASELINE_YEAR)],
+        ).fetchall()
+        peer_ts_df = pl.DataFrame([dict(r) for r in ts_rows])
+
         conn.close()
         print(f&quot;   {len(wide)} agencies with VRH data in both 2019 and 2024&quot;)
 
@@ -492,7 +521,67 @@ def main():
         else:
             print(&quot;   WARNING: No peer cities found in top 150&quot;)
 
-    # --- Chart 4: Supply vs demand scatter ---
+    # --- Chart 4: Peer city trajectory (indexed line charts) ---
+    with phase(&quot;Generating peer city trajectory&quot;):
+        peer_map = {nid: label for nid, label in PEERS.items()}
+        peer_colors = {
+            &quot;Pittsburgh&quot;: &quot;#E24A33&quot;,
+            &quot;Baltimore&quot;: &quot;#4878CF&quot;,
+            &quot;Cleveland&quot;: &quot;#6ACC65&quot;,
+            &quot;Denver&quot;: &quot;#D65F5F&quot;,
+            &quot;St. Louis&quot;: &quot;#B47CC7&quot;,
+            &quot;Buffalo&quot;: &quot;#C4AD66&quot;,
+            &quot;Portland&quot;: &quot;#77BEDB&quot;,
+            &quot;Minneapolis&quot;: &quot;#FFB347&quot;,
+        }
+
+        # Index each city to 2019 = 100
+        baseline_df = peer_ts_df.filter(pl.col(&quot;year&quot;) == int(PRE_COVID_BASELINE_YEAR))
+        indexed_df = peer_ts_df.join(
+            baseline_df.select(
+                &quot;ntd_id&quot;,
+                vrh_base=pl.col(&quot;vrh&quot;),
+                upt_base=pl.col(&quot;upt&quot;),
+            ),
+            on=&quot;ntd_id&quot;,
+        ).with_columns(
+            vrh_idx=(pl.col(&quot;vrh&quot;) / pl.col(&quot;vrh_base&quot;) * 100),
+            upt_idx=(pl.col(&quot;upt&quot;) / pl.col(&quot;upt_base&quot;) * 100),
+        ).with_columns(
+            city_label=pl.col(&quot;ntd_id&quot;).replace_strict(peer_map),
+        ).sort(&quot;year&quot;)
+
+        fig, (ax_vrh, ax_upt) = plt.subplots(1, 2, figsize=(16, 7), sharey=True)
+
+        for city_label in peer_map.values():
+            city_df = indexed_df.filter(pl.col(&quot;city_label&quot;) == city_label)
+            years = city_df[&quot;year&quot;].to_list()
+            color = peer_colors.get(city_label, &quot;#333333&quot;)
+            is_prt = city_label == &quot;Pittsburgh&quot;
+            lw = 2.5 if is_prt else 1.2
+            alpha = 1.0 if is_prt else 0.7
+            zorder = 3 if is_prt else 2
+
+            ax_vrh.plot(years, city_df[&quot;vrh_idx&quot;].to_list(),
+                        color=color, linewidth=lw, alpha=alpha, zorder=zorder,
+                        label=city_label, marker=&quot;o&quot;, markersize=4 if is_prt else 3)
+            ax_upt.plot(years, city_df[&quot;upt_idx&quot;].to_list(),
+                        color=color, linewidth=lw, alpha=alpha, zorder=zorder,
+                        label=city_label, marker=&quot;o&quot;, markersize=4 if is_prt else 3)
+
+        for ax, title in [(ax_vrh, &quot;Service (VRH)&quot;), (ax_upt, &quot;Ridership (UPT)&quot;)]:
+            ax.axhline(100, color=&quot;#999999&quot;, linestyle=&quot;:&quot;, linewidth=1, zorder=1)
+            ax.set_xlabel(&quot;Year&quot;)
+            ax.set_title(title)
+            ax.set_xticks(list(range(int(PRE_COVID_BASELINE_YEAR), 2025)))
+
+        ax_vrh.set_ylabel(&quot;Index (2019 = 100)&quot;)
+        ax_upt.legend(loc=&quot;lower right&quot;, fontsize=8)
+        fig.suptitle(&quot;Peer City Recovery Trajectories (2019–2024)&quot;, fontsize=14, y=0.98)
+        fig.tight_layout()
+        save_chart(fig, OUT / &quot;peer_trajectory.png&quot;)
+
+    # --- Chart 5: Supply vs demand scatter ---
     with phase(&quot;Generating supply vs demand scatter&quot;):
         scatter_data = result.filter(
             pl.col(&quot;vrh_pct_change&quot;).is_not_null() &amp; pl.col(&quot;upt_pct_change&quot;).is_not_null()
