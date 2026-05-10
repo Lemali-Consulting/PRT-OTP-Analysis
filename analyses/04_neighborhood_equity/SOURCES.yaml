@@ -1,29 +1,35 @@
 kind: analysis
-title: 04 - Neighborhood Equity
+title: 04 - Tract Equity
 group: Core OTP Patterns
 tables:
 - otp_monthly
 - route_stops
 - routes
 - stops
+- census_tracts
 files: []
 analyses: []
-description: Investigates whether on-time performance varies systematically by neighborhood
-  and municipality.
+description: "PRT routes serving the lowest-income census tracts run on time only ~65.2% of the time, vs ~68.8% for upper-middle-income tracts -- a ~3.6 percentage-point gap that the previous neighborhood-name analysis could not see. Built by point-in-polygon assignment of every PRT stop to its containing 2020 census tract, ranking 247 tracts (vs 89 hand-curated neighborhoods)."
 dependencies:
 - polars
+- geopandas
+- shapely
 outputs:
-- path: neighborhood_equity.png
+- path: tract_equity.png
   kind: image
-  description: top/bottom neighborhoods bar chart and quintile time series.
-- path: neighborhood_otp.csv
+  description: top/bottom tracts bar chart and quintile time series.
+- path: tract_otp.csv
   kind: data
-  description: OTP aggregated by neighborhood (weighted, unweighted, gap, and bus-only
-    weighted).
-- path: neighborhood_otp_bus_only.csv
+  description: per-tract weighted/unweighted OTP, gap, route/stop counts, bus-only OTP, and tract demographics (population, median income, % zero-vehicle households, % non-white population, primary muni).
+- path: tract_otp_bus_only.csv
   kind: data
-  description: bus-only OTP by neighborhood.
+  description: bus-only weighted OTP per tract.
 - path: weighted_vs_unweighted_otp.png
   kind: image
-  description: scatter plot comparing the two OTP measures and bar chart of the frequency-weighting
-    effect per neighborhood.
+  description: scatter and bar chart of the frequency-weighting effect per tract.
+- path: otp_by_income.png
+  kind: image
+  description: tract OTP scattered against median household income, plus per-quintile means.
+- path: otp_by_income_quintile.csv
+  kind: data
+  description: mean and trip-weighted OTP for each tract income quintile.

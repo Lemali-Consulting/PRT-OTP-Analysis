@@ -24,7 +24,7 @@ The `census_tracts` table (Pipeline 10, added with Analysis 44) joins TIGER 2022
 
 2. **Transit deserts.** Of the 2.17M people in the 5-county area, what share live outside any walkshed? Map gaps and rank the largest underserved tracts. *Joins: `census_tracts` × `stops` (buffer union).*
 
-3. **Tract-level upgrade for Analyses 04 / 15 / 32.** Replace the fuzzy `stops.hood` field (NULL for ~58% of stops) with point-in-polygon assignment to tracts. Expands neighborhood equity from 89 hand-curated areas to all 669 tracts and removes the no-hood gap. *Joins: `stops` × `census_tracts` (point-in-polygon).*
+3. **Tract-level upgrade for Analyses 04 / 15 / 32.** ~~Replace the fuzzy `stops.hood` field with point-in-polygon assignment to tracts.~~ **Done for Analysis 04** (now "Tract Equity"). Stop→tract assignment lives in `prt_otp_analysis.stop_tracts.assign_stops_to_tracts()`. Result: 247 ranked tracts (vs 89 hoods), 0 stops dropped (vs 58% NULL hood), and a new income-quintile gradient -- Q1 (lowest income) trip-weighted OTP 65.2% vs Q4 68.8% (+3.6 pp). Analyses **15** (uses `muni`, not fuzzy) and **32** (uses lat/lon directly) deferred -- their tract upgrades would be additive demographic-equity expansions rather than fuzzy-field replacements; reframe as separate items if pursued.
 
 4. **Per-capita service supply vs peer cities.** Express NTD VRH per resident in the catchment instead of per agency, for fairer cross-city comparison. Requires extending the census ingestion to peer-city counties. *Joins: `ntd_annual_service` × `census_tracts` (extended).*
 

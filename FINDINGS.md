@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 44 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 45 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -53,25 +53,25 @@ The RAIL--BUS gap has been roughly stable over time, suggesting that the system-
 
 3 routes were flagged as **high-volatility** (standard deviation more than 2x the median), indicating wild month-to-month swings rather than stable performance. 5 routes lack stop count data due to missing `route_stops` entries.
 
-## 4. Neighborhood Equity (Analysis 04)
+## 4. Tract Equity (Analysis 04)
 
-89 Pittsburgh-area neighborhoods were analyzed (3,760 of 6,466 stops excluded due to missing neighborhood data). OTP is now computed from **route-level averages** (each route weighted once regardless of how many months of data it has), weighted by trip frequency, with a minimum 12-month data requirement. There is a **25 percentage-point spread** between the best- and worst-served neighborhoods (all modes pooled), narrowing to **20 pp** for bus-only:
+**247 census tracts** were ranked (vs the 89 hand-curated neighborhoods used previously) after replacing the fuzzy `stops.hood` field -- NULL for 3,760 of 6,466 stops -- with **point-in-polygon assignment** to TIGER 2022 census tracts. All 6,466 stops now carry a tract assignment; 343 tracts are touched by at least one PRT stop, 247 by 2+ routes. Tract demographics (median household income, zero-vehicle households, race composition) come from the 2018-2022 ACS join in `census_tracts`.
 
-**Worst-served neighborhoods:**
-- Regent Square: 58.8%
-- Bluff: 59.2%
-- Crawford-Roberts: 61.4%
-- Squirrel Hill North: 61.6%
+**Income gradient (the headline result the hood-level analysis could not see):** PRT routes serving the lowest-income tract quintile run on time only **65.2%** of the time, vs **68.8%** in the upper-middle quintile (Q4) and **67.2%** in the highest. Q4 - Q1 gap: **+3.6 pp**. Q5 - Q1 gap: **+2.0 pp**. The relationship is non-monotonic (peaks at Q4) but Q1 is unambiguously the worst, and Q1 carries the most service load (~480k weekly trips, vs 252-330k in upper quintiles).
 
-**Best-served neighborhoods:**
-- Overbrook: 83.9% (bus-only: 78.9%)
-- Beechview: 80.7% (bus-only: 75.5%)
-- Brookline: 79.2% (bus-only: 78.7%)
-- Sheraden: 79.0% (bus-only: 79.0%)
+| Quintile | Mean median income | Trip-weighted OTP |
+|----------|-------------------|------------------:|
+| Q1 (lowest)  | $32,280  | **65.2%** |
+| Q2           | $50,516  | 67.1% |
+| Q3           | $61,906  | 68.3% |
+| Q4           | $77,248  | **68.8%** |
+| Q5 (highest) | $107,458 | 67.2% |
 
-**Bus-only stratification** reveals Simpson's paradox: Bon Air drops from rank 13 (pooled) to rank 53 (bus-only) because its high pooled OTP is driven by rail, not bus service. Beechview similarly drops 9 positions. The bottom neighborhoods are all-bus and unaffected.
+**Spread (best vs worst tract): 27 pp.** Worst-served tracts cluster in **Penn Hills** and **Plum** (eastern Allegheny suburbs reached by long bus lines), not in low-income tracts -- the income gradient is driven less by the very worst tracts and more by the system-wide difference between Q1 and the upper quintiles. Best-served tracts cluster in **Castle Shannon** and **Bethel Park** (light-rail T-line corridor) and short-line southern suburbs.
 
-The best-performing neighborhoods tend to be served by rail or busway routes (Overbrook and Beechview are on the light rail T line). The worst-performing neighborhoods are served primarily by high-frequency local bus routes with many stops. Neighborhood OTP estimates vary in precision (1 to 74 routes per neighborhood), so the 25 pp spread should be interpreted with that context. The equity gap between the top and bottom quintiles has remained roughly stable over time -- all quintiles rise and fall together with the system, meaning the disparity is structural rather than worsening.
+**Frequency-weighting effect:** mean tract `weighted - unweighted = -0.4 pp` (range -6.8 to +4.1 pp). Largest negative gaps cluster in **Swissvale** and **Edgewood**, where lateness-prone Frankstown/Forbes corridor routes dominate trip volume.
+
+**Coverage gain over the hood-level version:** 0 of 6,466 stops dropped (vs 58% under hood); 247 ranked tracts (vs 89 hoods); only 17 of the 30 worst-served tracts are inside Pittsburgh city limits, surfacing the suburban end-of-line lateness pattern that hand-curated Pittsburgh hoods could not show.
 
 ## 5. Anomaly Investigation (Analysis 05)
 
@@ -350,7 +350,7 @@ Weighting each route's monthly OTP by its walkshed population (Analysis 44 const
 | 01 | [System Trend](analyses/01_system_trend/) | Tracks the overall PRT on-time performance trend from 2019 through 2025, including COVID impact and recovery. |
 | 02 | [Mode Comparison](analyses/02_mode_comparison/) | Compares on-time performance across service modes (BUS, RAIL, INCLINE) and route types (local, limited, express, busway). |
 | 03 | [Route Ranking](analyses/03_route_ranking/) | Ranks routes by average OTP, trend direction, and volatility to identify best/worst performers and most (in)consistent routes. |
-| 04 | [Neighborhood Equity](analyses/04_neighborhood_equity/) | Investigates whether on-time performance varies systematically by neighborhood and municipality. |
+| 04 | [Neighborhood Equity](analyses/04_neighborhood_equity/) | Aggregates trip-weighted OTP to ACS census tracts (TIGER 2022), replacing the fuzzy `stops.hood` field with point-in-polygon assignment, and reports the income/vehicle/race gradient in service reliability. |
 | 05 | [Anomaly Investigation](analyses/05_anomaly_investigation/) | Identifies and investigates sharp OTP drops that may indicate route restructuring, detours, or data quality issues. |
 | 06 | [Seasonal Patterns](analyses/06_seasonal_patterns/) | Decomposes route-level OTP into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance. |
 | 07 | [Stop Count Vs Otp](analyses/07_stop_count_vs_otp/) | Tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average OTP with mode-based coloring. |

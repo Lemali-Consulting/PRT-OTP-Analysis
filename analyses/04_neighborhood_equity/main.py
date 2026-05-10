@@ -1,193 +1,253 @@
-"""Neighborhood equity analysis: OTP aggregated by geography."""
+"""Tract-level equity analysis: OTP aggregated by ACS census tract.
+
+Replaces the fuzzy `stops.hood` field (NULL for ~58% of stops, only 89 hand-curated
+neighborhoods) with point-in-polygon assignment to TIGER 2022 census tracts. Adds
+income/vehicle/race demographic context per tract.
+"""
 
 import polars as pl
 
-from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import (
+    analysis_dir,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+    weighted_mean,
+)
+from prt_otp_analysis.stop_tracts import assign_stops_to_tracts
 
 OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12  # minimum months of OTP data per route
+MIN_ROUTES = 2   # tract-level estimates from a single route are too noisy to rank
 
 
-def load_data() -> pl.DataFrame:
-    """Load route-level average OTP joined with route-stop-neighborhood data.
-
-    Pre-aggregates OTP to one row per route (AVG across months) before joining
-    to route_stops, so each route contributes one weight regardless of how many
-    months of data it has. Also filters NULL trips_7d and requires MIN_MONTHS.
-    """
+def load_route_otp() -> pl.DataFrame:
+    """Route-level mean OTP, restricted to routes with >= MIN_MONTHS observations."""
     return query_to_polars(f"""
-        WITH route_avg AS (
-            SELECT route_id, AVG(otp) AS avg_otp
-            FROM otp_monthly
-            GROUP BY route_id
-            HAVING COUNT(*) >= {MIN_MONTHS}
-        )
-        SELECT rs.route_id, rs.stop_id, s.hood, s.muni, s.county,
-               ra.avg_otp, rs.trips_7d
-        FROM route_stops rs
-        JOIN route_avg ra ON rs.route_id = ra.route_id
-        LEFT JOIN stops s ON rs.stop_id = s.stop_id
-        WHERE rs.trips_7d IS NOT NULL
+        SELECT route_id, AVG(otp) AS avg_otp
+        FROM otp_monthly
+        GROUP BY route_id
+        HAVING COUNT(*) >= {MIN_MONTHS}
     """)
 
 
-def load_monthly_data() -> pl.DataFrame:
-    """Load per-month OTP with route-stop-neighborhood data for time series.
+def load_route_stops() -> pl.DataFrame:
+    """route_stops with non-null trips_7d for trip weighting."""
+    return query_to_polars(
+        "SELECT route_id, stop_id, trips_7d FROM route_stops WHERE trips_7d IS NOT NULL"
+    )
 
-    Uses the same pre-aggregation-then-join pattern per month to avoid
-    giving extra weight to routes with more months.
-    """
-    return query_to_polars(f"""
-        WITH route_month_count AS (
-            SELECT route_id
-            FROM otp_monthly
-            GROUP BY route_id
-            HAVING COUNT(*) >= {MIN_MONTHS}
-        )
-        SELECT rs.route_id, rs.stop_id, s.hood,
-               o.month, o.otp, rs.trips_7d
-        FROM route_stops rs
-        JOIN route_month_count rmc ON rs.route_id = rmc.route_id
-        JOIN otp_monthly o ON rs.route_id = o.route_id
-        LEFT JOIN stops s ON rs.stop_id = s.stop_id
-        WHERE rs.trips_7d IS NOT NULL
-          AND s.hood IS NOT NULL
-          AND s.hood != '0'
-          AND s.hood != ''
-    """)
+
+def load_stop_muni() -> pl.DataFrame:
+    """muni/county from stops table for tract-label readability."""
+    return query_to_polars("SELECT stop_id, muni, county FROM stops")
 
 
 def load_route_modes() -> pl.DataFrame:
-    """Load route mode information for bus-only stratification."""
     return query_to_polars("SELECT route_id, mode FROM routes")
 
 
-def analyze(df: pl.DataFrame) -> pl.DataFrame:
-    """Compute per-neighborhood weighted and unweighted OTP from route-level averages."""
-    # Filter to valid neighborhoods
-    hood_df = df.filter(
-        pl.col("hood").is_not_null()
-        & (pl.col("hood") != "0")
-        & (pl.col("hood") != "")
+def load_monthly_route() -> pl.DataFrame:
+    """Monthly OTP for routes meeting MIN_MONTHS, for the quintile time series."""
+    return query_to_polars(f"""
+        SELECT route_id, month, otp
+        FROM otp_monthly
+        WHERE route_id IN (
+            SELECT route_id FROM otp_monthly GROUP BY route_id HAVING COUNT(*) >= {MIN_MONTHS}
+        )
+    """)
+
+
+def build_route_stop_tract(
+    route_otp_df: pl.DataFrame,
+    route_stops_df: pl.DataFrame,
+    stop_tract_df: pl.DataFrame,
+) -> pl.DataFrame:
+    """Join route-level OTP, route_stops weights, and stop→tract assignment."""
+    return (
+        route_stops_df.join(route_otp_df, on="route_id")
+        .join(stop_tract_df, on="stop_id")
     )
 
-    # Per-neighborhood weighted OTP (weighted by trips_7d)
-    hood_summary = (
-        hood_df.group_by(["hood", "muni", "county"])
+
+def primary_muni_per_tract(stop_tract_df: pl.DataFrame, stop_muni_df: pl.DataFrame) -> pl.DataFrame:
+    """Pick the most-common (muni, county) among the stops in each tract for human-readable labels."""
+    joined = stop_tract_df.select("stop_id", "geoid").join(stop_muni_df, on="stop_id")
+    counts = (
+        joined.filter(pl.col("muni").is_not_null() & (pl.col("muni") != "0"))
+        .group_by(["geoid", "muni", "county"])
+        .agg(n=pl.len())
+    )
+    return (
+        counts.sort(["geoid", "n"], descending=[False, True])
+        .group_by("geoid", maintain_order=True)
+        .agg(primary_muni=pl.col("muni").first(), primary_county=pl.col("county").first())
+    )
+
+
+def tract_label(geoid: str, muni: str | None) -> str:
+    """Human-readable tract label: 'Pittsburgh 020100' or just '020100' if no muni."""
+    code = geoid[-6:].lstrip("0") or geoid[-6:]
+    return f"{muni} {code}" if muni else f"Tract {code}"
+
+
+def analyze(
+    rst_df: pl.DataFrame,
+    muni_df: pl.DataFrame,
+    tract_demo_df: pl.DataFrame,
+) -> pl.DataFrame:
+    """Compute per-tract weighted/unweighted OTP, demographics, and a readable label."""
+    tract_summary = (
+        rst_df.group_by("geoid")
         .agg(
             weighted_otp=weighted_mean("avg_otp", "trips_7d"),
             route_count=pl.col("route_id").n_unique(),
             stop_count=pl.col("stop_id").n_unique(),
             total_trips_7d=pl.col("trips_7d").sum(),
         )
-        .sort("weighted_otp")
     )
 
-    # Unweighted OTP: one value per route per neighborhood (deduplicate across stops)
-    route_hood = (
-        hood_df.group_by(["hood", "route_id"])
+    route_tract = (
+        rst_df.group_by(["geoid", "route_id"])
         .agg(avg_otp=pl.col("avg_otp").first())
     )
-    hood_unweighted = (
-        route_hood.group_by("hood")
+    tract_unweighted = (
+        route_tract.group_by("geoid")
         .agg(unweighted_otp=pl.col("avg_otp").mean())
     )
 
-    hood_summary = hood_summary.join(hood_unweighted, on="hood", how="left")
-    hood_summary = hood_summary.with_columns(
-        otp_gap=(pl.col("weighted_otp") - pl.col("unweighted_otp")),
-    ).sort("weighted_otp")
-
-    return hood_summary
-
-
-def analyze_bus_only(df: pl.DataFrame, route_modes: pl.DataFrame) -> pl.DataFrame:
-    """Compute per-neighborhood weighted OTP for bus routes only."""
-    # Filter to valid neighborhoods and BUS mode
-    bus_df = (
-        df.join(route_modes, on="route_id", how="left")
-        .filter(
-            pl.col("hood").is_not_null()
-            & (pl.col("hood") != "0")
-            & (pl.col("hood") != "")
-            & (pl.col("mode") == "BUS")
+    out = (
+        tract_summary
+        .join(tract_unweighted, on="geoid", how="left")
+        .join(muni_df, on="geoid", how="left")
+        .join(tract_demo_df, on="geoid", how="left")
+        .with_columns(
+            otp_gap=pl.col("weighted_otp") - pl.col("unweighted_otp"),
+            pct_zero_vehicle=(
+                pl.col("households_zero_vehicle") / pl.col("households_total")
+            ),
+            pct_nonwhite=(
+                1.0 - (pl.col("pop_white_nh") / pl.col("population"))
+            ),
         )
+        .with_columns(
+            label=pl.struct("geoid", "primary_muni").map_elements(
+                lambda r: tract_label(r["geoid"], r["primary_muni"]),
+                return_dtype=pl.Utf8,
+            ),
+        )
+        .filter(pl.col("route_count") >= MIN_ROUTES)
+        .sort("weighted_otp")
     )
+    return out
 
-    hood_bus = (
-        bus_df.group_by(["hood", "muni", "county"])
+
+def analyze_bus_only(
+    rst_df: pl.DataFrame,
+    route_modes_df: pl.DataFrame,
+) -> pl.DataFrame:
+    bus = (
+        rst_df.join(route_modes_df, on="route_id")
+        .filter(pl.col("mode") == "BUS")
+    )
+    return (
+        bus.group_by("geoid")
         .agg(
             bus_weighted_otp=weighted_mean("avg_otp", "trips_7d"),
             bus_route_count=pl.col("route_id").n_unique(),
         )
-        .sort("bus_weighted_otp")
     )
 
-    return hood_bus
 
+def analyze_quintile_ts(
+    monthly_df: pl.DataFrame,
+    route_stops_df: pl.DataFrame,
+    stop_tract_df: pl.DataFrame,
+) -> pl.DataFrame:
+    """Tract-month weighted OTP, then trailing-12-month rolling quintiles."""
+    rs_tract = route_stops_df.join(stop_tract_df.select("stop_id", "geoid"), on="stop_id")
 
-def analyze_quintile_ts(monthly_df: pl.DataFrame) -> pl.DataFrame:
-    """Compute quintile time series from monthly data."""
-    # Per-neighborhood-month weighted OTP (deduplicate route OTP across stops first)
-    hood_month = (
-        monthly_df.group_by(["hood", "month"])
-        .agg(
-            weighted_otp=weighted_mean("otp", "trips_7d"),
-        )
+    rsm = (
+        rs_tract.join(monthly_df, on="route_id")
+        .group_by(["geoid", "month"])
+        .agg(weighted_otp=weighted_mean("otp", "trips_7d"))
+        .sort(["geoid", "month"])
     )
-
-    # Rolling 12-month OTP per neighborhood for quintile assignment
-    hood_month = hood_month.sort(["hood", "month"])
-    hood_month = hood_month.with_columns(
+    rsm = rsm.with_columns(
         rolling_otp=pl.col("weighted_otp")
         .rolling_mean(window_size=12, min_samples=6)
-        .over("hood"),
-    )
+        .over("geoid"),
+    ).filter(pl.col("rolling_otp").is_not_null())
 
-    # Assign quintiles per month based on trailing performance (avoids look-ahead bias)
-    hood_month_ranked = hood_month.filter(pl.col("rolling_otp").is_not_null())
-    hood_month_ranked = hood_month_ranked.with_columns(
+    rsm = rsm.with_columns(
         quintile=(
             ((pl.col("rolling_otp").rank().over("month") - 1)
              / pl.col("rolling_otp").count().over("month") * 5)
             .cast(pl.Int32).clip(0, 4) + 1
         ),
     )
-
-    quintile_ts = (
-        hood_month_ranked.group_by(["quintile", "month"])
+    return (
+        rsm.group_by(["quintile", "month"])
         .agg(avg_otp=pl.col("weighted_otp").mean())
         .sort(["quintile", "month"])
     )
 
-    return quintile_ts
+
+def analyze_income_gradient(tract_summary: pl.DataFrame) -> pl.DataFrame:
+    """Bin tracts by trip-weighted-population income quintile, report mean OTP per bin."""
+    df = tract_summary.filter(
+        pl.col("median_household_income").is_not_null()
+        & pl.col("weighted_otp").is_not_null()
+    )
+    if len(df) < 5:
+        return pl.DataFrame()
+    df = df.with_columns(
+        income_quintile=(
+            ((pl.col("median_household_income").rank() - 1)
+             / pl.len() * 5)
+            .cast(pl.Int32).clip(0, 4) + 1
+        ),
+    )
+    return (
+        df.group_by("income_quintile")
+        .agg(
+            mean_otp=pl.col("weighted_otp").mean(),
+            mean_income=pl.col("median_household_income").mean(),
+            n_tracts=pl.len(),
+            total_trips_7d=pl.col("total_trips_7d").sum(),
+            trip_weighted_otp=weighted_mean("weighted_otp", "total_trips_7d"),
+        )
+        .sort("income_quintile")
+    )
 
 
-def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -> None:
-    """Generate neighborhood equity charts."""
+def make_chart(tract_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -> None:
     plt = setup_plotting()
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
-    # Top: Best and worst 15 neighborhoods
     n_show = 15
-    bottom = hood_summary.sort("weighted_otp").head(n_show)
-    top = hood_summary.sort("weighted_otp", descending=True).head(n_show).sort("weighted_otp")
+    bottom = tract_summary.sort("weighted_otp").head(n_show)
+    top = tract_summary.sort("weighted_otp", descending=True).head(n_show).sort("weighted_otp")
     combined = pl.concat([bottom, top])
 
-    labels = combined["hood"].to_list()
+    labels = combined["label"].to_list()
     values = combined["weighted_otp"].to_list()
-    colors = ["#ef4444" if v < combined["weighted_otp"].median() else "#22c55e" for v in values]
+    median = combined["weighted_otp"].median()
+    colors = ["#ef4444" if v < median else "#22c55e" for v in values]
 
     y_pos = range(len(labels))
     ax1.barh(y_pos, values, color=colors)
     ax1.set_yticks(y_pos)
     ax1.set_yticklabels(labels, fontsize=7)
-    ax1.set_xlabel("Weighted Average OTP")
-    ax1.set_title(f"Bottom {n_show} & Top {n_show} Neighborhoods by OTP")
+    ax1.set_xlabel("Trip-weighted average OTP")
+    ax1.set_title(f"Bottom {n_show} & Top {n_show} census tracts by OTP "
+                  f"(min {MIN_ROUTES} routes)")
     ax1.set_xlim(0, 1)
 
-    # Bottom: All quintile time series (shows spread, not just the gap)
     quintile_colors = {1: "#ef4444", 2: "#f59e0b", 3: "#9ca3af", 4: "#60a5fa", 5: "#22c55e"}
     quintile_labels = {1: "Q1 (worst)", 2: "Q2", 3: "Q3", 4: "Q4", 5: "Q5 (best)"}
 
@@ -205,7 +265,6 @@ def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -> None:
         ax2.plot(x, vals, color=quintile_colors[q], linewidth=lw, alpha=alpha,
                  label=quintile_labels[q])
 
-    # Shade between Q1 and Q5
     q1_data = quintile_ts.filter(pl.col("quintile") == 1).sort("month")
     q5_data = quintile_ts.filter(pl.col("quintile") == 5).sort("month")
     shared = q1_data.select("month").join(q5_data.select("month"), on="month")
@@ -216,162 +275,166 @@ def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -> None:
     ax2.fill_between(shared_x, q1_vals, q5_vals, alpha=0.1, color="#7c3aed")
 
     ax2.set_ylabel("Average OTP")
-    ax2.set_title("OTP by Neighborhood Quintile Over Time")
+    ax2.set_title("OTP by tract quintile over time")
     ax2.set_xticks(tick_pos)
     ax2.set_xticklabels(tick_lbl)
     ax2.set_xlabel("Month")
     ax2.legend(fontsize=8, loc="lower left")
     ax2.set_ylim(0, 1)
 
-    save_chart(fig, OUT / "neighborhood_equity.png")
+    save_chart(fig, OUT / "tract_equity.png")
 
 
-def make_comparison_chart(hood_summary: pl.DataFrame) -> None:
-    """Generate weighted vs unweighted OTP comparison chart."""
+def make_comparison_chart(tract_summary: pl.DataFrame) -> None:
     plt = setup_plotting()
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    weighted = hood_summary["weighted_otp"].to_list()
-    unweighted = hood_summary["unweighted_otp"].to_list()
-    trips = hood_summary["total_trips_7d"].to_list()
+    weighted = tract_summary["weighted_otp"].to_list()
+    unweighted = tract_summary["unweighted_otp"].to_list()
+    trips = tract_summary["total_trips_7d"].to_list()
 
-    # Left: scatter of weighted vs unweighted, sized by total trips
     max_trips = max(trips)
     sizes = [20 + 80 * (t / max_trips) for t in trips]
-    ax1.scatter(unweighted, weighted, s=sizes, alpha=0.5, c="#6366f1", edgecolors="white", linewidths=0.3)
-
-    # Diagonal reference line
+    ax1.scatter(unweighted, weighted, s=sizes, alpha=0.5, c="#6366f1",
+                edgecolors="white", linewidths=0.3)
     ax1.plot([0, 1], [0, 1], color="#9ca3af", linestyle="--", linewidth=1, zorder=0)
     ax1.set_xlabel("Unweighted OTP (equal weight per route)")
     ax1.set_ylabel("Weighted OTP (weighted by trip frequency)")
-    ax1.set_title("Weighted vs Unweighted OTP by Neighborhood")
+    ax1.set_title("Weighted vs unweighted OTP by tract")
     ax1.set_xlim(0, 1)
     ax1.set_ylim(0, 1)
     ax1.set_aspect("equal")
 
-    # Annotate the 5 neighborhoods with largest absolute gap
-    sorted_by_gap = hood_summary.with_columns(abs_gap=pl.col("otp_gap").abs()).sort("abs_gap", descending=True)
+    sorted_by_gap = tract_summary.with_columns(abs_gap=pl.col("otp_gap").abs()).sort(
+        "abs_gap", descending=True
+    )
     for row in sorted_by_gap.head(5).iter_rows(named=True):
         ax1.annotate(
-            row["hood"], (row["unweighted_otp"], row["weighted_otp"]),
+            row["label"], (row["unweighted_otp"], row["weighted_otp"]),
             fontsize=6, alpha=0.8,
             xytext=(4, 4), textcoords="offset points",
         )
 
-    # Right: top/bottom 15 neighborhoods by gap (weighted - unweighted)
     n_show = 15
-    biggest_positive = hood_summary.sort("otp_gap", descending=True).head(n_show)
-    biggest_negative = hood_summary.sort("otp_gap").head(n_show)
+    biggest_positive = tract_summary.sort("otp_gap", descending=True).head(n_show)
+    biggest_negative = tract_summary.sort("otp_gap").head(n_show)
     combined = pl.concat([biggest_negative, biggest_positive.sort("otp_gap")])
-
-    gap_labels = combined["hood"].to_list()
+    gap_labels = combined["label"].to_list()
     gap_vals = combined["otp_gap"].to_list()
     gap_colors = ["#ef4444" if g < 0 else "#22c55e" for g in gap_vals]
-
     y_pos = range(len(gap_labels))
     ax2.barh(y_pos, gap_vals, color=gap_colors)
     ax2.set_yticks(y_pos)
     ax2.set_yticklabels(gap_labels, fontsize=6)
-    ax2.set_xlabel("OTP Gap (weighted - unweighted)")
-    ax2.set_title("Frequency Weighting Effect by Neighborhood")
+    ax2.set_xlabel("OTP gap (weighted - unweighted)")
+    ax2.set_title("Frequency-weighting effect by tract")
     ax2.axvline(0, color="#9ca3af", linewidth=0.8)
 
     save_chart(fig, OUT / "weighted_vs_unweighted_otp.png")
 
 
-@run_analysis(4, "Neighborhood Equity")
+def make_income_chart(tract_summary: pl.DataFrame, gradient_df: pl.DataFrame) -> None:
+    """Scatter of tract OTP vs median household income, plus per-quintile means."""
+    plt = setup_plotting()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    df = tract_summary.filter(pl.col("median_household_income").is_not_null())
+    incomes = df["median_household_income"].to_list()
+    otps = df["weighted_otp"].to_list()
+    trips = df["total_trips_7d"].to_list()
+    max_trips = max(trips)
+    sizes = [10 + 80 * (t / max_trips) for t in trips]
+    ax1.scatter(incomes, otps, s=sizes, alpha=0.4, c="#6366f1",
+                edgecolors="white", linewidths=0.3)
+    ax1.set_xlabel("Median household income (tract, 2018-2022 ACS, $)")
+    ax1.set_ylabel("Trip-weighted OTP")
+    ax1.set_title("Tract OTP vs median household income")
+    ax1.set_ylim(0.4, 1.0)
+    ax1.xaxis.set_major_formatter(lambda x, _: f"${int(x/1000)}k")
+
+    if len(gradient_df) > 0:
+        quintiles = gradient_df["income_quintile"].to_list()
+        bar_otp = gradient_df["trip_weighted_otp"].to_list()
+        ax2.bar(quintiles, bar_otp, color="#3b82f6", edgecolor="white")
+        ax2.set_xlabel("Tract income quintile (1 = lowest income)")
+        ax2.set_ylabel("Trip-weighted OTP")
+        ax2.set_title("OTP by tract income quintile")
+        ax2.set_ylim(0.5, 0.85)
+        for q, v in zip(quintiles, bar_otp):
+            ax2.text(q, v + 0.005, f"{v:.1%}", ha="center", fontsize=10)
+
+    save_chart(fig, OUT / "otp_by_income.png")
+
+
+@run_analysis(4, "Tract Equity")
 def main() -> None:
-    """Entry point: load data, analyze, chart, and save."""
-    with phase("Loading data"):
-        df = load_data()
-        print(f"  {len(df):,} route-stop records loaded (route-level avg OTP, {MIN_MONTHS}+ months, non-null trips_7d)")
-        print(f"  {df.filter(pl.col('hood').is_not_null() & (pl.col('hood') != '0') & (pl.col('hood') != ''))['hood'].n_unique()} neighborhoods represented")
+    with phase("Loading route-level OTP and stops"):
+        route_otp_df = load_route_otp()
+        route_stops_df = load_route_stops()
+        stop_muni_df = load_stop_muni()
+        print(f"  {len(route_otp_df)} routes with >= {MIN_MONTHS} months of OTP")
+        print(f"  {len(route_stops_df):,} route-stop edges with non-null trips_7d")
 
-        # Check how many stops lack neighborhood data
-        total_stops = query_to_polars("SELECT COUNT(*) AS n FROM stops")["n"][0]
-        hood_stops = query_to_polars(
-            "SELECT COUNT(*) AS n FROM stops WHERE hood IS NOT NULL AND hood != '0' AND hood != ''"
-        )["n"][0]
-        print(f"  {total_stops - hood_stops} of {total_stops} stops excluded (missing/invalid neighborhood)")
+    with phase("Assigning stops to census tracts"):
+        stop_tract_df = assign_stops_to_tracts()
+        print(f"  {len(stop_tract_df):,} stops mapped to "
+              f"{stop_tract_df['geoid'].n_unique()} tracts "
+              f"({stop_tract_df['geoid'].is_null().sum()} unmapped)")
 
-    with phase("Analyzing (all modes, pooled)"):
-        hood_summary = analyze(df)
-        print(f"  {len(hood_summary)} neighborhoods ranked")
+    with phase("Building per-tract analysis"):
+        rst_df = build_route_stop_tract(route_otp_df, route_stops_df, stop_tract_df)
+        muni_df = primary_muni_per_tract(stop_tract_df, stop_muni_df)
+        tract_demo_df = stop_tract_df.unique("geoid").select(
+            "geoid", "population", "median_household_income",
+            "households_total", "households_zero_vehicle",
+            "pop_white_nh", "pop_black_nh", "pop_asian_nh", "pop_hispanic",
+        )
+        tract_summary = analyze(rst_df, muni_df, tract_demo_df)
+        print(f"  {len(tract_summary)} tracts with >= {MIN_ROUTES} routes ranked")
 
-        best = hood_summary.sort("weighted_otp", descending=True).head(3)
-        worst = hood_summary.sort("weighted_otp").head(3)
-        print("\n  Top 3 neighborhoods (weighted):")
+        best = tract_summary.sort("weighted_otp", descending=True).head(3)
+        worst = tract_summary.sort("weighted_otp").head(3)
+        print("\n  Top 3 tracts (weighted):")
         for row in best.iter_rows(named=True):
-            print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
-        print("  Bottom 3 neighborhoods (weighted):")
+            print(f"    {row['label']}: {row['weighted_otp']:.1%}")
+        print("  Bottom 3 tracts (weighted):")
         for row in worst.iter_rows(named=True):
-            print(f"    {row['hood']} ({row['muni']}): {row['weighted_otp']:.1%}")
+            print(f"    {row['label']}: {row['weighted_otp']:.1%}")
 
-        # Route count range across neighborhoods
-        min_routes = hood_summary["route_count"].min()
-        max_routes = hood_summary["route_count"].max()
-        print(f"\n  Route count per neighborhood: {min_routes} to {max_routes}")
+        spread = tract_summary["weighted_otp"].max() - tract_summary["weighted_otp"].min()
+        print(f"\n  Spread (max - min): {spread:.1%}")
 
-        # Frequency-weighting effect summary
-        gaps = hood_summary["otp_gap"]
-        print(f"\n  Frequency-weighting effect (weighted - unweighted):")
-        print(f"    Mean gap:   {gaps.mean():+.2%}")
-        print(f"    Median gap: {gaps.median():+.2%}")
-        print(f"    Range:      {gaps.min():+.2%} to {gaps.max():+.2%}")
-        biggest = hood_summary.with_columns(abs_gap=pl.col("otp_gap").abs()).sort("abs_gap", descending=True).head(3)
-        print("  Largest divergences:")
-        for row in biggest.iter_rows(named=True):
-            print(f"    {row['hood']}: weighted={row['weighted_otp']:.1%}, "
-                  f"unweighted={row['unweighted_otp']:.1%}, gap={row['otp_gap']:+.2%}")
+    with phase("Bus-only stratification"):
+        route_modes_df = load_route_modes()
+        bus_summary = analyze_bus_only(rst_df, route_modes_df)
+        tract_summary = tract_summary.join(bus_summary, on="geoid", how="left")
+        bus_count = tract_summary.filter(pl.col("bus_weighted_otp").is_not_null()).height
+        print(f"  {bus_count} tracts with bus-mode service")
 
-    with phase("Analyzing (bus only)"):
-        route_modes = load_route_modes()
-        hood_bus = analyze_bus_only(df, route_modes)
-        print(f"  {len(hood_bus)} neighborhoods with bus service")
+    with phase("Income-gradient analysis"):
+        gradient_df = analyze_income_gradient(tract_summary)
+        if len(gradient_df) > 0:
+            for row in gradient_df.iter_rows(named=True):
+                print(f"    Q{row['income_quintile']} (mean ${row['mean_income']:,.0f}, "
+                      f"n={row['n_tracts']}): trip-weighted OTP {row['trip_weighted_otp']:.1%}")
+            q1 = gradient_df.filter(pl.col("income_quintile") == 1)["trip_weighted_otp"][0]
+            q5 = gradient_df.filter(pl.col("income_quintile") == 5)["trip_weighted_otp"][0]
+            print(f"  Q5 - Q1 OTP gap: {(q5 - q1) * 100:+.2f} pp")
 
-        # Join bus OTP to main summary for comparison
-        hood_summary = hood_summary.join(
-            hood_bus.select("hood", "bus_weighted_otp", "bus_route_count"),
-            on="hood",
-            how="left",
-        )
+    with phase("Quintile time series"):
+        monthly_df = load_monthly_route()
+        quintile_ts = analyze_quintile_ts(monthly_df, route_stops_df, stop_tract_df)
 
-        bus_best = hood_bus.sort("bus_weighted_otp", descending=True).head(3)
-        bus_worst = hood_bus.sort("bus_weighted_otp").head(3)
-        print("  Top 3 (bus only):")
-        for row in bus_best.iter_rows(named=True):
-            print(f"    {row['hood']} ({row['muni']}): {row['bus_weighted_otp']:.1%}")
-        print("  Bottom 3 (bus only):")
-        for row in bus_worst.iter_rows(named=True):
-            print(f"    {row['hood']} ({row['muni']}): {row['bus_weighted_otp']:.1%}")
-
-        # Check for Simpson's paradox: do rankings change between pooled and bus-only?
-        both = hood_summary.filter(pl.col("bus_weighted_otp").is_not_null())
-        diff = both.with_columns(
-            rank_diff=(
-                pl.col("weighted_otp").rank(descending=True) - pl.col("bus_weighted_otp").rank(descending=True)
-            ).abs()
-        )
-        big_shifts = diff.filter(pl.col("rank_diff") > 10).sort("rank_diff", descending=True)
-        if len(big_shifts) > 0:
-            print(f"\n  {len(big_shifts)} neighborhoods shift 10+ rank positions between pooled and bus-only")
-        else:
-            print("\n  No neighborhoods shift more than 10 rank positions between pooled and bus-only")
-
-    with phase("Loading monthly data for time series"):
-        monthly_df = load_monthly_data()
-        print(f"  {len(monthly_df):,} route-stop-month records loaded")
-
-        print("Analyzing quintile time series...")
-        quintile_ts = analyze_quintile_ts(monthly_df)
-
-    with phase("Saving CSV"):
-        save_csv(hood_summary, OUT / "neighborhood_otp.csv")
-        save_csv(hood_bus, OUT / "neighborhood_otp_bus_only.csv")
+    with phase("Saving CSVs"):
+        save_csv(tract_summary, OUT / "tract_otp.csv")
+        save_csv(bus_summary, OUT / "tract_otp_bus_only.csv")
+        if len(gradient_df) > 0:
+            save_csv(gradient_df, OUT / "otp_by_income_quintile.csv")
 
     with phase("Generating charts"):
-        make_chart(hood_summary, quintile_ts)
-        make_comparison_chart(hood_summary)
+        make_chart(tract_summary, quintile_ts)
+        make_comparison_chart(tract_summary)
+        make_income_chart(tract_summary, gradient_df)
 
 
 if __name__ == "__main__":
