@@ -297,6 +297,10 @@ PRT spends **$3.34 per trip on vehicle maintenance** — the highest of 8 peer c
 
 Buffering each route's stops by ¼ mile (bus) or ½ mile (rail/incline) and apportioning ACS tract population by overlap area, the routes serving the most residents are: **RED Line LRT (58,425)**, **bus 69 (55,088)**, **SLVR Line (52,516)**, **bus 54 (49,357)**, and the Oakland-trunk routes **61A (48,749) / 61C (48,421) / 67 (46,573)**. Median per-route reach across 100 routes is **21,393 residents**. Light rail wins in absolute reach despite far fewer stops (~50 vs ~200) because the larger rail walkshed and dense South Hills catchments combine — RED averages 990 residents per stop vs. 234 for bus 54. Reach is not ridership (see Analysis 22 for demand-weighted impact), but it identifies which routes' disruptions affect the most people.
 
+## 45. Population-Weighted System OTP (Analysis 45)
+
+Weighting each route's monthly OTP by its walkshed population (Analysis 44 construction), the OTP experienced by the average resident-near-a-route is **68.1%** — between the unweighted system mean (**69.4%**) and the trip-weighted mean (**67.3%**). Population-weighted OTP runs **+0.85 pp above trip-weighted** (paired t = -15.8, p < 0.001; n = 83 months), echoing Analysis 19's finding that scheduled trip frequency overstates exposure to the worst-performing routes. The interpretation is the same as Analysis 19's ridership weighting: PRT's lateness-prone routes do concentrate where many people live, but somewhat less than trip frequency alone implies. Caveat: residents within multiple walksheds count once per route, so this is the OTP of the average route-resident *exposure*, not the average resident.
+
 ## Key Takeaways
 
 ### What drives OTP
@@ -387,3 +391,4 @@ Buffering each route's stops by ¼ mile (bus) or ½ mile (rail/incline) and appo
 | 42 | [Allegheny Go Equity](analyses/42_allegheny_go_equity/) | Cross-references Allegheny Go fare program adoption with route on-time performance by municipality. |
 | 43 | [Allegheny Go Growth](analyses/43_allegheny_go_growth/) | Tracks Allegheny Go program growth since May 2024 and overlays ridership trends on monthly system OTP. |
 | 44 | [Route Population Reach](analyses/44_route_population_reach/) | Estimates the resident population within walking distance of each route by buffering stops and summing intersected census tract population. |
+| 45 | [Population Weighted Otp](analyses/45_population_weighted_otp/) | Compute the OTP experienced by the average resident by weighting each route's monthly OTP by its walkshed population, and compare to trip-weighted and unweighted system OTP. |

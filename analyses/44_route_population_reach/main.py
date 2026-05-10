@@ -8,96 +8,25 @@ from pathlib import Path
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import polars as pl
-from shapely import wkt
-from shapely.geometry import Point
 
 from prt_otp_analysis.common import (
     MODE_COLORS,
     output_dir,
     phase,
-    query_to_polars,
     run_analysis,
     save_chart,
     save_csv,
     setup_plotting,
 )
-from prt_otp_analysis.common.schemas import (
-    CENSUS_TRACTS,
-    ROUTES,
-    ROUTE_STOPS,
-    STOPS,
-    validate,
+from prt_otp_analysis.walksheds import (
+    build_route_walksheds,
+    load_stops_with_routes,
+    load_tracts,
+    population_per_route,
 )
 
 HERE = Path(__file__).resolve().parent
 OUT = output_dir(HERE)
-
-BUFFER_M_BUS = 400
-BUFFER_M_RAIL = 800
-
-CRS_GEO = "EPSG:4326"
-CRS_M = "EPSG:32617"
-
-
-def load_stops_with_routes() -> pl.DataFrame:
-    """Join stops + route_stops + routes; one row per (route, stop)."""
-    stops_df = query_to_polars(
-        "SELECT stop_id, lat, lon FROM stops WHERE lat IS NOT NULL AND lon IS NOT NULL"
-    )
-    validate(stops_df, STOPS, subset=True)
-    rs_df = query_to_polars("SELECT route_id, stop_id FROM route_stops")
-    validate(rs_df, ROUTE_STOPS, subset=True)
-    routes_df = query_to_polars("SELECT route_id, mode FROM routes")
-    validate(routes_df, ROUTES, subset=True)
-    return rs_df.join(stops_df, on="stop_id").join(routes_df, on="route_id")
-
-
-def load_tracts() -> gpd.GeoDataFrame:
-    """Load census tracts as a GeoDataFrame in meter projection."""
-    df = query_to_polars(
-        "SELECT geoid, population, land_area_m2, geometry_wkt FROM census_tracts"
-    )
-    validate(df, CENSUS_TRACTS, subset=True)
-    pdf = df.to_pandas()
-    pdf["geometry"] = pdf["geometry_wkt"].apply(wkt.loads)
-    gdf = gpd.GeoDataFrame(pdf.drop(columns=["geometry_wkt"]), geometry="geometry", crs=CRS_GEO)
-    return gdf.to_crs(CRS_M)
-
-
-def build_route_walksheds(stops_routes_df: pl.DataFrame) -> gpd.GeoDataFrame:
-    """Buffer stops by mode-specific radius and dissolve to one polygon per route."""
-    pdf = stops_routes_df.to_pandas()
-    pdf["geometry"] = [Point(lon, lat) for lon, lat in zip(pdf["lon"], pdf["lat"])]
-    gdf = gpd.GeoDataFrame(pdf, geometry="geometry", crs=CRS_GEO).to_crs(CRS_M)
-    gdf["buffer_m"] = gdf["mode"].map(
-        lambda m: BUFFER_M_RAIL if m in ("RAIL", "INCLINE") else BUFFER_M_BUS
-    )
-    gdf["geometry"] = gdf.geometry.buffer(gdf["buffer_m"])
-    walksheds = gdf.dissolve(by="route_id", aggfunc={"mode": "first"}).reset_index()
-    walksheds["walkshed_area_km2"] = walksheds.geometry.area / 1_000_000
-    return walksheds
-
-
-def population_per_route(
-    walksheds: gpd.GeoDataFrame,
-    tracts: gpd.GeoDataFrame,
-) -> pl.DataFrame:
-    """Areal interpolation: for each (route, tract) overlap, apportion tract population by area share."""
-    tracts = tracts.copy()
-    tracts["tract_area_m2"] = tracts.geometry.area
-    overlay = gpd.overlay(
-        walksheds[["route_id", "geometry"]],
-        tracts[["geoid", "population", "tract_area_m2", "geometry"]],
-        how="intersection",
-        keep_geom_type=True,
-    )
-    overlay["overlap_area_m2"] = overlay.geometry.area
-    overlay["pop_share"] = (
-        overlay["overlap_area_m2"] / overlay["tract_area_m2"]
-    ) * overlay["population"].fillna(0)
-    agg = overlay.groupby("route_id", as_index=False)["pop_share"].sum()
-    agg = agg.rename(columns={"pop_share": "population_served"})
-    return pl.from_pandas(agg)
 
 
 def assemble(

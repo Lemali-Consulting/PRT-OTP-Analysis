@@ -20,7 +20,7 @@ This document tracks the analysis roadmap, sequencing, and open methodological p
 
 The `census_tracts` table (Pipeline 10, added with Analysis 44) joins TIGER 2022 polygons with ACS 5-year (2018–2022) demographics — total population (`B01003`), median household income (`B19013`), vehicle availability (`B25044`), and race/ethnicity (`B03002`) — for Allegheny + Beaver + Butler + Washington + Westmoreland counties. It enables several follow-up analyses:
 
-1. **Population-weighted system OTP.** Weight each route's OTP by its `population_served` (Analysis 44 output) to compute the OTP experienced by the average resident, then compare to trip-weighted (Analysis 19) and unweighted system OTP. *Joins: `otp_monthly` × Analysis 44 output.*
+1. ~~**Population-weighted system OTP.** Weight each route's OTP by its `population_served`...~~ **Done as Analysis 45.** Population-weighted OTP 68.1% sits between unweighted 69.4% and trip-weighted 67.3%; +0.85 pp above trip-weighted (paired t = -15.8, p < 0.001, n = 83 months). The walkshed/population computation was extracted from Analysis 44 into the shared `prt_otp_analysis.walksheds` module so both analyses use it without cross-analysis imports.
 
 2. **Transit deserts.** Of the 2.17M people in the 5-county area, what share live outside any walkshed? Map gaps and rank the largest underserved tracts. *Joins: `census_tracts` × `stops` (buffer union).*
 

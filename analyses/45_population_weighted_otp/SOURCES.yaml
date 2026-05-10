@@ -1,0 +1,30 @@
+kind: analysis
+title: "45 - Population-Weighted System OTP"
+group: Route and Service Drivers
+tables:
+- otp_monthly
+- route_stops
+- stops
+- routes
+- census_tracts
+files: []
+analyses: []
+description: "Routes in PRT's network where many people live run late more often than the system as a whole. The average resident-near-a-route experiences ~68.1% on-time service, vs ~67.3% for the average scheduled trip and ~69.4% across all routes equally — confirming that ridership and population concentrate on the more lateness-prone urban-core routes."
+dependencies:
+- polars
+- scipy
+- geopandas
+- shapely
+outputs:
+- path: population_weighted_otp_trend.png
+  kind: image
+  description: monthly OTP under three weighting schemes (unweighted, trip, population).
+- path: weighting_comparison.csv
+  kind: data
+  description: monthly values for all three series, plus route count and total population served.
+- path: summary_stats.csv
+  kind: data
+  description: mean, median, std, min, max for each weighting scheme.
+- path: route_weights.csv
+  kind: data
+  description: per-route population_served and trips_7d used as weights.
