@@ -1,1 +1,2 @@
 data/GTFS/stop_times.txt filter=lfs diff=lfs merge=lfs -text
+data/prt.db filter=lfs diff=lfs merge=lfs -text
