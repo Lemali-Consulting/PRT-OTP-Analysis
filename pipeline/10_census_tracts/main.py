@@ -1,4 +1,4 @@
-"""Pipeline 10: load census tract polygons + ACS population into prt.db."""
+"""Pipeline 10: load census tract polygons + ACS demographics into prt.db."""
 
 from prt_otp_analysis.census_tracts import main as census_main
 

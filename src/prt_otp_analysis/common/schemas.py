@@ -181,12 +181,23 @@ CENSUS_TRACTS = Schema(
         "county_fips": pl.Utf8,
         "tract_code": pl.Utf8,
         "population": pl.Int64,
+        "median_household_income": pl.Int64,
+        "households_total": pl.Int64,
+        "households_zero_vehicle": pl.Int64,
+        "pop_white_nh": pl.Int64,
+        "pop_black_nh": pl.Int64,
+        "pop_asian_nh": pl.Int64,
+        "pop_hispanic": pl.Int64,
         "land_area_m2": pl.Float64,
         "intpt_lat": pl.Float64,
         "intpt_lon": pl.Float64,
         "geometry_wkt": pl.Utf8,
     },
-    nullable=frozenset({"population"}),
+    nullable=frozenset({
+        "population", "median_household_income",
+        "households_total", "households_zero_vehicle",
+        "pop_white_nh", "pop_black_nh", "pop_asian_nh", "pop_hispanic",
+    }),
 )
 
 

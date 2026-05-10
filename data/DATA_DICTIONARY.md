@@ -24,7 +24,7 @@ Pittsburgh Regional Transit (PRT) on-time performance and system data, normalize
 | `ntd_annual_service` | 93,188 | Fact: annual VRH/VRM/UPT/VOMS/fares/opexp by agency |
 | `otp_null_classification` | 1,064 | Ref: why each missing OTP value is null |
 | `allegheny_go_weekly` | ~96 | Fact: weekly Allegheny Go program ridership |
-| `census_tracts` | 669 | Dimension: 2020 tract polygons + ACS population (5 PRT-area counties) |
+| `census_tracts` | 669 | Dimension: 2022 tract polygons + ACS demographics (population, income, vehicle access, race/ethnicity) for 5 PRT-area counties |
 
 ### `routes`
 
@@ -189,19 +189,26 @@ Source: [Allegheny Go Dashboard](https://tableau.alleghenycounty.us/t/PublicSite
 
 ### `census_tracts`
 
-2020 TIGER/Line tract polygons joined to ACS 5-year (2018–2022) total population (`B01003_001E`) for Allegheny, Beaver, Butler, Washington, and Westmoreland counties.
+2022 TIGER/Line tract polygons joined to ACS 5-year (2018–2022) demographics for Allegheny, Beaver, Butler, Washington, and Westmoreland counties. Demographic columns are nullable: ACS suppresses estimates for very-small-population tracts (encoded as negative sentinels in the API and converted to NULL on ingest).
 
-| Column          | Type    | Description                                                       |
-|-----------------|---------|-------------------------------------------------------------------|
-| `geoid`         | TEXT PK | 11-digit GEOID (state + county + tract code)                      |
-| `state_fips`    | TEXT    | 2-digit state FIPS (always `42` Pennsylvania)                     |
-| `county_fips`   | TEXT    | 3-digit county FIPS                                               |
-| `tract_code`    | TEXT    | 6-digit tract code                                                |
-| `population`    | INTEGER | Total population, ACS 5-year (2018–2022); nullable                |
-| `land_area_m2`  | REAL    | Land area in square meters from TIGER `ALAND`                     |
-| `intpt_lat`     | REAL    | Internal point latitude (TIGER `INTPTLAT`)                        |
-| `intpt_lon`     | REAL    | Internal point longitude (TIGER `INTPTLON`)                       |
-| `geometry_wkt`  | TEXT    | Tract polygon as WKT (EPSG:4326)                                  |
+| Column                    | Type    | Description                                                       |
+|---------------------------|---------|-------------------------------------------------------------------|
+| `geoid`                   | TEXT PK | 11-digit GEOID (state + county + tract code)                      |
+| `state_fips`              | TEXT    | 2-digit state FIPS (always `42` Pennsylvania)                     |
+| `county_fips`             | TEXT    | 3-digit county FIPS                                               |
+| `tract_code`              | TEXT    | 6-digit tract code                                                |
+| `population`              | INTEGER | Total population (`B01003_001E`); nullable                        |
+| `median_household_income` | INTEGER | Median household income, dollars (`B19013_001E`); nullable        |
+| `households_total`        | INTEGER | Occupied housing units (`B25044_001E`); nullable                  |
+| `households_zero_vehicle` | INTEGER | Households with no vehicle = `B25044_003E + _010E`; nullable      |
+| `pop_white_nh`            | INTEGER | White alone, not Hispanic (`B03002_003E`); nullable               |
+| `pop_black_nh`            | INTEGER | Black alone, not Hispanic (`B03002_004E`); nullable               |
+| `pop_asian_nh`            | INTEGER | Asian alone, not Hispanic (`B03002_006E`); nullable               |
+| `pop_hispanic`            | INTEGER | Hispanic or Latino, any race (`B03002_012E`); nullable            |
+| `land_area_m2`            | REAL    | Land area in square meters from TIGER `ALAND`                     |
+| `intpt_lat`               | REAL    | Internal point latitude (TIGER `INTPTLAT`)                        |
+| `intpt_lon`               | REAL    | Internal point longitude (TIGER `INTPTLON`)                       |
+| `geometry_wkt`            | TEXT    | Tract polygon as WKT (EPSG:4326)                                  |
 
 Built by `src/prt_otp_analysis/census_tracts.py`.
 

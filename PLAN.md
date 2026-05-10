@@ -18,7 +18,7 @@ This document tracks the analysis roadmap, sequencing, and open methodological p
 
 ### Census-tract follow-ups
 
-The `census_tracts` table (Pipeline 10, added with Analysis 44) joins TIGER 2022 polygons with ACS 5-year (2018–2022) total population for Allegheny + Beaver + Butler + Washington + Westmoreland counties. It enables several follow-up analyses:
+The `census_tracts` table (Pipeline 10, added with Analysis 44) joins TIGER 2022 polygons with ACS 5-year (2018–2022) demographics — total population (`B01003`), median household income (`B19013`), vehicle availability (`B25044`), and race/ethnicity (`B03002`) — for Allegheny + Beaver + Butler + Washington + Westmoreland counties. It enables several follow-up analyses:
 
 1. **Population-weighted system OTP.** Weight each route's OTP by its `population_served` (Analysis 44 output) to compute the OTP experienced by the average resident, then compare to trip-weighted (Analysis 19) and unweighted system OTP. *Joins: `otp_monthly` × Analysis 44 output.*
 
@@ -30,4 +30,4 @@ The `census_tracts` table (Pipeline 10, added with Analysis 44) joins TIGER 2022
 
 5. **Latent demand model.** Compute boardings-per-resident-in-walkshed for each tract; high-population/low-boarding tracts are intervention candidates, the inverse identifies overperformers. *Joins: `bus_stop_usage` × `stops` × `census_tracts`.*
 
-6. **Richer ACS variables (foundational extension).** Adding `B19013` (median household income), `B25044` (vehicle ownership), and `B03002` (race/ethnicity) to Pipeline 10 — ~20 lines in `census_tracts.py` — enables genuine demographic-equity analyses (income vs OTP, zero-vehicle-household reach vs ridership) without the fuzzy `hood` field. Highest unlock per unit of effort; powers many follow-ups.
+6. ~~**Richer ACS variables (foundational extension).** Adding `B19013` (median household income), `B25044` (vehicle ownership), and `B03002` (race/ethnicity) to Pipeline 10.~~ **Done.** `census_tracts` now carries `median_household_income`, `households_total`, `households_zero_vehicle`, and four race/ethnicity columns (`pop_white_nh`, `pop_black_nh`, `pop_asian_nh`, `pop_hispanic`). Unlocks income-vs-OTP, zero-vehicle-reach-vs-ridership, and race-equity follow-ups without the fuzzy `hood` field.
