@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 39 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 44 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -293,6 +293,10 @@ Pittsburgh lost 41% of riders and 13% of service hours between 2019 and 2024 —
 
 PRT spends **$3.34 per trip on vehicle maintenance** — the highest of 8 peer cities and 47% above the peer average ($2.27). The other cost categories are mid-pack or lean (general admin is the second-lowest at $2.23/trip). Bus fleet age does not explain the gap: PRT's buses average 7.1 years, younger than Minneapolis (10.5) or Buffalo (9.1). However, PRT's **light rail fleet averages 32.4 years old** (3rd oldest among peers), which likely contributes to the elevated maintenance bill. Vehicle maintenance costs per trip spiked during COVID and have not recovered, suggesting these costs are largely fixed and do not scale with ridership.
 
+## 44. Route Population Reach (Analysis 44)
+
+Buffering each route's stops by ¼ mile (bus) or ½ mile (rail/incline) and apportioning ACS tract population by overlap area, the routes serving the most residents are: **RED Line LRT (58,425)**, **bus 69 (55,088)**, **SLVR Line (52,516)**, **bus 54 (49,357)**, and the Oakland-trunk routes **61A (48,749) / 61C (48,421) / 67 (46,573)**. Median per-route reach across 100 routes is **21,393 residents**. Light rail wins in absolute reach despite far fewer stops (~50 vs ~200) because the larger rail walkshed and dense South Hills catchments combine — RED averages 990 residents per stop vs. 234 for bus 54. Reach is not ridership (see Analysis 22 for demand-weighted impact), but it identifies which routes' disruptions affect the most people.
+
 ## Key Takeaways
 
 ### What drives OTP
@@ -380,5 +384,6 @@ PRT spends **$3.34 per trip on vehicle maintenance** — the highest of 8 peer c
 | 39 | [National Service Cuts](analyses/39_national_service_cuts/) | Compare vehicle revenue hour changes 2019-2024 across the 150 largest US transit agencies; rank PRT; contrast supply-side service cuts with demand-side ridership loss. |
 | 40 | [Peer City Dashboard](analyses/40_peer_city_dashboard/) | Compare PRT to 7 peer cities across ridership recovery, service hours, and fare burden using NTD data from 2019 to 2024. |
 | 41 | [Operating Cost Drivers](analyses/41_operating_cost_drivers/) | Decompose PRT's operating cost premium into vehicle operations, maintenance, non-vehicle maintenance, and general admin; correlate with fleet age data from the NTD. |
-| 42 | [Allegheny Go Equity](analyses/42_allegheny_go_equity/) | Municipalities with poor bus reliability do not have lower Allegheny Go adoption — the program successfully reaches areas across the OTP spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50). |
-| 43 | [Allegheny Go Program Growth](analyses/43_allegheny_go_growth/) | The Allegheny Go fare program grew from 262 rides per week to over 30,000 in 18 months, accumulating 2.27 million total rides. Ridership growth is uncorrelated with system OTP (r = 0.13, p = 0.60), driven by enrollment expansion rather than service quality. |
+| 42 | [Allegheny Go Equity](analyses/42_allegheny_go_equity/) | Cross-references Allegheny Go fare program adoption with route on-time performance by municipality. |
+| 43 | [Allegheny Go Growth](analyses/43_allegheny_go_growth/) | Tracks Allegheny Go program growth since May 2024 and overlays ridership trends on monthly system OTP. |
+| 44 | [Route Population Reach](analyses/44_route_population_reach/) | Estimates the resident population within walking distance of each route by buffering stops and summing intersected census tract population. |

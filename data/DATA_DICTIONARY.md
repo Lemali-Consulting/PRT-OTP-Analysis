@@ -24,6 +24,7 @@ Pittsburgh Regional Transit (PRT) on-time performance and system data, normalize
 | `ntd_annual_service` | 93,188 | Fact: annual VRH/VRM/UPT/VOMS/fares/opexp by agency |
 | `otp_null_classification` | 1,064 | Ref: why each missing OTP value is null |
 | `allegheny_go_weekly` | ~96 | Fact: weekly Allegheny Go program ridership |
+| `census_tracts` | 669 | Dimension: 2020 tract polygons + ACS population (5 PRT-area counties) |
 
 ### `routes`
 
@@ -185,6 +186,24 @@ Weekly ridership for the Allegheny Go discounted fare program, extracted from th
 | `riders`     | INTEGER | Unique riders that week                                  |
 
 Source: [Allegheny Go Dashboard](https://tableau.alleghenycounty.us/t/PublicSite/views/AlleghenyGoDashboard/Ridership). Built by `src/prt_otp_analysis/allegheny_go.py`.
+
+### `census_tracts`
+
+2020 TIGER/Line tract polygons joined to ACS 5-year (2018–2022) total population (`B01003_001E`) for Allegheny, Beaver, Butler, Washington, and Westmoreland counties.
+
+| Column          | Type    | Description                                                       |
+|-----------------|---------|-------------------------------------------------------------------|
+| `geoid`         | TEXT PK | 11-digit GEOID (state + county + tract code)                      |
+| `state_fips`    | TEXT    | 2-digit state FIPS (always `42` Pennsylvania)                     |
+| `county_fips`   | TEXT    | 3-digit county FIPS                                               |
+| `tract_code`    | TEXT    | 6-digit tract code                                                |
+| `population`    | INTEGER | Total population, ACS 5-year (2018–2022); nullable                |
+| `land_area_m2`  | REAL    | Land area in square meters from TIGER `ALAND`                     |
+| `intpt_lat`     | REAL    | Internal point latitude (TIGER `INTPTLAT`)                        |
+| `intpt_lon`     | REAL    | Internal point longitude (TIGER `INTPTLON`)                       |
+| `geometry_wkt`  | TEXT    | Tract polygon as WKT (EPSG:4326)                                  |
+
+Built by `src/prt_otp_analysis/census_tracts.py`.
 
 ## Source Files
 

@@ -173,6 +173,23 @@ OTP_NULL_CLASSIFICATION = Schema(
 )
 
 
+CENSUS_TRACTS = Schema(
+    name="census_tracts",
+    columns={
+        "geoid": pl.Utf8,
+        "state_fips": pl.Utf8,
+        "county_fips": pl.Utf8,
+        "tract_code": pl.Utf8,
+        "population": pl.Int64,
+        "land_area_m2": pl.Float64,
+        "intpt_lat": pl.Float64,
+        "intpt_lon": pl.Float64,
+        "geometry_wkt": pl.Utf8,
+    },
+    nullable=frozenset({"population"}),
+)
+
+
 def validate(
     df: pl.DataFrame,
     schema: Schema,

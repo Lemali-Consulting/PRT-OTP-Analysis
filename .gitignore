@@ -14,5 +14,6 @@ data/prt.db-wal
 data/penndot-traffic/*.json
 data/noaa-weather/*.csv
 data/wprdc-schedule/*.csv
+data/census-tracts/
 nul
 .devcontainer/.env.secrets

@@ -1,0 +1,25 @@
+kind: analysis
+title: "44 - Route Population Reach"
+tables:
+- stops
+- route_stops
+- routes
+- census_tracts
+files: []
+analyses: []
+description: "The PRT routes that reach the most residents are the RED Line LRT (58,000 people within walking distance), bus 69 to Trafford (55,000), and the SLVR Line (53,000). The Oakland-East End bus corridor (61A/B/C, 67) and the cross-town 54 each cover 43,000+ residents, making them the highest-impact routes when service is disrupted. Light-rail stations average 3-5x more reach per stop than bus stops because of their wider walking-distance buffer and dense South Hills catchments."
+dependencies:
+- geopandas
+- shapely
+- polars
+- matplotlib
+outputs:
+- path: route_population_reach.csv
+  kind: data
+  description: Per-route stop count, walkshed area, and resident population reached via areal interpolation against ACS 5-year tract population.
+- path: route_population_reach_top25.png
+  kind: image
+  description: Horizontal bar chart of the top 25 routes by population served, colored by mode.
+- path: walkshed_map.png
+  kind: image
+  description: Map of the union of all PRT route walksheds over census tract population density for the 5-county service area.
