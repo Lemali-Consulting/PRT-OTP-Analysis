@@ -1,0 +1,8 @@
+# Assumptions for Route Ridership Ranking
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+- id: weekday-daytype-label
+  text: "The weekday day_type label in ridership_monthly is exactly 'WEEKDAY'. If a future load relabels it (e.g. 'WKDAY'), the ranking metric silently becomes all-null."
+- id: excluded-rail-codes
+  text: "BLUE/RED/SLVR cover the full 2017-2024 period, so excluding the superseded BLLB/BLSV codes does not drop any light-rail months. If BLUE/RED/SLVR were ever found to start later than 2017-01, the early years would lose rail entirely."

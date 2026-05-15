@@ -1,0 +1,22 @@
+kind: analysis
+title: "47 - Route Ridership Ranking"
+tables:
+- ridership_monthly
+files: []
+analyses: []
+description: "Ranking Pittsburgh's transit routes by weekday ridership from 2017 to 2024, the busiest is the P1 East Busway bus (about 6,600 riders a day), ahead of the Red Line and Blue Line light rail and the 51 Carrick bus. Ridership is concentrated: the 18 busiest routes carry half of all weekday riders, while roughly half of the 103 routes each account for under 1%."
+dependencies:
+- polars
+outputs:
+- path: route_ridership_ranking.csv
+  kind: data
+  description: Every route ranked by average weekday daily ridership, with Saturday/Sunday averages, month count, and system/cumulative share.
+- path: ridership_by_mode.csv
+  kind: data
+  description: Total weekday ridership and route count by mode.
+- path: top25_ridership.png
+  kind: image
+  description: Horizontal bar chart of the 25 busiest routes, coloured by mode.
+- path: ridership_by_mode.png
+  kind: image
+  description: Total weekday ridership by mode, annotated with route counts.
