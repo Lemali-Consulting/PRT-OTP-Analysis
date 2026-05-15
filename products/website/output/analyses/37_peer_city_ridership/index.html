@@ -36,7 +36,7 @@
   <h1>37 - Peer City Ridership Comparison</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
-  <p class="lede">Built 2026-05-15 18:36 UTC · Commit 2317a81</p>
+  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
 </section>
 
 <section class="panel toc-panel">
@@ -225,7 +225,7 @@
 <h2>Approach</h2>
 <ul>
 <li>Select 8 peer transit agencies by NTD ID: Pittsburgh (30022), Baltimore (30034), Cleveland (50015), Denver (80006), St. Louis (70006), Buffalo (20004), Portland (8), Minneapolis (50027).</li>
-<li>Sum monthly UPT across all modes and TOS per agency, Jan 2019–Dec 2025.</li>
+<li>Sum monthly <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> across all modes and TOS per agency, Jan 2019–Dec 2025.</li>
 <li>Index each agency's monthly total to its 2019 monthly average (= 100) to normalize for size.</li>
 <li>Plot indexed ridership trajectories for all 8 peers.</li>
 <li>Compute 2024 vs 2019 recovery percentage for each peer.</li>
@@ -233,7 +233,7 @@
 </ul>
 <h2>Data</h2>
 <ul>
-<li><code>ntd_ridership</code> — monthly UPT by agency/mode/TOS, filtered to Jan 2019–Dec 2025.</li>
+<li><code>ntd_ridership</code> — monthly <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> by agency/mode/TOS, filtered to Jan 2019–Dec 2025.</li>
 <li><code>ntd_agency</code> — agency names and mode codes.</li>
 </ul>
 <h2>Output</h2>

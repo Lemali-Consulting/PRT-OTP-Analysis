@@ -14,6 +14,12 @@ categories:
         definition: Maximum geographic distance covered by a route across its served stops.
       - term: Busway Route
         definition: Route operating on dedicated right-of-way for part of its alignment.
+      - term: Unlinked Passenger Trips
+        abbreviation: UPT
+        definition: Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.
+      - term: Vehicle Revenue Hours
+        abbreviation: VRH
+        definition: Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.
 
   - name: Descriptive Statistics
     terms:

@@ -36,7 +36,7 @@
   <h1>NTD Ridership ETL</h1>
   
   <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
-  <p class="lede">Built 2026-05-15 18:36 UTC · Commit 2317a81</p>
+  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
 </section>
 
 <section class="panel toc-panel">
@@ -105,7 +105,7 @@
 <h2>Approach</h2>
 <ol>
 <li>Read agency dimension rows from NTD workbook Master sheet.</li>
-<li>Unpivot monthly UPT values from wide to long format.</li>
+<li>Unpivot monthly <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> values from wide to long format.</li>
 <li>Normalize month keys to <code>YYYY-MM</code>.</li>
 <li>Rebuild <code>ntd_agency</code> and <code>ntd_ridership</code> tables in <code>prt.db</code>.</li>
 </ol>

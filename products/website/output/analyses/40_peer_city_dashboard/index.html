@@ -36,7 +36,7 @@
   <h1>40 - Peer City Dashboard</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-05-15 18:36 UTC · Commit 2317a81</p>
+  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
 </section>
 
 <section class="panel toc-panel">
@@ -97,7 +97,7 @@
 <ol>
 <li><p><strong>Pittsburgh's ridership loss (-40.8%) is near the peer <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>.</strong> All 8 cities lost 23–45% of riders between 2019 and 2024. Cleveland fared best (-22.6%), St. Louis worst (-45.2%). Pittsburgh's loss is among the steepest.</p>
 </li>
-<li><p><strong>Service cuts (-13.1%) are mid-range.</strong> PRT's 13% reduction in vehicle revenue hours is comparable to Portland (-10.7%) and Buffalo (-14.8%). Denver (-23.6%), Minneapolis (-22.5%), and St. Louis (-29.3%) cut far more deeply. Cleveland cut the least (-3.2%).</p>
+<li><p><strong>Service cuts (-13.1%) are mid-range.</strong> PRT's 13% reduction in <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">vehicle revenue hours</a> is comparable to Portland (-10.7%) and Buffalo (-14.8%). Denver (-23.6%), Minneapolis (-22.5%), and St. Louis (-29.3%) cut far more deeply. Cleveland cut the least (-3.2%).</p>
 </li>
 <li><p><strong>Pittsburgh is the only peer city where fare revenue per trip increased.</strong> PRT's effective fare rose from $1.57 to $1.70 per trip (+8.3%), while every other peer saw fare-per-trip decline — some sharply (Minneapolis $1.27→$0.92, Portland $1.19→$0.92). This likely reflects peer cities adopting reduced-fare programs or fare-free experiments during and after the pandemic, while PRT maintained its fare structure.</p>
 </li>
@@ -225,7 +225,7 @@
 <h2>Approach</h2>
 <ul>
 <li>Pull 2019 and 2024 annual data for 8 peer cities from <code>ntd_annual_service</code>.</li>
-<li>Compute percent change (2019→2024) for ridership (UPT), service hours (VRH), and fare revenue.</li>
+<li>Compute percent change (2019→2024) for ridership (<a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>), service hours (<a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>), and fare revenue.</li>
 <li>Compute derived metrics: fare per trip (<code>fares / upt</code>), farebox recovery ratio (<code>fares / opexp</code>), and cost per trip (<code>opexp / upt</code>).</li>
 <li>Visualize changes as grouped bars with Pittsburgh highlighted, and derived metrics as paired 2019-vs-2023 bars.</li>
 <li>Combine key views into a multi-panel dashboard figure.</li>

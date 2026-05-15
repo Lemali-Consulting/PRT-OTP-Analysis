@@ -36,7 +36,7 @@
   <h1>41 - Operating Cost Drivers</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-05-15 18:36 UTC · Commit 2317a81</p>
+  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
 </section>
 
 <section class="panel toc-panel">
@@ -228,7 +228,7 @@
 <p>Where does PRT's operating cost premium come from relative to peers, and does fleet age explain the vehicle maintenance gap?</p>
 <h2>Approach</h2>
 <ul>
-<li>Pull OpExp sub-categories (VO, VM, NVM, GA) and UPT from <code>ntd_annual_service</code> for 8 peers, 2019 and 2024.</li>
+<li>Pull OpExp sub-categories (VO, VM, NVM, GA) and <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> from <code>ntd_annual_service</code> for 8 peers, 2019 and 2024.</li>
 <li>Normalize all costs to per-trip amounts (<code>opexp_xx / upt</code>) to control for agency size.</li>
 <li>Pull fleet age data from <code>ntd_fleet_age</code> for 2024 (bus and light rail vehicle types).</li>
 <li>Scatter-plot bus average age vs vehicle maintenance cost per trip to test whether older fleets explain higher maintenance costs.</li>

@@ -36,7 +36,7 @@
   <h1>36 - National Ridership Growth (2019 vs 2024)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
-  <p class="lede">Built 2026-05-15 18:36 UTC · Commit 2317a81</p>
+  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
 </section>
 
 <section class="panel toc-panel">
@@ -103,7 +103,7 @@
 <li><a href="../../glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">IQR</a>: −33.4% to −12.0%</li>
 <li>Agencies recovered to 2019 levels: 11 / 150 (7%)</li>
 <li>PRT rank: 136 / 150 (−42.4% change)</li>
-<li>PRT 2019 UPT: 64.1 million → 2024 UPT: 36.9 million</li>
+<li>PRT 2019 <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>: 64.1 million → 2024 <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>: 36.9 million</li>
 <li>Top recovery: City of Alexandria (+34.6%)</li>
 <li>Bottom: Puerto Rico Highway and Transportation Authority (−85.8%)</li>
 </ul>
@@ -119,9 +119,9 @@
 <p>PRT's below-<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> recovery suggests Pittsburgh-specific headwinds beyond the national pandemic trend. Possible factors include sustained remote-work adoption in major employers (UPMC, university sector), service cuts that may have dampened demand, and light rail losses that drag the overall figure below bus-only recovery.</p>
 <h2>Caveats</h2>
 <ul>
-<li>&quot;Top 150&quot; is defined by 2019 UPT, which excludes agencies that have grown from a small base.</li>
+<li>&quot;Top 150&quot; is defined by 2019 <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>, which excludes agencies that have grown from a small base.</li>
 <li>Requires at least 10 months of data per year to exclude partial-year artifacts; a few agencies near the cutoff may have slightly biased totals.</li>
-<li>UPT counts all modes and TOS combined; agencies with large commuter rail components (which recovered less) appear worse than bus-only peers.</li>
+<li><a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> counts all modes and TOS combined; agencies with large commuter rail components (which recovered less) appear worse than bus-only peers.</li>
 <li>NTD data includes estimates and adjustments; some months may be revised after initial reporting.</li>
 </ul>
 </div>
@@ -202,7 +202,7 @@
 <p>What is the average 2019-to-2024 ridership change across the 150 largest US transit agencies, and where does Pittsburgh Regional Transit rank?</p>
 <h2>Approach</h2>
 <ul>
-<li>Sum unlinked passenger trips (UPT) by agency across all modes/TOS for calendar years 2019 and 2024.</li>
+<li>Sum <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">unlinked passenger trips</a> (<a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>) by agency across all modes/TOS for calendar years 2019 and 2024.</li>
 <li>Require at least 10 months of non-null data in both years to avoid partial-year artifacts.</li>
 <li>Rank agencies by 2019 total to define the &quot;top 150&quot; (pre-pandemic baseline, not distorted by COVID).</li>
 <li>Compute percent change ((2024 − 2019) / 2019 × 100) per agency.</li>
@@ -212,7 +212,7 @@
 </ul>
 <h2>Data</h2>
 <ul>
-<li><code>ntd_ridership</code> — monthly UPT by agency/mode/TOS, filtered to 2019 and 2024.</li>
+<li><code>ntd_ridership</code> — monthly <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> by agency/mode/TOS, filtered to 2019 and 2024.</li>
 <li><code>ntd_agency</code> — agency names for labeling.</li>
 </ul>
 <h2>Output</h2>
