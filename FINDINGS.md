@@ -106,8 +106,9 @@ There is a **moderately strong negative correlation** between the number of stop
 - **All routes: r = -0.53** (p < 0.001, n = 92)
 - **Bus only: r = -0.50** (p < 0.001, n = 89)
 - **Bus only Spearman: r = -0.49** (p < 0.001)
+- **Bus only, excluding 2 high-leverage routes (59, 77): r = -0.52** (p < 0.001, n = 87)
 
-The bus-only result rules out Simpson's paradox -- the effect is not an artifact of mixing BUS and RAIL modes. Routes with fewer than 50 stops consistently achieve 80%+ OTP, while routes with 150+ stops struggle to reach 60%. This is the clearest structural predictor of OTP in the dataset. Note: stop counts come from the current route_stops snapshot while OTP is averaged across all historical months, so routes that changed stop configurations have a temporal mismatch.
+The bus-only result rules out Simpson's paradox -- the effect is not an artifact of mixing BUS and RAIL modes. Routes with fewer than 50 stops consistently achieve 80%+ OTP, while routes with 150+ stops struggle to reach 60%. This is the clearest structural predictor of OTP in the dataset. Route 59 (Mon Valley) is the extreme case at 334 stops -- 76 more than the next route -- but it performs *above* the trend (0.69 OTP vs a predicted 0.56); a leverage-robustness check confirms the correlation holds with this and the other high-stop route removed. Note: stop counts come from the current route_stops snapshot while OTP is averaged across all historical months, so routes that changed stop configurations have a temporal mismatch.
 
 ## 8. Hot-Spot Map (Analysis 08)
 
@@ -400,3 +401,4 @@ Where Analysis 44 asks which routes reach the most people, this analysis asks th
 | 45 | [Population Weighted Otp](analyses/45_population_weighted_otp/) | Compute the OTP experienced by the average resident by weighting each route's monthly OTP by its walkshed population, and compare to trip-weighted and unweighted system OTP. |
 | 46 | [Population Transit Proximity](analyses/46_population_transit_proximity/) | Measures the distance from each Allegheny County census tract to its nearest PRT stop and tests whether more densely populated tracts sit closer to transit. Reports the density-vs-distance correlation and a population-density-quartile gradient, complementing Analysis 44's route-level population reach. |
 | 47 | [Route Ridership Ranking](analyses/47_route_ridership_ranking/) | Ranking Pittsburgh's transit routes by weekday ridership from 2017 to 2024; the busiest is the P1 East Busway bus (~6,600 riders a day), ahead of the Red and Blue Line light rail and the 51 Carrick bus. Ridership is concentrated: the 18 busiest of 103 routes carry half of all weekday riders. |
+| 48 | [Service Productivity](analyses/48_service_productivity/) | Each hour of PRT service carries fewer than half as many riders as in 1991 — productivity fell from 39 to 18 passengers per service hour. PRT kept service nearly flat (−5% since 1991) while ridership fell 55%, so vehicles run emptier rather than being right-sized; its 32% drop since 2019 is the steepest of 8 peer cities. |

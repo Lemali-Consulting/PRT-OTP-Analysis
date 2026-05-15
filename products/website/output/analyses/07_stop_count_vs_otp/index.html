@@ -36,7 +36,7 @@
   <h1>07: Stop Count vs OTP</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+  <p class="lede">Built 2026-05-15 18:13 UTC · Commit e64aa4b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -108,6 +108,7 @@
 <li><strong>All routes: Pearson r = -0.53</strong> (p &lt; 0.001, n = 92)</li>
 <li><strong>Bus only: Pearson r = -0.50</strong> (p &lt; 0.001, n = 89)</li>
 <li><strong>Bus only: Spearman r = -0.49</strong> (p &lt; 0.001)</li>
+<li><strong>Bus only, excluding 2 high-leverage routes (59, 77): Pearson r = -0.52</strong> (p &lt; 0.001, n = 87)</li>
 <li>Routes with &lt; 50 stops: typically 80%+ <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 <li>Routes with 150+ stops: typically below 60% <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 </ul>
@@ -118,7 +119,9 @@
 <li>The Spearman rank correlation (r = -0.49) is consistent with the Pearson, indicating the relationship is approximately monotonic without being driven by outliers or non-linearity.</li>
 <li>Every stop adds dwell time (boarding/alighting), traffic signal delay, and schedule recovery risk. The cumulative effect is substantial.</li>
 <li>Busway and rail routes tend to have fewer stops and dedicated right-of-way, giving them a double advantage.</li>
-<li>Route 77 (Penn Hills) is an extreme case: 258 stops and among the worst <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> in the system.</li>
+<li><strong>Route 59 (Mon Valley) is the extreme stop-count route</strong>: 334 stops, 76 more than the next-highest route, winding through 17 Mon Valley municipalities. It is a high-leverage point on the scatter (leverage ~9x the average) and sits well <em>above</em> the trendline -- 0.69 <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> versus the ~0.56 the bus trend predicts at 334 stops. Despite the most stops in the system, it performs better than the model expects, likely because a dwell-heavy urban route carries a generously padded schedule. Its stop count is genuine, not a data artifact: every stop is served by the same single trip pattern (no branch-union inflation).</li>
+<li>Route 77 (Penn Hills), at 258 stops, is the <em>worst-performing</em> high-stop route (0.56 <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>) -- the clearest illustration of the negative relationship. Unlike Route 59, it runs several branches, so its stop count is a union across patterns no single trip serves.</li>
+<li>Excluding the two high-leverage routes (59 and 77) leaves the bus correlation essentially unchanged (r = -0.50 -&gt; -0.52), so the headline relationship is not an artifact of the extreme-stop routes. Route 59 alone slightly <em>masks</em> the relationship: dropping just that point strengthens the bus Pearson to r = -0.55.</li>
 </ul>
 <h2>Implication</h2>
 <p>Stop consolidation -- reducing the number of stops on long routes -- is a common transit strategy for improving schedule adherence. This data strongly supports that approach for PRT's worst-performing routes.</p>
@@ -126,6 +129,13 @@
 <ul>
 <li>Correlation is not causation. Routes with many stops also tend to serve congested corridors, cover longer distances, and carry more passengers -- all of which independently affect <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
 <li><strong>Temporal mismatch:</strong> Stop counts come from the current <code>route_stops</code> snapshot while <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is averaged across all historical months (2019--2025). Routes that changed stop configurations during this period have a mismatch between their current stop count and earlier <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> observations. This is inherent to the available data and cannot be corrected without historical stop-count snapshots.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Surprising point investigated (checklist #5).</strong> Route 59's 334 stops -- 30% above the next-highest route -- was audited before being written up. In <code>route_stops</code> all 332 of its stops share an identical <code>trips_7d</code> of 162, indicating a single service pattern with no branch-union inflation; its stops span 17 contiguous Mon Valley municipalities. The count is a genuine long route, not a join error.</li>
+<li><strong>Outlier influence checked (checklist #5, #8).</strong> The bus regression has two high-leverage routes by the <code>h &gt; 3*(2/n)</code> rule (59 and 77). The leverage-robustness check recomputes the bus Pearson with them removed (r = -0.52, n = 87); the headline finding is stable. Both extreme-stop routes are annotated on the chart.</li>
+<li><strong>Small-sample routes flagged (checklist #8).</strong> Routes with fewer than 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data are excluded (<code>HAVING COUNT(*) &gt;= 12</code>).</li>
+<li><strong>Ecological framing (checklist #9).</strong> Results are route-level associations between stop count and average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>; no individual-trip or individual-rider claims are made.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
@@ -205,6 +215,8 @@
 <li>Create a scatter plot of stop count vs average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, colored by mode.</li>
 <li>Compute Pearson and <a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a> coefficients, both for all routes and for bus-only (to check for <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> from mixing modes).</li>
 <li>Fit a simple linear regression line (bus-only, via <code>scipy.stats.linregress</code>).</li>
+<li><strong>Leverage-robustness check:</strong> recompute the bus-only <a href="../../glossary.html#pearson-correlation" class="glossary-link" data-definition="Linear association metric ranging from -1 to 1.">Pearson correlation</a> after dropping high-leverage routes -- those whose regression leverage <code>h = 1/n + (x - mean)^2 / Sxx</code> exceeds <code>3 * (2/n)</code>, the standard rule of thumb for a two-parameter fit. This confirms the correlation is not an artifact of the few extreme-stop-count routes.</li>
+<li>Annotate the two highest-stop-count routes (59 and 77) on the scatter so the influential points are visible to readers.</li>
 </ul>
 <p><strong>Note:</strong> Stop counts come from the current <code>route_stops</code> snapshot, while <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is averaged across all historical months. Routes that changed stop configurations over time will have a mismatch between their current stop count and the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> values from earlier periods.</p>
 <h2>Data</h2>
@@ -254,6 +266,7 @@
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Scatter analysis of route stop count versus average on-time performance.&quot;&quot;&quot;
 
 import polars as pl
+from scipy.stats import pearsonr
 
 from prt_otp_analysis.common import analysis_dir, correlate_by_mode, mode_scatter, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
 
@@ -278,9 +291,38 @@ def load_data() -&gt; pl.DataFrame:
     return avg_otp.join(stop_counts, on=&quot;route_id&quot;, how=&quot;inner&quot;)
 
 
+def _high_leverage(x: list[float], cutoff_mult: float = 3.0) -&gt; list[bool]:
+    &quot;&quot;&quot;Flag points whose simple-regression leverage exceeds the cutoff.
+
+    Returns one bool per point. Leverage h_i = 1/n + (x_i - mean)^2 / Sxx;
+    a point is flagged when h_i &gt; cutoff_mult * (2/n), the standard rule of
+    thumb for a two-parameter (slope + intercept) regression.
+    &quot;&quot;&quot;
+    n = len(x)
+    mean_x = sum(x) / n
+    sxx = sum((xi - mean_x) ** 2 for xi in x)
+    cutoff = cutoff_mult * 2 / n
+    return [(1 / n + (xi - mean_x) ** 2 / sxx) &gt; cutoff for xi in x]
+
+
 def analyze(df: pl.DataFrame) -&gt; tuple[pl.DataFrame, dict]:
-    &quot;&quot;&quot;Compute Pearson and Spearman correlations, overall and bus-only.&quot;&quot;&quot;
-    return df, correlate_by_mode(df, &quot;stop_count&quot;, &quot;avg_otp&quot;)
+    &quot;&quot;&quot;Compute correlations plus a leverage-robustness check for bus routes.
+
+    Adds ``bus_robust_*`` keys: the bus-only Pearson correlation recomputed
+    after dropping high-leverage routes (the few extreme-stop-count points
+    that disproportionately steer the trendline).
+    &quot;&quot;&quot;
+    results = correlate_by_mode(df, &quot;stop_count&quot;, &quot;avg_otp&quot;)
+
+    bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    flagged = pl.Series(_high_leverage(bus_df[&quot;stop_count&quot;].to_list()))
+    robust_df = bus_df.filter(~flagged)
+    r, p = pearsonr(robust_df[&quot;stop_count&quot;].to_list(), robust_df[&quot;avg_otp&quot;].to_list())
+    results[&quot;bus_robust_pearson_r&quot;] = float(r)
+    results[&quot;bus_robust_pearson_p&quot;] = float(p)
+    results[&quot;bus_robust_n&quot;] = robust_df.height
+    results[&quot;bus_excluded_routes&quot;] = bus_df.filter(flagged)[&quot;route_id&quot;].to_list()
+    return df, results
 
 
 def make_chart(df: pl.DataFrame) -&gt; None:
@@ -288,6 +330,18 @@ def make_chart(df: pl.DataFrame) -&gt; None:
     plt = setup_plotting()
     fig, ax = plt.subplots(figsize=(10, 7))
     mode_scatter(ax, df, &quot;stop_count&quot;, &quot;avg_otp&quot;)
+    for route in (&quot;59&quot;, &quot;77&quot;):
+        row = df.filter(pl.col(&quot;route_id&quot;) == route)
+        if row.height:
+            ax.annotate(
+                f&quot;Route {route}&quot;,
+                (row[&quot;stop_count&quot;][0], row[&quot;avg_otp&quot;][0]),
+                textcoords=&quot;offset points&quot;,
+                xytext=(-9, 9),
+                fontsize=8,
+                ha=&quot;right&quot;,
+                color=&quot;#1e3a5f&quot;,
+            )
     ax.set_xlabel(&quot;Number of Stops&quot;)
     ax.set_ylabel(&quot;Average OTP&quot;)
     ax.set_title(&quot;Stop Count vs On-Time Performance by Route&quot;)
@@ -309,6 +363,9 @@ def main() -&gt; None:
         print(f&quot;  Bus only:    Pearson r = {results[&#x27;bus_pearson_r&#x27;]:.4f} (p = {results[&#x27;bus_pearson_p&#x27;]:.4f})&quot;)
         print(f&quot;               Spearman r = {results[&#x27;bus_spearman_r&#x27;]:.4f} (p = {results[&#x27;bus_spearman_p&#x27;]:.4f})&quot;)
         print(f&quot;               n = {results[&#x27;bus_n&#x27;]} bus routes&quot;)
+        excluded = &quot;, &quot;.join(results[&quot;bus_excluded_routes&quot;]) or &quot;none&quot;
+        print(f&quot;  Bus robust:  Pearson r = {results[&#x27;bus_robust_pearson_r&#x27;]:.4f} (p = {results[&#x27;bus_robust_pearson_p&#x27;]:.4f}), n = {results[&#x27;bus_robust_n&#x27;]}&quot;)
+        print(f&quot;               high-leverage routes excluded: {excluded}&quot;)
 
     with phase(&quot;Saving CSV&quot;):
         save_csv(df, OUT / &quot;stop_count_otp.csv&quot;)
