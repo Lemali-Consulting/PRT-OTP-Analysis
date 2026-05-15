@@ -35,7 +35,7 @@
   <p class="kicker">Reference</p>
   <h1>Data Dictionary</h1>
   <p class="lede">Database tables, columns, types, and known data quality notes for the PRT OTP dataset.</p>
-  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
 </section>
 <section class="panel">
   <div class="markdown-body">
@@ -123,6 +123,11 @@
   <td><code>allegheny_go_weekly</code></td>
   <td>~96</td>
   <td>Fact: weekly Allegheny Go program ridership</td>
+</tr>
+<tr>
+  <td><code>census_tracts</code></td>
+  <td>669</td>
+  <td>Dimension: 2022 tract polygons + ACS demographics (population, income, vehicle access, race/ethnicity) for 5 PRT-area counties</td>
 </tr>
 </tbody>
 </table>
@@ -639,6 +644,100 @@
 </tbody>
 </table>
 <p>Source: <a href="https://tableau.alleghenycounty.us/t/PublicSite/views/AlleghenyGoDashboard/Ridership">Allegheny Go Dashboard</a>. Built by <code>src/prt_otp_analysis/allegheny_go.py</code>.</p>
+<h3><code>census_tracts</code></h3>
+<p>2022 TIGER/Line tract polygons joined to ACS 5-year (2018–2022) demographics for Allegheny, Beaver, Butler, Washington, and Westmoreland counties. Demographic columns are nullable: ACS suppresses estimates for very-small-population tracts (encoded as negative sentinels in the API and converted to NULL on ingest).</p>
+<table>
+<thead>
+<tr>
+  <th>Column</th>
+  <th>Type</th>
+  <th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>geoid</code></td>
+  <td>TEXT PK</td>
+  <td>11-digit GEOID (state + county + tract code)</td>
+</tr>
+<tr>
+  <td><code>state_fips</code></td>
+  <td>TEXT</td>
+  <td>2-digit state FIPS (always <code>42</code> Pennsylvania)</td>
+</tr>
+<tr>
+  <td><code>county_fips</code></td>
+  <td>TEXT</td>
+  <td>3-digit county FIPS</td>
+</tr>
+<tr>
+  <td><code>tract_code</code></td>
+  <td>TEXT</td>
+  <td>6-digit tract code</td>
+</tr>
+<tr>
+  <td><code>population</code></td>
+  <td>INTEGER</td>
+  <td>Total population (<code>B01003_001E</code>); nullable</td>
+</tr>
+<tr>
+  <td><code>median_household_income</code></td>
+  <td>INTEGER</td>
+  <td>Median household income, dollars (<code>B19013_001E</code>); nullable</td>
+</tr>
+<tr>
+  <td><code>households_total</code></td>
+  <td>INTEGER</td>
+  <td>Occupied housing units (<code>B25044_001E</code>); nullable</td>
+</tr>
+<tr>
+  <td><code>households_zero_vehicle</code></td>
+  <td>INTEGER</td>
+  <td>Households with no vehicle = <code>B25044_003E + _010E</code>; nullable</td>
+</tr>
+<tr>
+  <td><code>pop_white_nh</code></td>
+  <td>INTEGER</td>
+  <td>White alone, not Hispanic (<code>B03002_003E</code>); nullable</td>
+</tr>
+<tr>
+  <td><code>pop_black_nh</code></td>
+  <td>INTEGER</td>
+  <td>Black alone, not Hispanic (<code>B03002_004E</code>); nullable</td>
+</tr>
+<tr>
+  <td><code>pop_asian_nh</code></td>
+  <td>INTEGER</td>
+  <td>Asian alone, not Hispanic (<code>B03002_006E</code>); nullable</td>
+</tr>
+<tr>
+  <td><code>pop_hispanic</code></td>
+  <td>INTEGER</td>
+  <td>Hispanic or Latino, any race (<code>B03002_012E</code>); nullable</td>
+</tr>
+<tr>
+  <td><code>land_area_m2</code></td>
+  <td>REAL</td>
+  <td>Land area in square meters from TIGER <code>ALAND</code></td>
+</tr>
+<tr>
+  <td><code>intpt_lat</code></td>
+  <td>REAL</td>
+  <td>Internal point latitude (TIGER <code>INTPTLAT</code>)</td>
+</tr>
+<tr>
+  <td><code>intpt_lon</code></td>
+  <td>REAL</td>
+  <td>Internal point longitude (TIGER <code>INTPTLON</code>)</td>
+</tr>
+<tr>
+  <td><code>geometry_wkt</code></td>
+  <td>TEXT</td>
+  <td>Tract polygon as WKT (EPSG:4326)</td>
+</tr>
+</tbody>
+</table>
+<p>Built by <code>src/prt_otp_analysis/census_tracts.py</code>.</p>
 <h2>Source Files</h2>
 <table>
 <thead>

@@ -36,7 +36,7 @@
   <h1>24 - Weekday vs Weekend Ridership Trends</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2017-01 to 2025-11 (from otp_monthly, ridership_monthly).</p>
-  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
 </section>
 
 <section class="panel toc-panel">
@@ -100,27 +100,27 @@
     <summary><h2>Findings</h2></summary>
     <div class="markdown"><h1>Findings: Weekday vs Weekend Ridership Trends</h1>
 <h2>Summary</h2>
-<p>Weekend ridership has recovered far more strongly than weekday ridership since COVID. As of October 2024, Saturday service is at 90.7% of its January 2019 level while weekday service is at just 64.5%. Weekend's share of total ridership rose from 13.6% pre-COVID to 17.8% post-2023, a +4.2 pp structural shift. The weekend-to-weekday ridership ratio does <strong>not</strong> significantly correlate with route-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (Pearson r = -0.20, p = 0.097).</p>
+<p>Weekend ridership has recovered far more strongly than weekday ridership since COVID. As of October 2024, Saturday service is at 92.8% of its January 2019 level while weekday service is at just 69.0%. Weekend's share of total ridership rose from 14.0% pre-COVID to 17.8% post-2023, a +3.8 pp structural shift. The weekend-to-weekday ridership ratio does <strong>not</strong> significantly correlate with route-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (Pearson r = -0.20, p = 0.097).</p>
 <h2>Key Numbers</h2>
 <ul>
-<li><strong>Weekday recovery</strong> (Oct 2024 vs Jan 2019): 64.5% -- weekday ridership has not recovered</li>
-<li><strong>Saturday recovery</strong>: 90.7% -- nearly fully recovered</li>
-<li><strong>Sunday recovery</strong>: 83.9%</li>
-<li><strong>Weekend share pre-COVID</strong> (Jan 2019 -- Feb 2020): 13.6%</li>
+<li><strong>Weekday recovery</strong> (Oct 2024 vs Jan 2019): 69.0% -- weekday ridership has not recovered</li>
+<li><strong>Saturday recovery</strong>: 92.8% -- nearly fully recovered</li>
+<li><strong>Sunday recovery</strong>: 86.0%</li>
+<li><strong>Weekend share pre-COVID</strong> (Jan 2019 -- Feb 2020): 14.0%</li>
 <li><strong>Weekend share post-2023</strong> (Jan 2023 -- Oct 2024): 17.8%</li>
-<li><strong>Shift</strong>: +4.2 pp toward weekend travel</li>
-<li>74 routes with 6+ months of all three day types for route-level analysis</li>
+<li><strong>Shift</strong>: +3.8 pp toward weekend travel</li>
+<li>71 routes with 6+ months of all three day types for route-level analysis</li>
 <li>67 routes with both weekend ratio and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data for correlation</li>
 </ul>
 <h2>Observations</h2>
 <ul>
 <li>The indexed ridership chart shows a dramatic divergence after COVID. All three day types crashed in spring 2020, but Saturday and Sunday rebounded much faster and more completely than weekday service.</li>
 <li>The weekend share chart shows a step-change during COVID (weekend share spiked to ~25% when weekday commuting collapsed) followed by a partial return, stabilizing around 17-18% -- well above the pre-COVID 13-14% level.</li>
-<li>Route-level weekend ratios vary widely: <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 0.97 (roughly equal weekend and weekday ridership per day of service), but ranging from 0.29 (route BLSV, heavily weekday-oriented) to 1.85+ for some routes.</li>
+<li>Route-level weekend ratios vary widely: <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 0.98 (roughly equal weekend and weekday ridership per day of service), but ranging from 0.42 (route 38, heavily weekday-oriented) to 1.85+ for typical commuter routes.</li>
 <li>The correlation between weekend ratio and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is weakly negative (r = -0.20) but not statistically significant at alpha = 0.05. Routes with higher weekend share do not have meaningfully different <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
 </ul>
 <h2>Discussion</h2>
-<p>The 26-percentage-point gap in recovery between weekday (64.5%) and Saturday (90.7%) service is the headline finding. This is consistent with national trends: remote and hybrid work has permanently reduced weekday commuting, while discretionary weekend travel has largely returned. For PRT, this means:</p>
+<p>The 24-percentage-point gap in recovery between weekday (69.0%) and Saturday (92.8%) service is the headline finding. This is consistent with national trends: remote and hybrid work has permanently reduced weekday commuting, while discretionary weekend travel has largely returned. For PRT, this means:</p>
 <ol>
 <li><strong>Revenue and planning implications</strong>: The traditional weekday-peak service model serves a shrinking share of total demand. Weekend service, historically treated as reduced-frequency filler, now carries a proportionally larger role.</li>
 <li><strong><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is not driving the gap</strong>: Weekend-heavy routes do not have significantly different <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, suggesting the weekday ridership collapse is driven by exogenous factors (remote work) rather than service quality differences between day types.</li>
@@ -132,6 +132,7 @@
 <li>The January 2019 baseline is a single month; seasonal effects <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> the indexed values fluctuate even in the pre-COVID period. The recovery percentages should be interpreted as approximate.</li>
 <li>Some routes have extreme weekend ratios (e.g., route 68 at 239x) likely due to very low weekday ridership rather than high weekend ridership. These outliers are excluded from the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation by the 6-month minimum and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data join.</li>
 <li><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data is not available by <a href="../../glossary.html#day-type" class="glossary-link" data-definition="Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.">day type</a> -- the <code>otp_monthly</code> table contains a single <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> value per route per month, so we cannot directly compare weekday vs weekend <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+<li>The superseded pre-2020 Blue Line codes <code>BLLB</code>/<code>BLSV</code> and three fragmentary rows (<code>NA</code>, <code>MNT</code>, <code>MNT1</code>) are excluded from <code>ridership_monthly</code>. The same light-rail service is recorded for the full period under <code>BLUE</code>/<code>RED</code>/<code>SLVR</code>; keeping both double-counted rail (~6.5% of the system total) through Feb 2020, which previously inflated the Jan 2019 baseline and understated post-COVID recovery by ~4-5 pp. See <code>errors/data-quality/light-rail-double-coded-under-two-route-id-schemes-in-ridership-monthly.md</code>.</li>
 </ul>
 </div>
   </details>
@@ -248,7 +249,11 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Notes:</strong> Overlap period (Jan 2019 -- Oct 2024) for <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation.</p>
+<p><strong>Notes:</strong> Overlap period (Jan 2019 -- Oct 2024) for <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation. Five route
+codes are excluded from <code>ridership_monthly</code>: <code>BLLB</code>/<code>BLSV</code> (superseded pre-2020
+Blue Line codes whose service is already counted under <code>BLUE</code>/<code>RED</code>/<code>SLVR</code>, so
+keeping both double-counts rail) and <code>NA</code>/<code>MNT</code>/<code>MNT1</code> (fragmentary rows with no
+route name).</p>
 <h2>Output</h2>
 <ul>
 <li><code>output/daytype_ridership_trend.png</code> -- indexed ridership by <a href="../../glossary.html#day-type" class="glossary-link" data-definition="Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.">day type</a> over time</li>
@@ -277,13 +282,22 @@ from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, analysis_dir, corr
 
 OUT = analysis_dir(__file__)
 
+# Route codes excluded from ridership aggregation. BLLB/BLSV are the superseded
+# pre-2020 Blue Line codes; the same light-rail service is recorded for the full
+# period under BLUE/RED/SLVR, so keeping both double-counts rail (~6.5% of the
+# system total) through Feb 2020. NA/MNT/MNT1 are fragmentary rows with no route
+# name. See errors/data-quality/light-rail-double-coded-... for the full audit.
+EXCLUDED_ROUTES = (&quot;BLLB&quot;, &quot;BLSV&quot;, &quot;MNT&quot;, &quot;MNT1&quot;, &quot;NA&quot;)
+
 
 def load_ridership() -&gt; pl.DataFrame:
-    &quot;&quot;&quot;Load all ridership data across day types.&quot;&quot;&quot;
-    return query_to_polars(&quot;&quot;&quot;
+    &quot;&quot;&quot;Load all ridership data across day types, dropping double-counted/junk codes.&quot;&quot;&quot;
+    placeholders = &quot;, &quot;.join(f&quot;&#x27;{r}&#x27;&quot; for r in EXCLUDED_ROUTES)
+    return query_to_polars(f&quot;&quot;&quot;
         SELECT route_id, month, day_type, avg_riders, day_count
         FROM ridership_monthly
         WHERE avg_riders IS NOT NULL AND day_count IS NOT NULL
+          AND route_id NOT IN ({placeholders})
     &quot;&quot;&quot;)
 
 

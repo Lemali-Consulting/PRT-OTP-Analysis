@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>47 - Route Ridership Ranking - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>47 - Route Ridership Ranking</h1>
+  
+  <p class="lede">Coverage: 2017-01 to 2024-10 (from ridership_monthly).</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../46_population_transit_proximity/index.html">← 46 - Population Transit Proximity</a>
+    <a href="../48_service_productivity/index.html">48 - Service Productivity (Passengers per Revenue Hour) →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  47_route_ridership_ranking(["47 - Route Ridership Ranking"])
+  t_ridership_monthly[("ridership_monthly")] --> 47_route_ridership_ranking
+  01_data_ingestion[["Data Ingestion"]] --> t_ridership_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  d1_47_route_ridership_ranking(("polars (lib)")) --> 47_route_ridership_ranking
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 47_route_ridership_ranking page;
+  class t_ridership_monthly table;
+  class d1_47_route_ridership_ranking dep;
+  class u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Route Ridership Ranking</h1>
+<h2>Summary</h2>
+<p>Ranked all 103 PRT routes by average weekday daily ridership over 2017-2024.
+The busiest route is the <strong>P1 East Busway-All Stops</strong> (6,635 weekday riders),
+followed by the <strong>Red Line</strong> light rail (6,269) and the <strong>51 Carrick</strong> bus
+(6,063). Ridership is heavily concentrated: the top 18 routes carry half of all
+weekday ridership, and the top 47 carry 80%. The remaining ~55 routes share the
+last fifth.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>103 routes</strong> ranked; system total <strong>147,413</strong> average weekday daily riders.</li>
+<li><strong>Top 5:</strong> P1 (6,635), RED (6,269), 51 (6,063), BLUE (4,929), 61C (4,816).</li>
+<li><strong>Concentration:</strong> top 18 routes = 50% of weekday ridership; top 47 = 80%.</li>
+<li><strong>By mode:</strong> Bus carries 131,289 riders across 99 routes (89%); Rail 15,236
+across 3 routes (10%); the Monongahela Incline 888 across 1 route (0.6%).</li>
+<li><strong>3 routes</strong> flagged <code>short_history</code> (&lt; 12 weekday months of data).</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li>The single busiest route is a bus rapid transit corridor (P1 East Busway),
+not a rail line -- consistent with PRT's busway-centric network design.</li>
+<li>Three light rail lines (Red, Blue, Silver) all rank in the top 8, each
+carrying 4,000-6,300 weekday riders despite being only 3 of 103 routes.</li>
+<li>The 61x and 71x route families (Oakland/East End corridors) dominate the
+upper-middle of the ranking -- seven of the top 13 routes are 61- or 71-coded.</li>
+<li>The long tail is real: roughly half of all routes individually account for
+less than 1% of system weekday ridership each.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Two light-rail code schemes.</strong> The pre-2020 Blue Line codes <code>BLLB</code>/<code>BLSV</code>
+were excluded because the same service is recorded for the full period under
+<code>BLUE</code>/<code>RED</code>/<code>SLVR</code>. Keeping both would have double-counted rail ridership in
+2017-2020. See METHODS.md.</li>
+<li><strong>Average spans a disrupted period.</strong> The 2017-2024 window includes the COVID
+ridership collapse and partial recovery, so a route's average sits below its
+typical pre-pandemic level and above its 2020 trough. This is a historical
+average, not a current snapshot.</li>
+<li><strong>Routes operate for different spans.</strong> A route present for only part of the
+period is averaged over the months it ran. Three short-history routes are
+flagged; their ranks rest on a thin window.</li>
+<li><strong>Ecological scope.</strong> This ranks routes, not riders or neighborhoods. A
+high-ridership route is not necessarily efficient -- pair with a productivity
+analysis (passengers per revenue hour) for that.</li>
+<li><strong>Weekday-only ranking.</strong> Saturday and Sunday averages are in the CSV but do
+not affect rank; a weekend-heavy route may rank lower here than its total
+ridership would suggest.</li>
+</ul>
+<h2>Validation</h2>
+<h3>Data inputs</h3>
+<ol>
+<li><strong>Data source verified.</strong> Columns (<code>route_id</code>, <code>month</code>, <code>day_type</code>,
+<code>avg_riders</code>, <code>route_name</code>, <code>mode</code>) confirmed against the <code>ridership_monthly</code>
+table definition in <code>build_db.py</code>. No column mapping written from memory.</li>
+<li><strong>Temporal scope.</strong> Single table, single window (2017-01 to 2024-10). The
+ranking metric is filtered to <code>day_type = 'WEEKDAY'</code> consistently.</li>
+<li><strong>Null handling.</strong> <code>avg_riders IS NULL</code> rows dropped in the query. Routes
+with no weekday record are dropped from the ranking (<code>weekday_avg_riders</code>
+not null filter). Saturday/Sunday columns may be null where a route runs no
+weekend service -- left as null, not zero-filled.</li>
+</ol>
+<h3>Results plausibility</h3>
+<ol start="4">
+<li><strong>Aggregates sanity-checked.</strong> System total of 147k average weekday riders is
+plausible for a multi-year average that includes the COVID trough (PRT's
+pre-pandemic weekday ridership was ~200k+; the 2020-2022 collapse pulls the
+2017-2024 <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> well below that).</li>
+<li><strong>Surprising results investigated.</strong> An initial run had <code>BLSV</code>/<code>BLLB</code>
+ranking 1st and 3rd as separate light-rail routes. Investigation found these
+are superseded pre-2020 Blue Line codes overlapping <code>BLUE</code>/<code>RED</code>/<code>SLVR</code>,
+which double-counted rail. They were excluded; the corrected ranking has P1
+first. An error report was filed.</li>
+<li><strong>Direction of effects checked.</strong> The ranking matches known PRT high-ridership
+corridors -- East Busway (P1), the T lines, Carrick (51), and the Oakland
+61/71 families all rank at the top, as expected.</li>
+</ol>
+<h3>Statistical diagnostics</h3>
+<ol start="7">
+<li><strong>Multicollinearity.</strong> Not applicable -- no regression in this analysis.</li>
+<li><strong>Small-sample routes flagged.</strong> Routes with fewer than 12 weekday months are
+flagged <code>short_history</code> in the output (3 routes); none were silently dropped.</li>
+<li><strong>Ecological framing.</strong> Results describe route-level ridership volumes, not
+individual rider behavior. Noted in Caveats.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (2)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/47_route_ridership_ranking/top25_ridership.png" alt="top25_ridership" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/47_route_ridership_ranking/top25_ridership.png" target="_blank" rel="noopener noreferrer">top25_ridership.png</a>
+          <p class="artifact-desc">Horizontal bar chart of the 25 busiest routes, coloured by mode.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/47_route_ridership_ranking/ridership_by_mode.png" alt="ridership_by_mode" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/47_route_ridership_ranking/ridership_by_mode.png" target="_blank" rel="noopener noreferrer">ridership_by_mode.png</a>
+          <p class="artifact-desc">Total weekday ridership by mode, annotated with route counts.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/47_route_ridership_ranking/route_ridership_ranking.csv" target="_blank" rel="noopener noreferrer">route_ridership_ranking.csv</a>
+          <p class="artifact-desc">Every route ranked by average weekday daily ridership, with Saturday/Sunday averages, month count, and system/cumulative share.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/47_route_ridership_ranking/route_ridership_ranking.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/47_route_ridership_ranking/ridership_by_mode.csv" target="_blank" rel="noopener noreferrer">ridership_by_mode.csv</a>
+          <p class="artifact-desc">Total weekday ridership and route count by mode.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/47_route_ridership_ranking/ridership_by_mode.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Route Ridership Ranking</h1>
+<h2>Question</h2>
+<p>Which PRT routes carry the most riders? This analysis produces a single
+leaderboard of every route ranked by average weekday daily ridership over the
+full available history (January 2017 - October 2024).</p>
+<h2>Approach</h2>
+<ul>
+<li>Load every route-month-daytype record from <code>ridership_monthly</code>.</li>
+<li>Restrict the ranking metric to <code>WEEKDAY</code> records (weekday service is the
+largest and most comparable <a href="../../glossary.html#day-type" class="glossary-link" data-definition="Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.">day type</a> across routes).</li>
+<li>For each route, average <code>avg_riders</code> across all weekday months it operated.
+This yields the route's typical weekday daily ridership over the period.</li>
+<li>Rank routes descending by that average. Assign an integer rank, the route's
+share of total system weekday ridership, and a running cumulative share so the
+long tail of low-ridership routes is visible.</li>
+<li>Count the number of weekday months observed per route (<code>n_months</code>) and flag
+routes with fewer than 12 months of data, since their average rests on a
+short, possibly non-representative window.</li>
+<li>Carry Saturday and Sunday averages as extra columns for context (not used for
+ranking).</li>
+<li>Summarise totals and route counts by mode (Bus, Rail, Light Rail, Incline).</li>
+</ul>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ridership_monthly</code></td>
+  <td>Average daily riders per route, month, and <a href="../../glossary.html#day-type" class="glossary-link" data-definition="Service category such as weekday, Saturday, or Sunday that affects schedule and demand patterns.">day type</a></td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
+<p>Filters: <code>avg_riders IS NOT NULL</code>. The ranking metric uses <code>day_type = 'WEEKDAY'</code>
+only.</p>
+<p>Five route codes are excluded. The light-rail network appears under two
+overlapping code schemes: <code>BLLB</code> and <code>BLSV</code> are the pre-2020 Blue Line codes,
+and the same service runs the full 2017-2024 period under <code>BLUE</code>, <code>RED</code>, and
+<code>SLVR</code> -- keeping both would double-count rail in 2017-2020. <code>NA</code>, <code>MNT</code>, and
+<code>MNT1</code> are fragmentary rows with no route name. All other routes are kept;
+short-history routes are flagged (<code>short_history</code>) rather than dropped.</p>
+<h2>Output</h2>
+<ul>
+<li><code>output/route_ridership_ranking.csv</code> -- every route ranked, with weekday /
+Saturday / Sunday averages, month count, system share, and cumulative share.</li>
+<li><code>output/top25_ridership.png</code> -- horizontal bar chart of the 25 busiest routes,
+coloured by mode.</li>
+<li><code>output/ridership_by_mode.png</code> -- total weekday ridership and route count by mode.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 47: Rank every PRT route by average weekday daily ridership over 2017-2024.&quot;&quot;&quot;
+
+import polars as pl
+
+from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting
+
+OUT = analysis_dir(__file__)
+
+# Minimum weekday months for a route&#x27;s average to be considered representative.
+MIN_MONTHS = 12
+
+# Route codes excluded from the ranking. The light-rail network is recorded
+# under two overlapping code schemes: BLLB/BLSV are the superseded pre-2020
+# Blue Line codes whose service is already captured by BLUE/RED/SLVR across the
+# full 2017-2024 period, so keeping both double-counts rail. NA/MNT/MNT1 are
+# fragmentary rows with no route name.
+EXCLUDED_ROUTES = {
+    &quot;BLLB&quot;: &quot;superseded light-rail code (Blue Line - Library)&quot;,
+    &quot;BLSV&quot;: &quot;superseded light-rail code (Blue Line - South Hills Village)&quot;,
+    &quot;MNT&quot;: &quot;fragmentary record, no route name (1 month)&quot;,
+    &quot;MNT1&quot;: &quot;fragmentary record, no route name (7 months)&quot;,
+    &quot;NA&quot;: &quot;junk record, no route id/name/mode&quot;,
+}
+
+# Colours per mode for charts (DB mode labels are mixed-case).
+MODE_COLOR = {
+    &quot;Bus&quot;: &quot;#2563eb&quot;,
+    &quot;Rail&quot;: &quot;#e11d48&quot;,
+    &quot;Light Rail&quot;: &quot;#16a34a&quot;,
+    &quot;Incline&quot;: &quot;#f59e0b&quot;,
+    &quot;Unknown&quot;: &quot;#94a3b8&quot;,
+}
+
+
+def load_ridership() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load non-null route-month-daytype ridership records, dropping excluded codes.&quot;&quot;&quot;
+    placeholders = &quot;, &quot;.join(f&quot;&#x27;{r}&#x27;&quot; for r in EXCLUDED_ROUTES)
+    return query_to_polars(f&quot;&quot;&quot;
+        SELECT route_id, month, day_type, avg_riders, route_name, mode
+        FROM ridership_monthly
+        WHERE avg_riders IS NOT NULL
+          AND route_id NOT IN ({placeholders})
+    &quot;&quot;&quot;)
+
+
+def rank_routes(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Rank routes by mean weekday daily ridership, with system and cumulative share.&quot;&quot;&quot;
+    ranked = (
+        df.group_by(&quot;route_id&quot;)
+        .agg(
+            route_name=pl.col(&quot;route_name&quot;).drop_nulls().first(),
+            mode=pl.col(&quot;mode&quot;).drop_nulls().first(),
+            weekday_avg_riders=pl.col(&quot;avg_riders&quot;).filter(pl.col(&quot;day_type&quot;) == &quot;WEEKDAY&quot;).mean(),
+            n_months=pl.col(&quot;avg_riders&quot;).filter(pl.col(&quot;day_type&quot;) == &quot;WEEKDAY&quot;).count(),
+            sat_avg_riders=pl.col(&quot;avg_riders&quot;).filter(pl.col(&quot;day_type&quot;) == &quot;SAT.&quot;).mean(),
+            sun_avg_riders=pl.col(&quot;avg_riders&quot;).filter(pl.col(&quot;day_type&quot;) == &quot;SUN.&quot;).mean(),
+        )
+        .filter(pl.col(&quot;weekday_avg_riders&quot;).is_not_null())
+        .with_columns(pl.col(&quot;mode&quot;).fill_null(&quot;Unknown&quot;))
+        .sort(&quot;weekday_avg_riders&quot;, descending=True)
+    )
+
+    total = ranked[&quot;weekday_avg_riders&quot;].sum()
+    ranked = (
+        ranked.with_columns(
+            rank=pl.Series(&quot;rank&quot;, range(1, len(ranked) + 1)),
+            system_share=pl.col(&quot;weekday_avg_riders&quot;) / total,
+            short_history=pl.col(&quot;n_months&quot;) &lt; MIN_MONTHS,
+        )
+        .with_columns(cum_share=pl.col(&quot;system_share&quot;).cum_sum())
+        .select(
+            &quot;rank&quot;, &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;,
+            &quot;weekday_avg_riders&quot;, &quot;sat_avg_riders&quot;, &quot;sun_avg_riders&quot;,
+            &quot;n_months&quot;, &quot;short_history&quot;, &quot;system_share&quot;, &quot;cum_share&quot;,
+        )
+    )
+    return ranked
+
+
+def mode_summary(ranked: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Total weekday ridership and route count per mode.&quot;&quot;&quot;
+    return (
+        ranked.group_by(&quot;mode&quot;)
+        .agg(
+            n_routes=pl.len(),
+            total_weekday_riders=pl.col(&quot;weekday_avg_riders&quot;).sum(),
+        )
+        .sort(&quot;total_weekday_riders&quot;, descending=True)
+    )
+
+
+def make_top25_chart(ranked: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Horizontal bar chart of the 25 busiest routes, coloured by mode.&quot;&quot;&quot;
+    plt = setup_plotting()
+    top = ranked.head(25).reverse()  # reverse so rank 1 sits at the top
+
+    labels = top[&quot;route_id&quot;].to_list()
+    values = top[&quot;weekday_avg_riders&quot;].to_list()
+    colors = [MODE_COLOR.get(m, MODE_COLOR[&quot;Unknown&quot;]) for m in top[&quot;mode&quot;].to_list()]
+
+    fig, ax = plt.subplots(figsize=(10, 9))
+    bars = ax.barh(labels, values, color=colors)
+    ax.bar_label(bars, labels=[f&quot;{v:,.0f}&quot; for v in values], padding=3, fontsize=8)
+
+    ax.set_xlabel(&quot;Average Weekday Daily Riders (2017-2024)&quot;)
+    ax.set_ylabel(&quot;Route&quot;)
+    ax.set_title(&quot;25 Busiest PRT Routes by Average Weekday Ridership&quot;)
+    ax.margins(x=0.12)
+
+    seen = list(dict.fromkeys(top[&quot;mode&quot;].to_list()))
+    handles = [plt.Rectangle((0, 0), 1, 1, color=MODE_COLOR.get(m, MODE_COLOR[&quot;Unknown&quot;])) for m in seen]
+    ax.legend(handles, seen, title=&quot;Mode&quot;, loc=&quot;lower right&quot;, fontsize=9)
+
+    save_chart(fig, OUT / &quot;top25_ridership.png&quot;)
+
+
+def make_mode_chart(modes: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bar chart of total weekday ridership by mode, annotated with route counts.&quot;&quot;&quot;
+    plt = setup_plotting()
+    labels = modes[&quot;mode&quot;].to_list()
+    values = modes[&quot;total_weekday_riders&quot;].to_list()
+    counts = modes[&quot;n_routes&quot;].to_list()
+    colors = [MODE_COLOR.get(m, MODE_COLOR[&quot;Unknown&quot;]) for m in labels]
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    bars = ax.bar(labels, values, color=colors)
+    ax.bar_label(
+        bars,
+        labels=[f&quot;{v:,.0f}\n({c} routes)&quot; for v, c in zip(values, counts)],
+        padding=3,
+        fontsize=9,
+    )
+
+    ax.set_ylabel(&quot;Total Average Weekday Daily Riders&quot;)
+    ax.set_xlabel(&quot;Mode&quot;)
+    ax.set_title(&quot;Weekday Ridership by Mode (Sum of Route Averages, 2017-2024)&quot;)
+    ax.margins(y=0.15)
+
+    save_chart(fig, OUT / &quot;ridership_by_mode.png&quot;)
+
+
+@run_analysis(47, &quot;Route Ridership Ranking&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: rank routes by weekday ridership, summarise by mode, save outputs.&quot;&quot;&quot;
+
+    with phase(&quot;Loading ridership data&quot;):
+        ride_df = load_ridership()
+        print(f&quot;  {len(ride_df):,} rows, {ride_df[&#x27;route_id&#x27;].n_unique()} routes&quot;)
+        print(f&quot;  Month range: {ride_df[&#x27;month&#x27;].min()} to {ride_df[&#x27;month&#x27;].max()}&quot;)
+        print(f&quot;  Excluded {len(EXCLUDED_ROUTES)} route codes:&quot;)
+        for code, reason in EXCLUDED_ROUTES.items():
+            print(f&quot;    {code:&lt;5s} - {reason}&quot;)
+
+    with phase(&quot;Ranking routes by weekday ridership&quot;):
+        ranked = rank_routes(ride_df)
+        total = ranked[&quot;weekday_avg_riders&quot;].sum()
+        print(f&quot;  {len(ranked)} routes ranked&quot;)
+        print(f&quot;  System total: {total:,.0f} avg weekday daily riders&quot;)
+        short = ranked.filter(pl.col(&quot;short_history&quot;))
+        print(f&quot;  {len(short)} routes flagged with &lt; {MIN_MONTHS} weekday months&quot;)
+
+        print(&quot;\n  Top 10 routes:&quot;)
+        for row in ranked.head(10).iter_rows(named=True):
+            print(f&quot;    {row[&#x27;rank&#x27;]:&gt;3}. {row[&#x27;route_id&#x27;]:&lt;8s} &quot;
+                  f&quot;{row[&#x27;weekday_avg_riders&#x27;]:&gt;8,.0f}/wkday  &quot;
+                  f&quot;({row[&#x27;system_share&#x27;]:.1%}, cum {row[&#x27;cum_share&#x27;]:.1%})  {row[&#x27;mode&#x27;]}&quot;)
+
+        # Where does cumulative share cross key thresholds?
+        for target in (0.50, 0.80):
+            crossed = ranked.filter(pl.col(&quot;cum_share&quot;) &gt;= target)
+            if len(crossed) &gt; 0:
+                n_routes = crossed[&quot;rank&quot;].min()
+                print(f&quot;  Top {n_routes} routes carry {target:.0%} of weekday ridership&quot;)
+
+    with phase(&quot;Summarising by mode&quot;):
+        modes = mode_summary(ranked)
+        for row in modes.iter_rows(named=True):
+            print(f&quot;    {row[&#x27;mode&#x27;]:&lt;12s}: {row[&#x27;total_weekday_riders&#x27;]:&gt;10,.0f} riders &quot;
+                  f&quot;across {row[&#x27;n_routes&#x27;]} routes&quot;)
+
+    with phase(&quot;Saving CSV&quot;):
+        save_csv(ranked, OUT / &quot;route_ridership_ranking.csv&quot;)
+        save_csv(modes, OUT / &quot;ridership_by_mode.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        make_top25_chart(ranked)
+        make_mode_chart(modes)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>ridership_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

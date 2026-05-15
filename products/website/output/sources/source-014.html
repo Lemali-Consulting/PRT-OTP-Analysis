@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/PRT_Stop_Reference_Lookup_Table.csv - Source Detail</title>
+  <title>data/GTFS/trips.txt - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">File</p>
-  <h1>data/PRT_Stop_Reference_Lookup_Table.csv</h1>
-  <p class="lede">Historical stop reference file with geography attributes.</p>
+  <h1>data/GTFS/trips.txt</h1>
+  <p class="lede">GTFS shape-to-route mapping.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/PRT_Stop_Reference_Lookup_Table.csv"]
-  src --> c1["Data Ingestion"]
+  src["data/GTFS/trips.txt"]
+  src --> c1["Traffic Overlay ETL"]
 </pre>
 </section>
 
@@ -55,7 +55,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Historical stop reference file with geography attributes.</td>
+        <td>GTFS shape-to-route mapping.</td>
         <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
@@ -67,7 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a></h3>
+      <h3><a href="pipeline/04_traffic_overlay/index.html">Traffic Overlay ETL</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

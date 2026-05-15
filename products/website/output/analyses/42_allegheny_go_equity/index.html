@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>42 - Allegheny Go Equity - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>42 - Allegheny Go Equity</h1>
+  
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../41_operating_cost_drivers/index.html">← 41 - Operating Cost Drivers</a>
+    <a href="../43_allegheny_go_growth/index.html">43 - Allegheny Go Program Growth →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  42_allegheny_go_equity(["42 - Allegheny Go Equity"])
+  f1_42_allegheny_go_equity[/"data/allegheny-go/tract_reach.csv"/] --> 42_allegheny_go_equity
+  f2_42_allegheny_go_equity[/"data/allegheny-go/demographics_summary.csv"/] --> 42_allegheny_go_equity
+  t_otp_monthly[("otp_monthly")] --> 42_allegheny_go_equity
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_route_stops[("route_stops")] --> 42_allegheny_go_equity
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_stops[("stops")] --> 42_allegheny_go_equity
+  01_data_ingestion[["Data Ingestion"]] --> t_stops
+  d1_42_allegheny_go_equity(("polars (lib)")) --> 42_allegheny_go_equity
+  d2_42_allegheny_go_equity(("scipy (lib)")) --> 42_allegheny_go_equity
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 42_allegheny_go_equity page;
+  class t_otp_monthly,t_route_stops,t_stops table;
+  class d1_42_allegheny_go_equity,d2_42_allegheny_go_equity dep;
+  class f1_42_allegheny_go_equity,f2_42_allegheny_go_equity,u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Allegheny Go Equity</h1>
+<h2>Summary</h2>
+<p>There is no statistically significant relationship between municipal on-time
+performance and Allegheny Go program adoption. The <a href="../../glossary.html#spearman-correlation" class="glossary-link" data-definition="Rank-based monotonic association metric less sensitive to nonlinearity and outliers.">Spearman correlation</a> between
+trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and estimated reached households is ρ = −0.080 (p = 0.496,
+n = 74 municipalities). This result is robust to removing Pittsburgh
+(ρ = −0.079, p = 0.504).</p>
+<h2>Key Numbers</h2>
+<ul>
+<li>74 of 99 tract municipalities matched to <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data (75% match rate)</li>
+<li>Spearman ρ = −0.080 (p = 0.496) — no significant association</li>
+<li>Pittsburgh dominates adoption: 6,025 estimated reached households across 111 census tracts</li>
+<li>Program demographics: 59% Black, 64% female, 26% aged 25–34</li>
+<li>71% of rides taken by participants who have enrolled</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>Pittsburgh dominates the data.</strong> With 111 of 326 tracts and an estimated 6,025
+reached households, Pittsburgh is a massive outlier. Even removing it does not
+change the null result.</li>
+<li><strong>Adoption appears driven by population density and program outreach</strong>, not by
+transit service quality. Municipalities with large low-income populations
+(Pittsburgh, McKeesport, Wilkinsburg) have high adoption regardless of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+<li><strong>Demographics suggest the program reaches its target population.</strong> 59% of
+participants are Black (vs ~13% of Allegheny County), and 64% are female.
+The age distribution skews younger (25–34 is the largest group at 3,112).</li>
+<li><strong>Municipalities with poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> do not have systematically lower adoption.</strong>
+Penn Hills (<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> 0.617, 279 households) and North Braddock (<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> 0.623, 238
+households) have high adoption despite poor service. This suggests the program
+successfully reaches areas with unreliable transit.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li>Reached-household tiers (1-5, 6-25, etc.) are converted to midpoints for
+aggregation. The 101-500 tier has a very wide range; results are directionally
+consistent using ordinal ranks instead.</li>
+<li>25 tract municipalities had no match in the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data, mostly areas without PRT
+bus service (e.g., Pine Township, Forward Township). These are correctly excluded.</li>
+<li>This is an ecological analysis at the municipality level. Individual-level
+claims about <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and program participation cannot be drawn.</li>
+<li><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data covers 2019-01 to 2025-11, while adoption data is a snapshot; the
+temporal mismatch could mask relationships.</li>
+</ul>
+<h2>Validation</h2>
+<ol>
+<li><strong>Data source verified.</strong> Tract reach data from Allegheny Go Tableau dashboard;
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> aggregation uses the same pattern as Analysis 15.</li>
+<li><strong>Geographic scope matches.</strong> Both datasets cover Allegheny County municipalities.</li>
+<li><strong>Null handling.</strong> Tracts with &quot;Unpopulated Areas&quot; and &quot;%null%&quot; municipalities
+filtered out before joining.</li>
+<li><strong>Aggregates sanity-checked.</strong> Total midpoint households (~12,000) is consistent
+with the ~11,900 enrolled participants reported in program demographics.</li>
+<li><strong>Surprising result investigated.</strong> The null correlation was checked with and
+without Pittsburgh, and with ordinal vs midpoint encoding. The null holds across
+all specifications.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (1)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/42_allegheny_go_equity/adoption_vs_otp.png" alt="adoption_vs_otp" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/42_allegheny_go_equity/adoption_vs_otp.png" target="_blank" rel="noopener noreferrer">adoption_vs_otp.png</a>
+          <p class="artifact-desc">Scatter plot of program adoption vs on-time performance by municipality.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/42_allegheny_go_equity/demographics_summary.png" alt="demographics_summary" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/42_allegheny_go_equity/demographics_summary.png" target="_blank" rel="noopener noreferrer">demographics_summary.png</a>
+          <p class="artifact-desc">Program demographics overview (age, race, gender, children).</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/42_allegheny_go_equity/muni_adoption_otp.csv" target="_blank" rel="noopener noreferrer">muni_adoption_otp.csv</a>
+          <p class="artifact-desc">Per-municipality OTP and Allegheny Go adoption metrics.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/42_allegheny_go_equity/muni_adoption_otp.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Allegheny Go Equity</h1>
+<h2>Question</h2>
+<p>Do municipalities with poor <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a> have higher or lower Allegheny Go
+fare-program adoption? If low-income residents disproportionately live in areas
+with unreliable bus service, the program's benefits may be undercut by poor
+service quality.</p>
+<h2>Approach</h2>
+<ol>
+<li>Load tract-level Allegheny Go adoption data (<code>tract_reach.csv</code>), which reports
+reached households per census tract in five tiers (1-5, 6-25, 26-50, 51-100,
+101-500). Convert tiers to numeric midpoints for aggregation.</li>
+<li>Aggregate adoption to municipality level (sum of midpoint households, count of tracts).</li>
+<li>Compute municipality-level trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> from <code>route_stops</code>, <code>stops</code>, and
+<code>otp_monthly</code>, following the same pre-aggregation pattern as Analysis 15.</li>
+<li>Join adoption and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> on normalized municipality name.</li>
+<li>Compute Spearman rank correlation between municipal adoption and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.
+Run with and without Pittsburgh as a robustness check.</li>
+<li>Summarize program demographics as context.</li>
+</ol>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>tract_reach.csv</code></td>
+  <td>Census-tract-level Allegheny Go enrollment reach</td>
+  <td><code>data/allegheny-go/</code></td>
+</tr>
+<tr>
+  <td><code>demographics_summary.csv</code></td>
+  <td>Program demographics by age/race/gender/children</td>
+  <td><code>data/allegheny-go/</code></td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>Municipality for each stop</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>Links routes to stops with trip counts</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
+<h2>Output</h2>
+<ul>
+<li><code>muni_adoption_otp.csv</code> — per-municipality <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and Allegheny Go adoption</li>
+<li><code>adoption_vs_otp.png</code> — scatter of adoption vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by municipality</li>
+<li><code>demographics_summary.png</code> — bar charts of program demographics</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 42: cross-reference Allegheny Go adoption with municipal OTP.&quot;&quot;&quot;
+
+import re
+
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    DATA_DIR,
+    OTP_GOOD_THRESHOLD,
+    OTP_WARNING_THRESHOLD,
+    analysis_dir,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+    weighted_mean,
+)
+
+OUT = analysis_dir(__file__)
+AG_DIR = DATA_DIR / &quot;allegheny-go&quot;
+MIN_STOPS = 10
+
+TIER_MIDPOINTS: dict[str, int] = {
+    &quot;1 - 5&quot;: 3,
+    &quot;6 - 25&quot;: 15,
+    &quot;26 - 50&quot;: 38,
+    &quot;51 - 100&quot;: 75,
+    &quot;101 - 500&quot;: 200,
+}
+
+# Regex to extract the base municipality name from the DB format
+# &quot;Baldwin borough (Allegheny, PA)&quot; → &quot;baldwin&quot;
+_DB_MUNI_RE = re.compile(
+    r&quot;^(.+?)\s+(?:borough|city|township|municipality)\s+\(&quot;,
+    re.IGNORECASE,
+)
+
+
+def normalize_muni(name: str) -&gt; str:
+    &quot;&quot;&quot;Normalize a municipality name to a lowercase key for joining.&quot;&quot;&quot;
+    # DB format: &quot;Baldwin borough (Allegheny, PA)&quot;
+    m = _DB_MUNI_RE.match(name)
+    if m:
+        return m.group(1).strip().lower()
+    # Tract format: &quot;Baldwin Borough&quot;, &quot;City of Pittsburgh&quot;, &quot;Ross Township&quot;
+    key = name.strip()
+    if key.lower().startswith(&quot;city of &quot;):
+        key = key[8:]
+    for suffix in [&quot; Borough&quot;, &quot; Township&quot;, &quot; Municipality&quot;, &quot; borough&quot;, &quot; township&quot;]:
+        if key.endswith(suffix):
+            key = key[: -len(suffix)]
+    return key.lower()
+
+
+def load_tract_reach() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load tract reach data with midpoint households.&quot;&quot;&quot;
+    tract_df = pl.read_csv(AG_DIR / &quot;tract_reach.csv&quot;)
+    tract_df = tract_df.filter(
+        (pl.col(&quot;municipality&quot;) != &quot;Unpopulated Areas&quot;)
+        &amp; (pl.col(&quot;municipality&quot;) != &quot;%null%&quot;)
+        &amp; pl.col(&quot;municipality&quot;).is_not_null()
+    )
+    tract_df = tract_df.with_columns(
+        midpoint=pl.col(&quot;reached_households&quot;).replace_strict(
+            TIER_MIDPOINTS, return_dtype=pl.Int64
+        ),
+        muni_key=pl.col(&quot;municipality&quot;).map_elements(
+            normalize_muni, return_dtype=pl.Utf8
+        ),
+    )
+    return tract_df
+
+
+def aggregate_adoption(tract_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Aggregate tract-level adoption to municipality level.&quot;&quot;&quot;
+    return (
+        tract_df.group_by(&quot;muni_key&quot;)
+        .agg(
+            municipality=pl.col(&quot;municipality&quot;).first(),
+            total_households=pl.col(&quot;midpoint&quot;).sum(),
+            n_tracts=pl.len(),
+            mean_lat=pl.col(&quot;lat&quot;).mean(),
+            mean_lon=pl.col(&quot;lon&quot;).mean(),
+        )
+        .sort(&quot;total_households&quot;, descending=True)
+    )
+
+
+def load_muni_otp() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute trip-weighted OTP per municipality (same pattern as Analysis 15).&quot;&quot;&quot;
+    stop_otp_df = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.stop_id, rs.route_id, rs.trips_wd,
+               s.muni, s.county,
+               AVG(o.otp) AS route_avg_otp
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        JOIN otp_monthly o ON rs.route_id = o.route_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.stop_id, rs.route_id, rs.trips_wd, s.muni, s.county
+    &quot;&quot;&quot;)
+
+    muni_otp_df = (
+        stop_otp_df.group_by(&quot;muni&quot;, &quot;county&quot;)
+        .agg(
+            avg_otp=weighted_mean(&quot;route_avg_otp&quot;, &quot;trips_wd&quot;),
+            n_stops=pl.col(&quot;stop_id&quot;).n_unique(),
+            n_routes=pl.col(&quot;route_id&quot;).n_unique(),
+        )
+        .filter(pl.col(&quot;n_stops&quot;) &gt;= MIN_STOPS)
+        .with_columns(
+            muni_key=pl.col(&quot;muni&quot;).map_elements(
+                normalize_muni, return_dtype=pl.Utf8
+            ),
+        )
+    )
+    return muni_otp_df
+
+
+def join_adoption_otp(
+    adoption_df: pl.DataFrame, muni_otp_df: pl.DataFrame
+) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Join adoption and OTP on normalized municipality name.&quot;&quot;&quot;
+    joined_df = adoption_df.join(muni_otp_df, on=&quot;muni_key&quot;, how=&quot;inner&quot;)
+
+    n_adoption = len(adoption_df)
+    n_otp = len(muni_otp_df)
+    n_joined = len(joined_df)
+    print(f&quot;  Adoption municipalities: {n_adoption}&quot;)
+    print(f&quot;  OTP municipalities (≥{MIN_STOPS} stops): {n_otp}&quot;)
+    print(f&quot;  Matched: {n_joined}&quot;)
+    print(f&quot;  Unmatched adoption: {n_adoption - n_joined}&quot;)
+
+    return joined_df.sort(&quot;total_households&quot;, descending=True)
+
+
+def analyze(joined_df: pl.DataFrame) -&gt; dict[str, float]:
+    &quot;&quot;&quot;Compute correlation between adoption and OTP.&quot;&quot;&quot;
+    results: dict[str, float] = {}
+    households = joined_df[&quot;total_households&quot;].to_list()
+    otp = joined_df[&quot;avg_otp&quot;].to_list()
+
+    rho, p = stats.spearmanr(households, otp)
+    results[&quot;spearman_rho&quot;] = rho
+    results[&quot;spearman_p&quot;] = p
+    results[&quot;n_munis&quot;] = len(joined_df)
+
+    # Robustness: without Pittsburgh
+    no_pgh_df = joined_df.filter(pl.col(&quot;muni_key&quot;) != &quot;pittsburgh&quot;)
+    if len(no_pgh_df) &gt; 3:
+        rho2, p2 = stats.spearmanr(
+            no_pgh_df[&quot;total_households&quot;].to_list(),
+            no_pgh_df[&quot;avg_otp&quot;].to_list(),
+        )
+        results[&quot;spearman_rho_no_pgh&quot;] = rho2
+        results[&quot;spearman_p_no_pgh&quot;] = p2
+        results[&quot;n_munis_no_pgh&quot;] = len(no_pgh_df)
+
+    return results
+
+
+def make_scatter(joined_df: pl.DataFrame, results: dict[str, float]) -&gt; None:
+    &quot;&quot;&quot;Scatter plot of adoption vs OTP by municipality.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    otp = joined_df[&quot;avg_otp&quot;].to_list()
+    households = joined_df[&quot;total_households&quot;].to_list()
+    n_tracts = joined_df[&quot;n_tracts&quot;].to_list()
+
+    sizes = [max(20, t * 8) for t in n_tracts]
+    colors = [
+        &quot;#22c55e&quot; if v &gt;= OTP_GOOD_THRESHOLD
+        else &quot;#f59e0b&quot; if v &gt;= OTP_WARNING_THRESHOLD
+        else &quot;#ef4444&quot;
+        for v in otp
+    ]
+
+    ax.scatter(otp, households, s=sizes, c=colors, alpha=0.7, edgecolors=&quot;white&quot;)
+
+    # Label top municipalities by adoption
+    top_df = joined_df.sort(&quot;total_households&quot;, descending=True).head(8)
+    for row in top_df.iter_rows(named=True):
+        ax.annotate(
+            row[&quot;municipality&quot;],
+            (row[&quot;avg_otp&quot;], row[&quot;total_households&quot;]),
+            fontsize=7, alpha=0.8,
+            xytext=(5, 3), textcoords=&quot;offset points&quot;,
+        )
+
+    # Reference lines
+    median_otp = joined_df[&quot;avg_otp&quot;].median()
+    median_adopt = joined_df[&quot;total_households&quot;].median()
+    ax.axvline(median_otp, color=&quot;#9ca3af&quot;, linestyle=&quot;:&quot;, alpha=0.5)
+    ax.axhline(median_adopt, color=&quot;#9ca3af&quot;, linestyle=&quot;:&quot;, alpha=0.5)
+
+    rho = results[&quot;spearman_rho&quot;]
+    p = results[&quot;spearman_p&quot;]
+    ax.set_title(&quot;Allegheny Go Adoption vs On-Time Performance by Municipality&quot;)
+    ax.set_xlabel(&quot;Trip-Weighted Average OTP&quot;)
+    ax.set_ylabel(&quot;Est. Reached Households (midpoint sum)&quot;)
+    ax.text(
+        0.02, 0.98,
+        f&quot;Spearman ρ = {rho:.3f} (p = {p:.3f}, n = {results[&#x27;n_munis&#x27;]})&quot;,
+        transform=ax.transAxes, fontsize=9, va=&quot;top&quot;,
+    )
+
+    save_chart(fig, OUT / &quot;adoption_vs_otp.png&quot;)
+
+
+def make_demographics_chart() -&gt; None:
+    &quot;&quot;&quot;Bar charts summarizing program demographics.&quot;&quot;&quot;
+    plt = setup_plotting()
+    demo_df = pl.read_csv(AG_DIR / &quot;demographics_summary.csv&quot;)
+
+    categories = [&quot;age&quot;, &quot;race&quot;, &quot;gender&quot;, &quot;children_in_household&quot;]
+    titles = [&quot;Age Distribution&quot;, &quot;Race Distribution&quot;, &quot;Gender&quot;, &quot;Children in Household&quot;]
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    axes = axes.flatten()
+
+    for ax, cat, title in zip(axes, categories, titles):
+        subset_df = demo_df.filter(pl.col(&quot;category&quot;) == cat)
+        groups = subset_df[&quot;group&quot;].to_list()
+        counts = subset_df[&quot;count&quot;].to_list()
+
+        # Wrap long labels
+        groups = [g[:25] + &quot;...&quot; if len(g) &gt; 28 else g for g in groups]
+
+        bars = ax.barh(range(len(groups)), counts, color=&quot;#3b82f6&quot;, edgecolor=&quot;white&quot;)
+        ax.set_yticks(range(len(groups)))
+        ax.set_yticklabels(groups, fontsize=8)
+        ax.set_title(title, fontsize=11)
+        ax.invert_yaxis()
+        for i, c in enumerate(counts):
+            ax.text(c + max(counts) * 0.01, i, f&quot;{c:,}&quot;, va=&quot;center&quot;, fontsize=8)
+
+    fig.suptitle(&quot;Allegheny Go Program Demographics&quot;, fontsize=14, y=1.01)
+    fig.tight_layout()
+    save_chart(fig, OUT / &quot;demographics_summary.png&quot;)
+
+
+@run_analysis(42, &quot;Allegheny Go Equity&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: cross-reference Allegheny Go adoption with municipal OTP.&quot;&quot;&quot;
+    with phase(&quot;Loading tract reach data&quot;):
+        tract_df = load_tract_reach()
+        print(f&quot;  {len(tract_df)} tracts after filtering&quot;)
+        adoption_df = aggregate_adoption(tract_df)
+        print(f&quot;  {len(adoption_df)} municipalities with adoption data&quot;)
+
+    with phase(&quot;Loading municipal OTP&quot;):
+        muni_otp_df = load_muni_otp()
+        print(f&quot;  {len(muni_otp_df)} municipalities with ≥{MIN_STOPS} stops&quot;)
+
+    with phase(&quot;Joining and analyzing&quot;):
+        joined_df = join_adoption_otp(adoption_df, muni_otp_df)
+        results = analyze(joined_df)
+
+        rho = results[&quot;spearman_rho&quot;]
+        p = results[&quot;spearman_p&quot;]
+        print(f&quot;  Spearman ρ = {rho:.3f} (p = {p:.3f})&quot;)
+        if &quot;spearman_rho_no_pgh&quot; in results:
+            print(
+                f&quot;  Without Pittsburgh: ρ = {results[&#x27;spearman_rho_no_pgh&#x27;]:.3f} &quot;
+                f&quot;(p = {results[&#x27;spearman_p_no_pgh&#x27;]:.3f})&quot;
+            )
+
+        save_csv(joined_df.select(
+            &quot;municipality&quot;, &quot;muni&quot;, &quot;avg_otp&quot;, &quot;n_stops&quot;, &quot;n_routes&quot;,
+            &quot;total_households&quot;, &quot;n_tracts&quot;,
+        ), OUT / &quot;muni_adoption_otp.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        make_scatter(joined_df, results)
+        make_demographics_chart()
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>data/allegheny-go/tract_reach.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Allegheny Go households reached per census tract.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>data/allegheny-go/demographics_summary.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Allegheny Go enrollee demographic summary.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

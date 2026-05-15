@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>48 - Service Productivity (Passengers per Revenue Hour) - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>48 - Service Productivity (Passengers per Revenue Hour)</h1>
+  <p class="lede">Equity and Strategic Planning</p>
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../47_route_ridership_ranking/index.html">← 47 - Route Ridership Ranking</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  48_service_productivity(["48 - Service Productivity (Passengers per Revenue Hour)"])
+  t_ntd_annual_service[("ntd_annual_service")] --> 48_service_productivity
+  06_ntd_service[["NTD Annual Service ETL"]] --> t_ntd_annual_service
+  u1_06_ntd_service[/"data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx"/] --> 06_ntd_service
+  d1_48_service_productivity(("polars (lib)")) --> 48_service_productivity
+  d2_48_service_productivity(("matplotlib (lib)")) --> 48_service_productivity
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 48_service_productivity page;
+  class t_ntd_annual_service table;
+  class d1_48_service_productivity,d2_48_service_productivity dep;
+  class u1_06_ntd_service file;
+  class 06_ntd_service pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Service Productivity (Passengers per Revenue Hour)</h1>
+<h2>Key findings</h2>
+<ol>
+<li><p><strong>PRT's service productivity has roughly halved since 1991</strong> — from 39.2 passengers per vehicle revenue hour in 1991 to 18.3 in 2024, a 53% decline. Each hour of bus and rail service now carries fewer than half as many riders as it did three decades ago.</p>
+</li>
+<li><p><strong>The decline is demand-driven, not a right-sizing of service.</strong> Over the full 1991–2024 record, PRT's service hours barely moved (VRH −5%) while ridership collapsed (UPT −55%). PRT kept very nearly the same amount of service on the street as riders disappeared — the productivity drop is emptier vehicles, not a deliberate match of supply to demand.</p>
+</li>
+<li><p><strong>PRT's post-pandemic productivity drop was the steepest of all 8 peer cities.</strong> Between 2019 and 2024, PRT productivity fell 32% (26.9 → 18.3), worse than every peer — Portland (−25%), Baltimore (−27%), Buffalo (−24%), St. Louis (−22%), Minneapolis (−21%), Cleveland (−20%), Denver (−20%).</p>
+</li>
+<li><p><strong>The decline is long-run, not just a COVID shock.</strong> PRT productivity had already fallen 31% from 1991 (39.2) to 2019 (26.9) before the pandemic. COVID then roughly doubled the cumulative loss in five years.</p>
+</li>
+<li><p><strong>PRT's 2024 productivity (18.3) is mid-pack, leaning low.</strong> It trails Minneapolis (25.1), Portland (22.8), Buffalo (18.7), and Denver (18.6), and sits above Baltimore (16.1), Cleveland (15.2), and St. Louis (14.7). Productivity fell at every peer — this is a national pattern, not a Pittsburgh-specific failure — but Pittsburgh's <em>rate</em> of recent decline stands out.</p>
+</li>
+</ol>
+<h2>Limitations</h2>
+<ul>
+<li><strong>Agency-wide only.</strong> NTD reports productivity for the whole agency; it cannot be broken down by route, mode, or neighborhood. A coverage-oriented route serving a low-density area will have low productivity by design, so this metric is not a verdict on any individual service.</li>
+<li><strong>UPT counts boardings, not riders.</strong> Unlinked passenger trips count each boarding separately, so a rider who transfers is counted more than once. Productivity here measures boardings per service hour, not unique people moved.</li>
+<li><strong>VRH excludes deadhead.</strong> Vehicle revenue hours count only time in revenue service, not pull-out, layover, or repositioning, so this understates total operating effort behind each productive hour.</li>
+<li><strong>Productivity is not the only goal.</strong> Lower productivity can reflect a deliberate equity choice to serve lower-density areas. The metric describes how full the service runs, not whether the service is worth running.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified.</strong> <code>upt</code> and <code>vrh</code> columns of <code>ntd_annual_service</code> (NTD annual data, TS2.2). No column mapping written from memory.</li>
+<li><strong>Null/missing handling.</strong> All 8 peer agencies have complete, non-null UPT and VRH for every year 1991–2024 (34 city-years each) — verified before analysis. No rows dropped.</li>
+<li><strong>Aggregates sanity-checked.</strong> PRT 2024 UPT (37.9M) and VRH (2.07M) match the figures used in Analysis 40. The implied 2024 productivity (18.3) is consistent with Analysis 40's reported −41% UPT / −13% VRH change over 2019–2024, which arithmetically yields a ≈−32% productivity change.</li>
+<li><strong>Direction of effects checked.</strong> Productivity fell at all 8 agencies post-COVID, consistent with the well-documented national decline in transit ridership relative to service. No directional reversal.</li>
+<li><strong>Surprising result investigated.</strong> PRT having the steepest 2019–2024 productivity drop is notable but not anomalous: Analyses 36 and 40 already show PRT among the steepest ridership losers nationally while cutting less service than several peers. Steepest ridership loss combined with a below-<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> service cut necessarily produces the steepest productivity drop. This is a real pattern, not a data error.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (2)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/48_service_productivity/prt_productivity_trend.png" alt="prt_productivity_trend" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/48_service_productivity/prt_productivity_trend.png" target="_blank" rel="noopener noreferrer">prt_productivity_trend.png</a>
+          <p class="artifact-desc">PRT service productivity line chart, 1991-2024.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/48_service_productivity/supply_vs_demand_decomposition.png" alt="supply_vs_demand_decomposition" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/48_service_productivity/supply_vs_demand_decomposition.png" target="_blank" rel="noopener noreferrer">supply_vs_demand_decomposition.png</a>
+          <p class="artifact-desc">PRT ridership, service hours, and productivity indexed to 1991 = 100.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/48_service_productivity/peer_productivity_2024.png" alt="peer_productivity_2024" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/48_service_productivity/peer_productivity_2024.png" target="_blank" rel="noopener noreferrer">peer_productivity_2024.png</a>
+          <p class="artifact-desc">Horizontal bar ranking of 2024 productivity across 8 peer cities, PRT highlighted.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/48_service_productivity/peer_productivity_trends.png" alt="peer_productivity_trends" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/48_service_productivity/peer_productivity_trends.png" target="_blank" rel="noopener noreferrer">peer_productivity_trends.png</a>
+          <p class="artifact-desc">Productivity trajectories 1991-2024 for all 8 peer cities, PRT highlighted.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/48_service_productivity/prt_productivity_by_year.csv" target="_blank" rel="noopener noreferrer">prt_productivity_by_year.csv</a>
+          <p class="artifact-desc">PRT ridership, service hours, and productivity for every year 1991-2024.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/48_service_productivity/prt_productivity_by_year.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/48_service_productivity/peer_productivity.csv" target="_blank" rel="noopener noreferrer">peer_productivity.csv</a>
+          <p class="artifact-desc">Productivity at 1991, 2019, and 2024 for all 8 peer cities with percent changes.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/48_service_productivity/peer_productivity.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Service Productivity (Passengers per Revenue Hour)</h1>
+<h2>Question</h2>
+<p>Has PRT's service productivity — the number of passengers carried per hour of
+service operated — declined over time? And if so, is the decline because
+ridership fell faster than service was cut (emptier buses) rather than a
+deliberate right-sizing of service to match demand?</p>
+<h2>Approach</h2>
+<ul>
+<li>Define service productivity as unlinked passenger trips per vehicle revenue
+hour: <code>productivity = UPT / VRH</code>. This is the standard transit efficiency
+ratio — how many riders each hour of operated service actually carried.</li>
+<li>Pull the full 1991–2024 annual record of UPT and VRH for PRT and 7 peer
+cities from <code>ntd_annual_service</code>.</li>
+<li>Plot PRT's productivity curve across the whole record to separate the
+long-run secular trend from the COVID shock.</li>
+<li>Decompose the ratio: index UPT, VRH, and productivity to 1991 = 100 on one
+chart. If VRH (supply) holds roughly flat while UPT (demand) collapses, the
+productivity decline is demand-driven — empty buses — not a supply-side
+right-sizing.</li>
+<li>Benchmark PRT against peers two ways: a 2024 cross-section ranking, and the
+full 1991–2024 trajectory for all 8 cities.</li>
+<li>Report percent change in productivity over the full period (1991→2024) and
+over the post-pandemic window (2019→2024) for every peer.</li>
+</ul>
+<h2>Data</h2>
+<ul>
+<li><code>ntd_annual_service</code>: columns <code>ntd_id</code>, <code>year</code>, <code>upt</code> (unlinked passenger
+trips), <code>vrh</code> (vehicle revenue hours).</li>
+<li>Filtered to the 8 peer-city NTD IDs in <code>PEERS</code>; PRT is <code>ntd_id = 30022</code>.</li>
+<li>All 8 agencies have complete, non-null UPT and VRH for every year 1991–2024
+(34 city-years each, 272 rows total) — verified before analysis, so no null
+handling is required.</li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>output/prt_productivity_by_year.csv</code> — PRT UPT, VRH, and productivity for
+every year 1991–2024.</li>
+<li><code>output/peer_productivity.csv</code> — productivity at 1991, 2019, and 2024 for all
+8 peers, with percent change over both windows.</li>
+<li><code>output/prt_productivity_trend.png</code> — PRT productivity line, 1991–2024.</li>
+<li><code>output/supply_vs_demand_decomposition.png</code> — PRT UPT, VRH, and productivity
+indexed to 1991 = 100.</li>
+<li><code>output/peer_productivity_2024.png</code> — horizontal bar ranking of 2024
+productivity across the 8 peers, PRT highlighted.</li>
+<li><code>output/peer_productivity_trends.png</code> — productivity trajectories 1991–2024
+for all 8 peers, PRT highlighted.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 48: tracks PRT service productivity (passengers per vehicle revenue
+hour) from 1991 to 2024 and benchmarks it against peer cities.&quot;&quot;&quot;
+
+import polars as pl
+
+from prt_otp_analysis.common import (
+    COLOR_GRAY,
+    COLOR_PRIMARY,
+    PEERS,
+    analysis_dir,
+    get_db,
+    phase,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.common.schemas import NTD_ANNUAL_SERVICE, validate
+
+OUT = analysis_dir(__file__)
+
+PRT_NTD_ID = 30022
+START_YEAR = 1991
+COVID_YEAR = 2020
+BASELINE_YEAR = 2019
+COMPARE_YEAR = 2024
+
+
+def load_peer_productivity() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load annual UPT and VRH for all peer cities and derive productivity.
+
+    Productivity is unlinked passenger trips per vehicle revenue hour
+    (UPT / VRH) -- how many riders each hour of service carried.
+    &quot;&quot;&quot;
+    id_list = &quot;,&quot;.join(str(i) for i in PEERS)
+    df = query_ntd(f&quot;&quot;&quot;
+        SELECT ntd_id, year, upt, vrh
+        FROM ntd_annual_service
+        WHERE ntd_id IN ({id_list})
+        ORDER BY ntd_id, year
+    &quot;&quot;&quot;)
+    peer_map = pl.DataFrame({
+        &quot;ntd_id&quot;: list(PEERS.keys()),
+        &quot;city&quot;: list(PEERS.values()),
+    })
+    df = df.join(peer_map, on=&quot;ntd_id&quot;, how=&quot;left&quot;)
+    return df.with_columns(productivity=(pl.col(&quot;upt&quot;) / pl.col(&quot;vrh&quot;)))
+
+
+def query_ntd(sql: str) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Run a query against ntd_annual_service and validate the result schema.&quot;&quot;&quot;
+    conn = get_db()
+    try:
+        rows = conn.execute(sql).fetchall()
+    finally:
+        conn.close()
+    df = pl.DataFrame(
+        [dict(r) for r in rows],
+        schema={&quot;ntd_id&quot;: pl.Int64, &quot;year&quot;: pl.Int64,
+                &quot;upt&quot;: pl.Float64, &quot;vrh&quot;: pl.Float64},
+    )
+    return validate(df, NTD_ANNUAL_SERVICE, subset=True)
+
+
+def chart_prt_trend(plt, prt_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Line chart of PRT productivity across the full 1991-2024 record.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 6))
+    years = prt_df[&quot;year&quot;].to_list()
+    vals = prt_df[&quot;productivity&quot;].to_list()
+
+    ax.plot(years, vals, color=COLOR_PRIMARY, linewidth=2.5, marker=&quot;o&quot;, markersize=4)
+    ax.axvline(COVID_YEAR, color=COLOR_GRAY, linestyle=&quot;--&quot;, linewidth=1)
+    ax.text(COVID_YEAR + 0.3, max(vals) * 0.97, &quot;COVID-19&quot;, fontsize=9, color=&quot;#555555&quot;)
+
+    first, last = vals[0], vals[-1]
+    ax.annotate(f&quot;{first:.1f}&quot;, (years[0], first), textcoords=&quot;offset points&quot;,
+                xytext=(0, 10), ha=&quot;center&quot;, fontsize=9, fontweight=&quot;bold&quot;)
+    ax.annotate(f&quot;{last:.1f}&quot;, (years[-1], last), textcoords=&quot;offset points&quot;,
+                xytext=(0, 10), ha=&quot;center&quot;, fontsize=9, fontweight=&quot;bold&quot;)
+
+    ax.set_ylabel(&quot;Passengers per Vehicle Revenue Hour&quot;)
+    ax.set_xlabel(&quot;Year&quot;)
+    ax.set_ylim(bottom=0)
+    ax.set_title(&quot;PRT Service Productivity, 1991–2024&quot;)
+    save_chart(fig, OUT / &quot;prt_productivity_trend.png&quot;)
+
+
+def chart_decomposition(plt, prt_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Index ridership, service hours, and productivity to 1991 = 100.
+
+    Separates the two halves of the productivity ratio: if VRH (supply) holds
+    flat while UPT (demand) collapses, the decline is empty buses, not a
+    deliberate right-sizing of service.
+    &quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 6))
+    years = prt_df[&quot;year&quot;].to_list()
+
+    for col, label, color, lw in [
+        (&quot;vrh&quot;, &quot;Service hours (VRH)&quot;, &quot;#6ACC65&quot;, 2.0),
+        (&quot;upt&quot;, &quot;Ridership (UPT)&quot;, &quot;#4878CF&quot;, 2.0),
+        (&quot;productivity&quot;, &quot;Productivity (UPT/VRH)&quot;, COLOR_PRIMARY, 2.8),
+    ]:
+        vals = prt_df[col].to_list()
+        base = vals[0]
+        ax.plot(years, [v / base * 100 for v in vals], label=label,
+                color=color, linewidth=lw, marker=&quot;o&quot;, markersize=3)
+
+    ax.axhline(100, color=COLOR_GRAY, linestyle=&quot;:&quot;, linewidth=0.8)
+    ax.set_ylabel(&quot;Indexed to 1991 = 100&quot;)
+    ax.set_xlabel(&quot;Year&quot;)
+    ax.set_title(&quot;PRT Ridership vs. Service Hours — Why Productivity Fell&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;supply_vs_demand_decomposition.png&quot;)
+
+
+def chart_peer_2024(plt, peer_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bar chart ranking peer cities by 2024 productivity, PRT highlighted.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(10, 6))
+    snap_df = peer_df.filter(pl.col(&quot;year&quot;) == COMPARE_YEAR).sort(&quot;productivity&quot;)
+    cities = snap_df[&quot;city&quot;].to_list()
+    vals = snap_df[&quot;productivity&quot;].to_list()
+    colors = [COLOR_PRIMARY if c == &quot;Pittsburgh&quot; else COLOR_GRAY for c in cities]
+
+    ax.barh(cities, vals, color=colors, edgecolor=&quot;white&quot;)
+    for i, v in enumerate(vals):
+        ax.text(v + 0.3, i, f&quot;{v:.1f}&quot;, va=&quot;center&quot;, fontsize=9)
+
+    ax.set_xlabel(&quot;Passengers per Vehicle Revenue Hour&quot;)
+    ax.set_title(f&quot;Service Productivity by Peer City, {COMPARE_YEAR}&quot;)
+    save_chart(fig, OUT / &quot;peer_productivity_2024.png&quot;)
+
+
+def chart_peer_trends(plt, peer_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Line chart of productivity 1991-2024 for all peers, PRT highlighted.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for city in sorted(PEERS.values()):
+        city_df = peer_df.filter(pl.col(&quot;city&quot;) == city).sort(&quot;year&quot;)
+        is_prt = city == &quot;Pittsburgh&quot;
+        ax.plot(
+            city_df[&quot;year&quot;].to_list(), city_df[&quot;productivity&quot;].to_list(),
+            label=city,
+            color=COLOR_PRIMARY if is_prt else None,
+            linewidth=2.8 if is_prt else 1.2,
+            alpha=1.0 if is_prt else 0.6,
+            zorder=10 if is_prt else 1,
+        )
+    ax.set_ylabel(&quot;Passengers per Vehicle Revenue Hour&quot;)
+    ax.set_xlabel(&quot;Year&quot;)
+    ax.set_ylim(bottom=0)
+    ax.set_title(&quot;Service Productivity — Pittsburgh vs. 7 Peer Cities, 1991–2024&quot;)
+    ax.legend(fontsize=8, ncol=2)
+    save_chart(fig, OUT / &quot;peer_productivity_trends.png&quot;)
+
+
+def peer_change_table(peer_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Wide table of productivity at 1991, 2019, and 2024 with percent changes.&quot;&quot;&quot;
+    keep = peer_df.filter(pl.col(&quot;year&quot;).is_in([START_YEAR, BASELINE_YEAR, COMPARE_YEAR]))
+    wide = keep.pivot(values=&quot;productivity&quot;, index=&quot;city&quot;, on=&quot;year&quot;)
+    wide = wide.rename({str(START_YEAR): &quot;prod_1991&quot;,
+                        str(BASELINE_YEAR): &quot;prod_2019&quot;,
+                        str(COMPARE_YEAR): &quot;prod_2024&quot;})
+    return wide.with_columns(
+        pct_change_1991_2024=((pl.col(&quot;prod_2024&quot;) - pl.col(&quot;prod_1991&quot;))
+                              / pl.col(&quot;prod_1991&quot;) * 100),
+        pct_change_2019_2024=((pl.col(&quot;prod_2024&quot;) - pl.col(&quot;prod_2019&quot;))
+                              / pl.col(&quot;prod_2019&quot;) * 100),
+    ).sort(&quot;prod_2024&quot;, descending=True)
+
+
+@run_analysis(48, &quot;Service Productivity&quot;)
+def main():
+    plt = setup_plotting()
+
+    with phase(&quot;Loading NTD productivity data&quot;):
+        peer_df = load_peer_productivity()
+        prt_df = peer_df.filter(pl.col(&quot;ntd_id&quot;) == PRT_NTD_ID).sort(&quot;year&quot;)
+        print(f&quot;   {len(peer_df)} city-years across {peer_df[&#x27;city&#x27;].n_unique()} agencies&quot;)
+        print(f&quot;   PRT record: {prt_df[&#x27;year&#x27;].min()}–{prt_df[&#x27;year&#x27;].max()}&quot;)
+
+    with phase(&quot;Summarizing PRT trajectory&quot;):
+        first = prt_df.row(0, named=True)
+        last = prt_df.row(-1, named=True)
+        drop = (last[&quot;productivity&quot;] - first[&quot;productivity&quot;]) / first[&quot;productivity&quot;] * 100
+        print(f&quot;   {first[&#x27;year&#x27;]}: {first[&#x27;productivity&#x27;]:.1f} pax/VRH&quot;)
+        print(f&quot;   {last[&#x27;year&#x27;]}: {last[&#x27;productivity&#x27;]:.1f} pax/VRH  ({drop:+.0f}%)&quot;)
+        vrh_chg = (last[&quot;vrh&quot;] - first[&quot;vrh&quot;]) / first[&quot;vrh&quot;] * 100
+        upt_chg = (last[&quot;upt&quot;] - first[&quot;upt&quot;]) / first[&quot;upt&quot;] * 100
+        print(f&quot;   over the period: VRH {vrh_chg:+.0f}%, UPT {upt_chg:+.0f}%&quot;)
+
+    with phase(&quot;Computing peer change table&quot;):
+        change_df = peer_change_table(peer_df)
+        print(f&quot;\n   {&#x27;City&#x27;:&lt;14s} {&#x27;1991&#x27;:&gt;7s} {&#x27;2019&#x27;:&gt;7s} {&#x27;2024&#x27;:&gt;7s} &quot;
+              f&quot;{&#x27;91→24&#x27;:&gt;9s} {&#x27;19→24&#x27;:&gt;9s}&quot;)
+        for r in change_df.iter_rows(named=True):
+            mark = &quot; &lt;&lt;&lt;&quot; if r[&quot;city&quot;] == &quot;Pittsburgh&quot; else &quot;&quot;
+            print(&quot;   %-14s %7.1f %7.1f %7.1f %+8.0f%% %+8.0f%%%s&quot; % (
+                r[&quot;city&quot;], r[&quot;prod_1991&quot;], r[&quot;prod_2019&quot;], r[&quot;prod_2024&quot;],
+                r[&quot;pct_change_1991_2024&quot;], r[&quot;pct_change_2019_2024&quot;], mark))
+
+    with phase(&quot;Saving data&quot;):
+        save_csv(prt_df.select(&quot;year&quot;, &quot;upt&quot;, &quot;vrh&quot;, &quot;productivity&quot;),
+                 OUT / &quot;prt_productivity_by_year.csv&quot;)
+        save_csv(change_df, OUT / &quot;peer_productivity.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        chart_prt_trend(plt, prt_df)
+        chart_decomposition(plt, prt_df)
+        chart_peer_2024(plt, peer_df)
+        chart_peer_trends(plt, peer_df)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>ntd_annual_service</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by NTD Annual Service ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</strong> — NTD TS2.2 workbook with annual service data by system.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>matplotlib</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

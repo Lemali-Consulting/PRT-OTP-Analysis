@@ -35,7 +35,7 @@
   <p class="kicker">Transit Performance Knowledge Base</p>
   <h1>PRT OTP Analysis</h1>
   <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
-  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
 </section>
 
 <section class="panel">
@@ -113,9 +113,9 @@
     <p>Ranks routes by average OTP, trend direction, and volatility to identify best/worst performers and most (in)consistent routes.</p>
   </article>
 
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="04 - neighborhood equity investigates whether on-time performance varies systematically by neighborhood and municipality.">
-    <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Neighborhood Equity</a></h3>
-    <p>Investigates whether on-time performance varies systematically by neighborhood and municipality.</p>
+  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="04 - tract equity prt routes serving the lowest-income census tracts run on time only ~65.2% of the time, vs ~68.8% for upper-middle-income tracts -- a ~3.6 percentage-point gap that the previous neighborhood-name analysis could not see. built by point-in-polygon assignment of every prt stop to its containing 2020 census tract, ranking 247 tracts (vs 89 hand-curated neighborhoods).">
+    <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Tract Equity</a></h3>
+    <p>PRT routes serving the lowest-income census tracts run on time only ~65.2% of the time, vs ~68.8% for upper-middle-income tracts -- a ~3.6 percentage-point gap that the previous neighborhood-name analysis could not see. Built by point-in-polygon assignment of every PRT stop to its containing 2020 census tract, ranking 247 tracts (vs 89 hand-curated neighborhoods).</p>
   </article>
 
   <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="05 - anomaly investigation identifies and investigates sharp otp drops that may indicate route restructuring, detours, or data quality issues.">
@@ -301,6 +301,41 @@
   <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="41 - operating cost drivers prt spends $3.34 per trip on vehicle maintenance — the highest of 8 peer cities and 47% above average. bus fleet age does not explain the gap (prt's buses are mid-age at 7.1 years), but the light rail fleet averages 32 years old. general administration is prt's leanest cost category at $2.23 per trip.">
     <h3><a href="analyses/41_operating_cost_drivers/index.html">41 - Operating Cost Drivers</a></h3>
     <p>PRT spends $3.34 per trip on vehicle maintenance — the highest of 8 peer cities and 47% above average. Bus fleet age does not explain the gap (PRT's buses are mid-age at 7.1 years), but the light rail fleet averages 32 years old. General administration is PRT's leanest cost category at $2.23 per trip.</p>
+  </article>
+
+  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="42 - allegheny go equity municipalities with poor bus reliability do not have lower allegheny go adoption — the program successfully reaches areas across the otp spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50).">
+    <h3><a href="analyses/42_allegheny_go_equity/index.html">42 - Allegheny Go Equity</a></h3>
+    <p>Municipalities with poor bus reliability do not have lower Allegheny Go adoption — the program successfully reaches areas across the OTP spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50).</p>
+  </article>
+
+  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="43 - allegheny go program growth the allegheny go fare program grew from 262 rides per week to over 30,000 in 18 months, accumulating 2.27 million total rides. ridership growth is uncorrelated with system otp (r = 0.13, p = 0.60), driven by enrollment expansion rather than service quality.">
+    <h3><a href="analyses/43_allegheny_go_growth/index.html">43 - Allegheny Go Program Growth</a></h3>
+    <p>The Allegheny Go fare program grew from 262 rides per week to over 30,000 in 18 months, accumulating 2.27 million total rides. Ridership growth is uncorrelated with system OTP (r = 0.13, p = 0.60), driven by enrollment expansion rather than service quality.</p>
+  </article>
+
+  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="44 - route population reach the prt routes that reach the most residents are the red line lrt (58,000 people within walking distance), bus 69 to trafford (55,000), and the slvr line (53,000). the oakland-east end bus corridor (61a/b/c, 67) and the cross-town 54 each cover 43,000+ residents, making them the highest-impact routes when service is disrupted. light-rail stations average 3-5x more reach per stop than bus stops because of their wider walking-distance buffer and dense south hills catchments.">
+    <h3><a href="analyses/44_route_population_reach/index.html">44 - Route Population Reach</a></h3>
+    <p>The PRT routes that reach the most residents are the RED Line LRT (58,000 people within walking distance), bus 69 to Trafford (55,000), and the SLVR Line (53,000). The Oakland-East End bus corridor (61A/B/C, 67) and the cross-town 54 each cover 43,000+ residents, making them the highest-impact routes when service is disrupted. Light-rail stations average 3-5x more reach per stop than bus stops because of their wider walking-distance buffer and dense South Hills catchments.</p>
+  </article>
+
+  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="45 - population-weighted system otp routes in prt's network where many people live run late more often than the system as a whole. the average resident-near-a-route experiences ~68.1% on-time service, vs ~67.3% for the average scheduled trip and ~69.4% across all routes equally — confirming that ridership and population concentrate on the more lateness-prone urban-core routes.">
+    <h3><a href="analyses/45_population_weighted_otp/index.html">45 - Population-Weighted System OTP</a></h3>
+    <p>Routes in PRT's network where many people live run late more often than the system as a whole. The average resident-near-a-route experiences ~68.1% on-time service, vs ~67.3% for the average scheduled trip and ~69.4% across all routes equally — confirming that ridership and population concentrate on the more lateness-prone urban-core routes.</p>
+  </article>
+
+  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="46 - population transit proximity allegheny county's densest neighborhoods are also its best-served: population density and distance to the nearest prt stop are strongly negatively correlated (spearman rho = -0.62). the median distance to a stop falls from 1,350 m in the sparsest quarter of census tracts to just 151 m in the densest. about 68% of county residents live within a half-mile of a stop; the rest are concentrated in lower-density tracts on the periphery.">
+    <h3><a href="analyses/46_population_transit_proximity/index.html">46 - Population Transit Proximity</a></h3>
+    <p>Allegheny County's densest neighborhoods are also its best-served: population density and distance to the nearest PRT stop are strongly negatively correlated (Spearman rho = -0.62). The median distance to a stop falls from 1,350 m in the sparsest quarter of census tracts to just 151 m in the densest. About 68% of county residents live within a half-mile of a stop; the rest are concentrated in lower-density tracts on the periphery.</p>
+  </article>
+
+  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="47 - route ridership ranking ranking pittsburgh's transit routes by weekday ridership from 2017 to 2024, the busiest is the p1 east busway bus (about 6,600 riders a day), ahead of the red line and blue line light rail and the 51 carrick bus. ridership is concentrated: the 18 busiest routes carry half of all weekday riders, while roughly half of the 103 routes each account for under 1%.">
+    <h3><a href="analyses/47_route_ridership_ranking/index.html">47 - Route Ridership Ranking</a></h3>
+    <p>Ranking Pittsburgh's transit routes by weekday ridership from 2017 to 2024, the busiest is the P1 East Busway bus (about 6,600 riders a day), ahead of the Red Line and Blue Line light rail and the 51 Carrick bus. Ridership is concentrated: the 18 busiest routes carry half of all weekday riders, while roughly half of the 103 routes each account for under 1%.</p>
+  </article>
+
+  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="48 - service productivity (passengers per revenue hour) each hour of prt service carries fewer than half as many riders as it did in 1991 — productivity fell from 39 passengers per service hour to 18. the drop is not a deliberate cut: prt kept nearly the same amount of service running (down just 5% since 1991) while ridership fell 55%, so buses and trains are running emptier rather than being right-sized. prt's 32% drop since 2019 is the steepest of 8 peer cities.">
+    <h3><a href="analyses/48_service_productivity/index.html">48 - Service Productivity (Passengers per Revenue Hour)</a></h3>
+    <p>Each hour of PRT service carries fewer than half as many riders as it did in 1991 — productivity fell from 39 passengers per service hour to 18. The drop is not a deliberate cut: PRT kept nearly the same amount of service running (down just 5% since 1991) while ridership fell 55%, so buses and trains are running emptier rather than being right-sized. PRT's 32% drop since 2019 is the steepest of 8 peer cities.</p>
   </article>
 
 </div>

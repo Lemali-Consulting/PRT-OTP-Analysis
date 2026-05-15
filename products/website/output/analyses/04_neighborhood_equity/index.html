@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>04 - Neighborhood Equity - PRT OTP Analysis</title>
+  <title>04 - Tract Equity - PRT OTP Analysis</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,10 +33,10 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Analysis</p>
-  <h1>04 - Neighborhood Equity</h1>
+  <h1>04 - Tract Equity</h1>
   <p class="lede">Core OTP Patterns</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
 </section>
 
 <section class="panel toc-panel">
@@ -67,7 +67,7 @@
   <details class="fold" open>
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
-  04_neighborhood_equity(["04 - Neighborhood Equity"])
+  04_neighborhood_equity(["04 - Tract Equity"])
   t_otp_monthly[("otp_monthly")] --> 04_neighborhood_equity
   01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
   u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
@@ -81,7 +81,10 @@
   01_data_ingestion[["Data Ingestion"]] --> t_routes
   t_stops[("stops")] --> 04_neighborhood_equity
   01_data_ingestion[["Data Ingestion"]] --> t_stops
+  t_census_tracts[("census_tracts")] --> 04_neighborhood_equity
   d1_04_neighborhood_equity(("polars (lib)")) --> 04_neighborhood_equity
+  d2_04_neighborhood_equity(("geopandas (lib)")) --> 04_neighborhood_equity
+  d3_04_neighborhood_equity(("shapely (lib)")) --> 04_neighborhood_equity
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
   classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
@@ -89,8 +92,8 @@
   classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
   classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
   class 04_neighborhood_equity page;
-  class t_otp_monthly,t_route_stops,t_routes,t_stops table;
-  class d1_04_neighborhood_equity dep;
+  class t_census_tracts,t_otp_monthly,t_route_stops,t_routes,t_stops table;
+  class d1_04_neighborhood_equity,d2_04_neighborhood_equity,d3_04_neighborhood_equity dep;
   class u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
   class 01_data_ingestion pipeline;</pre>
   </details>
@@ -101,216 +104,197 @@
 <section class="panel" id="findings">
   <details class="fold" open>
     <summary><h2>Findings</h2></summary>
-    <div class="markdown"><h1>Findings: Neighborhood Equity</h1>
+    <div class="markdown"><h1>Findings: Tract Equity</h1>
 <h2>Summary</h2>
-<p>There is a <strong>25 percentage-point spread</strong> in <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> between the best- and worst-served neighborhoods (all modes pooled). When restricted to <strong>bus-only</strong>, the spread narrows to 20 pp but the bottom neighborhoods remain the same. The disparity is structural and stable over time -- all neighborhoods rise and fall together with the system. <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is now computed from route-level averages (each route weighted once regardless of how many months of data it has), weighted by trip frequency.</p>
-<h2>Worst-Served Neighborhoods</h2>
-<table>
-<thead>
-<tr>
-  <th>Neighborhood</th>
-  <th>Municipality</th>
-  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (pooled)</th>
-  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bus-only)</th>
-  <th>Routes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Regent Square</td>
-  <td>Pittsburgh</td>
-  <td>58.8%</td>
-  <td>58.8%</td>
-  <td>4</td>
-</tr>
-<tr>
-  <td>Bluff</td>
-  <td>Pittsburgh</td>
-  <td>59.2%</td>
-  <td>59.2%</td>
-  <td>16</td>
-</tr>
-<tr>
-  <td>Crawford-Roberts</td>
-  <td>Pittsburgh</td>
-  <td>61.4%</td>
-  <td>61.4%</td>
-  <td>7</td>
-</tr>
-<tr>
-  <td>Squirrel Hill North</td>
-  <td>Pittsburgh</td>
-  <td>61.6%</td>
-  <td>61.6%</td>
-  <td>12</td>
-</tr>
-<tr>
-  <td>Highland Park</td>
-  <td>Pittsburgh</td>
-  <td>61.9%</td>
-  <td>61.9%</td>
-  <td>5</td>
-</tr>
-</tbody>
-</table>
-<p>The bottom neighborhoods are served entirely by bus, so their pooled and bus-only <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> are identical.</p>
-<h2>Best-Served Neighborhoods</h2>
-<table>
-<thead>
-<tr>
-  <th>Neighborhood</th>
-  <th>Municipality</th>
-  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (pooled)</th>
-  <th><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bus-only)</th>
-  <th>Routes (all)</th>
-  <th>Routes (bus)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Overbrook</td>
-  <td>Pittsburgh</td>
-  <td>83.9%</td>
-  <td>78.9%</td>
-  <td>3</td>
-  <td>1</td>
-</tr>
-<tr>
-  <td>Beechview</td>
-  <td>Pittsburgh</td>
-  <td>80.7%</td>
-  <td>75.5%</td>
-  <td>3</td>
-  <td>2</td>
-</tr>
-<tr>
-  <td>Brookline</td>
-  <td>Pittsburgh</td>
-  <td>79.2%</td>
-  <td>78.7%</td>
-  <td>4</td>
-  <td>2</td>
-</tr>
-<tr>
-  <td>Sheraden</td>
-  <td>Pittsburgh</td>
-  <td>79.0%</td>
-  <td>79.0%</td>
-  <td>6</td>
-  <td>6</td>
-</tr>
-<tr>
-  <td>Windgap</td>
-  <td>Pittsburgh</td>
-  <td>78.9%</td>
-  <td>78.9%</td>
-  <td>2</td>
-  <td>2</td>
-</tr>
-</tbody>
-</table>
-<h2>Bus-Only Stratification (<a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's Paradox</a> Check)</h2>
-<p>Restricting to BUS-mode routes reveals that some neighborhoods' high pooled <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is driven by rail:</p>
-<table>
-<thead>
-<tr>
-  <th>Neighborhood</th>
-  <th>Pooled <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
-  <th>Bus-Only <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
-  <th>Pooled Rank</th>
-  <th>Bus Rank</th>
-  <th>Shift</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Bon Air</td>
-  <td>75.3%</td>
-  <td>66.7%</td>
-  <td>13</td>
-  <td>53</td>
-  <td>-40</td>
-</tr>
-<tr>
-  <td>North Shore</td>
-  <td>74.5%</td>
-  <td>70.7%</td>
-  <td>17</td>
-  <td>36</td>
-  <td>-19</td>
-</tr>
-<tr>
-  <td>Beechview</td>
-  <td>80.7%</td>
-  <td>75.5%</td>
-  <td>2</td>
-  <td>11</td>
-  <td>-9</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Bon Air</strong> is a clear case of <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a>: it appears well-served in the pooled analysis (rank 13) but drops to rank 53 (bus-only) because its high pooled <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is driven almost entirely by rail service. Beechview similarly drops 9 positions.</p>
-<p>The bus-only spread (20 pp) is narrower than the pooled spread (25 pp), confirming that rail inflates the apparent equity of neighborhoods it serves.</p>
-<h2>Frequency-Weighting Effect</h2>
-<p>Comparing trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to unweighted (equal weight per route) reveals where high-frequency service diverges from the route average:</p>
+<p>Across <strong>247 ranked tracts</strong> (vs 89 hand-curated neighborhoods previously), the spread between the best- and worst-served tracts is <strong>27 percentage points</strong> of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. The lowest-income tract quintile experiences a <strong>trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> of 65.2%</strong>, vs <strong>68.8% for the second-richest quintile</strong> -- a <strong>~3.6 pp gradient</strong> that previous neighborhood-level analyses missed. The richest quintile drops back to 67.2%, so the relationship is <strong>non-monotonic</strong> (a U-shape inverted toward the upper-middle), but low-income tracts are unambiguously the worst-served.</p>
+<h2>What changed</h2>
 <ul>
-<li><strong><a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> gap</strong>: -0.27% (small on average -- the two measures broadly agree).</li>
-<li><strong>Range</strong>: -6.1% to +5.7% (meaningful divergence for individual neighborhoods).</li>
+<li>Replaced fuzzy <code>stops.hood</code> (NULL for ~58% of stops, 89 hand-curated areas) with point-in-polygon assignment to TIGER 2022 census tracts. <strong>All 6,466 stops now have a tract assignment</strong> (up from ~2,706 with a hood). 343 tracts contain at least one PRT stop; 247 are served by 2+ routes and so are ranked.</li>
+<li>Demographic columns from the ACS join (<code>median_household_income</code>, zero-vehicle households, race composition) are now carried through to per-tract output, enabling the income-gradient analysis below.</li>
 </ul>
+<h2><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by tract income quintile</h2>
 <table>
 <thead>
 <tr>
-  <th>Neighborhood</th>
-  <th>Weighted</th>
-  <th>Unweighted</th>
-  <th>Gap</th>
+  <th>Quintile</th>
+  <th><a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> income</th>
+  <th>n tracts</th>
+  <th>Total trips/7d</th>
+  <th style="text-align:right">Trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-  <td>Carrick</td>
-  <td>71.1%</td>
-  <td>77.2%</td>
-  <td>-6.1%</td>
+  <td>Q1 (lowest)</td>
+  <td>$32,280</td>
+  <td>48</td>
+  <td>480,438</td>
+  <td style="text-align:right"><strong>65.2%</strong></td>
 </tr>
 <tr>
-  <td>Troy Hill</td>
-  <td>72.4%</td>
-  <td>66.7%</td>
-  <td>+5.7%</td>
+  <td>Q2</td>
+  <td>$50,516</td>
+  <td>47</td>
+  <td>322,944</td>
+  <td style="text-align:right">67.1%</td>
 </tr>
 <tr>
-  <td>Regent Square</td>
-  <td>58.8%</td>
-  <td>64.1%</td>
-  <td>-5.4%</td>
+  <td>Q3</td>
+  <td>$61,906</td>
+  <td>47</td>
+  <td>264,184</td>
+  <td style="text-align:right">68.3%</td>
+</tr>
+<tr>
+  <td>Q4</td>
+  <td>$77,248</td>
+  <td>47</td>
+  <td>252,379</td>
+  <td style="text-align:right"><strong>68.8%</strong></td>
+</tr>
+<tr>
+  <td>Q5 (highest)</td>
+  <td>$107,458</td>
+  <td>47</td>
+  <td>330,967</td>
+  <td style="text-align:right">67.2%</td>
 </tr>
 </tbody>
 </table>
-<ul>
-<li><strong>Negative gap</strong> (Carrick, Regent Square): high-frequency routes underperform relative to infrequent ones. Riders experience worse <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> than the simple route average suggests.</li>
-<li><strong>Positive gap</strong> (Troy Hill): high-frequency routes are more reliable, so the rider experience is better than the route average implies.</li>
-</ul>
+<p>Q5 - Q1 trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gap: <strong>+2.0 pp</strong> (richest minus poorest); Q4 - Q1 gap: <strong>+3.6 pp</strong>. Q1 also concentrates the most service: 480k weekly trips vs 252k-330k in the upper quintiles -- so the worst <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is borne by the largest share of riders.</p>
+<h2>Worst-served tracts</h2>
+<table>
+<thead>
+<tr>
+  <th>Label</th>
+  <th style="text-align:right">Weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
+  <th style="text-align:right">Routes</th>
+  <th style="text-align:right"><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> income</th>
+  <th style="text-align:right">% zero-vehicle</th>
+  <th style="text-align:right">% non-white</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Penn Hills 523300</td>
+  <td style="text-align:right">57.1%</td>
+  <td style="text-align:right">3</td>
+  <td style="text-align:right">$74,740</td>
+  <td style="text-align:right">7.8%</td>
+  <td style="text-align:right">44%</td>
+</tr>
+<tr>
+  <td>Plum 526202</td>
+  <td style="text-align:right">57.2%</td>
+  <td style="text-align:right">2</td>
+  <td style="text-align:right">$95,438</td>
+  <td style="text-align:right">6.6%</td>
+  <td style="text-align:right">22%</td>
+</tr>
+<tr>
+  <td>Penn Hills 523702</td>
+  <td style="text-align:right">57.7%</td>
+  <td style="text-align:right">2</td>
+  <td style="text-align:right">$55,532</td>
+  <td style="text-align:right">20.8%</td>
+  <td style="text-align:right">36%</td>
+</tr>
+<tr>
+  <td>Plum 526201</td>
+  <td style="text-align:right">57.8%</td>
+  <td style="text-align:right">2</td>
+  <td style="text-align:right">$85,903</td>
+  <td style="text-align:right">5.4%</td>
+  <td style="text-align:right">5%</td>
+</tr>
+<tr>
+  <td>Penn Hills 523500 (or similar)</td>
+  <td style="text-align:right">57.8%</td>
+  <td style="text-align:right">2</td>
+  <td style="text-align:right">$64,219</td>
+  <td style="text-align:right">3.5%</td>
+  <td style="text-align:right">60%</td>
+</tr>
+</tbody>
+</table>
+<p>The bottom of the distribution is dominated by Penn Hills and Plum -- eastern Allegheny County suburbs reached almost entirely by a few long bus routes. These are not the lowest-income tracts; they are at the <em>end of the line</em>. The income gradient is driven less by the very worst tracts and more by the difference between Q1 and the upper quintiles across all 247 tracts.</p>
+<h2>Best-served tracts</h2>
+<table>
+<thead>
+<tr>
+  <th>Label</th>
+  <th style="text-align:right">Weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></th>
+  <th style="text-align:right">Routes</th>
+  <th style="text-align:right"><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> income</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Castle Shannon 476100</td>
+  <td style="text-align:right">84.0%</td>
+  <td style="text-align:right">3</td>
+  <td style="text-align:right">$59,868</td>
+</tr>
+<tr>
+  <td>Pittsburgh 981200</td>
+  <td style="text-align:right">83.9%</td>
+  <td style="text-align:right">3</td>
+  <td style="text-align:right">n/a (special-purpose tract)</td>
+</tr>
+<tr>
+  <td>Pittsburgh 320700</td>
+  <td style="text-align:right">83.9%</td>
+  <td style="text-align:right">3</td>
+  <td style="text-align:right">$73,314</td>
+</tr>
+<tr>
+  <td>Bethel Park (Allegheny)</td>
+  <td style="text-align:right">82.8%</td>
+  <td style="text-align:right">3</td>
+  <td style="text-align:right">$104,732</td>
+</tr>
+<tr>
+  <td>Bethel Park (Allegheny)</td>
+  <td style="text-align:right">82.5%</td>
+  <td style="text-align:right">4</td>
+  <td style="text-align:right">$92,863</td>
+</tr>
+</tbody>
+</table>
+<p>The top is dominated by short-line southern suburbs and rail-served tracts (the T runs through Castle Shannon and Bethel Park).</p>
+<h2>Frequency-weighting effect</h2>
+<p>Tract-level <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <code>otp_gap = weighted - unweighted = -0.4 pp</code> (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> -0.3 pp; range -6.8 pp to +4.1 pp). On average the high-frequency routes serving a tract perform slightly worse than that tract's route average -- consistent with the system-wide pattern (Analysis 19, Analysis 45). Largest negative gaps cluster in <strong>Swissvale</strong> and <strong>Edgewood</strong>, where lateness-prone Frankstown/Forbes corridor routes dominate trip volume.</p>
 <h2>Observations</h2>
 <ul>
-<li>Best-performing neighborhoods are served by light rail (Overbrook, Beechview are on the T line) or short bus routes.</li>
-<li>Worst-performing neighborhoods depend on long local bus routes with many stops (e.g., routes 61C, 71B, 77).</li>
-<li>The quintile gap (Q5 - Q1) tracks roughly in parallel over time, meaning the equity disparity is baked into route structure rather than worsening.</li>
-<li>89 neighborhoods analyzed; 3,760 of 6,466 stops were excluded because they lacked a neighborhood assignment in the data.</li>
-<li>Routes with fewer than 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data are excluded from the analysis.</li>
+<li>The <strong>non-monotonic</strong> income gradient (Q1 &lt; Q2 &lt; Q3 &lt; Q4 &gt; Q5) is consistent with a service-design pattern: dense urban-core tracts (which include many low-income tracts) have frequent, slow, congestion-prone routes; mid-income inner suburbs sit on cleaner short-haul corridors; the highest-income tracts often sit at the end of long suburban routes that accumulate delay (echoing the Penn Hills / Plum pattern at the very bottom).</li>
+<li>The 3.6 pp Q1-vs-Q4 gap is meaningful at scale: Q1 tracts host ~37% of system weekly trips in the analyzed cohort (480k of 1.65M), so a sub-1pp shift here moves the system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> noticeably.</li>
+<li>Ranking 247 tracts (vs 89 hoods) puts substance behind the Pittsburgh-city-vs-suburb story: <strong>only 17 of the 30 worst-served tracts are inside Pittsburgh city limits</strong>; the rest (esp. Penn Hills, Plum, Wilkinsburg-area) had previously been masked by being assigned NULL <code>hood</code> or by being aggregated into wide municipalities.</li>
+<li>0 of the 6,466 stops were dropped for missing tract -- the previous analysis silently dropped 3,760 stops (58%) for missing hood.</li>
 </ul>
 <h2>Caveats</h2>
 <ul>
-<li><strong>Sample size varies widely</strong>: neighborhoods have between 1 and 74 routes. The 25 pp spread should be interpreted with this context -- neighborhoods with only 1-2 routes have <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> estimates driven by a single route's performance, while those with 10+ routes have more stable estimates. A neighborhood served by one bad route will look worse than a neighborhood with a diversified mix.</li>
-<li><strong>Panel balance (time series)</strong>: The quintile time series uses an unbalanced panel. Neighborhoods gaining or losing routes over time may show <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> changes from composition shifts (a route entering or exiting), not performance changes. This could create artificial trends in the quintile chart, though the overall pattern of parallel movement suggests this effect is small.</li>
-<li><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is weighted by current <code>trips_7d</code>, not historical ridership. Neighborhoods where service was cut would show current-frequency weights, not past ones.</li>
-<li>The <code>hood</code> field had some invalid values (e.g., &quot;0&quot;) that were filtered out.</li>
-<li>A neighborhood's <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> reflects the routes that pass through it, not the experience of residents who may transfer between routes.</li>
-<li>The unweighted measure treats each route equally regardless of how many trips it runs, which can overstate the importance of infrequent routes.</li>
+<li><strong>Sample size varies</strong>. Tracts have between 2 and 32 routes; a tract with 2 routes carries an <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> estimate driven by 2 routes' performance and should not be over-interpreted individually.</li>
+<li><strong>Trip-weighted, not rider-weighted.</strong> <code>trips_7d</code> is scheduled weekly trips, not boardings. A tract can have many high-frequency routes passing through (especially downtown / busways) without having many residents who actually board there. Per-resident <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> weighting is what Analysis 45 explores at the route level.</li>
+<li><strong><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> income suppression</strong>. ~14 of the 343 stop-bearing tracts have NULL <code>median_household_income</code> (Census suppresses small-sample estimates). These tracts are excluded from the quintile assignment but still appear in ranked output. The &quot;Pittsburgh 981200&quot; top-served tract is one of these -- it appears to be a special-purpose tract (parks/waterway) with very few residents.</li>
+<li><strong>Static weights</strong>. <code>trips_7d</code> is a current snapshot, not a monthly time series. Tracts whose service has expanded or contracted within the 2018-2025 window are weighted by today's footprint.</li>
+<li><strong>Ecological framing</strong>. Findings describe area-level associations between tract demographics and the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> of routes touching that tract -- not per-resident outcomes. A resident's actual experienced <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> depends on which route they ride.</li>
+<li><strong>Tract polygons are 2020 geometry; demographics are 2018-2022 ACS 5-year</strong>. Boundary changes within the period are not reflected.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified.</strong> <code>census_tracts</code> columns checked against <code>data/DATA_DICTIONARY.md</code> (post Pipeline 10 expansion). Spatial join via <code>geopandas.sjoin(predicate=&quot;within&quot;)</code> in EPSG:32617 (UTM zone 17N).</li>
+<li><strong>Geographic/temporal scope.</strong> All three <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> measures use the identical 247-tract / 94-route / 2018-2025 cohort; bus-only stratification is a strict subset.</li>
+<li><strong>Coverage check.</strong> All 6,466 stops with non-null lat/lon assigned to exactly one tract; no overlap (tracts are non-overlapping by construction). 343 distinct tracts touched, 247 with &gt;= 2 routes.</li>
+<li><strong>Aggregates sanity-checked.</strong> Trip-weighted system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> across all 247 tracts (~67%) matches the system-wide trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> from Analysis 19 within rounding.</li>
+<li><strong>Direction of effects.</strong> Q1 (lowest income) showing worst <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is the expected sign for an equity gradient. Penn Hills and Plum at the bottom of the ranking are also consistent with the long-suburban-bus-route lateness pattern from Analysis 10.</li>
+<li><strong>Surprising results investigated.</strong> The non-monotonic Q5 dip was investigated -- highest-income tracts in Allegheny County are clustered in southern/eastern suburbs reached by long routes, which matches the long-route lateness pattern.</li>
+<li><strong>Small-sample tracts flagged.</strong> <code>MIN_ROUTES = 2</code> filter applied; below that, single-route tracts dominated by a single route's noise.</li>
+<li><strong>Ecological framing in FINDINGS.md.</strong> Income-<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> relationship described as area-level association, never as per-resident claims.</li>
 </ul>
 <h2>Review History</h2>
 <ul>
-<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> — 7 issues (1 significant). Fixed time-pooled weighting (pre-aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to route level before joining), added bus-only stratification revealing <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> in Bon Air and Beechview, added NULL trips_7d filter, added minimum-month filter, documented panel balance caveat, added sample-size caveat, and clarified METHODS.md weighting description.</li>
+<li>2026-02-11: <a href="../../RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md">RED-TEAM-REPORTS/2026-02-11-analyses-01-05-07-11.md</a> -- 7 issues (1 significant). Fixed time-pooled weighting (pre-aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to route level before joining), added bus-only stratification revealing <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> in Bon Air and Beechview, added NULL trips_7d filter, added minimum-month filter, documented panel balance caveat, added sample-size caveat, and clarified METHODS.md weighting description.</li>
+<li>2026-05-10: Tract-level upgrade. Replaced fuzzy <code>stops.hood</code> (NULL for ~58% of stops, 89 hand-curated areas) with point-in-polygon assignment to ACS 2022 census tracts (343 served tracts, 247 with 2+ routes). Added income-quintile gradient analysis using the expanded <code>census_tracts</code> ACS columns from Pipeline 10. Tract-level dataset confirms the previously-hood-only pattern and reveals a 3.6 pp Q1-vs-Q4 income gap in trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> that the hood-level analysis could not surface.</li>
 </ul>
 </div>
   </details>
@@ -321,20 +305,20 @@
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn active" data-target="charts">Charts (3)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
-    <button class="tab-btn" data-target="data">Data (2)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
   </div>
 
   <div class="output-pane active" data-pane="charts">
     <div class="gallery">
     
       <figure class="shot-card">
-        <img src="../../assets/analyses/04_neighborhood_equity/neighborhood_equity.png" alt="neighborhood_equity" loading="lazy">
+        <img src="../../assets/analyses/04_neighborhood_equity/tract_equity.png" alt="tract_equity" loading="lazy">
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
-          <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/neighborhood_equity.png" target="_blank" rel="noopener noreferrer">neighborhood_equity.png</a>
-          <p class="artifact-desc">top/bottom neighborhoods bar chart and quintile time series.</p>
+          <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/tract_equity.png" target="_blank" rel="noopener noreferrer">tract_equity.png</a>
+          <p class="artifact-desc">top/bottom tracts bar chart and quintile time series.</p>
         </figcaption>
       </figure>
     
@@ -343,7 +327,16 @@
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/weighted_vs_unweighted_otp.png" target="_blank" rel="noopener noreferrer">weighted_vs_unweighted_otp.png</a>
-          <p class="artifact-desc">scatter plot comparing the two OTP measures and bar chart of the frequency-weighting effect per neighborhood.</p>
+          <p class="artifact-desc">scatter and bar chart of the frequency-weighting effect per tract.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/04_neighborhood_equity/otp_by_income.png" alt="otp_by_income" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/otp_by_income.png" target="_blank" rel="noopener noreferrer">otp_by_income.png</a>
+          <p class="artifact-desc">tract OTP scattered against median household income, plus per-quintile means.</p>
         </figcaption>
       </figure>
     
@@ -364,10 +357,10 @@
       <figure class="shot-card">
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
-          <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/neighborhood_otp.csv" target="_blank" rel="noopener noreferrer">neighborhood_otp.csv</a>
-          <p class="artifact-desc">OTP aggregated by neighborhood (weighted, unweighted, gap, and bus-only weighted).</p>
+          <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/tract_otp.csv" target="_blank" rel="noopener noreferrer">tract_otp.csv</a>
+          <p class="artifact-desc">per-tract weighted/unweighted OTP, gap, route/stop counts, bus-only OTP, and tract demographics (population, median income, % zero-vehicle households, % non-white population, primary muni).</p>
           
-          <details class="csv-preview" data-csv-url="../../assets/analyses/04_neighborhood_equity/neighborhood_otp.csv">
+          <details class="csv-preview" data-csv-url="../../assets/analyses/04_neighborhood_equity/tract_otp.csv">
             <summary>Preview CSV</summary>
             <div class="csv-preview-body">Expand to load preview.</div>
           </details>
@@ -378,10 +371,24 @@
       <figure class="shot-card">
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
-          <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/neighborhood_otp_bus_only.csv" target="_blank" rel="noopener noreferrer">neighborhood_otp_bus_only.csv</a>
-          <p class="artifact-desc">bus-only OTP by neighborhood.</p>
+          <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/tract_otp_bus_only.csv" target="_blank" rel="noopener noreferrer">tract_otp_bus_only.csv</a>
+          <p class="artifact-desc">bus-only weighted OTP per tract.</p>
           
-          <details class="csv-preview" data-csv-url="../../assets/analyses/04_neighborhood_equity/neighborhood_otp_bus_only.csv">
+          <details class="csv-preview" data-csv-url="../../assets/analyses/04_neighborhood_equity/tract_otp_bus_only.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/04_neighborhood_equity/otp_by_income_quintile.csv" target="_blank" rel="noopener noreferrer">otp_by_income_quintile.csv</a>
+          <p class="artifact-desc">mean and trip-weighted OTP for each tract income quintile.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/04_neighborhood_equity/otp_by_income_quintile.csv">
             <summary>Preview CSV</summary>
             <div class="csv-preview-body">Expand to load preview.</div>
           </details>
@@ -399,22 +406,24 @@
 <section class="panel" id="methods">
   <details class="fold">
     <summary><h2>Methods</h2></summary>
-    <div class="markdown"><h1>Methods: Neighborhood Equity</h1>
+    <div class="markdown"><h1>Methods: Tract Equity</h1>
 <h2>Question</h2>
-<p>Are certain neighborhoods or municipalities systematically underserved by <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a>?</p>
+<p>How does <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a> vary across the geographic and demographic landscape PRT serves -- by census tract, by tract income level, and by race composition?</p>
 <h2>Approach</h2>
 <ul>
-<li>Pre-aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to route-level averages (<code>AVG(otp) GROUP BY route_id, HAVING COUNT(*) &gt;= 12</code>), then join to <code>route_stops</code> and <code>stops</code>. This ensures each route contributes one weight regardless of how many months of data it has.</li>
-<li>Filter out <code>route_stops</code> rows with NULL <code>trips_7d</code> to avoid null-weight contamination.</li>
-<li>For each neighborhood, compute two <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> measures:<ul>
-<li><strong>Weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong>: route-level average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> weighted by <code>trips_7d</code> (weekly trip count per route-stop). Answers: &quot;What <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> does the average <em>trip</em> in this neighborhood experience?&quot;</li>
-<li><strong>Unweighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong>: simple average across unique routes per neighborhood (deduplicated by route to avoid inflating routes with many stops). Answers: &quot;What is the average reliability of <em>routes</em> serving this area?&quot;</li>
+<li>Replace the fuzzy <code>stops.hood</code> field (NULL for ~58% of stops, only 89 hand-curated areas) with <strong>point-in-polygon assignment</strong> of every PRT stop to its containing 2020 census tract (TIGER 2022 polygons in <code>census_tracts</code>). All 6,466 stops map to a tract; 343 tracts have at least one stop.</li>
+<li>Pre-aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to one row per route (<code>AVG(otp) GROUP BY route_id, HAVING COUNT(*) &gt;= 12</code>) so each route contributes one weight regardless of how many months it has data for.</li>
+<li>Join route-level <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> to <code>route_stops</code> (filtered to non-null <code>trips_7d</code>) and to the stop→tract assignment.</li>
+<li>For each tract, compute:<ul>
+<li><strong>Weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong>: route-level <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> weighted by <code>trips_7d</code> -- &quot;what <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> does the average <em>trip</em> in this tract experience?&quot;</li>
+<li><strong>Unweighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong>: simple average across the unique routes touching the tract -- &quot;what is the average reliability of <em>routes</em> serving this area?&quot;</li>
+<li><code>otp_gap = weighted - unweighted</code> (where high-frequency routes over- or under-perform their route average).</li>
 </ul>
 </li>
-<li>Compute the gap (weighted - unweighted) per neighborhood to identify where high-frequency service over- or under-performs relative to the route average.</li>
-<li><strong>Bus-only stratification</strong>: Repeat the weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> analysis using only BUS-mode routes to check for <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> (neighborhoods appearing well-served due to rail rather than bus performance).</li>
-<li>Rank neighborhoods by service quality.</li>
-<li>Examine whether the gap between best- and worst-served areas is widening or narrowing over time via rolling quintile assignment on monthly data.</li>
+<li>Filter to tracts served by <strong>at least 2 routes</strong> (<code>MIN_ROUTES = 2</code>); single-route tracts are too noisy to rank.</li>
+<li><strong>Bus-only stratification</strong>: re-run weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> using only BUS-mode routes to detect <a href="../../glossary.html#simpson-s-paradox" class="glossary-link" data-definition="Aggregated trends that reverse or change direction after stratification.">Simpson's paradox</a> (rail inflating an area's apparent equity).</li>
+<li><strong>Income gradient</strong>: bin tracts into 5 quintiles by <code>median_household_income</code> (B19013), then compute trip-weighted <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per quintile.</li>
+<li><strong>Quintile time series</strong>: per-tract-month weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, then trailing 12-month rolling assignment to <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> quintiles (avoids look-ahead) to track whether the equity gap is widening or narrowing.</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -428,32 +437,39 @@
 <tbody>
 <tr>
   <td><code>otp_monthly</code></td>
-  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route (routes with fewer than 12 months excluded)</td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route (routes with &lt; 12 months excluded)</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
   <td><code>route_stops</code></td>
-  <td>Links routes to stops with trip counts (rows with NULL <code>trips_7d</code> excluded)</td>
+  <td>Routes ↔ stops with <code>trips_7d</code> for trip weighting</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
   <td><code>stops</code></td>
-  <td>Neighborhood and municipality for each stop</td>
+  <td><code>lat</code>/<code>lon</code> (for point-in-polygon) and <code>muni</code>/<code>county</code> (for tract labels)</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
   <td><code>routes</code></td>
-  <td>Mode (BUS, RAIL) for bus-only stratification</td>
+  <td><code>mode</code> for bus-only stratification</td>
   <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>census_tracts</code></td>
+  <td>TIGER 2022 tract polygons + ACS 5-year (2018-2022) demographics: <code>population</code> (B01003), <code>median_household_income</code> (B19013), <code>households_zero_vehicle</code> (derived from B25044), race composition (B03002)</td>
+  <td><code>prt.db</code> table (Pipeline 10)</td>
 </tr>
 </tbody>
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/neighborhood_otp.csv</code> -- <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> aggregated by neighborhood (weighted, unweighted, gap, and bus-only weighted)</li>
-<li><code>output/neighborhood_otp_bus_only.csv</code> -- bus-only <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> by neighborhood</li>
-<li><code>output/neighborhood_equity.png</code> -- top/bottom neighborhoods bar chart and quintile time series</li>
-<li><code>output/weighted_vs_unweighted_otp.png</code> -- scatter plot comparing the two <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> measures and bar chart of the frequency-weighting effect per neighborhood</li>
+<li><code>output/tract_otp.csv</code> -- per-tract weighted/unweighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, otp_gap, route/stop counts, bus-only <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, plus tract demographics (population, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> income, %zero-vehicle households, %non-white population, primary muni/county)</li>
+<li><code>output/tract_otp_bus_only.csv</code> -- bus-only weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per tract</li>
+<li><code>output/otp_by_income_quintile.csv</code> -- <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> for each tract income quintile</li>
+<li><code>output/tract_equity.png</code> -- top/bottom tracts bar chart and quintile time series</li>
+<li><code>output/weighted_vs_unweighted_otp.png</code> -- scatter and gap chart for the frequency-weighting effect</li>
+<li><code>output/otp_by_income.png</code> -- tract <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> scattered against <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> income, plus per-quintile means</li>
 </ul>
 </div>
   </details>
@@ -467,196 +483,256 @@
     <div class="code-scroll">
     <table class="code-table"><tr>
       <td class="line-numbers" aria-hidden="true"></td>
-      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Neighborhood equity analysis: OTP aggregated by geography.&quot;&quot;&quot;
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Tract-level equity analysis: OTP aggregated by ACS census tract.
+
+Replaces the fuzzy `stops.hood` field (NULL for ~58% of stops, only 89 hand-curated
+neighborhoods) with point-in-polygon assignment to TIGER 2022 census tracts. Adds
+income/vehicle/race demographic context per tract.
+&quot;&quot;&quot;
 
 import polars as pl
 
-from prt_otp_analysis.common import analysis_dir, phase, query_to_polars, run_analysis, save_chart, save_csv, setup_plotting, weighted_mean
+from prt_otp_analysis.common import (
+    analysis_dir,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+    weighted_mean,
+)
+from prt_otp_analysis.stop_tracts import assign_stops_to_tracts
 
 OUT = analysis_dir(__file__)
 
 MIN_MONTHS = 12  # minimum months of OTP data per route
+MIN_ROUTES = 2   # tract-level estimates from a single route are too noisy to rank
 
 
-def load_data() -&gt; pl.DataFrame:
-    &quot;&quot;&quot;Load route-level average OTP joined with route-stop-neighborhood data.
-
-    Pre-aggregates OTP to one row per route (AVG across months) before joining
-    to route_stops, so each route contributes one weight regardless of how many
-    months of data it has. Also filters NULL trips_7d and requires MIN_MONTHS.
-    &quot;&quot;&quot;
+def load_route_otp() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Route-level mean OTP, restricted to routes with &gt;= MIN_MONTHS observations.&quot;&quot;&quot;
     return query_to_polars(f&quot;&quot;&quot;
-        WITH route_avg AS (
-            SELECT route_id, AVG(otp) AS avg_otp
-            FROM otp_monthly
-            GROUP BY route_id
-            HAVING COUNT(*) &gt;= {MIN_MONTHS}
-        )
-        SELECT rs.route_id, rs.stop_id, s.hood, s.muni, s.county,
-               ra.avg_otp, rs.trips_7d
-        FROM route_stops rs
-        JOIN route_avg ra ON rs.route_id = ra.route_id
-        LEFT JOIN stops s ON rs.stop_id = s.stop_id
-        WHERE rs.trips_7d IS NOT NULL
+        SELECT route_id, AVG(otp) AS avg_otp
+        FROM otp_monthly
+        GROUP BY route_id
+        HAVING COUNT(*) &gt;= {MIN_MONTHS}
     &quot;&quot;&quot;)
 
 
-def load_monthly_data() -&gt; pl.DataFrame:
-    &quot;&quot;&quot;Load per-month OTP with route-stop-neighborhood data for time series.
+def load_route_stops() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;route_stops with non-null trips_7d for trip weighting.&quot;&quot;&quot;
+    return query_to_polars(
+        &quot;SELECT route_id, stop_id, trips_7d FROM route_stops WHERE trips_7d IS NOT NULL&quot;
+    )
 
-    Uses the same pre-aggregation-then-join pattern per month to avoid
-    giving extra weight to routes with more months.
-    &quot;&quot;&quot;
-    return query_to_polars(f&quot;&quot;&quot;
-        WITH route_month_count AS (
-            SELECT route_id
-            FROM otp_monthly
-            GROUP BY route_id
-            HAVING COUNT(*) &gt;= {MIN_MONTHS}
-        )
-        SELECT rs.route_id, rs.stop_id, s.hood,
-               o.month, o.otp, rs.trips_7d
-        FROM route_stops rs
-        JOIN route_month_count rmc ON rs.route_id = rmc.route_id
-        JOIN otp_monthly o ON rs.route_id = o.route_id
-        LEFT JOIN stops s ON rs.stop_id = s.stop_id
-        WHERE rs.trips_7d IS NOT NULL
-          AND s.hood IS NOT NULL
-          AND s.hood != &#x27;0&#x27;
-          AND s.hood != &#x27;&#x27;
-    &quot;&quot;&quot;)
+
+def load_stop_muni() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;muni/county from stops table for tract-label readability.&quot;&quot;&quot;
+    return query_to_polars(&quot;SELECT stop_id, muni, county FROM stops&quot;)
 
 
 def load_route_modes() -&gt; pl.DataFrame:
-    &quot;&quot;&quot;Load route mode information for bus-only stratification.&quot;&quot;&quot;
     return query_to_polars(&quot;SELECT route_id, mode FROM routes&quot;)
 
 
-def analyze(df: pl.DataFrame) -&gt; pl.DataFrame:
-    &quot;&quot;&quot;Compute per-neighborhood weighted and unweighted OTP from route-level averages.&quot;&quot;&quot;
-    # Filter to valid neighborhoods
-    hood_df = df.filter(
-        pl.col(&quot;hood&quot;).is_not_null()
-        &amp; (pl.col(&quot;hood&quot;) != &quot;0&quot;)
-        &amp; (pl.col(&quot;hood&quot;) != &quot;&quot;)
+def load_monthly_route() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Monthly OTP for routes meeting MIN_MONTHS, for the quintile time series.&quot;&quot;&quot;
+    return query_to_polars(f&quot;&quot;&quot;
+        SELECT route_id, month, otp
+        FROM otp_monthly
+        WHERE route_id IN (
+            SELECT route_id FROM otp_monthly GROUP BY route_id HAVING COUNT(*) &gt;= {MIN_MONTHS}
+        )
+    &quot;&quot;&quot;)
+
+
+def build_route_stop_tract(
+    route_otp_df: pl.DataFrame,
+    route_stops_df: pl.DataFrame,
+    stop_tract_df: pl.DataFrame,
+) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Join route-level OTP, route_stops weights, and stop→tract assignment.&quot;&quot;&quot;
+    return (
+        route_stops_df.join(route_otp_df, on=&quot;route_id&quot;)
+        .join(stop_tract_df, on=&quot;stop_id&quot;)
     )
 
-    # Per-neighborhood weighted OTP (weighted by trips_7d)
-    hood_summary = (
-        hood_df.group_by([&quot;hood&quot;, &quot;muni&quot;, &quot;county&quot;])
+
+def primary_muni_per_tract(stop_tract_df: pl.DataFrame, stop_muni_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Pick the most-common (muni, county) among the stops in each tract for human-readable labels.&quot;&quot;&quot;
+    joined = stop_tract_df.select(&quot;stop_id&quot;, &quot;geoid&quot;).join(stop_muni_df, on=&quot;stop_id&quot;)
+    counts = (
+        joined.filter(pl.col(&quot;muni&quot;).is_not_null() &amp; (pl.col(&quot;muni&quot;) != &quot;0&quot;))
+        .group_by([&quot;geoid&quot;, &quot;muni&quot;, &quot;county&quot;])
+        .agg(n=pl.len())
+    )
+    return (
+        counts.sort([&quot;geoid&quot;, &quot;n&quot;], descending=[False, True])
+        .group_by(&quot;geoid&quot;, maintain_order=True)
+        .agg(primary_muni=pl.col(&quot;muni&quot;).first(), primary_county=pl.col(&quot;county&quot;).first())
+    )
+
+
+def tract_label(geoid: str, muni: str | None) -&gt; str:
+    &quot;&quot;&quot;Human-readable tract label: &#x27;Pittsburgh 020100&#x27; or just &#x27;020100&#x27; if no muni.&quot;&quot;&quot;
+    code = geoid[-6:].lstrip(&quot;0&quot;) or geoid[-6:]
+    return f&quot;{muni} {code}&quot; if muni else f&quot;Tract {code}&quot;
+
+
+def analyze(
+    rst_df: pl.DataFrame,
+    muni_df: pl.DataFrame,
+    tract_demo_df: pl.DataFrame,
+) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute per-tract weighted/unweighted OTP, demographics, and a readable label.&quot;&quot;&quot;
+    tract_summary = (
+        rst_df.group_by(&quot;geoid&quot;)
         .agg(
             weighted_otp=weighted_mean(&quot;avg_otp&quot;, &quot;trips_7d&quot;),
             route_count=pl.col(&quot;route_id&quot;).n_unique(),
             stop_count=pl.col(&quot;stop_id&quot;).n_unique(),
             total_trips_7d=pl.col(&quot;trips_7d&quot;).sum(),
         )
-        .sort(&quot;weighted_otp&quot;)
     )
 
-    # Unweighted OTP: one value per route per neighborhood (deduplicate across stops)
-    route_hood = (
-        hood_df.group_by([&quot;hood&quot;, &quot;route_id&quot;])
+    route_tract = (
+        rst_df.group_by([&quot;geoid&quot;, &quot;route_id&quot;])
         .agg(avg_otp=pl.col(&quot;avg_otp&quot;).first())
     )
-    hood_unweighted = (
-        route_hood.group_by(&quot;hood&quot;)
+    tract_unweighted = (
+        route_tract.group_by(&quot;geoid&quot;)
         .agg(unweighted_otp=pl.col(&quot;avg_otp&quot;).mean())
     )
 
-    hood_summary = hood_summary.join(hood_unweighted, on=&quot;hood&quot;, how=&quot;left&quot;)
-    hood_summary = hood_summary.with_columns(
-        otp_gap=(pl.col(&quot;weighted_otp&quot;) - pl.col(&quot;unweighted_otp&quot;)),
-    ).sort(&quot;weighted_otp&quot;)
-
-    return hood_summary
-
-
-def analyze_bus_only(df: pl.DataFrame, route_modes: pl.DataFrame) -&gt; pl.DataFrame:
-    &quot;&quot;&quot;Compute per-neighborhood weighted OTP for bus routes only.&quot;&quot;&quot;
-    # Filter to valid neighborhoods and BUS mode
-    bus_df = (
-        df.join(route_modes, on=&quot;route_id&quot;, how=&quot;left&quot;)
-        .filter(
-            pl.col(&quot;hood&quot;).is_not_null()
-            &amp; (pl.col(&quot;hood&quot;) != &quot;0&quot;)
-            &amp; (pl.col(&quot;hood&quot;) != &quot;&quot;)
-            &amp; (pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    out = (
+        tract_summary
+        .join(tract_unweighted, on=&quot;geoid&quot;, how=&quot;left&quot;)
+        .join(muni_df, on=&quot;geoid&quot;, how=&quot;left&quot;)
+        .join(tract_demo_df, on=&quot;geoid&quot;, how=&quot;left&quot;)
+        .with_columns(
+            otp_gap=pl.col(&quot;weighted_otp&quot;) - pl.col(&quot;unweighted_otp&quot;),
+            pct_zero_vehicle=(
+                pl.col(&quot;households_zero_vehicle&quot;) / pl.col(&quot;households_total&quot;)
+            ),
+            pct_nonwhite=(
+                1.0 - (pl.col(&quot;pop_white_nh&quot;) / pl.col(&quot;population&quot;))
+            ),
         )
+        .with_columns(
+            label=pl.struct(&quot;geoid&quot;, &quot;primary_muni&quot;).map_elements(
+                lambda r: tract_label(r[&quot;geoid&quot;], r[&quot;primary_muni&quot;]),
+                return_dtype=pl.Utf8,
+            ),
+        )
+        .filter(pl.col(&quot;route_count&quot;) &gt;= MIN_ROUTES)
+        .sort(&quot;weighted_otp&quot;)
     )
+    return out
 
-    hood_bus = (
-        bus_df.group_by([&quot;hood&quot;, &quot;muni&quot;, &quot;county&quot;])
+
+def analyze_bus_only(
+    rst_df: pl.DataFrame,
+    route_modes_df: pl.DataFrame,
+) -&gt; pl.DataFrame:
+    bus = (
+        rst_df.join(route_modes_df, on=&quot;route_id&quot;)
+        .filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    )
+    return (
+        bus.group_by(&quot;geoid&quot;)
         .agg(
             bus_weighted_otp=weighted_mean(&quot;avg_otp&quot;, &quot;trips_7d&quot;),
             bus_route_count=pl.col(&quot;route_id&quot;).n_unique(),
         )
-        .sort(&quot;bus_weighted_otp&quot;)
     )
 
-    return hood_bus
 
+def analyze_quintile_ts(
+    monthly_df: pl.DataFrame,
+    route_stops_df: pl.DataFrame,
+    stop_tract_df: pl.DataFrame,
+) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Tract-month weighted OTP, then trailing-12-month rolling quintiles.&quot;&quot;&quot;
+    rs_tract = route_stops_df.join(stop_tract_df.select(&quot;stop_id&quot;, &quot;geoid&quot;), on=&quot;stop_id&quot;)
 
-def analyze_quintile_ts(monthly_df: pl.DataFrame) -&gt; pl.DataFrame:
-    &quot;&quot;&quot;Compute quintile time series from monthly data.&quot;&quot;&quot;
-    # Per-neighborhood-month weighted OTP (deduplicate route OTP across stops first)
-    hood_month = (
-        monthly_df.group_by([&quot;hood&quot;, &quot;month&quot;])
-        .agg(
-            weighted_otp=weighted_mean(&quot;otp&quot;, &quot;trips_7d&quot;),
-        )
+    rsm = (
+        rs_tract.join(monthly_df, on=&quot;route_id&quot;)
+        .group_by([&quot;geoid&quot;, &quot;month&quot;])
+        .agg(weighted_otp=weighted_mean(&quot;otp&quot;, &quot;trips_7d&quot;))
+        .sort([&quot;geoid&quot;, &quot;month&quot;])
     )
-
-    # Rolling 12-month OTP per neighborhood for quintile assignment
-    hood_month = hood_month.sort([&quot;hood&quot;, &quot;month&quot;])
-    hood_month = hood_month.with_columns(
+    rsm = rsm.with_columns(
         rolling_otp=pl.col(&quot;weighted_otp&quot;)
         .rolling_mean(window_size=12, min_samples=6)
-        .over(&quot;hood&quot;),
-    )
+        .over(&quot;geoid&quot;),
+    ).filter(pl.col(&quot;rolling_otp&quot;).is_not_null())
 
-    # Assign quintiles per month based on trailing performance (avoids look-ahead bias)
-    hood_month_ranked = hood_month.filter(pl.col(&quot;rolling_otp&quot;).is_not_null())
-    hood_month_ranked = hood_month_ranked.with_columns(
+    rsm = rsm.with_columns(
         quintile=(
             ((pl.col(&quot;rolling_otp&quot;).rank().over(&quot;month&quot;) - 1)
              / pl.col(&quot;rolling_otp&quot;).count().over(&quot;month&quot;) * 5)
             .cast(pl.Int32).clip(0, 4) + 1
         ),
     )
-
-    quintile_ts = (
-        hood_month_ranked.group_by([&quot;quintile&quot;, &quot;month&quot;])
+    return (
+        rsm.group_by([&quot;quintile&quot;, &quot;month&quot;])
         .agg(avg_otp=pl.col(&quot;weighted_otp&quot;).mean())
         .sort([&quot;quintile&quot;, &quot;month&quot;])
     )
 
-    return quintile_ts
+
+def analyze_income_gradient(tract_summary: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Bin tracts by trip-weighted-population income quintile, report mean OTP per bin.&quot;&quot;&quot;
+    df = tract_summary.filter(
+        pl.col(&quot;median_household_income&quot;).is_not_null()
+        &amp; pl.col(&quot;weighted_otp&quot;).is_not_null()
+    )
+    if len(df) &lt; 5:
+        return pl.DataFrame()
+    df = df.with_columns(
+        income_quintile=(
+            ((pl.col(&quot;median_household_income&quot;).rank() - 1)
+             / pl.len() * 5)
+            .cast(pl.Int32).clip(0, 4) + 1
+        ),
+    )
+    return (
+        df.group_by(&quot;income_quintile&quot;)
+        .agg(
+            mean_otp=pl.col(&quot;weighted_otp&quot;).mean(),
+            mean_income=pl.col(&quot;median_household_income&quot;).mean(),
+            n_tracts=pl.len(),
+            total_trips_7d=pl.col(&quot;total_trips_7d&quot;).sum(),
+            trip_weighted_otp=weighted_mean(&quot;weighted_otp&quot;, &quot;total_trips_7d&quot;),
+        )
+        .sort(&quot;income_quintile&quot;)
+    )
 
 
-def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -&gt; None:
-    &quot;&quot;&quot;Generate neighborhood equity charts.&quot;&quot;&quot;
+def make_chart(tract_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -&gt; None:
     plt = setup_plotting()
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
-    # Top: Best and worst 15 neighborhoods
     n_show = 15
-    bottom = hood_summary.sort(&quot;weighted_otp&quot;).head(n_show)
-    top = hood_summary.sort(&quot;weighted_otp&quot;, descending=True).head(n_show).sort(&quot;weighted_otp&quot;)
+    bottom = tract_summary.sort(&quot;weighted_otp&quot;).head(n_show)
+    top = tract_summary.sort(&quot;weighted_otp&quot;, descending=True).head(n_show).sort(&quot;weighted_otp&quot;)
     combined = pl.concat([bottom, top])
 
-    labels = combined[&quot;hood&quot;].to_list()
+    labels = combined[&quot;label&quot;].to_list()
     values = combined[&quot;weighted_otp&quot;].to_list()
-    colors = [&quot;#ef4444&quot; if v &lt; combined[&quot;weighted_otp&quot;].median() else &quot;#22c55e&quot; for v in values]
+    median = combined[&quot;weighted_otp&quot;].median()
+    colors = [&quot;#ef4444&quot; if v &lt; median else &quot;#22c55e&quot; for v in values]
 
     y_pos = range(len(labels))
     ax1.barh(y_pos, values, color=colors)
     ax1.set_yticks(y_pos)
     ax1.set_yticklabels(labels, fontsize=7)
-    ax1.set_xlabel(&quot;Weighted Average OTP&quot;)
-    ax1.set_title(f&quot;Bottom {n_show} &amp; Top {n_show} Neighborhoods by OTP&quot;)
+    ax1.set_xlabel(&quot;Trip-weighted average OTP&quot;)
+    ax1.set_title(f&quot;Bottom {n_show} &amp; Top {n_show} census tracts by OTP &quot;
+                  f&quot;(min {MIN_ROUTES} routes)&quot;)
     ax1.set_xlim(0, 1)
 
-    # Bottom: All quintile time series (shows spread, not just the gap)
     quintile_colors = {1: &quot;#ef4444&quot;, 2: &quot;#f59e0b&quot;, 3: &quot;#9ca3af&quot;, 4: &quot;#60a5fa&quot;, 5: &quot;#22c55e&quot;}
     quintile_labels = {1: &quot;Q1 (worst)&quot;, 2: &quot;Q2&quot;, 3: &quot;Q3&quot;, 4: &quot;Q4&quot;, 5: &quot;Q5 (best)&quot;}
 
@@ -674,7 +750,6 @@ def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -&gt; None
         ax2.plot(x, vals, color=quintile_colors[q], linewidth=lw, alpha=alpha,
                  label=quintile_labels[q])
 
-    # Shade between Q1 and Q5
     q1_data = quintile_ts.filter(pl.col(&quot;quintile&quot;) == 1).sort(&quot;month&quot;)
     q5_data = quintile_ts.filter(pl.col(&quot;quintile&quot;) == 5).sort(&quot;month&quot;)
     shared = q1_data.select(&quot;month&quot;).join(q5_data.select(&quot;month&quot;), on=&quot;month&quot;)
@@ -685,162 +760,166 @@ def make_chart(hood_summary: pl.DataFrame, quintile_ts: pl.DataFrame) -&gt; None
     ax2.fill_between(shared_x, q1_vals, q5_vals, alpha=0.1, color=&quot;#7c3aed&quot;)
 
     ax2.set_ylabel(&quot;Average OTP&quot;)
-    ax2.set_title(&quot;OTP by Neighborhood Quintile Over Time&quot;)
+    ax2.set_title(&quot;OTP by tract quintile over time&quot;)
     ax2.set_xticks(tick_pos)
     ax2.set_xticklabels(tick_lbl)
     ax2.set_xlabel(&quot;Month&quot;)
     ax2.legend(fontsize=8, loc=&quot;lower left&quot;)
     ax2.set_ylim(0, 1)
 
-    save_chart(fig, OUT / &quot;neighborhood_equity.png&quot;)
+    save_chart(fig, OUT / &quot;tract_equity.png&quot;)
 
 
-def make_comparison_chart(hood_summary: pl.DataFrame) -&gt; None:
-    &quot;&quot;&quot;Generate weighted vs unweighted OTP comparison chart.&quot;&quot;&quot;
+def make_comparison_chart(tract_summary: pl.DataFrame) -&gt; None:
     plt = setup_plotting()
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    weighted = hood_summary[&quot;weighted_otp&quot;].to_list()
-    unweighted = hood_summary[&quot;unweighted_otp&quot;].to_list()
-    trips = hood_summary[&quot;total_trips_7d&quot;].to_list()
+    weighted = tract_summary[&quot;weighted_otp&quot;].to_list()
+    unweighted = tract_summary[&quot;unweighted_otp&quot;].to_list()
+    trips = tract_summary[&quot;total_trips_7d&quot;].to_list()
 
-    # Left: scatter of weighted vs unweighted, sized by total trips
     max_trips = max(trips)
     sizes = [20 + 80 * (t / max_trips) for t in trips]
-    ax1.scatter(unweighted, weighted, s=sizes, alpha=0.5, c=&quot;#6366f1&quot;, edgecolors=&quot;white&quot;, linewidths=0.3)
-
-    # Diagonal reference line
+    ax1.scatter(unweighted, weighted, s=sizes, alpha=0.5, c=&quot;#6366f1&quot;,
+                edgecolors=&quot;white&quot;, linewidths=0.3)
     ax1.plot([0, 1], [0, 1], color=&quot;#9ca3af&quot;, linestyle=&quot;--&quot;, linewidth=1, zorder=0)
     ax1.set_xlabel(&quot;Unweighted OTP (equal weight per route)&quot;)
     ax1.set_ylabel(&quot;Weighted OTP (weighted by trip frequency)&quot;)
-    ax1.set_title(&quot;Weighted vs Unweighted OTP by Neighborhood&quot;)
+    ax1.set_title(&quot;Weighted vs unweighted OTP by tract&quot;)
     ax1.set_xlim(0, 1)
     ax1.set_ylim(0, 1)
     ax1.set_aspect(&quot;equal&quot;)
 
-    # Annotate the 5 neighborhoods with largest absolute gap
-    sorted_by_gap = hood_summary.with_columns(abs_gap=pl.col(&quot;otp_gap&quot;).abs()).sort(&quot;abs_gap&quot;, descending=True)
+    sorted_by_gap = tract_summary.with_columns(abs_gap=pl.col(&quot;otp_gap&quot;).abs()).sort(
+        &quot;abs_gap&quot;, descending=True
+    )
     for row in sorted_by_gap.head(5).iter_rows(named=True):
         ax1.annotate(
-            row[&quot;hood&quot;], (row[&quot;unweighted_otp&quot;], row[&quot;weighted_otp&quot;]),
+            row[&quot;label&quot;], (row[&quot;unweighted_otp&quot;], row[&quot;weighted_otp&quot;]),
             fontsize=6, alpha=0.8,
             xytext=(4, 4), textcoords=&quot;offset points&quot;,
         )
 
-    # Right: top/bottom 15 neighborhoods by gap (weighted - unweighted)
     n_show = 15
-    biggest_positive = hood_summary.sort(&quot;otp_gap&quot;, descending=True).head(n_show)
-    biggest_negative = hood_summary.sort(&quot;otp_gap&quot;).head(n_show)
+    biggest_positive = tract_summary.sort(&quot;otp_gap&quot;, descending=True).head(n_show)
+    biggest_negative = tract_summary.sort(&quot;otp_gap&quot;).head(n_show)
     combined = pl.concat([biggest_negative, biggest_positive.sort(&quot;otp_gap&quot;)])
-
-    gap_labels = combined[&quot;hood&quot;].to_list()
+    gap_labels = combined[&quot;label&quot;].to_list()
     gap_vals = combined[&quot;otp_gap&quot;].to_list()
     gap_colors = [&quot;#ef4444&quot; if g &lt; 0 else &quot;#22c55e&quot; for g in gap_vals]
-
     y_pos = range(len(gap_labels))
     ax2.barh(y_pos, gap_vals, color=gap_colors)
     ax2.set_yticks(y_pos)
     ax2.set_yticklabels(gap_labels, fontsize=6)
-    ax2.set_xlabel(&quot;OTP Gap (weighted - unweighted)&quot;)
-    ax2.set_title(&quot;Frequency Weighting Effect by Neighborhood&quot;)
+    ax2.set_xlabel(&quot;OTP gap (weighted - unweighted)&quot;)
+    ax2.set_title(&quot;Frequency-weighting effect by tract&quot;)
     ax2.axvline(0, color=&quot;#9ca3af&quot;, linewidth=0.8)
 
     save_chart(fig, OUT / &quot;weighted_vs_unweighted_otp.png&quot;)
 
 
-@run_analysis(4, &quot;Neighborhood Equity&quot;)
+def make_income_chart(tract_summary: pl.DataFrame, gradient_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter of tract OTP vs median household income, plus per-quintile means.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    df = tract_summary.filter(pl.col(&quot;median_household_income&quot;).is_not_null())
+    incomes = df[&quot;median_household_income&quot;].to_list()
+    otps = df[&quot;weighted_otp&quot;].to_list()
+    trips = df[&quot;total_trips_7d&quot;].to_list()
+    max_trips = max(trips)
+    sizes = [10 + 80 * (t / max_trips) for t in trips]
+    ax1.scatter(incomes, otps, s=sizes, alpha=0.4, c=&quot;#6366f1&quot;,
+                edgecolors=&quot;white&quot;, linewidths=0.3)
+    ax1.set_xlabel(&quot;Median household income (tract, 2018-2022 ACS, $)&quot;)
+    ax1.set_ylabel(&quot;Trip-weighted OTP&quot;)
+    ax1.set_title(&quot;Tract OTP vs median household income&quot;)
+    ax1.set_ylim(0.4, 1.0)
+    ax1.xaxis.set_major_formatter(lambda x, _: f&quot;${int(x/1000)}k&quot;)
+
+    if len(gradient_df) &gt; 0:
+        quintiles = gradient_df[&quot;income_quintile&quot;].to_list()
+        bar_otp = gradient_df[&quot;trip_weighted_otp&quot;].to_list()
+        ax2.bar(quintiles, bar_otp, color=&quot;#3b82f6&quot;, edgecolor=&quot;white&quot;)
+        ax2.set_xlabel(&quot;Tract income quintile (1 = lowest income)&quot;)
+        ax2.set_ylabel(&quot;Trip-weighted OTP&quot;)
+        ax2.set_title(&quot;OTP by tract income quintile&quot;)
+        ax2.set_ylim(0.5, 0.85)
+        for q, v in zip(quintiles, bar_otp):
+            ax2.text(q, v + 0.005, f&quot;{v:.1%}&quot;, ha=&quot;center&quot;, fontsize=10)
+
+    save_chart(fig, OUT / &quot;otp_by_income.png&quot;)
+
+
+@run_analysis(4, &quot;Tract Equity&quot;)
 def main() -&gt; None:
-    &quot;&quot;&quot;Entry point: load data, analyze, chart, and save.&quot;&quot;&quot;
-    with phase(&quot;Loading data&quot;):
-        df = load_data()
-        print(f&quot;  {len(df):,} route-stop records loaded (route-level avg OTP, {MIN_MONTHS}+ months, non-null trips_7d)&quot;)
-        print(f&quot;  {df.filter(pl.col(&#x27;hood&#x27;).is_not_null() &amp; (pl.col(&#x27;hood&#x27;) != &#x27;0&#x27;) &amp; (pl.col(&#x27;hood&#x27;) != &#x27;&#x27;))[&#x27;hood&#x27;].n_unique()} neighborhoods represented&quot;)
+    with phase(&quot;Loading route-level OTP and stops&quot;):
+        route_otp_df = load_route_otp()
+        route_stops_df = load_route_stops()
+        stop_muni_df = load_stop_muni()
+        print(f&quot;  {len(route_otp_df)} routes with &gt;= {MIN_MONTHS} months of OTP&quot;)
+        print(f&quot;  {len(route_stops_df):,} route-stop edges with non-null trips_7d&quot;)
 
-        # Check how many stops lack neighborhood data
-        total_stops = query_to_polars(&quot;SELECT COUNT(*) AS n FROM stops&quot;)[&quot;n&quot;][0]
-        hood_stops = query_to_polars(
-            &quot;SELECT COUNT(*) AS n FROM stops WHERE hood IS NOT NULL AND hood != &#x27;0&#x27; AND hood != &#x27;&#x27;&quot;
-        )[&quot;n&quot;][0]
-        print(f&quot;  {total_stops - hood_stops} of {total_stops} stops excluded (missing/invalid neighborhood)&quot;)
+    with phase(&quot;Assigning stops to census tracts&quot;):
+        stop_tract_df = assign_stops_to_tracts()
+        print(f&quot;  {len(stop_tract_df):,} stops mapped to &quot;
+              f&quot;{stop_tract_df[&#x27;geoid&#x27;].n_unique()} tracts &quot;
+              f&quot;({stop_tract_df[&#x27;geoid&#x27;].is_null().sum()} unmapped)&quot;)
 
-    with phase(&quot;Analyzing (all modes, pooled)&quot;):
-        hood_summary = analyze(df)
-        print(f&quot;  {len(hood_summary)} neighborhoods ranked&quot;)
+    with phase(&quot;Building per-tract analysis&quot;):
+        rst_df = build_route_stop_tract(route_otp_df, route_stops_df, stop_tract_df)
+        muni_df = primary_muni_per_tract(stop_tract_df, stop_muni_df)
+        tract_demo_df = stop_tract_df.unique(&quot;geoid&quot;).select(
+            &quot;geoid&quot;, &quot;population&quot;, &quot;median_household_income&quot;,
+            &quot;households_total&quot;, &quot;households_zero_vehicle&quot;,
+            &quot;pop_white_nh&quot;, &quot;pop_black_nh&quot;, &quot;pop_asian_nh&quot;, &quot;pop_hispanic&quot;,
+        )
+        tract_summary = analyze(rst_df, muni_df, tract_demo_df)
+        print(f&quot;  {len(tract_summary)} tracts with &gt;= {MIN_ROUTES} routes ranked&quot;)
 
-        best = hood_summary.sort(&quot;weighted_otp&quot;, descending=True).head(3)
-        worst = hood_summary.sort(&quot;weighted_otp&quot;).head(3)
-        print(&quot;\n  Top 3 neighborhoods (weighted):&quot;)
+        best = tract_summary.sort(&quot;weighted_otp&quot;, descending=True).head(3)
+        worst = tract_summary.sort(&quot;weighted_otp&quot;).head(3)
+        print(&quot;\n  Top 3 tracts (weighted):&quot;)
         for row in best.iter_rows(named=True):
-            print(f&quot;    {row[&#x27;hood&#x27;]} ({row[&#x27;muni&#x27;]}): {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
-        print(&quot;  Bottom 3 neighborhoods (weighted):&quot;)
+            print(f&quot;    {row[&#x27;label&#x27;]}: {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
+        print(&quot;  Bottom 3 tracts (weighted):&quot;)
         for row in worst.iter_rows(named=True):
-            print(f&quot;    {row[&#x27;hood&#x27;]} ({row[&#x27;muni&#x27;]}): {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
+            print(f&quot;    {row[&#x27;label&#x27;]}: {row[&#x27;weighted_otp&#x27;]:.1%}&quot;)
 
-        # Route count range across neighborhoods
-        min_routes = hood_summary[&quot;route_count&quot;].min()
-        max_routes = hood_summary[&quot;route_count&quot;].max()
-        print(f&quot;\n  Route count per neighborhood: {min_routes} to {max_routes}&quot;)
+        spread = tract_summary[&quot;weighted_otp&quot;].max() - tract_summary[&quot;weighted_otp&quot;].min()
+        print(f&quot;\n  Spread (max - min): {spread:.1%}&quot;)
 
-        # Frequency-weighting effect summary
-        gaps = hood_summary[&quot;otp_gap&quot;]
-        print(f&quot;\n  Frequency-weighting effect (weighted - unweighted):&quot;)
-        print(f&quot;    Mean gap:   {gaps.mean():+.2%}&quot;)
-        print(f&quot;    Median gap: {gaps.median():+.2%}&quot;)
-        print(f&quot;    Range:      {gaps.min():+.2%} to {gaps.max():+.2%}&quot;)
-        biggest = hood_summary.with_columns(abs_gap=pl.col(&quot;otp_gap&quot;).abs()).sort(&quot;abs_gap&quot;, descending=True).head(3)
-        print(&quot;  Largest divergences:&quot;)
-        for row in biggest.iter_rows(named=True):
-            print(f&quot;    {row[&#x27;hood&#x27;]}: weighted={row[&#x27;weighted_otp&#x27;]:.1%}, &quot;
-                  f&quot;unweighted={row[&#x27;unweighted_otp&#x27;]:.1%}, gap={row[&#x27;otp_gap&#x27;]:+.2%}&quot;)
+    with phase(&quot;Bus-only stratification&quot;):
+        route_modes_df = load_route_modes()
+        bus_summary = analyze_bus_only(rst_df, route_modes_df)
+        tract_summary = tract_summary.join(bus_summary, on=&quot;geoid&quot;, how=&quot;left&quot;)
+        bus_count = tract_summary.filter(pl.col(&quot;bus_weighted_otp&quot;).is_not_null()).height
+        print(f&quot;  {bus_count} tracts with bus-mode service&quot;)
 
-    with phase(&quot;Analyzing (bus only)&quot;):
-        route_modes = load_route_modes()
-        hood_bus = analyze_bus_only(df, route_modes)
-        print(f&quot;  {len(hood_bus)} neighborhoods with bus service&quot;)
+    with phase(&quot;Income-gradient analysis&quot;):
+        gradient_df = analyze_income_gradient(tract_summary)
+        if len(gradient_df) &gt; 0:
+            for row in gradient_df.iter_rows(named=True):
+                print(f&quot;    Q{row[&#x27;income_quintile&#x27;]} (mean ${row[&#x27;mean_income&#x27;]:,.0f}, &quot;
+                      f&quot;n={row[&#x27;n_tracts&#x27;]}): trip-weighted OTP {row[&#x27;trip_weighted_otp&#x27;]:.1%}&quot;)
+            q1 = gradient_df.filter(pl.col(&quot;income_quintile&quot;) == 1)[&quot;trip_weighted_otp&quot;][0]
+            q5 = gradient_df.filter(pl.col(&quot;income_quintile&quot;) == 5)[&quot;trip_weighted_otp&quot;][0]
+            print(f&quot;  Q5 - Q1 OTP gap: {(q5 - q1) * 100:+.2f} pp&quot;)
 
-        # Join bus OTP to main summary for comparison
-        hood_summary = hood_summary.join(
-            hood_bus.select(&quot;hood&quot;, &quot;bus_weighted_otp&quot;, &quot;bus_route_count&quot;),
-            on=&quot;hood&quot;,
-            how=&quot;left&quot;,
-        )
+    with phase(&quot;Quintile time series&quot;):
+        monthly_df = load_monthly_route()
+        quintile_ts = analyze_quintile_ts(monthly_df, route_stops_df, stop_tract_df)
 
-        bus_best = hood_bus.sort(&quot;bus_weighted_otp&quot;, descending=True).head(3)
-        bus_worst = hood_bus.sort(&quot;bus_weighted_otp&quot;).head(3)
-        print(&quot;  Top 3 (bus only):&quot;)
-        for row in bus_best.iter_rows(named=True):
-            print(f&quot;    {row[&#x27;hood&#x27;]} ({row[&#x27;muni&#x27;]}): {row[&#x27;bus_weighted_otp&#x27;]:.1%}&quot;)
-        print(&quot;  Bottom 3 (bus only):&quot;)
-        for row in bus_worst.iter_rows(named=True):
-            print(f&quot;    {row[&#x27;hood&#x27;]} ({row[&#x27;muni&#x27;]}): {row[&#x27;bus_weighted_otp&#x27;]:.1%}&quot;)
-
-        # Check for Simpson&#x27;s paradox: do rankings change between pooled and bus-only?
-        both = hood_summary.filter(pl.col(&quot;bus_weighted_otp&quot;).is_not_null())
-        diff = both.with_columns(
-            rank_diff=(
-                pl.col(&quot;weighted_otp&quot;).rank(descending=True) - pl.col(&quot;bus_weighted_otp&quot;).rank(descending=True)
-            ).abs()
-        )
-        big_shifts = diff.filter(pl.col(&quot;rank_diff&quot;) &gt; 10).sort(&quot;rank_diff&quot;, descending=True)
-        if len(big_shifts) &gt; 0:
-            print(f&quot;\n  {len(big_shifts)} neighborhoods shift 10+ rank positions between pooled and bus-only&quot;)
-        else:
-            print(&quot;\n  No neighborhoods shift more than 10 rank positions between pooled and bus-only&quot;)
-
-    with phase(&quot;Loading monthly data for time series&quot;):
-        monthly_df = load_monthly_data()
-        print(f&quot;  {len(monthly_df):,} route-stop-month records loaded&quot;)
-
-        print(&quot;Analyzing quintile time series...&quot;)
-        quintile_ts = analyze_quintile_ts(monthly_df)
-
-    with phase(&quot;Saving CSV&quot;):
-        save_csv(hood_summary, OUT / &quot;neighborhood_otp.csv&quot;)
-        save_csv(hood_bus, OUT / &quot;neighborhood_otp_bus_only.csv&quot;)
+    with phase(&quot;Saving CSVs&quot;):
+        save_csv(tract_summary, OUT / &quot;tract_otp.csv&quot;)
+        save_csv(bus_summary, OUT / &quot;tract_otp_bus_only.csv&quot;)
+        if len(gradient_df) &gt; 0:
+            save_csv(gradient_df, OUT / &quot;otp_by_income_quintile.csv&quot;)
 
     with phase(&quot;Generating charts&quot;):
-        make_chart(hood_summary, quintile_ts)
-        make_comparison_chart(hood_summary)
+        make_chart(tract_summary, quintile_ts)
+        make_comparison_chart(tract_summary)
+        make_income_chart(tract_summary, gradient_df)
 
 
 if __name__ == &quot;__main__&quot;:
@@ -987,7 +1066,37 @@ if __name__ == &quot;__main__&quot;:
         
       
         <tr>
+          <td>census_tracts</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Project pipeline owner not linked.</td>
+          <td>Refresh cadence unknown.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+      
+        <tr>
           <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>geopandas</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>shapely</td>
           <td><span class="tag">dependency</span></td>
           <td>Runtime dependency required for this page's pipeline or analysis code.</td>
           <td>Open-source Python ecosystem maintainers.</td>

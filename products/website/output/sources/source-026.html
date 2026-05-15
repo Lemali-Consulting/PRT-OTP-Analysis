@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ntd_annual_service - Source Detail</title>
+  <title>data/penndot-traffic/aadt_raw.json - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -32,21 +32,19 @@
   <main class="container shell">
     
 <section class="hero hero-compact">
-  <p class="kicker">Table</p>
-  <h1>ntd_annual_service</h1>
-  <p class="lede">Annual VRH, VRM, UPT, VOMS by NTD system (1991-2023). Produced by NTD Annual Service ETL.</p>
-  <p class="lede">Owner: Produced by NTD Annual Service ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+  <p class="kicker">File</p>
+  <h1>data/penndot-traffic/aadt_raw.json</h1>
+  <p class="lede">Cached PennDOT ArcGIS feature response for Allegheny County roadway segments.</p>
+  <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["ntd_annual_service"]
-  src --> c1["39 — National Service Cuts (2019 vs 2024)"]
-  src --> c2["40 - Peer City Dashboard"]
-  src --> c3["41 - Operating Cost Drivers"]
+  src["data/penndot-traffic/aadt_raw.json"]
+  src --> c1["Traffic Overlay ETL"]
 </pre>
 </section>
 
@@ -57,8 +55,8 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Primary analytical table used in this page's computations.</td>
-        <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        <td>Cached PennDOT ArcGIS feature response for Allegheny County roadway segments.</td>
+        <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
   </table>
@@ -69,17 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/39_national_service_cuts/index.html">39 — National Service Cuts (2019 vs 2024)</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/40_peer_city_dashboard/index.html">40 - Peer City Dashboard</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/41_operating_cost_drivers/index.html">41 - Operating Cost Drivers</a></h3>
+      <h3><a href="pipeline/04_traffic_overlay/index.html">Traffic Overlay ETL</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

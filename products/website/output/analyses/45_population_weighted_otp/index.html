@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>45 - Population-Weighted System OTP - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>45 - Population-Weighted System OTP</h1>
+  <p class="lede">Route and Service Drivers</p>
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../44_route_population_reach/index.html">← 44 - Route Population Reach</a>
+    <a href="../46_population_transit_proximity/index.html">46 - Population Transit Proximity →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  45_population_weighted_otp(["45 - Population-Weighted System OTP"])
+  t_otp_monthly[("otp_monthly")] --> 45_population_weighted_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_route_stops[("route_stops")] --> 45_population_weighted_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_stops[("stops")] --> 45_population_weighted_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_stops
+  t_routes[("routes")] --> 45_population_weighted_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  t_census_tracts[("census_tracts")] --> 45_population_weighted_otp
+  d1_45_population_weighted_otp(("polars (lib)")) --> 45_population_weighted_otp
+  d2_45_population_weighted_otp(("scipy (lib)")) --> 45_population_weighted_otp
+  d3_45_population_weighted_otp(("geopandas (lib)")) --> 45_population_weighted_otp
+  d4_45_population_weighted_otp(("shapely (lib)")) --> 45_population_weighted_otp
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 45_population_weighted_otp page;
+  class t_census_tracts,t_otp_monthly,t_route_stops,t_routes,t_stops table;
+  class d1_45_population_weighted_otp,d2_45_population_weighted_otp,d3_45_population_weighted_otp,d4_45_population_weighted_otp dep;
+  class u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Population-Weighted System <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Summary</h2>
+<p>The <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> experienced by the average resident-near-a-route is <strong>68.1%</strong> -- about <strong>0.85 percentage points higher than the trip-weighted system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (67.3%)</strong> but <strong>1.27 pp lower than the unweighted average (69.4%)</strong>. The population-weighted vs trip-weighted gap is statistically significant (paired t = -15.8, p &lt; 0.001; Wilcoxon W = 20, p &lt; 0.001; n = 83 months). PRT's lateness-prone routes concentrate where many people live, but slightly less than scheduled trip frequency alone would imply.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>Unweighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> (all 92 routes equal): 69.4% <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, 69.7% <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a></li>
+<li><strong>Trip-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> (<code>route_stops.trips_7d</code>): 67.3% <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, 67.4% <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a></li>
+<li><strong>Population-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> (walkshed residents from Analysis 44): 68.1% <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, 68.4% <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a></li>
+<li><strong>Population vs trip-weighted gap</strong>: +0.85 pp (p &lt; 0.001, n = 83 months)</li>
+<li><strong>Cohort</strong>: 92 routes with &gt;= 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data, Mar 2018 -- Nov 2025</li>
+<li><strong>Total population_served sum</strong>: 2,273,565 (exceeds the 2,171,546 5-county total because residents within walking distance of multiple routes are counted once per route -- see Caveats)</li>
+</ul>
+<h2>Interpretation</h2>
+<p>Both weighted schemes pull system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <em>down</em> from the unweighted average, meaning that routes carrying more scheduled trips and routes serving more residents both tend to perform somewhat worse than average. The two effects largely overlap -- high-frequency urban-core routes serve dense population centers -- but they are not identical: population weighting penalizes the system roughly half as much as trip weighting does.</p>
+<p>The gap is consistent with what Analysis 19 found for ridership weighting (+1.6 pp above trip-weighted): scheduled trip frequency overstates how concentrated rider exposure actually is on the worst-performing routes. Both ridership and walkshed population are distributed somewhat more evenly across the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> spectrum than scheduled trips are.</p>
+<p>This is an area-level association (which routes serve dense areas, weighted by their <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>), not a per-resident estimate.</p>
+<h2>Observations</h2>
+<ul>
+<li>The three series move together over time -- all show the COVID <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> spike in 2020 and the steady decline through late 2022, then partial stabilization through 2024-2025.</li>
+<li>The population vs trip-weighted gap is small but extremely stable across the 83-month window, which is why the <a href="../../glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">paired t-test</a> reaches such a large statistic despite a sub-1pp difference.</li>
+<li>The unweighted-vs-trip-weighted gap (~2.1 pp) is wider than the population-vs-trip gap (~0.85 pp), confirming that route trip frequency is more concentrated on lateness-prone routes than walkshed population is.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Exposure double-counting.</strong> Residents within walksheds of multiple routes are counted once per route. Population-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> of the average <em>route-resident exposure</em>, not the average <em>resident</em>. A resident with access to many routes contributes more weight than one served by a single route. Per-resident <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> would require modeling which route each resident actually rides, which we cannot do without trip-level rider data.</li>
+<li><strong>Static walkshed weights.</strong> <code>population_served</code> is computed from current stops and 2018-2022 ACS population; the same per-route weight is applied to every month. Route footprints and demographics that shifted within the window are not reflected.</li>
+<li><strong>Static trip weights.</strong> <code>route_stops.trips_7d</code> is also a current snapshot, not a monthly time series, matching Analysis 19's treatment for comparability.</li>
+<li><strong>Cohort.</strong> Restricted to 92 routes with &gt;= 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. Routes that exist in the schedule but lack consistent <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data (e.g., short-lived service) are excluded from all three series.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified.</strong> <code>otp_monthly</code>, <code>route_stops</code>, <code>stops</code>, <code>routes</code>, and <code>census_tracts</code> columns checked against <code>data/DATA_DICTIONARY.md</code>. All three table joins use validated <code>query_to_polars</code> results.</li>
+<li><strong>Geographic/temporal scope.</strong> All three weighting schemes use the identical 92-route cohort and identical 83-month window; the only difference is the weight column.</li>
+<li><strong>Aggregates sanity-checked.</strong> Unweighted system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> 69.4% <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> matches Analysis 01 (system trend) within rounding. Trip-weighted 67.3% matches Analysis 19's trip-weighted 67.8% to within ~0.5 pp -- the small difference is because Analysis 19 restricts to the ridership-overlap window (Jan 2019 - Oct 2024) while this analysis uses the full <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> window.</li>
+<li><strong>Direction of effects checked.</strong> Trip-weighted &lt; unweighted is the expected sign (high-frequency routes are more lateness-prone, per Analysis 10 frequency-vs-<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>). Population-weighted falling between the two is the expected pattern given that walkshed population correlates with but is less concentrated than trip frequency.</li>
+<li><strong>Population sum cross-check.</strong> The 2,273,565 cohort population sum exceeding the 2,171,546 5-county total directly confirms multi-route exposure overlap; the ratio (~5% over) is small because most multi-route overlap is concentrated in downtown Pittsburgh, which is a small slice of the 5-county population.</li>
+<li><strong>Ecological framing.</strong> Findings describe area-level associations (route-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> weighted by route-level walkshed population), never per-resident outcomes. Caveat documented above.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (1)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/45_population_weighted_otp/population_weighted_otp_trend.png" alt="population_weighted_otp_trend" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/45_population_weighted_otp/population_weighted_otp_trend.png" target="_blank" rel="noopener noreferrer">population_weighted_otp_trend.png</a>
+          <p class="artifact-desc">monthly OTP under three weighting schemes (unweighted, trip, population).</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/45_population_weighted_otp/weighting_comparison.csv" target="_blank" rel="noopener noreferrer">weighting_comparison.csv</a>
+          <p class="artifact-desc">monthly values for all three series, plus route count and total population served.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/45_population_weighted_otp/weighting_comparison.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/45_population_weighted_otp/summary_stats.csv" target="_blank" rel="noopener noreferrer">summary_stats.csv</a>
+          <p class="artifact-desc">mean, median, std, min, max for each weighting scheme.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/45_population_weighted_otp/summary_stats.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/45_population_weighted_otp/route_weights.csv" target="_blank" rel="noopener noreferrer">route_weights.csv</a>
+          <p class="artifact-desc">per-route population_served and trips_7d used as weights.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/45_population_weighted_otp/route_weights.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Population-Weighted System <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Question</h2>
+<p>What <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> does the average <strong>resident</strong> of PRT's service area experience, and how does it differ from the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> of the average <strong>route</strong> (unweighted) or the average <strong>scheduled trip</strong> (trip-weighted, Analysis 19)? Service that runs reliably on lightly-populated routes should not look as good as service that runs reliably where many people live.</p>
+<h2>Approach</h2>
+<ul>
+<li>For each route, compute <code>population_served</code> = ACS tract population within walking distance of any of its stops (400 m for bus, 800 m for rail/incline), areal-interpolated against tract polygons. Same construction as Analysis 44; both analyses call the shared <code>prt_otp_analysis.walksheds.route_population_served()</code> helper.</li>
+<li>Restrict to routes with &gt;= 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> observations, matching the Analysis 19 cohort so the three weighting schemes are comparable.</li>
+<li>For each month, compute three system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> series:<ol>
+<li><strong>Unweighted</strong>: simple <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> of route OTPs.</li>
+<li><strong>Trip-weighted</strong>: <code>sum(otp_i * trips_7d_i) / sum(trips_7d_i)</code> with <code>trips_7d</code> from <code>route_stops</code> (static scheduled-frequency weight).</li>
+<li><strong>Population-weighted</strong>: <code>sum(otp_i * population_served_i) / sum(population_served_i)</code> (static walkshed-population weight).</li>
+</ol>
+</li>
+<li>Compute summary statistics (<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>, std, min, max) for each scheme.</li>
+<li>Test whether population-weighted differs significantly from trip-weighted via <a href="../../glossary.html#paired-t-test" class="glossary-link" data-definition="Mean-difference test for matched observations measured on the same units.">paired t-test</a> and Wilcoxon signed-rank across months.</li>
+<li>Plot the three monthly series with a COVID marker.</li>
+</ul>
+<p><strong>Caveat -- exposure double-counting.</strong> Residents within the walksheds of multiple routes are counted once per route. The population-weighted <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is therefore the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> experienced by the <em>average exposure</em>, not the <em>average resident</em>. A resident with access to many bus routes contributes more weight than one served by a single route. This matches how a rider would perceive the system but does not estimate per-resident <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>; that would require modeling which route(s) each resident actually rides.</p>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Route, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td><code>trips_7d</code> for trip-weighted baseline</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code>, <code>routes</code></td>
+  <td>For walkshed construction</td>
+  <td><code>prt.db</code> tables</td>
+</tr>
+<tr>
+  <td><code>census_tracts</code></td>
+  <td>ACS 5-year (2018-2022) tract population, TIGER 2022 polygons</td>
+  <td><code>prt.db</code> table (Pipeline 10)</td>
+</tr>
+</tbody>
+</table>
+<h2>Output</h2>
+<ul>
+<li><code>output/population_weighted_otp_trend.png</code> -- three-series monthly time plot</li>
+<li><code>output/weighting_comparison.csv</code> -- monthly values for unweighted, trip-weighted, population-weighted</li>
+<li><code>output/summary_stats.csv</code> -- <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>/<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>/std/min/max for each scheme</li>
+<li><code>output/route_weights.csv</code> -- per-route <code>population_served</code> and <code>trips_7d</code> used as weights, for transparency</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 45: Population-Weighted System OTP.
+
+Compute the OTP experienced by the average resident by weighting each route&#x27;s
+monthly OTP by its walkshed population (Analysis 44 construction), then compare
+to trip-weighted (Analysis 19) and unweighted system OTP.
+&quot;&quot;&quot;
+
+from pathlib import Path
+
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    output_dir,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+    weighted_mean,
+)
+from prt_otp_analysis.walksheds import route_population_served
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+MIN_MONTHS = 12
+
+
+def load_otp_with_weights() -&gt; tuple[pl.DataFrame, pl.DataFrame]:
+    &quot;&quot;&quot;Return (long OTP+weights df, per-route weights df).
+
+    Long df has one row per (route, month) with otp, population_served, trips_7d.
+    Restricted to routes with &gt;= MIN_MONTHS of OTP observations.
+    &quot;&quot;&quot;
+    pop_df = route_population_served()
+    trips_df = query_to_polars(
+        &quot;SELECT route_id, SUM(trips_7d) AS trips_7d FROM route_stops GROUP BY route_id&quot;
+    )
+    otp_df = query_to_polars(
+        &quot;SELECT route_id, month, otp FROM otp_monthly WHERE otp IS NOT NULL&quot;
+    )
+
+    weights_df = (
+        pop_df.join(trips_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+        .with_columns(trips_7d=pl.col(&quot;trips_7d&quot;).fill_null(0))
+    )
+
+    df = otp_df.join(weights_df, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+
+    route_counts = df.group_by(&quot;route_id&quot;).agg(pl.col(&quot;month&quot;).count().alias(&quot;n&quot;))
+    keep = route_counts.filter(pl.col(&quot;n&quot;) &gt;= MIN_MONTHS)[&quot;route_id&quot;].to_list()
+    df = df.filter(pl.col(&quot;route_id&quot;).is_in(keep))
+    weights_df = weights_df.filter(pl.col(&quot;route_id&quot;).is_in(keep))
+    return df, weights_df
+
+
+def compute_monthly(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Three monthly OTP series: unweighted, trip-weighted, population-weighted.&quot;&quot;&quot;
+    return (
+        df.group_by(&quot;month&quot;)
+        .agg(
+            unweighted_otp=pl.col(&quot;otp&quot;).mean(),
+            trip_weighted_otp=weighted_mean(&quot;otp&quot;, &quot;trips_7d&quot;, safe=True),
+            population_weighted_otp=weighted_mean(&quot;otp&quot;, &quot;population_served&quot;, safe=True),
+            route_count=pl.col(&quot;route_id&quot;).n_unique(),
+            total_population_served=pl.col(&quot;population_served&quot;).sum(),
+        )
+        .sort(&quot;month&quot;)
+    )
+
+
+def compute_summary(monthly: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Summary statistics for each weighting scheme.&quot;&quot;&quot;
+    rows = []
+    for col in [&quot;unweighted_otp&quot;, &quot;trip_weighted_otp&quot;, &quot;population_weighted_otp&quot;]:
+        s = monthly[col]
+        rows.append({
+            &quot;weighting&quot;: col.replace(&quot;_otp&quot;, &quot;&quot;),
+            &quot;mean&quot;: s.mean(),
+            &quot;median&quot;: s.median(),
+            &quot;std&quot;: s.std(),
+            &quot;min&quot;: s.min(),
+            &quot;max&quot;: s.max(),
+        })
+    return pl.DataFrame(rows)
+
+
+def statistical_test(monthly: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Test whether population-weighted OTP differs from trip-weighted OTP.&quot;&quot;&quot;
+    trip = monthly[&quot;trip_weighted_otp&quot;].to_numpy()
+    pop = monthly[&quot;population_weighted_otp&quot;].to_numpy()
+    t_stat, t_p = stats.ttest_rel(trip, pop)
+    w_stat, w_p = stats.wilcoxon(trip, pop)
+    return {
+        &quot;mean_difference&quot;: float((pop - trip).mean()),
+        &quot;paired_t_stat&quot;: float(t_stat),
+        &quot;paired_t_p&quot;: float(t_p),
+        &quot;wilcoxon_stat&quot;: float(w_stat),
+        &quot;wilcoxon_p&quot;: float(w_p),
+        &quot;n_months&quot;: int(len(trip)),
+    }
+
+
+def make_chart(monthly: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Plot three OTP series over time.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    months = monthly[&quot;month&quot;].to_list()
+    x = list(range(len(months)))
+    tick_positions = [i for i, m in enumerate(months) if m.endswith(&quot;-01&quot;)]
+    tick_labels = [months[i][:4] for i in tick_positions]
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    ax.plot(x, monthly[&quot;unweighted_otp&quot;].to_list(),
+            color=&quot;#9ca3af&quot;, linewidth=1, linestyle=&quot;--&quot;,
+            label=&quot;Unweighted (all routes equal)&quot;)
+    ax.plot(x, monthly[&quot;trip_weighted_otp&quot;].to_list(),
+            color=&quot;#2563eb&quot;, linewidth=1.5,
+            label=&quot;Trip-weighted (scheduled frequency)&quot;)
+    ax.plot(x, monthly[&quot;population_weighted_otp&quot;].to_list(),
+            color=&quot;#059669&quot;, linewidth=1.5,
+            label=&quot;Population-weighted (walkshed residents)&quot;)
+
+    trip = monthly[&quot;trip_weighted_otp&quot;].to_list()
+    pop = monthly[&quot;population_weighted_otp&quot;].to_list()
+    ax.fill_between(x, trip, pop, alpha=0.15, color=&quot;#059669&quot;,
+                    label=&quot;Trip vs population gap&quot;)
+
+    if &quot;2020-03&quot; in months:
+        covid_idx = months.index(&quot;2020-03&quot;)
+        ax.axvline(covid_idx, color=&quot;#ef4444&quot;, linestyle=&quot;:&quot;, alpha=0.7)
+        ax.text(covid_idx + 0.5, ax.get_ylim()[1] * 0.98, &quot;COVID&quot;,
+                color=&quot;#ef4444&quot;, fontsize=8, va=&quot;top&quot;)
+
+    ax.set_ylabel(&quot;On-Time Performance&quot;)
+    ax.set_xlabel(&quot;Month&quot;)
+    ax.set_title(&quot;PRT System OTP: Population vs Trips vs Unweighted&quot;)
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels)
+    ax.legend(loc=&quot;lower left&quot;, fontsize=8)
+    ax.set_ylim(0.5, 0.85)
+
+    save_chart(fig, OUT / &quot;population_weighted_otp_trend.png&quot;)
+
+
+@run_analysis(45, &quot;Population-Weighted System OTP&quot;)
+def main() -&gt; None:
+    with phase(&quot;Loading OTP and route weights&quot;):
+        df, weights_df = load_otp_with_weights()
+        n_routes = df[&quot;route_id&quot;].n_unique()
+        print(f&quot;  {len(df):,} route-month observations ({n_routes} routes &quot;
+              f&quot;&gt;= {MIN_MONTHS} months OTP)&quot;)
+        print(f&quot;  population_served sum across cohort: &quot;
+              f&quot;{weights_df[&#x27;population_served&#x27;].sum():,}&quot;)
+
+    with phase(&quot;Computing monthly OTP series&quot;):
+        monthly = compute_monthly(df)
+        print(f&quot;  {len(monthly)} months computed&quot;)
+
+    with phase(&quot;Summary statistics&quot;):
+        summary = compute_summary(monthly)
+        for row in summary.iter_rows(named=True):
+            print(f&quot;  {row[&#x27;weighting&#x27;]:25s}  mean={row[&#x27;mean&#x27;]:.3%}  &quot;
+                  f&quot;median={row[&#x27;median&#x27;]:.3%}  std={row[&#x27;std&#x27;]:.3%}&quot;)
+
+    with phase(&quot;Statistical test (population-weighted vs trip-weighted)&quot;):
+        test = statistical_test(monthly)
+        print(f&quot;  Mean difference: {test[&#x27;mean_difference&#x27;]:+.4%}&quot;)
+        print(f&quot;  Paired t-test:   t={test[&#x27;paired_t_stat&#x27;]:.3f}, p={test[&#x27;paired_t_p&#x27;]:.4f}&quot;)
+        print(f&quot;  Wilcoxon test:   W={test[&#x27;wilcoxon_stat&#x27;]:.0f}, p={test[&#x27;wilcoxon_p&#x27;]:.4f}&quot;)
+        print(f&quot;  N months:        {test[&#x27;n_months&#x27;]}&quot;)
+
+    with phase(&quot;Saving CSVs&quot;):
+        save_csv(monthly, OUT / &quot;weighting_comparison.csv&quot;)
+        save_csv(summary, OUT / &quot;summary_stats.csv&quot;)
+        save_csv(
+            weights_df.sort(&quot;population_served&quot;, descending=True),
+            OUT / &quot;route_weights.csv&quot;,
+        )
+
+    with phase(&quot;Generating chart&quot;):
+        make_chart(monthly)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>census_tracts</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Project pipeline owner not linked.</td>
+          <td>Refresh cadence unknown.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>geopandas</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>shapely</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

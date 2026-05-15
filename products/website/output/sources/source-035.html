@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>stop_reference - Source Detail</title>
+  <title>ntd_ridership - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,19 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Table</p>
-  <h1>stop_reference</h1>
-  <p class="lede">Historical stop metadata and geography. Produced by Data Ingestion.</p>
-  <p class="lede">Owner: Produced by Data Ingestion. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-04-03 20:09 UTC · Commit 7c56b9a</p>
+  <h1>ntd_ridership</h1>
+  <p class="lede">Monthly UPT facts by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</p>
+  <p class="lede">Owner: Produced by NTD Ridership ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["stop_reference"]
-  src --> c1["09: Incline Investigation"]
+  src["ntd_ridership"]
+  src --> c1["36 - National Ridership Growth (2019 vs 2024)"]
+  src --> c2["37 - Peer City Ridership Comparison"]
 </pre>
 </section>
 
@@ -67,7 +68,12 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a></h3>
+      <h3><a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

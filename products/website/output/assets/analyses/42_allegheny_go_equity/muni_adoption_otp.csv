@@ -1,0 +1,75 @@
+municipality,muni,avg_otp,n_stops,n_routes,total_households,n_tracts
+City of Pittsburgh,"Pittsburgh city (Allegheny, PA)",0.672208217467148,2679,90,6025,111
+McKeesport,"McKeesport city (Allegheny, PA)",0.6862090349514167,117,7,620,9
+Wilkinsburg,"Wilkinsburg borough (Allegheny, PA)",0.6416628929904291,160,21,353,6
+Duquesne,"Duquesne city (Allegheny, PA)",0.641241265060241,83,4,350,3
+Clairton,"Clairton city (Allegheny, PA)",0.7121536585365853,29,1,350,3
+Penn Hills,"Penn Hills township (Allegheny, PA)",0.6168901389360059,264,5,279,10
+Stowe Township,"Stowe township (Allegheny, PA)",0.71882293415059,48,3,275,2
+North Braddock,"North Braddock borough (Allegheny, PA)",0.623441190032766,53,6,238,2
+West Mifflin,"West Mifflin borough (Allegheny, PA)",0.678885928845276,167,9,233,6
+Turtle Creek,"Turtle Creek borough (Allegheny, PA)",0.6587418028254725,36,4,200,1
+Braddock,"Braddock borough (Allegheny, PA)",0.6083457516429354,29,3,200,1
+Mount Oliver,"Mount Oliver borough (Allegheny, PA)",0.70048705962889,17,5,200,1
+East Pittsburgh,"East Pittsburgh borough (Allegheny, PA)",0.677698565480911,24,5,200,1
+Brentwood,"Brentwood borough (Allegheny, PA)",0.7048256183476237,24,3,150,2
+Swissvale,"Swissvale borough (Allegheny, PA)",0.6454631148395706,63,8,143,4
+Baldwin Borough,"Baldwin borough (Allegheny, PA)",0.7195744118458567,48,2,138,6
+Munhall,"Munhall borough (Allegheny, PA)",0.63900118224104,53,5,128,3
+Glassport,"Glassport borough (Allegheny, PA)",0.7121536585365854,28,1,90,2
+North Versailles,"North Versailles township (Allegheny, PA)",0.7025446645258647,62,3,90,2
+Monroeville,"Monroeville municipality (Allegheny, PA)",0.6244934886506531,125,7,78,6
+Ross Township,"Ross township (Allegheny, PA)",0.6813888024650991,158,10,78,6
+Sharpsburg,"Sharpsburg borough (Allegheny, PA)",0.6374019123472141,35,3,75,1
+Rankin,"Rankin borough (Allegheny, PA)",0.6331241931498771,21,5,75,1
+Wilmerding,"Wilmerding borough (Allegheny, PA)",0.6068400583903292,24,2,75,1
+Homestead,"Homestead borough (Allegheny, PA)",0.6400825082859581,36,8,75,1
+Tarentum,"Tarentum borough (Allegheny, PA)",0.6226737844173063,30,2,75,1
+Carnegie,"Carnegie borough (Allegheny, PA)",0.7053680337624926,26,5,68,3
+Bellevue,"Bellevue borough (Allegheny, PA)",0.7135864580223769,44,4,68,3
+Mount Lebanon,"Mount Lebanon township (Allegheny, PA)",0.7534660192606375,100,4,66,6
+Bethel Park,"Bethel Park municipality (Allegheny, PA)",0.8341875847165966,44,4,54,6
+Avalon,"Avalon borough (Allegheny, PA)",0.7196286935857124,29,3,53,2
+Scott Township,"Scott township (Allegheny, PA)",0.7245106677751487,99,4,51,5
+Dormont,"Dormont borough (Allegheny, PA)",0.7982028056688186,19,3,48,4
+Shaler Township,"Shaler township (Allegheny, PA)",0.6380315844443077,58,2,39,5
+Millvale,"Millvale borough (Allegheny, PA)",0.6299766550522647,11,2,38,1
+Braddock Hills,"Braddock Hills borough (Allegheny, PA)",0.6443272829856009,25,4,38,1
+Whitaker,"Whitaker borough (Allegheny, PA)",0.6382560525887333,17,4,38,1
+Etna,"Etna borough (Allegheny, PA)",0.6309885557863382,28,4,38,1
+Moon Township,"Moon township (Allegheny, PA)",0.7365220668422134,23,2,36,4
+Harrison Township,"Harrison township (Allegheny, PA)",0.6431036144578314,43,1,33,3
+Robinson Township,"Robinson township (Allegheny, PA)",0.674017841704176,63,4,33,3
+Springdale Borough,"Springdale borough (Allegheny, PA)",0.6199856488856582,21,2,33,3
+Crafton,"Crafton borough (Allegheny, PA)",0.7021183392898037,32,7,30,2
+Coraopolis,"Coraopolis borough (Allegheny, PA)",0.7360734939759036,19,1,30,2
+Castle Shannon,"Castle Shannon borough (Allegheny, PA)",0.8403074618833783,15,3,30,2
+West View,"West View borough (Allegheny, PA)",0.7448210404856515,47,2,30,2
+Wilkins Township,"Wilkins township (Allegheny, PA)",0.6088822188760702,19,4,30,2
+Bridgeville,"Bridgeville borough (Allegheny, PA)",0.734722300570997,29,3,30,2
+Jefferson Hills,"Jefferson Hills borough (Allegheny, PA)",0.7121536585365854,20,1,18,2
+Reserve Township,"Reserve township (Allegheny, PA)",0.7480923553154685,47,2,18,2
+Kennedy Township,"Kennedy township (Allegheny, PA)",0.704668148354067,68,3,18,2
+Neville Township,"Neville township (Allegheny, PA)",0.7360734939759036,40,1,15,1
+Leetsdale,"Leetsdale borough (Allegheny, PA)",0.7563674698795181,20,1,15,1
+Collier Township,"Collier township (Allegheny, PA)",0.6929134754612133,20,3,15,1
+White Oak,"White Oak borough (Allegheny, PA)",0.683806825292381,11,2,15,1
+Sewickley,"Sewickley borough (Allegheny, PA)",0.751562889011878,27,2,15,1
+Heidelberg,"Heidelberg borough (Allegheny, PA)",0.6838560140702417,10,2,15,1
+Ben Avon,"Ben Avon borough (Allegheny, PA)",0.7223333189259279,18,2,15,1
+Forest Hills,"Forest Hills borough (Allegheny, PA)",0.6399144613582647,28,5,15,1
+Plum,"Plum borough (Allegheny, PA)",0.591290467327413,50,3,15,5
+Blawnox,"Blawnox borough (Allegheny, PA)",0.6164829268292682,13,1,15,1
+Green Tree,"Green Tree borough (Allegheny, PA)",0.7017043555254135,35,2,15,1
+Emsworth,"Emsworth borough (Allegheny, PA)",0.7310597417804209,28,2,15,1
+Ingram,"Ingram borough (Allegheny, PA)",0.7748137625537919,29,7,15,1
+Brackenridge,"Brackenridge borough (Allegheny, PA)",0.6431036144578314,17,1,15,1
+Versailles,"Versailles borough (Allegheny, PA)",0.7806905751818819,16,2,15,1
+Edgewood,"Edgewood borough (Allegheny, PA)",0.6128763900563494,27,6,15,1
+Harmar Township,"Harmar township (Allegheny, PA)",0.614319286425894,29,4,15,1
+McCandless Township,"McCandless township (Allegheny, PA)",0.6518619516792482,110,5,6,2
+Pleasant Hills,"Pleasant Hills borough (Allegheny, PA)",0.7089140608001239,15,2,6,2
+Oakmont,"Oakmont borough (Allegheny, PA)",0.5996400602409637,28,2,6,2
+North Fayette,"North Fayette township (Allegheny, PA)",0.6510407407407408,19,1,6,2
+Hampton Township,"Hampton township (Allegheny, PA)",0.6420162735369244,20,3,3,1
+Cheswick,"Cheswick borough (Allegheny, PA)",0.6199856488856582,12,2,3,1

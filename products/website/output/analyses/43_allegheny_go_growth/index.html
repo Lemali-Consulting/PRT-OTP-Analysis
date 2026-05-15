@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>43 - Allegheny Go Program Growth - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>43 - Allegheny Go Program Growth</h1>
+  
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../42_allegheny_go_equity/index.html">← 42 - Allegheny Go Equity</a>
+    <a href="../44_route_population_reach/index.html">44 - Route Population Reach →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  43_allegheny_go_growth(["43 - Allegheny Go Program Growth"])
+  f1_43_allegheny_go_growth[/"data/allegheny-go/enrollments_weekly.csv"/] --> 43_allegheny_go_growth
+  t_otp_monthly[("otp_monthly")] --> 43_allegheny_go_growth
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_allegheny_go_weekly[("allegheny_go_weekly")] --> 43_allegheny_go_growth
+  d1_43_allegheny_go_growth(("polars (lib)")) --> 43_allegheny_go_growth
+  d2_43_allegheny_go_growth(("scipy (lib)")) --> 43_allegheny_go_growth
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 43_allegheny_go_growth page;
+  class t_allegheny_go_weekly,t_otp_monthly table;
+  class d1_43_allegheny_go_growth,d2_43_allegheny_go_growth dep;
+  class f1_43_allegheny_go_growth,u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Allegheny Go Program Growth</h1>
+<h2>Summary</h2>
+<p>The Allegheny Go program grew rapidly from 262 rides in its first week (May 2024)
+to over 30,000 rides per week by late 2025, with 2.27 million total rides to date.
+Program ridership does not correlate with system-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (Pearson r = 0.129,
+p = 0.600, n = 19 months), suggesting the program's growth is driven by enrollment
+expansion rather than service quality fluctuations.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li>2,274,373 total rides across 96 weeks (May 2024 – March 2026)</li>
+<li>Peak monthly riders: ~3,375 unique riders</li>
+<li>Rides per rider per week: 8–12, averaging ~9.5 (consistent utilization)</li>
+<li>Pearson r (monthly rides vs system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>): 0.129 (p = 0.600, n = 19)</li>
+<li>Ready2Ride dominated early enrollment (2,300 in June 2024 launch month);
+ConnectCard Mail surged starting March 2025</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>Rapid S-curve growth.</strong> The program went from near-zero to ~100K monthly rides
+in five months (May–October 2024), then plateaued at 100K–130K monthly rides.
+The December 2024 spike to 152K rides appears to be a 5-week month effect.</li>
+<li><strong>Utilization is stable.</strong> Rides per rider per week hovers between 8 and 12 across
+the full period, suggesting participants use the program consistently once enrolled.
+No sign of &quot;churning&quot; (enrolling but not riding).</li>
+<li><strong>Enrollment shifted from Ready2Ride to ConnectCard.</strong> The launch was
+Ready2Ride-dominated (digital-first). ConnectCard Mail enrollments appeared in
+March 2025 and now represent the largest enrollment channel, suggesting the
+program expanded to less digitally-connected populations.</li>
+<li><strong>No <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation.</strong> System <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> fluctuates between 0.64 and 0.71 during the
+program period, but these fluctuations are uncorrelated with ridership growth.
+The program's trajectory is a monotonic ramp-up regardless of service quality.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li>Only 19 months of overlap between Allegheny Go ridership and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data limits
+<a href="../../glossary.html#statistical-power" class="glossary-link" data-definition="Probability of detecting a true effect when it exists.">statistical power</a> for the correlation test.</li>
+<li>Weekly-to-monthly conversion assigns each week to its <code>week_start</code> month;
+weeks spanning month boundaries are attributed to the earlier month.</li>
+<li>System <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is an unweighted average across all routes. Allegheny Go riders
+likely concentrate on a subset of routes, so route-specific <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> would be more
+informative (but route-level program data is not available).</li>
+<li>The December 2024 spike is likely a calendar artifact (5 weeks in that month),
+not a genuine ridership increase.</li>
+</ul>
+<h2>Validation</h2>
+<ol>
+<li><strong>Data source verified.</strong> Ridership from <code>allegheny_go_weekly</code> table (pipeline 08);
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> from <code>otp_monthly</code> table.</li>
+<li><strong>Temporal scope matches.</strong> Both datasets filtered to their natural ranges;
+overlap period (May 2024 – Nov 2025) explicitly identified.</li>
+<li><strong>Null handling.</strong> System <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is null for months outside <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> coverage; these
+months are excluded from correlation but included in growth charts.</li>
+<li><strong>Aggregates sanity-checked.</strong> Total rides (2.27M) matches the dashboard KPI
+(2.26M); small difference due to rounding.</li>
+<li><strong>Direction of effects checked.</strong> Rising ridership with flat <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is expected for
+a new enrollment-driven program; a strong correlation would have been surprising
+and warranted investigation.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (3)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (1)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/43_allegheny_go_growth/ridership_otp_overlay.png" alt="ridership_otp_overlay" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/43_allegheny_go_growth/ridership_otp_overlay.png" target="_blank" rel="noopener noreferrer">ridership_otp_overlay.png</a>
+          <p class="artifact-desc">Dual-axis chart of program ridership and system OTP.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/43_allegheny_go_growth/enrollment_by_type.png" alt="enrollment_by_type" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/43_allegheny_go_growth/enrollment_by_type.png" target="_blank" rel="noopener noreferrer">enrollment_by_type.png</a>
+          <p class="artifact-desc">Stacked bar of enrollment types over time.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/43_allegheny_go_growth/utilization_trend.png" alt="utilization_trend" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/43_allegheny_go_growth/utilization_trend.png" target="_blank" rel="noopener noreferrer">utilization_trend.png</a>
+          <p class="artifact-desc">Rides-per-rider utilization over time.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/43_allegheny_go_growth/growth_vs_otp.csv" target="_blank" rel="noopener noreferrer">growth_vs_otp.csv</a>
+          <p class="artifact-desc">Monthly Allegheny Go metrics alongside system OTP.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/43_allegheny_go_growth/growth_vs_otp.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Allegheny Go Program Growth</h1>
+<h2>Question</h2>
+<p>How has the Allegheny Go fare program grown since its May 2024 launch, and does
+its ridership growth track with or diverge from system-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a>?</p>
+<h2>Approach</h2>
+<ol>
+<li>Load weekly ridership from the <code>allegheny_go_weekly</code> database table and convert
+to monthly totals by assigning each week to its calendar month.</li>
+<li>Compute monthly system-average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> from <code>otp_monthly</code>.</li>
+<li>Load weekly enrollments from CSV, convert to monthly.</li>
+<li>Overlay monthly rides on system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> using a dual-axis chart for the overlap
+period (May 2024 through November 2025).</li>
+<li>Track rides-per-rider as a utilization metric over time.</li>
+<li>Build an enrollment-by-type stacked area chart.</li>
+</ol>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>allegheny_go_weekly</code></td>
+  <td>Weekly rides and unique riders</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>enrollments_weekly.csv</code></td>
+  <td>Weekly enrollments by type</td>
+  <td><code>data/allegheny-go/</code></td>
+</tr>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>Monthly <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per route</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
+<h2>Output</h2>
+<ul>
+<li><code>growth_vs_otp.csv</code> — monthly Allegheny Go metrics alongside system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>ridership_otp_overlay.png</code> — dual-axis chart of program ridership and system <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>enrollment_by_type.png</code> — stacked area of enrollment types over time</li>
+<li><code>utilization_trend.png</code> — rides-per-rider utilization over time</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 43: track Allegheny Go program growth and overlay on system OTP.&quot;&quot;&quot;
+
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    COLOR_PRIMARY,
+    DATA_DIR,
+    analysis_dir,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+
+OUT = analysis_dir(__file__)
+AG_DIR = DATA_DIR / &quot;allegheny-go&quot;
+
+ENROLLMENT_COLORS: dict[str, str] = {
+    &quot;Ready2Ride&quot;: &quot;#3b82f6&quot;,
+    &quot;ConnectCard Pickup&quot;: &quot;#22c55e&quot;,
+    &quot;ConnectCard Mail&quot;: &quot;#f59e0b&quot;,
+}
+
+
+def load_ridership_monthly() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load weekly ridership from DB and aggregate to monthly.&quot;&quot;&quot;
+    weekly_df = query_to_polars(
+        &quot;SELECT week_start, rides, riders FROM allegheny_go_weekly ORDER BY week_start&quot;
+    )
+    return (
+        weekly_df.with_columns(
+            month=pl.col(&quot;week_start&quot;).str.slice(0, 7),
+        )
+        .group_by(&quot;month&quot;)
+        .agg(
+            total_rides=pl.col(&quot;rides&quot;).sum(),
+            avg_weekly_riders=pl.col(&quot;riders&quot;).mean(),
+            max_riders=pl.col(&quot;riders&quot;).max(),
+            n_weeks=pl.len(),
+        )
+        .sort(&quot;month&quot;)
+    )
+
+
+def load_system_otp() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Compute unweighted system-average OTP per month.&quot;&quot;&quot;
+    return query_to_polars(&quot;&quot;&quot;
+        SELECT month, AVG(otp) AS system_otp, COUNT(*) AS n_routes
+        FROM otp_monthly
+        GROUP BY month
+        ORDER BY month
+    &quot;&quot;&quot;)
+
+
+def load_enrollments_monthly() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load weekly enrollments and aggregate to monthly by type.&quot;&quot;&quot;
+    enroll_df = pl.read_csv(AG_DIR / &quot;enrollments_weekly.csv&quot;)
+    return (
+        enroll_df.with_columns(
+            month=pl.col(&quot;week_start&quot;).str.slice(0, 7),
+        )
+        .group_by(&quot;month&quot;, &quot;enrollment_type&quot;)
+        .agg(total=pl.col(&quot;count&quot;).sum())
+        .sort(&quot;month&quot;, &quot;enrollment_type&quot;)
+    )
+
+
+def make_ridership_otp_overlay(monthly_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Dual-axis chart: monthly rides (bars) and system OTP (line).&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    months = monthly_df[&quot;month&quot;].to_list()
+    rides = monthly_df[&quot;total_rides&quot;].to_list()
+    otp = monthly_df[&quot;system_otp&quot;].to_list()
+    x = range(len(months))
+
+    # Rides as bars (left axis)
+    ax1.bar(x, rides, color=COLOR_PRIMARY, alpha=0.7, label=&quot;Monthly rides&quot;)
+    ax1.set_ylabel(&quot;Total Monthly Rides&quot;, color=COLOR_PRIMARY)
+    ax1.tick_params(axis=&quot;y&quot;, labelcolor=COLOR_PRIMARY)
+    ax1.set_xticks(list(x)[::2])
+    ax1.set_xticklabels([months[i] for i in list(x)[::2]], rotation=45, ha=&quot;right&quot;, fontsize=8)
+
+    # OTP as line (right axis)
+    ax2 = ax1.twinx()
+    valid_otp = [(i, v) for i, v in zip(x, otp) if v is not None]
+    if valid_otp:
+        ax2.plot(
+            [i for i, _ in valid_otp],
+            [v for _, v in valid_otp],
+            color=&quot;#ef4444&quot;, linewidth=2, marker=&quot;o&quot;, markersize=4,
+            label=&quot;System avg OTP&quot;,
+        )
+    ax2.set_ylabel(&quot;System Average OTP&quot;, color=&quot;#ef4444&quot;)
+    ax2.tick_params(axis=&quot;y&quot;, labelcolor=&quot;#ef4444&quot;)
+    ax2.set_ylim(0.55, 0.85)
+
+    ax1.set_title(&quot;Allegheny Go Ridership vs System On-Time Performance&quot;)
+    ax1.set_xlabel(&quot;Month&quot;)
+
+    # Combined legend
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc=&quot;upper left&quot;, fontsize=9)
+
+    fig.tight_layout()
+    save_chart(fig, OUT / &quot;ridership_otp_overlay.png&quot;)
+
+
+def make_enrollment_chart(enroll_monthly_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Stacked area chart of enrollment types over time.&quot;&quot;&quot;
+    plt = setup_plotting()
+
+    pivoted_df = enroll_monthly_df.pivot(
+        on=&quot;enrollment_type&quot;, index=&quot;month&quot;, values=&quot;total&quot;
+    ).sort(&quot;month&quot;).fill_null(0)
+
+    months = pivoted_df[&quot;month&quot;].to_list()
+    x = range(len(months))
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    bottom = [0] * len(months)
+    for etype, color in ENROLLMENT_COLORS.items():
+        if etype in pivoted_df.columns:
+            vals = pivoted_df[etype].to_list()
+            ax.bar(x, vals, bottom=bottom, color=color, label=etype, alpha=0.8)
+            bottom = [b + v for b, v in zip(bottom, vals)]
+
+    ax.set_xticks(list(x)[::2])
+    ax.set_xticklabels([months[i] for i in list(x)[::2]], rotation=45, ha=&quot;right&quot;, fontsize=8)
+    ax.set_title(&quot;Weekly Enrollments by Type (Monthly Total)&quot;)
+    ax.set_xlabel(&quot;Month&quot;)
+    ax.set_ylabel(&quot;Enrollments&quot;)
+    ax.legend(fontsize=9)
+    fig.tight_layout()
+    save_chart(fig, OUT / &quot;enrollment_by_type.png&quot;)
+
+
+def make_utilization_chart(monthly_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Rides-per-rider utilization over time.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    months = monthly_df[&quot;month&quot;].to_list()
+    util = monthly_df[&quot;rides_per_rider&quot;].to_list()
+
+    ax.plot(range(len(months)), util, color=COLOR_PRIMARY, linewidth=2, marker=&quot;o&quot;, markersize=5)
+    ax.set_xticks(range(0, len(months), 2))
+    ax.set_xticklabels([months[i] for i in range(0, len(months), 2)], rotation=45, ha=&quot;right&quot;, fontsize=8)
+    ax.set_title(&quot;Allegheny Go: Average Rides per Rider per Week&quot;)
+    ax.set_xlabel(&quot;Month&quot;)
+    ax.set_ylabel(&quot;Rides / Rider (weekly avg)&quot;)
+    fig.tight_layout()
+    save_chart(fig, OUT / &quot;utilization_trend.png&quot;)
+
+
+@run_analysis(43, &quot;Allegheny Go Program Growth&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: analyze Allegheny Go growth and overlay on system OTP.&quot;&quot;&quot;
+    with phase(&quot;Loading data&quot;):
+        ride_monthly_df = load_ridership_monthly()
+        otp_monthly_df = load_system_otp()
+        enroll_monthly_df = load_enrollments_monthly()
+        print(f&quot;  Ridership months: {len(ride_monthly_df)}&quot;)
+        print(f&quot;  OTP months: {len(otp_monthly_df)}&quot;)
+        print(f&quot;  Enrollment rows: {len(enroll_monthly_df)}&quot;)
+
+    with phase(&quot;Computing metrics&quot;):
+        # Add rides-per-rider
+        ride_monthly_df = ride_monthly_df.with_columns(
+            rides_per_rider=(
+                pl.col(&quot;total_rides&quot;) / pl.col(&quot;avg_weekly_riders&quot;) / pl.col(&quot;n_weeks&quot;)
+            ),
+        )
+
+        # Join ridership to system OTP
+        merged_df = ride_monthly_df.join(otp_monthly_df, on=&quot;month&quot;, how=&quot;left&quot;)
+
+        # Overlap period stats
+        overlap_df = merged_df.filter(pl.col(&quot;system_otp&quot;).is_not_null())
+        print(f&quot;  Overlap months: {len(overlap_df)}&quot;)
+
+        if len(overlap_df) &gt;= 5:
+            r, p = stats.pearsonr(
+                overlap_df[&quot;total_rides&quot;].to_list(),
+                overlap_df[&quot;system_otp&quot;].to_list(),
+            )
+            print(f&quot;  Pearson r (rides vs OTP): {r:.3f} (p = {p:.3f}, n = {len(overlap_df)})&quot;)
+        else:
+            r, p = None, None
+            print(&quot;  Insufficient overlap for correlation&quot;)
+
+        # Summary stats
+        total_rides = ride_monthly_df[&quot;total_rides&quot;].sum()
+        latest_riders = ride_monthly_df.sort(&quot;month&quot;).tail(1)[&quot;max_riders&quot;][0]
+        print(f&quot;  Total rides: {total_rides:,}&quot;)
+        print(f&quot;  Latest month max riders: {latest_riders:,}&quot;)
+
+        save_csv(
+            merged_df.select(
+                &quot;month&quot;, &quot;total_rides&quot;, &quot;max_riders&quot;, &quot;rides_per_rider&quot;,
+                &quot;n_weeks&quot;, &quot;system_otp&quot;,
+            ),
+            OUT / &quot;growth_vs_otp.csv&quot;,
+        )
+
+    with phase(&quot;Generating charts&quot;):
+        make_ridership_otp_overlay(merged_df)
+        make_enrollment_chart(enroll_monthly_df)
+        make_utilization_chart(ride_monthly_df)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>data/allegheny-go/enrollments_weekly.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Weekly Allegheny Go enrollment counts by enrollment type.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>allegheny_go_weekly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Project pipeline owner not linked.</td>
+          <td>Refresh cadence unknown.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
