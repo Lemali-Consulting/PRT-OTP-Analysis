@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/noaa-weather/daily_raw.csv - Source Detail</title>
+  <title>data/bus-stop-usage/wprdc_stop_data.csv - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,24 @@
     
 <section class="hero hero-compact">
   <p class="kicker">File</p>
-  <h1>data/noaa-weather/daily_raw.csv</h1>
-  <p class="lede">Cached NOAA daily observations for Pittsburgh station.</p>
+  <h1>data/bus-stop-usage/wprdc_stop_data.csv</h1>
+  <p class="lede">Stop-level ridership with lat/lon, used to compute downtown-dependence scores per route from pre-pandemic weekday boardings.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/noaa-weather/daily_raw.csv"]
-  src --> c1["Weather ETL"]
+  src["data/bus-stop-usage/wprdc_stop_data.csv"]
+  src --> c1["31 - Stop Consolidation Candidates"]
+  src --> c2["32 - Shelter Equity"]
+  src --> c3["33 - Pandemic Ridership Geography"]
+  src --> c4["34 - Ridership Concentration (Pareto)"]
+  src --> c5["35 - Boarding/Alighting Flow Analysis"]
+  src --> c6["38 - Downtown Recovery Gap"]
+  src --> c7["49 - Transit Service & Boardings vs Population Density"]
 </pre>
 </section>
 
@@ -55,7 +61,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Cached NOAA daily observations for Pittsburgh station.</td>
+        <td>Referenced via DATA_DIR path composition in analysis script.</td>
         <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
@@ -67,7 +73,37 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/03_weather/index.html">Weather ETL</a></h3>
+      <h3><a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/33_pandemic_ridership_geography/index.html">33 - Pandemic Ridership Geography</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/38_downtown_recovery/index.html">38 - Downtown Recovery Gap</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/49_transit_service_density/index.html">49 - Transit Service & Boardings vs Population Density</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

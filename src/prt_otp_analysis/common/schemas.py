@@ -203,6 +203,20 @@ CENSUS_TRACTS = Schema(
 )
 
 
+ROUTE_SIGNALS = Schema(
+    name="route_signals",
+    columns={
+        "route_id": pl.Utf8,
+        "n_signals": pl.Int64,
+        "length_km": pl.Float64,
+        "signal_density": pl.Float64,
+        "n_route_points": pl.Int64,
+        "match_rate": pl.Float64,
+    },
+    nullable=frozenset({"signal_density"}),
+)
+
+
 def validate(
     df: pl.DataFrame,
     schema: Schema,

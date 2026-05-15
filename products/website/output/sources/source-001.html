@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PennDOT ArcGIS Roadway Traffic Layer - Source Detail</title>
+  <title>OpenStreetMap Overpass API - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Api</p>
-  <h1>PennDOT ArcGIS Roadway Traffic Layer</h1>
-  <p class="lede">Public roadway segment AADT and truck percentage attributes.</p>
-  <p class="lede">Owner: Hosted by gis.penndot.gov. · Freshness: Queried during pipeline execution; freshness depends on upstream updates.</p>
-  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+  <h1>OpenStreetMap Overpass API</h1>
+  <p class="lede">Public query endpoint for OSM nodes tagged highway=traffic_signals.</p>
+  <p class="lede">Owner: Hosted by overpass-api.de. · Freshness: Queried during pipeline execution; freshness depends on upstream updates.</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["PennDOT ArcGIS Roadway Traffic Layer"]
-  src --> c1["Traffic Overlay ETL"]
+  src["OpenStreetMap Overpass API"]
+  src --> c1["Signal Overlay ETL"]
 </pre>
 </section>
 
@@ -55,7 +55,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Public roadway segment AADT and truck percentage attributes.</td>
+        <td>Public query endpoint for OSM nodes tagged highway=traffic_signals.</td>
         <td>Availability and schema can change without notice.</td>
       </tr>
     </tbody>
@@ -67,7 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/04_traffic_overlay/index.html">Traffic Overlay ETL</a></h3>
+      <h3><a href="pipeline/11_signal_overlay/index.html">Signal Overlay ETL</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

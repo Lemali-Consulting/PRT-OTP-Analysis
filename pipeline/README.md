@@ -14,4 +14,7 @@ Run steps in numeric order, or use `uv run python scaffold.py run-all`.
 6. `06_ntd_service`
 7. `07_otp_null_classification`
 8. `08_allegheny_go`
+9. `09_ntd_fleet_age`
+10. `10_census_tracts`
+11. `11_signal_overlay`
 

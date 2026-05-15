@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signal Overlay ETL - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Pipeline</p>
+  <h1>Signal Overlay ETL</h1>
+  
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    
+    <a href="#methods">Methods</a>
+    <a href="#tables-produced">Tables Produced</a>
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  11_signal_overlay(["Signal Overlay ETL"])
+  f1_11_signal_overlay[/"data/osm-signals/traffic_signals_raw.json"/] --> 11_signal_overlay
+  f2_11_signal_overlay[/"data/GTFS/shapes.txt"/] --> 11_signal_overlay
+  f3_11_signal_overlay[/"data/GTFS/trips.txt"/] --> 11_signal_overlay
+  a1_11_signal_overlay{"OpenStreetMap Overpass API"} --> 11_signal_overlay
+  11_signal_overlay --> tp_route_signals[("route_signals")]
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 11_signal_overlay page;
+  class tp_route_signals table;
+  class f1_11_signal_overlay,f2_11_signal_overlay,f3_11_signal_overlay file;
+  class a1_11_signal_overlay api;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Signal Overlay ETL</h1>
+<h2>Summary</h2>
+<p>Route-level traffic signal exposure metrics are computed from OpenStreetMap
+traffic-signal nodes and written to <code>prt.db</code>.</p>
+<h2>Notes</h2>
+<ul>
+<li>Each route's signal count is the number of unique signals within 30 m of its
+densified GTFS shape; <code>signal_density</code> divides this by the route's longest
+shape length.</li>
+<li>Matching diagnostics include <code>n_route_points</code> and <code>match_rate</code>.</li>
+<li>Cached Overpass responses are reused when available.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Signal Overlay ETL</h1>
+<h2>Question</h2>
+<p>How many traffic signals does each transit route pass, and what is its signal density?</p>
+<h2>Approach</h2>
+<ol>
+<li>Fetch or read cached OpenStreetMap <code>highway=traffic_signals</code> nodes for the
+Allegheny County bounding box via the Overpass API.</li>
+<li>Load GTFS route geometry; compute each route's representative length as the
+length of its longest single GTFS shape (an ordered polyline).</li>
+<li>Build a KDTree of signal points and, for each densified route shape, count
+the unique signals within 30 m.</li>
+<li>Compute <code>signal_density = n_signals / length_km</code>.</li>
+<li>Rebuild <code>route_signals</code> in <code>prt.db</code>.</li>
+</ol>
+<h2>Data</h2>
+<ul>
+<li>OpenStreetMap Overpass traffic-signal nodes</li>
+<li>GTFS <code>shapes.txt</code> and <code>trips.txt</code></li>
+<li>Cached Overpass JSON under <code>data/osm-signals/</code></li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>route_signals</code> table in <code>data/prt.db</code></li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Pipeline 11: load route-level traffic signal exposure metrics into prt.db.&quot;&quot;&quot;
+
+from prt_otp_analysis.signal_overlay import main as signal_main
+
+
+def main() -&gt; None:
+    &quot;&quot;&quot;Run signal overlay ETL.&quot;&quot;&quot;
+    signal_main()
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="tables-produced">
+  <details class="fold" open>
+    <summary><h2>Tables Produced</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Table</th><th>Description</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td><code>route_signals</code></td>
+          <td>Route-level traffic signal count, representative route length, and signal density.</td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>data/osm-signals/traffic_signals_raw.json</td>
+          <td><span class="tag">file</span></td>
+          <td>Cached OpenStreetMap Overpass response of traffic-signal nodes for Allegheny County.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>data/GTFS/shapes.txt</td>
+          <td><span class="tag">file</span></td>
+          <td>GTFS route shape geometry points.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>data/GTFS/trips.txt</td>
+          <td><span class="tag">file</span></td>
+          <td>GTFS shape-to-route mapping.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>OpenStreetMap Overpass API</td>
+          <td><span class="tag">api</span></td>
+          <td>Public query endpoint for OSM nodes tagged highway=traffic_signals.</td>
+          <td>Hosted by overpass-api.de.</td>
+          <td>Queried during pipeline execution; freshness depends on upstream updates.</td>
+          <td>Availability and schema can change without notice.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

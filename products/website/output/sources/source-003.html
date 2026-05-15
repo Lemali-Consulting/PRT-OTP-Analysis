@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WPRDC Schedule Monthly Aggregate - Source Detail</title>
+  <title>WPRDC Pick Lookup - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,17 +33,17 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Api</p>
-  <h1>WPRDC Schedule Monthly Aggregate</h1>
-  <p class="lede">Public dataset of route-level monthly schedule aggregates.</p>
+  <h1>WPRDC Pick Lookup</h1>
+  <p class="lede">Public lookup for pick period date ranges.</p>
   <p class="lede">Owner: Hosted by data.wprdc.org. · Freshness: Queried during pipeline execution; freshness depends on upstream updates.</p>
-  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["WPRDC Schedule Monthly Aggregate"]
+  src["WPRDC Pick Lookup"]
   src --> c1["Scheduled Trips ETL"]
 </pre>
 </section>
@@ -55,7 +55,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Public dataset of route-level monthly schedule aggregates.</td>
+        <td>Public lookup for pick period date ranges.</td>
         <td>Availability and schema can change without notice.</td>
       </tr>
     </tbody>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx - Source Detail</title>
+  <title>data/noaa-weather/daily_raw.csv - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">File</p>
-  <h1>data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</h1>
-  <p class="lede">NTD TS2.2 workbook with annual service data by system.</p>
+  <h1>data/noaa-weather/daily_raw.csv</h1>
+  <p class="lede">Cached NOAA daily observations for Pittsburgh station.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx"]
-  src --> c1["NTD Annual Service ETL"]
+  src["data/noaa-weather/daily_raw.csv"]
+  src --> c1["Weather ETL"]
 </pre>
 </section>
 
@@ -55,7 +55,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>NTD TS2.2 workbook with annual service data by system.</td>
+        <td>Cached NOAA daily observations for Pittsburgh station.</td>
         <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
@@ -67,7 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/06_ntd_service/index.html">NTD Annual Service ETL</a></h3>
+      <h3><a href="pipeline/03_weather/index.html">Weather ETL</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

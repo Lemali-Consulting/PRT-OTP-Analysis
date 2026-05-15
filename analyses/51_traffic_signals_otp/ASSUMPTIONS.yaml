@@ -1,0 +1,14 @@
+# Assumptions for Traffic Signals and OTP
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+- id: osm-signal-coverage-complete
+  text: "OpenStreetMap traffic-signal coverage is reasonably complete and uniform across Allegheny County. If outer suburbs are under-mapped relative to the City of Pittsburgh, suburban routes' signal density is understated and the OTP relationship is attenuated."
+- id: longest-shape-represents-route
+  text: "A route's longest single GTFS shape is a fair proxy for its one-way length. If a route's longest shape is an atypical pattern (a deadhead or a rare detour), its length and therefore its signal density are distorted."
+- id: union-shape-signal-count
+  text: "Counting signals along the union of all of a route's shape variants, then dividing by the longest single shape's length, fairly measures signal density. Where inbound and outbound directions use different parallel streets, density is modestly inflated."
+- id: thirty-meter-buffer
+  text: "A 30 m buffer around the route shape captures the signals a route actually passes without absorbing signals on adjacent parallel streets. A wrong buffer would over- or under-count signals."
+- id: signal-passed-equals-signal-experienced
+  text: "A signal within 30 m of the route shape is one the bus actually stops at or is governed by. A bus may pass a signalized cross-street without being controlled by that signal, slightly overstating exposure."

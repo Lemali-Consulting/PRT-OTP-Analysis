@@ -1,0 +1,46 @@
+kind: analysis
+title: "51 - Traffic Signals and OTP"
+group: Ridership and External Factors
+tables:
+- otp_monthly
+- route_signals
+- route_stops
+- routes
+- stops
+files: []
+analyses:
+- id: 27
+  relationship: complements the traffic-volume (AADT) test with a traffic-signal test, finding signals matter where volume did not.
+dependencies:
+- numpy
+- polars
+- scipy
+description: >-
+  Buses that pass more traffic signals per mile run measurably later. Counting
+  every traffic signal along each route, the densest-signal routes -- inner-city
+  local lines through the East End and Hill District -- average around 60% on
+  time, while suburban routes with few signals run 70% or better. Signal density
+  is a strong predictor of poor on-time performance even after accounting for
+  how many stops a route has and how long it is, lifting the share of explained
+  performance differences from 47% to 60%. Notably, an earlier analysis found
+  that overall traffic volume had no such effect: it is the fixed stop-and-wait
+  at each signal, not how busy the road is, that tracks with delay.
+outputs:
+- path: model_comparison.csv
+  kind: data
+  description: Regression coefficients, standard errors, p-values, and R-squared for the base and signal-density-expanded models, all routes and bus-only.
+- path: vif_table.csv
+  kind: data
+  description: Variance inflation factors for every predictor in the expanded model.
+- path: route_signals_summary.csv
+  kind: data
+  description: Per-route traffic signal count, route length, signal density, match rate, stop count, span, and average OTP.
+- path: signal_density_vs_otp_scatter.png
+  kind: image
+  description: Scatter of traffic signal density against average OTP with a fitted trend line.
+- path: coefficient_comparison.png
+  kind: image
+  description: Standardized coefficient comparison between the base and signal-density-expanded models.
+- path: partial_residual.png
+  kind: image
+  description: Partial residual plot of base-model OTP residuals against signal density.

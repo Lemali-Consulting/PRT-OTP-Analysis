@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>route_stops - Source Detail</title>
+  <title>otp_monthly - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,44 +33,53 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Table</p>
-  <h1>route_stops</h1>
-  <p class="lede">Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</p>
+  <h1>otp_monthly</h1>
+  <p class="lede">Monthly OTP values by route. Produced by Data Ingestion.</p>
   <p class="lede">Owner: Produced by Data Ingestion. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["route_stops"]
+  src["otp_monthly"]
   src --> c1["01 - System-Wide OTP Trend"]
   src --> c2["02 - Mode Comparison"]
   src --> c3["03 - Route Ranking"]
   src --> c4["04 - Tract Equity"]
-  src --> c5["06: Seasonal Patterns"]
-  src --> c6["07: Stop Count vs OTP"]
-  src --> c7["08: Hot-Spot Map"]
-  src --> c8["09: Incline Investigation"]
-  src --> c9["10: Trip Frequency vs OTP"]
-  src --> c10["11: Directional Asymmetry"]
-  src --> c11["12: Route Geographic Span vs OTP"]
-  src --> c12["13: Cross-Route Correlation Clustering"]
-  src --> c13["14: COVID Recovery Trajectories"]
-  src --> c14["15: Municipal/County Equity"]
-  src --> c15["16: Transfer Hub Performance"]
-  src --> c16["17: Weekend vs Weekday Service Profile"]
-  src --> c17["18: Multivariate OTP Model"]
-  src --> c18["19 - Ridership-Weighted OTP"]
-  src --> c19["23 - Garage-Level Performance"]
-  src --> c20["26 - Ridership in Multivariate OTP Model"]
-  src --> c21["27 - Traffic Congestion and OTP"]
-  src --> c22["28 - Weather Impact"]
-  src --> c23["31 - Stop Consolidation Candidates"]
-  src --> c24["42 - Allegheny Go Equity"]
-  src --> c25["44 - Route Population Reach"]
-  src --> c26["45 - Population-Weighted System OTP"]
-  src --> c27["49 - Transit Service & Boardings vs Population Density"]
+  src --> c5["05 - Anomaly Investigation"]
+  src --> c6["06: Seasonal Patterns"]
+  src --> c7["07: Stop Count vs OTP"]
+  src --> c8["08: Hot-Spot Map"]
+  src --> c9["09: Incline Investigation"]
+  src --> c10["10: Trip Frequency vs OTP"]
+  src --> c11["11: Directional Asymmetry"]
+  src --> c12["12: Route Geographic Span vs OTP"]
+  src --> c13["13: Cross-Route Correlation Clustering"]
+  src --> c14["14: COVID Recovery Trajectories"]
+  src --> c15["15: Municipal/County Equity"]
+  src --> c16["16: Transfer Hub Performance"]
+  src --> c17["17: Weekend vs Weekday Service Profile"]
+  src --> c18["18: Multivariate OTP Model"]
+  src --> c19["19 - Ridership-Weighted OTP"]
+  src --> c20["20 - OTP → Ridership Causality"]
+  src --> c21["21 - COVID Ridership vs OTP Recovery"]
+  src --> c22["22 - Passenger-Weighted Delay Burden"]
+  src --> c23["23 - Garage-Level Performance"]
+  src --> c24["24 - Weekday vs Weekend Ridership Trends"]
+  src --> c25["25 - Ridership Concentration & Equity"]
+  src --> c26["26 - Ridership in Multivariate OTP Model"]
+  src --> c27["27 - Traffic Congestion and OTP"]
+  src --> c28["28 - Weather Impact"]
+  src --> c29["29 - Service Change Impact on OTP"]
+  src --> c30["30 - Service Level vs OTP Longitudinal"]
+  src --> c31["31 - Stop Consolidation Candidates"]
+  src --> c32["34 - Ridership Concentration (Pareto)"]
+  src --> c33["42 - Allegheny Go Equity"]
+  src --> c34["43 - Allegheny Go Program Growth"]
+  src --> c35["45 - Population-Weighted System OTP"]
+  src --> c36["51 - Traffic Signals and OTP"]
 </pre>
 </section>
 
@@ -109,6 +118,11 @@
   
     <article class="card">
       <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Tract Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
@@ -183,7 +197,32 @@
     </article>
   
     <article class="card">
+      <h3><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
       <h3><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
@@ -203,7 +242,22 @@
     </article>
   
     <article class="card">
+      <h3><a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
       <h3><a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
@@ -213,7 +267,7 @@
     </article>
   
     <article class="card">
-      <h3><a href="analyses/44_route_population_reach/index.html">44 - Route Population Reach</a></h3>
+      <h3><a href="analyses/43_allegheny_go_growth/index.html">43 - Allegheny Go Program Growth</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
@@ -223,7 +277,7 @@
     </article>
   
     <article class="card">
-      <h3><a href="analyses/49_transit_service_density/index.html">49 - Transit Service & Boardings vs Population Density</a></h3>
+      <h3><a href="analyses/51_traffic_signals_otp/index.html">51 - Traffic Signals and OTP</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

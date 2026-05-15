@@ -35,7 +35,7 @@
   <p class="kicker">Transit Performance Knowledge Base</p>
   <h1>PRT OTP Analysis</h1>
   <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
-  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
 </section>
 
 <section class="panel" id="pipeline-panel">
@@ -70,6 +70,11 @@
   <article class="card">
     <h3><a href="pipeline/06_ntd_service/index.html">NTD Annual Service ETL</a></h3>
     <p>Loads NTD TS2.2 annual VRH, VRM, UPT, and VOMS data into prt.db for service-level comparative analysis across US transit agencies (1991-2023).</p>
+  </article>
+
+  <article class="card">
+    <h3><a href="pipeline/11_signal_overlay/index.html">Signal Overlay ETL</a></h3>
+    <p>Computes route-level traffic signal exposure (count and density) by spatially joining GTFS routes with OpenStreetMap traffic-signal nodes.</p>
   </article>
 
 </div>
@@ -509,6 +514,14 @@
       <td><span class="theme-chip">Equity and Strategic Planning</span></td>
       <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
       <td class="summary-cell"><span class="summary-lead">Analysis 48 found that PRT carries about 18 passengers per hour of service it runs, half what it managed in the 1990s.</span> <span class="summary-rest" hidden>But that one number blends four very different services. Splitting them apart, the light rail "T" actually runs fuller than the bus — 25.7 passengers per service hour in 2024 versus 22.2 for motor buses. The door-to-door ACCESS service for riders with disabilities carries 1.9: it accounts for just 2.4% of trips but uses 23% of all service hours, which is normal for a federally required service that picks people up one at a time. Set ACCESS aside and PRT's regular bus-and-rail network runs at 22.5 passengers per hour — about a quarter higher than the headline figure suggests. Productivity fell at every mode after 2019, with light rail down the steepest of the two main modes.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="51" data-title="traffic signals and otp" data-group="Ridership and External Factors" data-text="51 - traffic signals and otp buses that pass more traffic signals per mile run measurably later. counting every traffic signal along each route, the densest-signal routes -- inner-city local lines through the east end and hill district -- average around 60% on time, while suburban routes with few signals run 70% or better. signal density is a strong predictor of poor on-time performance even after accounting for how many stops a route has and how long it is, lifting the share of explained performance differences from 47% to 60%. notably, an earlier analysis found that overall traffic volume had no such effect: it is the fixed stop-and-wait at each signal, not how busy the road is, that tracks with delay.">
+      <td class="col-num">51</td>
+      <td><a href="analyses/51_traffic_signals_otp/index.html">Traffic Signals and OTP</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Buses that pass more traffic signals per mile run measurably later.</span> <span class="summary-rest" hidden>Counting every traffic signal along each route, the densest-signal routes -- inner-city local lines through the East End and Hill District -- average around 60% on time, while suburban routes with few signals run 70% or better. Signal density is a strong predictor of poor on-time performance even after accounting for how many stops a route has and how long it is, lifting the share of explained performance differences from 47% to 60%. Notably, an earlier analysis found that overall traffic volume had no such effect: it is the fixed stop-and-wait at each signal, not how busy the road is, that tracks with delay.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
     </tr>
   
     <tr id="no-results" hidden><td colspan="5" class="no-results">No analyses match your filters.</td></tr>

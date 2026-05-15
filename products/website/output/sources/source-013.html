@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/GTFS/shapes.txt - Source Detail</title>
+  <title>statsmodels - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -32,19 +32,19 @@
   <main class="container shell">
     
 <section class="hero hero-compact">
-  <p class="kicker">File</p>
-  <h1>data/GTFS/shapes.txt</h1>
-  <p class="lede">GTFS route shape geometry points.</p>
-  <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+  <p class="kicker">Dependency</p>
+  <h1>statsmodels</h1>
+  <p class="lede">Statistical modeling library used for regression and time-series methods.</p>
+  <p class="lede">Owner: Open-source Python ecosystem maintainers. · Freshness: Version pinned by project environment until dependency updates are applied.</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/GTFS/shapes.txt"]
-  src --> c1["Traffic Overlay ETL"]
+  src["statsmodels"]
+  src --> c1["20 - OTP → Ridership Causality"]
 </pre>
 </section>
 
@@ -55,8 +55,8 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>GTFS route shape geometry points.</td>
-        <td>May lag upstream source updates.</td>
+        <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+        <td>Library updates may change behavior or defaults.</td>
       </tr>
     </tbody>
   </table>
@@ -67,7 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/04_traffic_overlay/index.html">Traffic Overlay ETL</a></h3>
+      <h3><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

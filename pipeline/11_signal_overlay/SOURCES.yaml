@@ -1,0 +1,18 @@
+kind: pipeline
+title: Signal Overlay ETL
+description: Computes route-level traffic signal exposure (count and density) by spatially joining GTFS routes with OpenStreetMap traffic-signal nodes.
+files:
+  - path: data/osm-signals/traffic_signals_raw.json
+    description: Cached OpenStreetMap Overpass response of traffic-signal nodes for Allegheny County.
+  - path: data/GTFS/shapes.txt
+    description: GTFS route shape geometry points.
+  - path: data/GTFS/trips.txt
+    description: GTFS shape-to-route mapping.
+apis:
+  - name: OpenStreetMap Overpass API
+    url: https://overpass-api.de/api/interpreter
+    description: Public query endpoint for OSM nodes tagged highway=traffic_signals.
+tables: []
+tables_produced:
+  - name: route_signals
+    description: Route-level traffic signal count, representative route length, and signal density.

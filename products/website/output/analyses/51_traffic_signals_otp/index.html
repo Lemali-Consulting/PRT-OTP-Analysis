@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>51 - Traffic Signals and OTP - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>51 - Traffic Signals and OTP</h1>
+  <p class="lede">Ridership and External Factors</p>
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../50_mode_productivity/index.html">← 50 - Bus vs. Rail: Productivity by Mode</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  51_traffic_signals_otp(["51 - Traffic Signals and OTP"])
+  t_otp_monthly[("otp_monthly")] --> 51_traffic_signals_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_route_signals[("route_signals")] --> 51_traffic_signals_otp
+  11_signal_overlay[["Signal Overlay ETL"]] --> t_route_signals
+  u1_11_signal_overlay[/"data/osm-signals/traffic_signals_raw.json"/] --> 11_signal_overlay
+  u2_11_signal_overlay[/"data/GTFS/shapes.txt"/] --> 11_signal_overlay
+  u3_11_signal_overlay[/"data/GTFS/trips.txt"/] --> 11_signal_overlay
+  u4_11_signal_overlay{"OpenStreetMap Overpass API"} --> 11_signal_overlay
+  t_route_stops[("route_stops")] --> 51_traffic_signals_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_routes[("routes")] --> 51_traffic_signals_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  t_stops[("stops")] --> 51_traffic_signals_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_stops
+  d1_51_traffic_signals_otp(("numpy (lib)")) --> 51_traffic_signals_otp
+  d2_51_traffic_signals_otp(("polars (lib)")) --> 51_traffic_signals_otp
+  d3_51_traffic_signals_otp(("scipy (lib)")) --> 51_traffic_signals_otp
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 51_traffic_signals_otp page;
+  class t_otp_monthly,t_route_signals,t_route_stops,t_routes,t_stops table;
+  class d1_51_traffic_signals_otp,d2_51_traffic_signals_otp,d3_51_traffic_signals_otp dep;
+  class u1_01_data_ingestion,u1_11_signal_overlay,u2_01_data_ingestion,u2_11_signal_overlay,u3_01_data_ingestion,u3_11_signal_overlay,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class u4_11_signal_overlay api;
+  class 01_data_ingestion,11_signal_overlay pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Traffic Signals and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Summary</h2>
+<p>Traffic-signal density is a <strong>strong, independent predictor of on-time
+performance</strong>. Routes that pass more traffic signals per mile run measurably
+later: adding signal density to the six-feature structural model lifts explained
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> from 47% to 60% (<a href="../../glossary.html#adjusted-r-squared" class="glossary-link" data-definition="R2 variant that penalizes unnecessary predictors.">adjusted R-squared</a> 0.43 to 0.57), and signal
+density remains highly significant after controlling for stop count, route
+length, mode, and municipal reach (F-test p &lt; 0.0001). Each additional signal
+per route-km is associated with roughly <strong>1.75 percentage points lower <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong>.
+This contrasts sharply with Analysis 27, which found that traffic <em>volume</em>
+(AADT) had no effect — it is the fixed, repeated stop-and-wait of signals, not
+how busy the road is, that tracks with delay.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>92 routes</strong> analyzed (89 bus, 3 rail) with 12+ months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data and matched
+signal data.</li>
+<li><strong>2,820 OpenStreetMap traffic signals</strong> county-wide were matched to GTFS route
+shapes within a 30 m buffer.</li>
+<li>Signal density ranges <strong>0.89 to 7.83 signals/km</strong> (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> ~3.2).</li>
+<li>Bivariate correlation: signal density vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <strong>r = -0.38</strong> (p = 0.0002).</li>
+<li>Base structural model <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a> <strong>0.472</strong> → expanded model <strong>0.602</strong>
+(adjusted 0.435 → 0.569); nested <strong>F-test p &lt; 0.0001</strong>.</li>
+<li>Expanded-model signal-density coefficient <strong>-0.0175</strong> (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight -0.42,
+p &lt; 0.0001) — about <strong>-1.75 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per +1 signal/km</strong>.</li>
+<li><strong><a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for signal density = 1.35</strong> (all predictors &lt; 5) — no multicollinearity.</li>
+<li>Bus-only: base <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a> 0.379 → 0.532 (F = 26.9, p &lt; 0.0001, <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> -0.45).</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>Raw signal count overstates the effect.</strong> Raw <code>n_signals</code> correlates with
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> at r = -0.65, but it also correlates with route length at r = +0.47 — a
+long route passes more signals <em>and</em> tends to run later. Dividing by route
+length isolates the signal effect: signal <em>density</em> correlates with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> at the
+more modest r = -0.38. The regression therefore uses density, not count.</li>
+<li><strong>Signal density is nearly orthogonal to stop count</strong> (r = -0.04). Stops and
+signals are two separate delay mechanisms — a route can have many stops and
+few signals, or vice versa — and the model picks up both: in the bus-only
+expanded model stop count (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> -0.48) and signal density (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> -0.45) are
+comparably strong, independent predictors.</li>
+<li><strong>Density still correlates with other geometry</strong> (span -0.32, municipal reach
+-0.39, premium-bus -0.33): suburban and express routes run on faster roads
+with fewer signals. But the <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> of 1.35 confirms enough independent variation
+remains for a stable coefficient.</li>
+<li><strong>The densest-signal routes are inner-city local bus.</strong> The top of the list is
+71B Highland Park (7.83 signals/km, 59% <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>), 81 Oak Hill, 83 Bedford Hill,
+82 Lincoln — all dense East End / Hill District local routes. The sparsest are
+suburban routes such as 79 East Hills (0.89/km, 71% <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>) and 14 Ohio Valley.</li>
+<li><strong>Contrast with traffic volume (Analysis 27).</strong> AADT had no effect on <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> after
+structural controls; signal density clearly does. Signals impose a fixed,
+stochastic delay every cycle regardless of how heavy traffic is, which is a
+more plausible mechanism for the kind of <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> measures.</li>
+</ul>
+<h2>Discussion</h2>
+<p>The result reinforces the cumulative picture from Analyses 18, 26 and 27 that
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is largely a function of route <em>structure</em>. Signal density adds a genuinely
+new structural axis: it is not captured by stop count (the two are orthogonal)
+and it explains a meaningful slice of <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> the earlier models missed
+(+13 <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a> points). For policy, the lever is transit-signal priority (TSP)
+and corridor signal-timing coordination on the dense East End local routes,
+rather than rerouting — the densest-signal routes are exactly the high-ridership
+city corridors where rerouting is not an option. The effect is an area-level
+association, not a trip-level causal estimate; it identifies where signal
+treatment is most likely to help, not the exact <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> gain a specific TSP project
+would deliver.</p>
+<h2>Caveats</h2>
+<ul>
+<li><strong>OpenStreetMap signal coverage is crowd-sourced.</strong> The 2,820 county-wide
+signals fall in the plausible range for Allegheny County (~2,500–3,000), but
+coverage completeness may vary, likely better in the City of Pittsburgh than
+in outer suburbs.</li>
+<li><strong>Density numerator/denominator mismatch.</strong> <code>n_signals</code> counts unique signals
+along the union of all of a route's GTFS shape variants (both directions, all
+patterns), while <code>length_km</code> is the route's single longest shape. Where the
+two directions use different parallel streets this modestly inflates density.
+Most PRT routes run both directions on the same arterials, limiting the effect.</li>
+<li><strong>Raw signal count is mechanically tied to route length</strong> and is reported
+descriptively only; it is never used as a regression predictor.</li>
+<li><strong>Ecological framing.</strong> All results are route-level associations between signal
+density and average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. No trip-level or rider-level causal claims are made.</li>
+<li><strong><a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> assumes linear, independent errors.</strong> With 92 observations and 7
+predictors the model is reasonably but not generously powered.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified (checklist #1).</strong> <code>route_signals</code> is produced by
+pipeline step <code>11_signal_overlay</code>; its columns were validated against the
+<code>ROUTE_SIGNALS</code> schema with <code>validate(..., subset=True)</code>. GTFS and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> columns
+reuse the same queries as Analysis 27.</li>
+<li><strong>Scope match (checklist #2).</strong> All routes are filtered to 12+ months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>
+and inner-joined to <code>route_signals</code>; signals and routes both cover Allegheny
+County. 92 of 98 signal-matched routes clear the 12-month <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> threshold.</li>
+<li><strong>Null handling (checklist #3).</strong> <code>signal_density</code> is non-null for every route
+(all routes have non-zero shape length); <code>drop_nulls</code> guards the structural
+features. No routes were silently dropped.</li>
+<li><strong>Aggregate sanity check (checklist #4).</strong> Total OSM signal count (2,820) was
+compared against the known Allegheny County signal inventory order of
+magnitude (~2,500–3,000) and is consistent. Per-route densities (0.9–7.8/km)
+imply a signal every 130–1,100 m, plausible for city arterials vs suburban
+roads.</li>
+<li><strong>Direction of effect (checklist #6).</strong> More signals per km is associated with
+<em>lower</em> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> — the expected sign. A positive coefficient would have been a red
+flag.</li>
+<li><strong>Multicollinearity checked (checklist #7).</strong> <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> is reported for every
+expanded-model predictor; the maximum is 2.66 and signal density is 1.35. No
+predictor exceeds the <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> &gt; 5 flag threshold.</li>
+<li><strong>Small-sample routes flagged (checklist #8).</strong> Routes with fewer than 12
+months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data are excluded via <code>HAVING COUNT(*) &gt;= 12</code>. The
+<code>route_signals.match_rate</code> field is <em>not</em> used as a filter — unlike the
+PennDOT road-network match rate in Analysis 27, it is proportional to signal
+density and is not a coverage-quality signal.</li>
+<li><strong>Surprising-result check (checklist #5).</strong> The headline (signal density
+matters where traffic volume did not) was checked for plausibility: signals
+impose fixed per-cycle delay, a sound mechanism, and the raw-count vs density
+diagnostic confirmed the relationship is not a route-length artifact.</li>
+<li><strong>Ecological framing (checklist #9).</strong> Documented in Caveats and Discussion;
+results are described as route-level associations throughout.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (3)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/51_traffic_signals_otp/signal_density_vs_otp_scatter.png" alt="signal_density_vs_otp_scatter" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/signal_density_vs_otp_scatter.png" target="_blank" rel="noopener noreferrer">signal_density_vs_otp_scatter.png</a>
+          <p class="artifact-desc">Scatter of traffic signal density against average OTP with a fitted trend line.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/51_traffic_signals_otp/coefficient_comparison.png" alt="coefficient_comparison" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/coefficient_comparison.png" target="_blank" rel="noopener noreferrer">coefficient_comparison.png</a>
+          <p class="artifact-desc">Standardized coefficient comparison between the base and signal-density-expanded models.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/51_traffic_signals_otp/partial_residual.png" alt="partial_residual" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/partial_residual.png" target="_blank" rel="noopener noreferrer">partial_residual.png</a>
+          <p class="artifact-desc">Partial residual plot of base-model OTP residuals against signal density.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
+          <p class="artifact-desc">Regression coefficients, standard errors, p-values, and R-squared for the base and signal-density-expanded models, all routes and bus-only.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/51_traffic_signals_otp/model_comparison.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/vif_table.csv" target="_blank" rel="noopener noreferrer">vif_table.csv</a>
+          <p class="artifact-desc">Variance inflation factors for every predictor in the expanded model.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/51_traffic_signals_otp/vif_table.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/route_signals_summary.csv" target="_blank" rel="noopener noreferrer">route_signals_summary.csv</a>
+          <p class="artifact-desc">Per-route traffic signal count, route length, signal density, match rate, stop count, span, and average OTP.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/51_traffic_signals_otp/route_signals_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Traffic Signals and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Question</h2>
+<p>Does the density of traffic signals along a route (signals per route-km) explain
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a> (<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>) <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> beyond stop count, geographic span, and the
+other structural features from the Analysis 18 / 27 model?</p>
+<h2>Approach</h2>
+<ul>
+<li>Use the <code>route_signals</code> table (built by pipeline step <code>11_signal_overlay</code>),
+which counts OpenStreetMap <code>highway=traffic_signals</code> nodes within 30 m of each
+route's GTFS shape and divides by the route's longest-shape length.</li>
+<li><strong>Use signal density, not raw signal count, as the predictor.</strong> Raw <code>n_signals</code>
+is mechanically correlated with route length, and route length itself depresses
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, so a model using raw count would capture a length artifact rather than a
+signal effect. Raw count is reported descriptively only. As a diagnostic, the
+bivariate correlations of both <code>n_signals</code> and <code>signal_density</code> against <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> are
+compared to demonstrate this confound.</li>
+<li>Replicate the Analysis 27 six-feature <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> base model (stop count, geographic
+span, is_rail, is_premium_bus, weekend ratio, municipal reach) on routes with
+matched <code>route_signals</code> data and at least 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> observations.</li>
+<li>Add <code>signal_density</code> as a seventh predictor. Compare <a href="../../glossary.html#adjusted-r-squared" class="glossary-link" data-definition="R2 variant that penalizes unnecessary predictors.">adjusted R-squared</a> between
+the six- and seven-feature models with a nested F-test.</li>
+<li>Check <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for multicollinearity. <code>signal_density</code>, <code>stop_count</code>, and <code>span_km</code>
+all partly encode &quot;urban arterial vs. suburban&quot; route character, so a <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> above
+5 is plausible and is reported, not silently dropped.</li>
+<li>Repeat the comparison on the bus-only subset.</li>
+<li>The <code>route_signals.match_rate</code> field (fraction of shape points near a signal)
+is <strong>not</strong> used as an inclusion filter: unlike the PennDOT road-network match
+rate in Analysis 27, it is essentially proportional to signal density and is
+not a coverage-quality signal. It is retained only as a diagnostic column.</li>
+<li>Generate a bivariate scatter (signal density vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>), a coefficient comparison
+chart, and a partial residual plot.</li>
+</ul>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>route_id, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">otp</a> (averaged to route-level, 12+ months required)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_signals</code></td>
+  <td>route_id, n_signals, length_km, signal_density, match_rate (built by <code>signal_overlay.py</code>)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>stop counts, trip frequencies</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>lat, lon for geographic span computation; muni for municipal reach</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>route_id, mode for subtype classification</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
+<h2>Output</h2>
+<ul>
+<li><code>output/model_comparison.csv</code> -- regression results for all models</li>
+<li><code>output/vif_table.csv</code> -- <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> values for the expanded model</li>
+<li><code>output/route_signals_summary.csv</code> -- per-route signal data with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/signal_density_vs_otp_scatter.png</code> -- bivariate scatter of signal density vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/coefficient_comparison.png</code> -- <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight comparison between base and expanded models</li>
+<li><code>output/partial_residual.png</code> -- partial residual plot for signal density</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 51: Test whether traffic-signal density explains OTP variance beyond structural features.&quot;&quot;&quot;
+
+import math
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    analysis_dir,
+    classify_bus_route,
+    correlate,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.common.schemas import ROUTE_SIGNALS, validate
+
+OUT = analysis_dir(__file__)
+
+MIN_MONTHS = 12
+
+
+# ---------------------------------------------------------------------------
+# Helpers (replicated from Analysis 18/27 to maintain independence)
+# ---------------------------------------------------------------------------
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return the great-circle distance in km between two lat/lon points.&quot;&quot;&quot;
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
+         * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def compute_span(lats: list[float], lons: list[float]) -&gt; float:
+    &quot;&quot;&quot;Return the max pairwise haversine distance (km) among a set of points.&quot;&quot;&quot;
+    max_dist = 0.0
+    n = len(lats)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = haversine_km(lats[i], lons[i], lats[j], lons[j])
+            if d &gt; max_dist:
+                max_dist = d
+    return max_dist
+
+
+def compute_vif(X_raw: np.ndarray, feature_names: list[str]) -&gt; dict[str, float]:
+    &quot;&quot;&quot;Compute Variance Inflation Factor for each predictor.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    vifs = {}
+    for j in range(k):
+        y_j = X_raw[:, j]
+        X_other = np.delete(X_raw, j, axis=1)
+        X_other = np.column_stack([np.ones(n), X_other])
+        beta, _, _, _ = np.linalg.lstsq(X_other, y_j, rcond=None)
+        y_hat = X_other @ beta
+        ss_res = np.sum((y_j - y_hat) ** 2)
+        ss_tot = np.sum((y_j - np.mean(y_j)) ** 2)
+        r2_j = 1 - ss_res / ss_tot if ss_tot &gt; 0 else 0.0
+        vifs[feature_names[j]] = 1.0 / (1.0 - r2_j) if r2_j &lt; 1.0 else float(&quot;inf&quot;)
+    return vifs
+
+
+def fit_ols(y: np.ndarray, X_raw: np.ndarray, feature_names: list[str]) -&gt; dict:
+    &quot;&quot;&quot;Fit OLS regression and return results dict.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    X = np.column_stack([np.ones(n), X_raw])
+
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    y_hat = X @ beta
+    residuals = y - y_hat
+
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    adj_r_squared = 1 - (1 - r_squared) * (n - 1) / (n - k - 1)
+    mse = ss_res / (n - k - 1)
+
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    se = np.sqrt(np.diag(XtX_inv) * mse)
+    t_vals = beta / se
+    p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n - k - 1)) for t in t_vals]
+
+    x_stds = np.std(X_raw, axis=0, ddof=1)
+    y_std = np.std(y, ddof=1)
+    beta_weights = beta[1:] * x_stds / y_std
+
+    return {
+        &quot;r_squared&quot;: r_squared,
+        &quot;adj_r_squared&quot;: adj_r_squared,
+        &quot;ss_res&quot;: ss_res,
+        &quot;n&quot;: n,
+        &quot;k&quot;: k,
+        &quot;features&quot;: [&quot;intercept&quot;] + feature_names,
+        &quot;coefficients&quot;: beta.tolist(),
+        &quot;std_errors&quot;: se.tolist(),
+        &quot;t_values&quot;: t_vals.tolist(),
+        &quot;p_values&quot;: p_vals,
+        &quot;beta_weights&quot;: [None] + beta_weights.tolist(),
+        &quot;y_hat&quot;: y_hat,
+        &quot;residuals&quot;: residuals,
+    }
+
+
+def f_test_nested(base: dict, full: dict) -&gt; tuple[float, float]:
+    &quot;&quot;&quot;F-test comparing nested models. Returns (F_stat, p_value).&quot;&quot;&quot;
+    k_diff = full[&quot;k&quot;] - base[&quot;k&quot;]
+    n = full[&quot;n&quot;]
+    f_stat = ((base[&quot;ss_res&quot;] - full[&quot;ss_res&quot;]) / k_diff) / (full[&quot;ss_res&quot;] / (n - full[&quot;k&quot;] - 1))
+    f_p = 1 - stats.f.cdf(f_stat, k_diff, n - full[&quot;k&quot;] - 1)
+    return f_stat, f_p
+
+
+def print_model(results: dict, label: str) -&gt; None:
+    &quot;&quot;&quot;Print formatted model results.&quot;&quot;&quot;
+    print(f&quot;\n  {label}:&quot;)
+    print(f&quot;  R2 = {results[&#x27;r_squared&#x27;]:.4f}, Adj R2 = {results[&#x27;adj_r_squared&#x27;]:.4f}, &quot;
+          f&quot;n = {results[&#x27;n&#x27;]}, k = {results[&#x27;k&#x27;]}&quot;)
+    print(f&quot;  {&#x27;Feature&#x27;:&lt;20s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Std Err&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s} {&#x27;Beta&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*60}&quot;)
+    for i, feat in enumerate(results[&quot;features&quot;]):
+        coeff = results[&quot;coefficients&quot;][i]
+        se = results[&quot;std_errors&quot;][i]
+        p = results[&quot;p_values&quot;][i]
+        beta = results[&quot;beta_weights&quot;][i]
+        beta_str = f&quot;{beta:&gt;10.4f}&quot; if beta is not None else f&quot;{&#x27;--&#x27;:&gt;10s}&quot;
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;20s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {beta_str} {sig}&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_features() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Assemble structural features + traffic signal data for the regression model.&quot;&quot;&quot;
+    avg_otp = query_to_polars(f&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp, COUNT(*) AS months
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(*) &gt;= {MIN_MONTHS}
+    &quot;&quot;&quot;)
+
+    stop_counts = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    trips = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id,
+               MAX(trips_wd) AS max_wd,
+               MAX(trips_sa) AS max_sa,
+               MAX(trips_su) AS max_su
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    munis = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, COUNT(DISTINCT s.muni) AS n_munis
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.route_id
+    &quot;&quot;&quot;)
+    stops_by_route = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, s.lat, s.lon
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.lat IS NOT NULL AND s.lon IS NOT NULL
+    &quot;&quot;&quot;)
+    spans = []
+    for route_id in stops_by_route[&quot;route_id&quot;].unique().sort().to_list():
+        subset = stops_by_route.filter(pl.col(&quot;route_id&quot;) == route_id)
+        span_km = compute_span(subset[&quot;lat&quot;].to_list(), subset[&quot;lon&quot;].to_list())
+        spans.append({&quot;route_id&quot;: route_id, &quot;span_km&quot;: span_km})
+    span_df = pl.DataFrame(spans)
+
+    # Traffic signal data
+    signals_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, n_signals, length_km, signal_density,
+               match_rate, n_route_points
+        FROM route_signals
+    &quot;&quot;&quot;)
+    validate(signals_df, ROUTE_SIGNALS, subset=True)
+
+    # Assemble
+    df = avg_otp
+    df = df.join(stop_counts, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(trips, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(munis, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(span_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(signals_df, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+
+    # Derived features
+    df = df.with_columns(
+        pl.when(pl.col(&quot;max_wd&quot;) &gt; 0)
+        .then((pl.col(&quot;max_sa&quot;) + pl.col(&quot;max_su&quot;)) / (2.0 * pl.col(&quot;max_wd&quot;)))
+        .otherwise(0.0)
+        .alias(&quot;weekend_ratio&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;).then(1.0).otherwise(0.0).alias(&quot;is_rail&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.Utf8))
+        .otherwise(pl.lit(&quot;non_bus&quot;))
+        .alias(&quot;bus_subtype&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;bus_subtype&quot;).is_in([&quot;busway&quot;, &quot;flyer&quot;, &quot;express&quot;, &quot;limited&quot;]))
+        .then(1.0)
+        .otherwise(0.0)
+        .alias(&quot;is_premium_bus&quot;),
+    )
+
+    df = df.drop_nulls(
+        subset=[&quot;stop_count&quot;, &quot;span_km&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;, &quot;signal_density&quot;],
+    )
+
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Charts
+# ---------------------------------------------------------------------------
+
+def make_scatter_chart(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bivariate scatter: signal density vs OTP.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    density = df[&quot;signal_density&quot;].to_numpy()
+    otp = df[&quot;avg_otp&quot;].to_numpy()
+    modes = df[&quot;mode&quot;].to_list()
+
+    bus_mask = np.array([m == &quot;BUS&quot; for m in modes])
+    rail_mask = ~bus_mask
+
+    ax.scatter(density[bus_mask], otp[bus_mask], alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Bus&quot;, zorder=2)
+    if np.any(rail_mask):
+        ax.scatter(density[rail_mask], otp[rail_mask], alpha=0.7, s=50, color=&quot;#dc2626&quot;,
+                   marker=&quot;D&quot;, edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Rail&quot;, zorder=3)
+
+    # Trend line (all routes)
+    slope, intercept, r, p, _ = stats.linregress(density, otp)
+    x_sorted = np.sort(density)
+    ax.plot(x_sorted, slope * x_sorted + intercept, color=&quot;#e11d48&quot;,
+            linewidth=1.5, linestyle=&quot;--&quot;, alpha=0.7,
+            label=f&quot;linear fit: r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.set_xlabel(&quot;Signal density (traffic signals per route-km)&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;Traffic Signal Density vs On-Time Performance&quot;)
+    ax.legend(fontsize=9)
+
+    save_chart(fig, OUT / &quot;signal_density_vs_otp_scatter.png&quot;)
+
+
+def make_coefficient_chart(base: dict, expanded: dict) -&gt; None:
+    &quot;&quot;&quot;Compare standardized coefficients between base and expanded models.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    base_feats = base[&quot;features&quot;][1:]
+    exp_feats = expanded[&quot;features&quot;][1:]
+    base_betas = {f: b for f, b in zip(base_feats, base[&quot;beta_weights&quot;][1:])}
+    exp_betas = {f: b for f, b in zip(exp_feats, expanded[&quot;beta_weights&quot;][1:])}
+    exp_pvals = {f: p for f, p in zip(exp_feats, expanded[&quot;p_values&quot;][1:])}
+
+    all_feats = exp_feats
+    y_pos = np.arange(len(all_feats))
+    width = 0.35
+
+    base_vals = [base_betas.get(f, 0.0) for f in all_feats]
+    exp_vals = [exp_betas[f] for f in all_feats]
+
+    ax.barh(y_pos + width / 2, base_vals, width, label=&quot;Base (6 features)&quot;,
+            color=&quot;#9ca3af&quot;, alpha=0.7)
+    ax.barh(y_pos - width / 2, exp_vals, width, label=&quot;Expanded (+signal_density)&quot;,
+            color=&quot;#2563eb&quot;, alpha=0.7)
+
+    for i, f in enumerate(all_feats):
+        p = exp_pvals[f]
+        marker = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        val = exp_vals[i]
+        ax.text(val + 0.01 if val &gt;= 0 else val - 0.01, i - width / 2, marker,
+                ha=&quot;left&quot; if val &gt;= 0 else &quot;right&quot;, va=&quot;center&quot;, fontsize=9)
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(all_feats)
+    ax.axvline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax.set_xlabel(&quot;Standardized Coefficient (Beta Weight)&quot;)
+    ax.set_title(f&quot;Model Comparison: Base R2={base[&#x27;r_squared&#x27;]:.3f} vs &quot;
+                 f&quot;Expanded R2={expanded[&#x27;r_squared&#x27;]:.3f}&quot;)
+    ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+    ax.invert_yaxis()
+
+    save_chart(fig, OUT / &quot;coefficient_comparison.png&quot;)
+
+
+def make_partial_residual_chart(df: pl.DataFrame, base: dict) -&gt; None:
+    &quot;&quot;&quot;Partial residual plot: base model residuals vs signal density.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    residuals = base[&quot;residuals&quot;]
+    density = df[&quot;signal_density&quot;].to_numpy()
+
+    ax.scatter(density, residuals, alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5)
+
+    slope, intercept, r, p, _ = stats.linregress(density, residuals)
+    x_line = np.array([density.min(), density.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, alpha=0.7, label=f&quot;r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.axhline(0, color=&quot;gray&quot;, linewidth=0.5, alpha=0.5)
+    ax.set_xlabel(&quot;Signal density (signals per route-km)&quot;)
+    ax.set_ylabel(&quot;Base Model Residual (OTP)&quot;)
+    ax.set_title(&quot;Partial Residual: Does Signal Density Explain Remaining OTP Variance?&quot;)
+    ax.legend(fontsize=9)
+
+    save_chart(fig, OUT / &quot;partial_residual.png&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+@run_analysis(51, &quot;Traffic Signals and OTP&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load features, fit models, compare, chart, and save.&quot;&quot;&quot;
+
+    with phase(&quot;Loading and assembling features&quot;):
+        df = load_features()
+        n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
+        n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+        print(f&quot;  {len(df)} routes with signal + structural features &quot;
+              f&quot;({n_bus} BUS, {n_rail} RAIL)&quot;)
+        print(f&quot;  Signal density range: {df[&#x27;signal_density&#x27;].min():.2f} -- &quot;
+              f&quot;{df[&#x27;signal_density&#x27;].max():.2f} signals/km&quot;)
+        print(f&quot;  Signal count range: {df[&#x27;n_signals&#x27;].min()} -- {df[&#x27;n_signals&#x27;].max()}&quot;)
+        print(f&quot;  Median match rate (diagnostic only): {df[&#x27;match_rate&#x27;].median():.1%}&quot;)
+
+    y = df[&quot;avg_otp&quot;].to_numpy()
+
+    # --- Diagnostic: raw count vs density bivariate correlations ---
+    with phase(&quot;Diagnostic: raw count vs density confound&quot;):
+        corr_count = correlate(df, &quot;n_signals&quot;, &quot;avg_otp&quot;)
+        corr_density = correlate(df, &quot;signal_density&quot;, &quot;avg_otp&quot;)
+        corr_count_len = correlate(df, &quot;n_signals&quot;, &quot;length_km&quot;)
+        print(f&quot;  n_signals      vs avg_otp : r = {corr_count[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {corr_count[&#x27;pearson_p&#x27;]:.4f}&quot;)
+        print(f&quot;  signal_density vs avg_otp : r = {corr_density[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {corr_density[&#x27;pearson_p&#x27;]:.4f}&quot;)
+        print(f&quot;  n_signals      vs length  : r = {corr_count_len[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {corr_count_len[&#x27;pearson_p&#x27;]:.4f}&quot;)
+        print(&quot;  =&gt; raw n_signals tracks route length; signal_density is the &quot;
+              &quot;length-adjusted predictor.&quot;)
+
+    # --- Model 1: Base (Analysis 27 replication, 6 features) ---
+    base_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
+                     &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+    X_base = np.column_stack([df[f].to_numpy().astype(float) for f in base_features])
+    with phase(&quot;Fitting base model (6 features, Analysis 27 replication)&quot;):
+        base = fit_ols(y, X_base, base_features)
+        print_model(base, &quot;Base model (6 features)&quot;)
+
+    # --- Model 2: Expanded (+ signal_density) ---
+    exp_features = base_features + [&quot;signal_density&quot;]
+    X_exp = np.column_stack([df[f].to_numpy().astype(float) for f in exp_features])
+    with phase(&quot;Fitting expanded model (+ signal_density)&quot;):
+        expanded = fit_ols(y, X_exp, exp_features)
+        print_model(expanded, &quot;Expanded model (+ signal_density)&quot;)
+
+        f_stat, f_p = f_test_nested(base, expanded)
+        print(f&quot;\n  F-test for signal_density: F = {f_stat:.3f}, p = {f_p:.4f}&quot;)
+        print(f&quot;  R2 change: {base[&#x27;r_squared&#x27;]:.4f} -&gt; {expanded[&#x27;r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{expanded[&#x27;r_squared&#x27;] - base[&#x27;r_squared&#x27;]:.4f})&quot;)
+        print(f&quot;  Adj R2 change: {base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {expanded[&#x27;adj_r_squared&#x27;]:.4f} &quot;
+              f&quot;({expanded[&#x27;adj_r_squared&#x27;] - base[&#x27;adj_r_squared&#x27;]:+.4f})&quot;)
+        if f_p &lt; 0.05:
+            print(&quot;  =&gt; signal density IS significant after controlling for &quot;
+                  &quot;structural features.&quot;)
+        else:
+            print(&quot;  =&gt; signal density is NOT significant after controlling for &quot;
+                  &quot;structural features.&quot;)
+
+        # --- VIF for expanded model ---
+        print(&quot;\n--- VIF (Expanded Model: base + signal_density) ---&quot;)
+        vifs = compute_vif(X_exp, exp_features)
+        for feat, vif in vifs.items():
+            flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
+
+        # --- Correlation: signal_density vs structural features ---
+        print(&quot;\n--- Correlations: signal_density vs structural features ---&quot;)
+        for feat in base_features:
+            corr = correlate(df, feat, &quot;signal_density&quot;)
+            sig = &quot;*&quot; if corr[&quot;pearson_p&quot;] &lt; 0.05 else &quot;&quot;
+            print(f&quot;  signal_density vs {feat:&lt;16s}: r = {corr[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+                  f&quot;p = {corr[&#x27;pearson_p&#x27;]:.4f} {sig}&quot;)
+
+    # --- Bus-only subgroup ---
+    bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    y_bus = bus_df[&quot;avg_otp&quot;].to_numpy()
+    bus_base_feats = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_premium_bus&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+    bus_exp_feats = bus_base_feats + [&quot;signal_density&quot;]
+
+    X_bus_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_base_feats])
+    X_bus_exp = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_exp_feats])
+
+    with phase(f&quot;Fitting bus-only models ({len(bus_df)} routes)&quot;):
+        bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
+        print_model(bus_base, &quot;Bus-only base (5 features)&quot;)
+
+        bus_expanded = fit_ols(y_bus, X_bus_exp, bus_exp_feats)
+        print_model(bus_expanded, &quot;Bus-only expanded (+ signal_density)&quot;)
+
+        f_bus, fp_bus = f_test_nested(bus_base, bus_expanded)
+        print(f&quot;\n  Bus-only F-test for signal_density: F = {f_bus:.3f}, p = {fp_bus:.4f}&quot;)
+        print(f&quot;  R2 change: {bus_base[&#x27;r_squared&#x27;]:.4f} -&gt; {bus_expanded[&#x27;r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{bus_expanded[&#x27;r_squared&#x27;] - bus_base[&#x27;r_squared&#x27;]:.4f})&quot;)
+
+    with phase(&quot;Saving CSVs&quot;):
+        rows = []
+        models = [
+            (base, &quot;base_6feat&quot;),
+            (expanded, &quot;expanded_7feat_signal_density&quot;),
+            (bus_base, &quot;bus_base&quot;),
+            (bus_expanded, &quot;bus_expanded_signal_density&quot;),
+        ]
+        for model, label in models:
+            for i, feat in enumerate(model[&quot;features&quot;]):
+                rows.append({
+                    &quot;model&quot;: label,
+                    &quot;feature&quot;: feat,
+                    &quot;coefficient&quot;: model[&quot;coefficients&quot;][i],
+                    &quot;std_error&quot;: model[&quot;std_errors&quot;][i],
+                    &quot;p_value&quot;: model[&quot;p_values&quot;][i],
+                    &quot;beta_weight&quot;: model[&quot;beta_weights&quot;][i]
+                    if model[&quot;beta_weights&quot;][i] is not None else float(&quot;nan&quot;),
+                    &quot;r_squared&quot;: model[&quot;r_squared&quot;],
+                    &quot;adj_r_squared&quot;: model[&quot;adj_r_squared&quot;],
+                    &quot;n&quot;: model[&quot;n&quot;],
+                })
+        save_csv(pl.DataFrame(rows), OUT / &quot;model_comparison.csv&quot;)
+
+        vif_df = pl.DataFrame([{&quot;feature&quot;: f, &quot;vif&quot;: v} for f, v in vifs.items()])
+        save_csv(vif_df, OUT / &quot;vif_table.csv&quot;)
+
+        summary_df = df.select([
+            &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;avg_otp&quot;, &quot;n_signals&quot;,
+            &quot;length_km&quot;, &quot;signal_density&quot;, &quot;match_rate&quot;, &quot;stop_count&quot;, &quot;span_km&quot;,
+        ]).sort(&quot;signal_density&quot;, descending=True)
+        save_csv(summary_df, OUT / &quot;route_signals_summary.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        make_scatter_chart(df)
+        make_coefficient_chart(base, expanded)
+        make_partial_residual_chart(df, base)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_signals</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Signal Overlay ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (4)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/osm-signals/traffic_signals_raw.json</strong> — Cached OpenStreetMap Overpass response of traffic-signal nodes for Allegheny County.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/shapes.txt</strong> — GTFS route shape geometry points.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/trips.txt</strong> — GTFS shape-to-route mapping.</li>
+              
+                <li><span class="tag">api</span> <strong>OpenStreetMap Overpass API</strong> — Public query endpoint for OSM nodes tagged highway=traffic_signals.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

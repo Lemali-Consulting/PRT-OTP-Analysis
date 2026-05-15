@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 45 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 51 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -316,6 +316,10 @@ Analysis 46 showed PRT puts *stops* where the people are; this analysis asks whe
 
 Analysis 48 reported PRT's agency-wide productivity at about **18 passengers per vehicle revenue hour** in 2024. This analysis splits that blended figure into PRT's four NTD modes. The result reorders the conventional picture: in 2024 the **light rail "T" carried 25.7 passengers per service hour, against 22.2 for motor bus** — rail runs about 16% fuller per hour than the bus. The agency average is pulled down hard by **demand-response paratransit (the ACCESS service), which carried just 1.9 passengers per revenue hour** — roughly a twelfth the fixed-route rate. ACCESS accounted for only **2.4% of 2024 trips but 22.8% of all revenue hours**; this is structural and federally mandated, not waste, since door-to-door service for riders with disabilities is inherently low-productivity. Setting it aside, **PRT's fixed-route bus-and-rail network ran at 22.5 passengers per hour in 2024 — 26% above the all-mode figure** Analysis 48 reports. The post-2019 decline hit every mode (motor bus −34%, light rail −42%, paratransit −21%), and before COVID the two main modes moved oppositely: bus productivity *rose* through the 2000s as PRT cut service hours faster than ridership, while light rail productivity *fell* after the 2012 North Shore Connector extension added service hours without proportional riders.
 
+## 51. Traffic Signals and OTP (Analysis 51)
+
+Analysis 27 found that traffic *volume* (AADT) does not explain OTP. This analysis tests traffic *signals* instead, counting the OpenStreetMap `highway=traffic_signals` nodes within 30 m of each route's GTFS shape (2,820 signals county-wide) and dividing by route length. **Signal density is a strong, independent predictor of OTP.** Adding it to the six-feature structural model lifts R² from 0.47 to 0.60 (adjusted 0.43 → 0.57; nested F-test p < 0.0001), and each additional signal per route-km is associated with **about -1.75 pp OTP** (beta -0.42, p < 0.0001). The effect survives bus-only stratification (R² 0.38 → 0.53). Crucially, **raw signal count overstates the relationship** — it correlates with OTP at r = -0.65 but also with route length at r = +0.47, so the length-adjusted density (r = -0.38) is the honest predictor. Signal density is nearly orthogonal to stop count (r = -0.04, VIF 1.35): signals and stops are two separate, comparably strong delay mechanisms. The densest-signal routes are inner-city East End / Hill District local lines (71B Highland Park at 7.8 signals/km, 59% OTP); the sparsest are suburban routes (79 East Hills at 0.9/km, 71% OTP). The policy lever this points to is transit-signal priority and corridor signal-timing coordination on dense city routes, not rerouting.
+
 ## Key Takeaways
 
 ### What drives OTP
@@ -412,3 +416,4 @@ Analysis 48 reported PRT's agency-wide productivity at about **18 passengers per
 | 48 | [Service Productivity](analyses/48_service_productivity/) | Tracks PRT passengers per vehicle revenue hour from 1991 to 2024 and benchmarks it against peer cities, distinguishing right-sized service from emptier buses. |
 | 49 | [Transit Service Density](analyses/49_transit_service_density/) | Tests whether the amount of PRT bus service and the number of boardings at each Allegheny County census tract scale with the tract's residential population density, following up on Analysis 46's finding that denser tracts sit closer to transit. Reports density-vs-service and density-vs-boardings correlations, density-quartile gradients, and a divergence analysis that identifies tracts boarding far above or below what their density predicts. |
 | 50 | [Mode Productivity](analyses/50_mode_productivity/) | Splits the agency-wide service productivity decline of Analysis 48 — passengers carried per hour of service operated — into PRT's four modes: motor bus, light rail, paratransit (the door-to-door ACCESS service), and the Monongahela Incline. Reports each mode's productivity from 2002 to 2024, how the post-2019 decline differed by mode, and how each mode's share of service hours compares with its share of riders. |
+| 51 | [Traffic Signals Otp](analyses/51_traffic_signals_otp/) | Tests whether traffic-signal density along a route explains on-time performance beyond route geometry |
