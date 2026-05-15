@@ -1,0 +1,57 @@
+kind: analysis
+title: "49 - Transit Service & Boardings vs Population Density"
+group: Equity and Strategic Planning
+tables:
+- route_stops
+- routes
+- stops
+- census_tracts
+files:
+- data/bus-stop-usage/wprdc_stop_data.csv
+analyses:
+- id: 44
+  relationship: extends the route-level population-reach work to a tract-level service measure.
+- id: 46
+  relationship: follows up the density-vs-proximity finding with density-vs-service and density-vs-boardings.
+dependencies:
+- geopandas
+- polars
+- scipy
+description: >-
+  Pittsburgh's denser neighborhoods don't just get a closer bus stop -- they get
+  far more service. Across Allegheny County census tracts, the densest quarter
+  has about 26 times as many weekly bus trips as the sparsest. Boardings follow
+  the same pattern and shadow service almost exactly, but they pile up far more
+  unevenly than people do: the densest quarter of tracts holds 23% of residents
+  yet generates 73% of all boardings, and Downtown alone accounts for 27%. A
+  tract's population barely predicts its boardings at all -- riders board where
+  trips start, which concentrates them in a few job and activity centers like
+  Downtown, the riverfront, and the airport, not evenly across where people live.
+outputs:
+- path: tract_service_boardings.csv
+  kind: data
+  description: Per-tract population, density, weekly bus trips, boardings, boardings per 1,000 residents, density quartile, rail-served flag, and density-predicted boardings with residual.
+- path: boardings_outlier_tracts.csv
+  kind: data
+  description: Tracts that board most above and below what their population density predicts.
+- path: quartile_summary.csv
+  kind: data
+  description: Median density, weekly trips, boardings, and boardings per 1,000 residents by population-density quartile.
+- path: density_vs_service.png
+  kind: image
+  description: Scatter of tract population density against weekly scheduled bus trips, annotated with the Spearman correlation.
+- path: service_by_density_quartile.png
+  kind: image
+  description: Bar chart of median weekly bus trips by population-density quartile.
+- path: density_vs_boardings.png
+  kind: image
+  description: Scatter of tract population density against average weekday boardings, annotated with the Spearman correlation.
+- path: boardings_by_density_quartile.png
+  kind: image
+  description: Bar chart of median average weekday boardings by population-density quartile.
+- path: boardings_per_capita_by_quartile.png
+  kind: image
+  description: Bar chart of median boardings per 1,000 residents by population-density quartile.
+- path: boardings_vs_density_residuals.png
+  kind: image
+  description: Log-log scatter of boardings against density with the fitted line and labeled over-boarding outlier tracts.

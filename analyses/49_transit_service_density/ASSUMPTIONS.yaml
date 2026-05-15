@@ -1,0 +1,26 @@
+# Assumptions for Transit Service & Boardings vs Population Density
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+  - id: bus-only-scope
+    statement: >-
+      The WPRDC bus-stop-usage dataset covers bus and busway service only; light
+      rail has boarding data for a single stop. The service metric is therefore
+      restricted to bus-mode routes so service and boardings are comparable.
+    risk: >-
+      If light-rail boardings were later added to the source, bus-only service
+      would understate transit at South Hills tracts and bias the correlation.
+  - id: spatial-pattern-stable
+    statement: >-
+      Boardings (Sept 2019), bus trip counts (current GTFS), and population
+      (ACS 2018-2022) are not contemporaneous; the analysis assumes the spatial
+      pattern of density, service, and ridership is reasonably stable.
+    risk: >-
+      A large post-2019 network restructuring would break the comparability of
+      the three layers.
+  - id: point-in-polygon-assignment
+    statement: >-
+      Each stop is assigned entirely to the one tract whose polygon contains it.
+    risk: >-
+      Tracts whose service runs on perimeter corridors (e.g. Highland Park) can
+      have their boardings credited to neighboring tracts.
