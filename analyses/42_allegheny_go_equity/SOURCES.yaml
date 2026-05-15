@@ -5,8 +5,10 @@ tables:
 - route_stops
 - stops
 files:
-- data/allegheny-go/tract_reach.csv
-- data/allegheny-go/demographics_summary.csv
+- path: data/allegheny-go/tract_reach.csv
+  description: Allegheny Go households reached per census tract.
+- path: data/allegheny-go/demographics_summary.csv
+  description: Allegheny Go enrollee demographic summary.
 analyses: []
 description: "Municipalities with poor bus reliability do not have lower Allegheny Go adoption — the program successfully reaches areas across the OTP spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50)."
 dependencies:

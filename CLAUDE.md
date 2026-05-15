@@ -96,3 +96,7 @@ When running inside a devcontainer, killing processes carelessly will bring down
 - **NEVER kill PID 1** — it is the container init process
 - **NEVER kill the VS Code server** or any process with `vscode-server` in its command line
 - If a port is in use and you can't identify the process, ask the user rather than force-killing
+
+## Mistakes
+
+- **[tooling]**: `data/prt.db` and `data/GTFS/stop_times.txt` are Git LFS files (`.gitattributes`). Running `git reset --hard`/`checkout` without `git-lfs` installed silently replaces them with 133-byte pointer text. Verify `git lfs version` works before any hard reset or branch switch; recover with `git lfs pull`.

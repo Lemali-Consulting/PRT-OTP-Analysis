@@ -1,0 +1,22 @@
+kind: analysis
+title: "46 - Population Transit Proximity"
+tables:
+- stops
+- census_tracts
+files: []
+analyses: []
+description: "Allegheny County's densest neighborhoods are also its best-served: population density and distance to the nearest PRT stop are strongly negatively correlated (Spearman rho = -0.62). The median distance to a stop falls from 1,350 m in the sparsest quarter of census tracts to just 151 m in the densest. About 68% of county residents live within a half-mile of a stop; the rest are concentrated in lower-density tracts on the periphery."
+dependencies:
+- geopandas
+- polars
+- scipy
+outputs:
+- path: tract_transit_proximity.csv
+  kind: data
+  description: Per-tract population, density, distance to nearest stop, density quartile, and within-half-mile flag.
+- path: density_vs_distance.png
+  kind: image
+  description: Scatter of tract population density against distance to the nearest stop, annotated with the Spearman correlation.
+- path: distance_by_density_quartile.png
+  kind: image
+  description: Bar chart of median distance to the nearest stop by population-density quartile.

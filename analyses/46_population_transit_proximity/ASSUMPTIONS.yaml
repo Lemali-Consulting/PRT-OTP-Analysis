@@ -1,0 +1,12 @@
+# Assumptions for Population Transit Proximity
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+- id: centroid-represents-tract
+  text: "The polygon centroid is a reasonable proxy for where a tract's residents live. For large or irregular tracts (or tracts split by rivers), the centroid may sit far from the actual population, distorting that tract's distance-to-stop."
+- id: allegheny-only-scope
+  text: "Filtering census_tracts to county_fips '003' yields exactly the Allegheny County tracts. If the table's FIPS coding changed, the analysis would silently include or drop counties."
+- id: straight-line-distance
+  text: "Straight-line (Euclidean) distance in EPSG:32617 approximates walking access well enough for a relative comparison. It understates real walking distance, especially across Pittsburgh's rivers and hillsides; the correlation is robust to this but absolute distances are optimistic."
+- id: stops-are-current
+  text: "Every row in the stops table is an active PRT stop. If the table retains decommissioned stops, distance-to-nearest-stop is understated for tracts near those stops."
