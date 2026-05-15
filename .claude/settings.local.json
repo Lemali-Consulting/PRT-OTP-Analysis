@@ -52,7 +52,8 @@
       "Bash(xxd:*)",
       "Bash(xargs:*)",
       "Bash(PYTHONIOENCODING=utf-8 uv run python:*)",
-      "Bash(git lfs:*)"
+      "Bash(git lfs:*)",
+      "Bash(bash tools/deploy.sh)"
     ]
   }
 }

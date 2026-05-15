@@ -9,6 +9,7 @@ build/
 analyses/*/output/*.csv
 analyses/*/output/*.png
 analyses/*/output/*.html
+analyses/*/output/*.txt
 data/prt.db-shm
 data/prt.db-wal
 data/penndot-traffic/*.json
@@ -17,3 +18,8 @@ data/wprdc-schedule/*.csv
 data/census-tracts/
 nul
 .devcontainer/.env.secrets
+
+# Netlify CLI local state
+.netlify/
+# Playwright MCP scratch output
+.playwright-mcp/
