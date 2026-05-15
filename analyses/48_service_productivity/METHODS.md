@@ -18,6 +18,13 @@ deliberate right-sizing of service to match demand?
   chart. If VRH (supply) holds roughly flat while UPT (demand) collapses, the
   productivity decline is demand-driven — empty buses — not a supply-side
   right-sizing.
+- Normalize the demand side by population. Allegheny County (PRT's service
+  area) has lost residents since 1991, so part of the ridership decline could
+  simply be fewer people. Split ridership into `UPT = population x
+  trips-per-capita` and partition the 1991→2024 ridership decline between the
+  two factors using log shares: `share = ln(factor ratio) / ln(UPT ratio)`.
+  This isolates how much of the drop is fewer residents versus each resident
+  riding less.
 - Benchmark PRT against peers two ways: a 2024 cross-section ranking, and the
   full 1991–2024 trajectory for all 8 cities.
 - Report percent change in productivity over the full period (1991→2024) and
@@ -30,6 +37,12 @@ deliberate right-sizing of service to match demand?
 - All 8 agencies have complete, non-null UPT and VRH for every year 1991–2024
   (34 city-years each, 272 rows total) — verified before analysis, so no null
   handling is required.
+- Allegheny County population (`COUNTY_POPULATION` in `main.py`): U.S. Census
+  Bureau decennial counts for 1990 (1,336,449), 2000, 2010, and 2020
+  (1,250,578), plus the Census Bureau's Vintage 2024 Population Estimates
+  Program figure (1,231,809). The 1990 decennial count is used as the 1991
+  population anchor — a ~9-month offset. Population is paired with the NTD
+  record only at these census/estimate years; no annual interpolation is done.
 
 ## Output
 - `output/prt_productivity_by_year.csv` — PRT UPT, VRH, and productivity for
@@ -43,3 +56,7 @@ deliberate right-sizing of service to match demand?
   productivity across the 8 peers, PRT highlighted.
 - `output/peer_productivity_trends.png` — productivity trajectories 1991–2024
   for all 8 peers, PRT highlighted.
+- `output/per_capita_decomposition.csv` — Allegheny County population, PRT UPT,
+  VRH, productivity, and ridership per resident at 1991, 2000, 2010, 2020, 2024.
+- `output/per_capita_normalization.png` — county population, total ridership,
+  and ridership per resident indexed to 1991 = 100.

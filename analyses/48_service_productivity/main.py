@@ -1,6 +1,8 @@
 """Analysis 48: tracks PRT service productivity (passengers per vehicle revenue
 hour) from 1991 to 2024 and benchmarks it against peer cities."""
 
+import math
+
 import polars as pl
 
 from prt_otp_analysis.common import (
@@ -24,6 +26,21 @@ START_YEAR = 1991
 COVID_YEAR = 2020
 BASELINE_YEAR = 2019
 COMPARE_YEAR = 2024
+
+# Allegheny County resident population -- PRT's service area. Decennial U.S.
+# Census counts (1990-2020) plus the Census Bureau's Vintage 2024 Population
+# Estimates Program figure (2020 census base of 1,250,578 less the reported
+# 18,769 decline over 2020-2024). Used to normalize ridership per resident.
+COUNTY_POPULATION = {
+    1990: 1_336_449,
+    2000: 1_281_666,
+    2010: 1_223_348,
+    2020: 1_250_578,
+    2024: 1_231_809,
+}
+# The productivity record starts in 1991; the nearest decennial count is the
+# 1990 census, used as the 1991 population anchor (a ~9-month offset).
+POP_ANCHOR_YEARS = {1991: 1990, 2000: 2000, 2010: 2010, 2020: 2020, 2024: 2024}
 
 
 def load_peer_productivity() -> pl.DataFrame:
@@ -167,6 +184,58 @@ def peer_change_table(peer_df: pl.DataFrame) -> pl.DataFrame:
     ).sort("prod_2024", descending=True)
 
 
+def per_capita_decomposition(prt_df: pl.DataFrame) -> pl.DataFrame:
+    """Normalize PRT ridership by Allegheny County population.
+
+    Pairs each census/estimate year with the matching year in the NTD
+    productivity record and derives ridership per resident (UPT / population).
+    This splits the ridership decline into a population component (fewer
+    residents) and a per-capita-usage component (each resident riding less).
+    """
+    rows = []
+    for ntd_year, pop_year in POP_ANCHOR_YEARS.items():
+        r = prt_df.filter(pl.col("year") == ntd_year).row(0, named=True)
+        pop = COUNTY_POPULATION[pop_year]
+        rows.append({
+            "year": ntd_year,
+            "population": pop,
+            "upt": r["upt"],
+            "vrh": r["vrh"],
+            "productivity": r["productivity"],
+            "trips_per_capita": r["upt"] / pop,
+        })
+    return pl.DataFrame(rows)
+
+
+def chart_per_capita(plt, norm_df: pl.DataFrame) -> None:
+    """Index population, total ridership, and per-capita ridership to 1991 = 100.
+
+    Shows that PRT's ridership collapse is overwhelmingly fewer trips per
+    resident, not fewer residents: county population barely moved while
+    ridership per resident roughly halved.
+    """
+    fig, ax = plt.subplots(figsize=(12, 6))
+    years = norm_df["year"].to_list()
+
+    for col, label, color, lw in [
+        ("population", "Allegheny County population", "#6ACC65", 2.0),
+        ("upt", "Total ridership (UPT)", "#4878CF", 2.0),
+        ("trips_per_capita", "Ridership per resident", COLOR_PRIMARY, 2.8),
+    ]:
+        vals = norm_df[col].to_list()
+        base = vals[0]
+        ax.plot(years, [v / base * 100 for v in vals], label=label,
+                color=color, linewidth=lw, marker="o", markersize=6)
+
+    ax.axhline(100, color=COLOR_GRAY, linestyle=":", linewidth=0.8)
+    ax.set_ylabel("Indexed to 1991 = 100")
+    ax.set_xlabel("Year")
+    ax.set_ylim(bottom=0)
+    ax.set_title("PRT Ridership per Resident vs. Population — Allegheny County")
+    ax.legend()
+    save_chart(fig, OUT / "per_capita_normalization.png")
+
+
 @run_analysis(48, "Service Productivity")
 def main():
     plt = setup_plotting()
@@ -197,16 +266,41 @@ def main():
                 r["city"], r["prod_1991"], r["prod_2019"], r["prod_2024"],
                 r["pct_change_1991_2024"], r["pct_change_2019_2024"], mark))
 
+    with phase("Normalizing ridership by population"):
+        norm_df = per_capita_decomposition(prt_df)
+        base = norm_df.row(0, named=True)
+        end = norm_df.row(-1, named=True)
+        pop_ratio = end["population"] / base["population"]
+        upt_ratio = end["upt"] / base["upt"]
+        pc_ratio = end["trips_per_capita"] / base["trips_per_capita"]
+        # Multiplicative decomposition: UPT = population x trips-per-capita.
+        # Log shares partition the ridership decline between the two factors.
+        pop_share = math.log(pop_ratio) / math.log(upt_ratio)
+        pc_share = math.log(pc_ratio) / math.log(upt_ratio)
+        print(f"   Allegheny County population {base['year']}: "
+              f"{base['population']:,} (1990 census)")
+        print(f"   Allegheny County population {end['year']}: "
+              f"{end['population']:,}  ({(pop_ratio - 1) * 100:+.0f}%)")
+        print(f"   ridership per resident: {base['trips_per_capita']:.1f} → "
+              f"{end['trips_per_capita']:.1f} trips/resident/yr  "
+              f"({(pc_ratio - 1) * 100:+.0f}%)")
+        print(f"   share of ridership decline from population loss: "
+              f"{pop_share * 100:.0f}%")
+        print(f"   share of ridership decline from lower per-capita use: "
+              f"{pc_share * 100:.0f}%")
+
     with phase("Saving data"):
         save_csv(prt_df.select("year", "upt", "vrh", "productivity"),
                  OUT / "prt_productivity_by_year.csv")
         save_csv(change_df, OUT / "peer_productivity.csv")
+        save_csv(norm_df, OUT / "per_capita_decomposition.csv")
 
     with phase("Generating charts"):
         chart_prt_trend(plt, prt_df)
         chart_decomposition(plt, prt_df)
         chart_peer_2024(plt, peer_df)
         chart_peer_trends(plt, peer_df)
+        chart_per_capita(plt, norm_df)
 
 
 if __name__ == "__main__":

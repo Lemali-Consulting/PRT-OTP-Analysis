@@ -10,7 +10,10 @@ description: >-
   drop is not a deliberate cut: PRT kept nearly the same amount of service
   running (down just 5% since 1991) while ridership fell 55%, so buses and
   trains are running emptier rather than being right-sized. PRT's 32% drop
-  since 2019 is the steepest of 8 peer cities.
+  since 2019 is the steepest of 8 peer cities. Population loss is not the
+  cause either: Allegheny County has only about 8% fewer residents than in
+  1991, so ridership per resident has itself roughly halved — fewer
+  residents explains only about a tenth of the decline.
 analyses:
   - id: 39
     relationship: pairs supply-side service-cut analysis with the productivity ratio it feeds into.
@@ -40,3 +43,9 @@ outputs:
   - path: peer_productivity_trends.png
     kind: image
     description: Productivity trajectories 1991-2024 for all 8 peer cities, PRT highlighted.
+  - path: per_capita_decomposition.csv
+    kind: data
+    description: Allegheny County population, PRT ridership, service hours, productivity, and ridership per resident at 1991, 2000, 2010, 2020, and 2024.
+  - path: per_capita_normalization.png
+    kind: image
+    description: County population, total ridership, and ridership per resident indexed to 1991 = 100.
