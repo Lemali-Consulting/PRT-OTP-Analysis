@@ -35,58 +35,39 @@
   <p class="kicker">Transit Performance Knowledge Base</p>
   <h1>PRT OTP Analysis</h1>
   <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
-  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
-</section>
-
-<section class="panel">
-<h2>Explore</h2>
-<div class="filters" id="card-filters">
-  <label><span>Search</span><input id="filter-search" type="search" placeholder="Search title or description"></label>
-  <label><span>Group</span>
-    <select id="filter-group">
-      <option value="">All groups</option>
-      <option value="Core OTP Patterns">Core OTP Patterns</option><option value="Equity and Strategic Planning">Equity and Strategic Planning</option><option value="Ridership & Recovery">Ridership & Recovery</option><option value="Ridership and External Factors">Ridership and External Factors</option><option value="Route and Service Drivers">Route and Service Drivers</option>
-    </select>
-  </label>
-  <label><span>Output</span>
-    <select id="filter-output-kind">
-      <option value="">All output kinds</option>
-      <option value="data">data</option><option value="html">html</option><option value="image">image</option>
-    </select>
-  </label>
-</div>
+  <p class="lede">Built 2026-05-15 18:36 UTC · Commit 2317a81</p>
 </section>
 
 <section class="panel" id="pipeline-panel">
 <h2 id="pipeline">Pipeline</h2>
 <div class="card-grid">
 
-  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="data ingestion builds the normalized sqlite database from canonical local csv sources.">
+  <article class="card">
     <h3><a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a></h3>
     <p>Builds the normalized SQLite database from canonical local CSV sources.</p>
   </article>
 
-  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="scheduled trips etl loads monthly scheduled trip counts and schedule periods from wprdc exports.">
+  <article class="card">
     <h3><a href="pipeline/02_scheduled_trips/index.html">Scheduled Trips ETL</a></h3>
     <p>Loads monthly scheduled trip counts and schedule periods from WPRDC exports.</p>
   </article>
 
-  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="weather etl fetches noaa daily weather and aggregates monthly features for otp modeling.">
+  <article class="card">
     <h3><a href="pipeline/03_weather/index.html">Weather ETL</a></h3>
     <p>Fetches NOAA daily weather and aggregates monthly features for OTP modeling.</p>
   </article>
 
-  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="traffic overlay etl computes route-level traffic exposure metrics by spatially joining gtfs and penndot aadt data.">
+  <article class="card">
     <h3><a href="pipeline/04_traffic_overlay/index.html">Traffic Overlay ETL</a></h3>
     <p>Computes route-level traffic exposure metrics by spatially joining GTFS and PennDOT AADT data.</p>
   </article>
 
-  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="ntd ridership etl loads national monthly ridership benchmark data from the ntd workbook.">
+  <article class="card">
     <h3><a href="pipeline/05_ntd_ridership/index.html">NTD Ridership ETL</a></h3>
     <p>Loads national monthly ridership benchmark data from the NTD workbook.</p>
   </article>
 
-  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="ntd annual service etl loads ntd ts2.2 annual vrh, vrm, upt, and voms data into prt.db for service-level comparative analysis across us transit agencies (1991-2023).">
+  <article class="card">
     <h3><a href="pipeline/06_ntd_service/index.html">NTD Annual Service ETL</a></h3>
     <p>Loads NTD TS2.2 annual VRH, VRM, UPT, and VOMS data into prt.db for service-level comparative analysis across US transit agencies (1991-2023).</p>
   </article>
@@ -96,249 +77,427 @@
 
 <section class="panel">
 <h2 id="analyses">Analyses</h2>
-<div class="card-grid">
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="01 - system-wide otp trend tracks the overall prt on-time performance trend from 2019 through 2025, including covid impact and recovery.">
-    <h3><a href="analyses/01_system_trend/index.html">01 - System-Wide OTP Trend</a></h3>
-    <p>Tracks the overall PRT on-time performance trend from 2019 through 2025, including COVID impact and recovery.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="02 - mode comparison compares on-time performance across service modes (bus, rail, incline) and route types (local, limited, express, busway).">
-    <h3><a href="analyses/02_mode_comparison/index.html">02 - Mode Comparison</a></h3>
-    <p>Compares on-time performance across service modes (BUS, RAIL, INCLINE) and route types (local, limited, express, busway).</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="03 - route ranking ranks routes by average otp, trend direction, and volatility to identify best/worst performers and most (in)consistent routes.">
-    <h3><a href="analyses/03_route_ranking/index.html">03 - Route Ranking</a></h3>
-    <p>Ranks routes by average OTP, trend direction, and volatility to identify best/worst performers and most (in)consistent routes.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="04 - tract equity prt routes serving the lowest-income census tracts run on time only ~65.2% of the time, vs ~68.8% for upper-middle-income tracts -- a ~3.6 percentage-point gap that the previous neighborhood-name analysis could not see. built by point-in-polygon assignment of every prt stop to its containing 2020 census tract, ranking 247 tracts (vs 89 hand-curated neighborhoods).">
-    <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Tract Equity</a></h3>
-    <p>PRT routes serving the lowest-income census tracts run on time only ~65.2% of the time, vs ~68.8% for upper-middle-income tracts -- a ~3.6 percentage-point gap that the previous neighborhood-name analysis could not see. Built by point-in-polygon assignment of every PRT stop to its containing 2020 census tract, ranking 247 tracts (vs 89 hand-curated neighborhoods).</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="05 - anomaly investigation identifies and investigates sharp otp drops that may indicate route restructuring, detours, or data quality issues.">
-    <h3><a href="analyses/05_anomaly_investigation/index.html">05 - Anomaly Investigation</a></h3>
-    <p>Identifies and investigates sharp OTP drops that may indicate route restructuring, detours, or data quality issues.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="06: seasonal patterns decomposes route-level otp into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance.">
-    <h3><a href="analyses/06_seasonal_patterns/index.html">06: Seasonal Patterns</a></h3>
-    <p>Decomposes route-level OTP into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,image" data-text="07: stop count vs otp tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average otp with mode-based coloring.">
-    <h3><a href="analyses/07_stop_count_vs_otp/index.html">07: Stop Count vs OTP</a></h3>
-    <p>Tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average OTP with mode-based coloring.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data,html,image" data-text="08: hot-spot map visualizes stop-level on-time performance on a geographic scatter plot to identify corridor-level bottlenecks and clusters of poor performance.">
-    <h3><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></h3>
-    <p>Visualizes stop-level on-time performance on a geographic scatter plot to identify corridor-level bottlenecks and clusters of poor performance.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Core OTP Patterns" data-output-kinds="data" data-text="09: incline investigation audits the monongahela incline data across all database tables to determine why it appears in otp data with zero/null values.">
-    <h3><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a></h3>
-    <p>Audits the Monongahela Incline data across all database tables to determine why it appears in OTP data with zero/null values.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="10: trip frequency vs otp tests whether high-frequency routes have worse on-time performance, using weekday trip counts as a proxy for service frequency.">
-    <h3><a href="analyses/10_frequency_vs_otp/index.html">10: Trip Frequency vs OTP</a></h3>
-    <p>Tests whether high-frequency routes have worse on-time performance, using weekday trip counts as a proxy for service frequency.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="11: directional asymmetry investigates whether routes with a structural imbalance between inbound and outbound trip frequency have worse on-time performance.">
-    <h3><a href="analyses/11_directional_asymmetry/index.html">11: Directional Asymmetry</a></h3>
-    <p>Investigates whether routes with a structural imbalance between inbound and outbound trip frequency have worse on-time performance.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="12: route geographic span vs otp computes the geographic span (max distance between any two stops) for each route and tests whether longer routes have worse on-time performance, disentangling route length from stop count.">
-    <h3><a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a></h3>
-    <p>Computes the geographic span (max distance between any two stops) for each route and tests whether longer routes have worse on-time performance, disentangling route length from stop count.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="13: cross-route correlation clustering computes pairwise otp time-series correlations between all routes and uses hierarchical clustering to identify groups of routes whose performance rises and falls together.">
-    <h3><a href="analyses/13_correlation_clustering/index.html">13: Cross-Route Correlation Clustering</a></h3>
-    <p>Computes pairwise OTP time-series correlations between all routes and uses hierarchical clustering to identify groups of routes whose performance rises and falls together.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="14: covid recovery trajectories measures how far each route's otp has recovered relative to its pre-covid baseline and identifies route characteristics that predict faster or slower recovery.">
-    <h3><a href="analyses/14_covid_recovery/index.html">14: COVID Recovery Trajectories</a></h3>
-    <p>Measures how far each route's OTP has recovered relative to its pre-COVID baseline and identifies route characteristics that predict faster or slower recovery.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="15: municipal/county equity aggregates on-time performance by municipality and county to assess service reliability equity at a broader geographic level than neighborhood analysis (analysis 04).">
-    <h3><a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a></h3>
-    <p>Aggregates on-time performance by municipality and county to assess service reliability equity at a broader geographic level than neighborhood analysis (Analysis 04).</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="16: transfer hub performance identifies high-connectivity stops (served by many routes) and tests whether passengers at transfer hubs experience worse otp than those at low-connectivity stops.">
-    <h3><a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a></h3>
-    <p>Identifies high-connectivity stops (served by many routes) and tests whether passengers at transfer hubs experience worse OTP than those at low-connectivity stops.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="17: weekend vs weekday service profile tests whether routes with different weekend-to-weekday service ratios show different otp patterns, distinguishing commuter-oriented routes from all-day service routes.">
-    <h3><a href="analyses/17_weekend_weekday_profile/index.html">17: Weekend vs Weekday Service Profile</a></h3>
-    <p>Tests whether routes with different weekend-to-weekday service ratios show different OTP patterns, distinguishing commuter-oriented routes from all-day service routes.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="18: multivariate otp model combines stop count, mode, bus subtype, geographic span, and service profile into a single ols regression model to quantify relative importance and total explained variance.">
-    <h3><a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a></h3>
-    <p>Combines stop count, mode, bus subtype, geographic span, and service profile into a single OLS regression model to quantify relative importance and total explained variance.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="19 - ridership-weighted otp compute system otp weighted by actual average daily ridership instead of scheduled trip frequency, to measure the average rider's experience.">
-    <h3><a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a></h3>
-    <p>Compute system OTP weighted by actual average daily ridership instead of scheduled trip frequency, to measure the average rider's experience.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="20 - otp → ridership causality test whether otp declines predict subsequent ridership losses using lagged correlation and granger causality tests.">
-    <h3><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></h3>
-    <p>Test whether OTP declines predict subsequent ridership losses using lagged correlation and Granger causality tests.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="21 - covid ridership vs otp recovery compare ridership recovery trajectories with otp recovery trajectories post-covid to identify whether ridership recovery degrades otp.">
-    <h3><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a></h3>
-    <p>Compare ridership recovery trajectories with OTP recovery trajectories post-COVID to identify whether ridership recovery degrades OTP.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="22 - passenger-weighted delay burden estimate late rider-trips per route per month by combining ridership with otp to identify where the most total human impact occurs.">
-    <h3><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a></h3>
-    <p>Estimate late rider-trips per route per month by combining ridership with OTP to identify where the most total human impact occurs.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="23 - garage-level performance compare otp and ridership trends across prt garages (ross, collier, east liberty, west mifflin) to surface operational differences.">
-    <h3><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></h3>
-    <p>Compare OTP and ridership trends across PRT garages (Ross, Collier, East Liberty, West Mifflin) to surface operational differences.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="24 - weekday vs weekend ridership trends track how weekday, saturday, and sunday ridership patterns shifted post-covid and whether weekend ridership share correlates with otp.">
-    <h3><a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a></h3>
-    <p>Track how weekday, Saturday, and Sunday ridership patterns shifted post-COVID and whether weekend ridership share correlates with OTP.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="25 - ridership concentration & equity measure what share of total system ridership is carried by the lowest-otp routes using lorenz curves and gini coefficients.">
-    <h3><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a></h3>
-    <p>Measure what share of total system ridership is carried by the lowest-OTP routes using Lorenz curves and Gini coefficients.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="26 - ridership in multivariate otp model add ridership as a predictor to the analysis 18 ols model to test whether it adds explanatory power beyond stop count, span, and mode.">
-    <h3><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a></h3>
-    <p>Add ridership as a predictor to the Analysis 18 OLS model to test whether it adds explanatory power beyond stop count, span, and mode.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="27 - traffic congestion and otp tests whether penndot aadt traffic volume explains otp variance beyond structural features">
-    <h3><a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a></h3>
-    <p>Tests whether PennDOT AADT traffic volume explains OTP variance beyond structural features</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="28 - weather impact tests whether weather (precipitation, snow, temperature) explains otp variance or the counterintuitive seasonal pattern from analysis 06.">
-    <h3><a href="analyses/28_weather_impact/index.html">28 - Weather Impact</a></h3>
-    <p>Tests whether weather (precipitation, snow, temperature) explains OTP variance or the counterintuitive seasonal pattern from Analysis 06.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership and External Factors" data-output-kinds="data,image" data-text="29 - service change impact on otp do schedule changes (pick period transitions) correlate with otp shifts?">
-    <h3><a href="analyses/29_service_change_impact/index.html">29 - Service Change Impact on OTP</a></h3>
-    <p>Do schedule changes (pick period transitions) correlate with OTP shifts?</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="30 - service level vs otp longitudinal within-route panel: does changing trip frequency improve or degrade otp?">
-    <h3><a href="analyses/30_service_level_otp_longitudinal/index.html">30 - Service Level vs OTP Longitudinal</a></h3>
-    <p>Within-route panel: does changing trip frequency improve or degrade OTP?</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="31 - stop consolidation candidates identify low-usage stops that could be consolidated to improve otp, leveraging the finding that stop count is the strongest otp predictor.">
-    <h3><a href="analyses/31_stop_consolidation/index.html">31 - Stop Consolidation Candidates</a></h3>
-    <p>Identify low-usage stops that could be consolidated to improve OTP, leveraging the finding that stop count is the strongest OTP predictor.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="32 - shelter equity assess whether bus shelters are equitably placed relative to stop-level ridership volume and demographics.">
-    <h3><a href="analyses/32_shelter_equity/index.html">32 - Shelter Equity</a></h3>
-    <p>Assess whether bus shelters are equitably placed relative to stop-level ridership volume and demographics.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="33 - pandemic ridership geography map the spatial pattern of stop-level ridership loss and recovery between pre-pandemic and pandemic periods.">
-    <h3><a href="analyses/33_pandemic_ridership_geography/index.html">33 - Pandemic Ridership Geography</a></h3>
-    <p>Map the spatial pattern of stop-level ridership loss and recovery between pre-pandemic and pandemic periods.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="34 - ridership concentration (pareto) quantify how concentrated ridership is across stops and test whether concentration correlates with route otp.">
-    <h3><a href="analyses/34_ridership_concentration/index.html">34 - Ridership Concentration (Pareto)</a></h3>
-    <p>Quantify how concentrated ridership is across stops and test whether concentration correlates with route OTP.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="35 - boarding/alighting flow analysis analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors.">
-    <h3><a href="analyses/35_boarding_alighting_flows/index.html">35 - Boarding/Alighting Flow Analysis</a></h3>
-    <p>Analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="36 - national ridership growth (2019 vs 2024) compare 2019-to-2024 ridership recovery across the 150 largest us transit agencies using ntd data; rank prt nationally.">
-    <h3><a href="analyses/36_national_ridership_growth/index.html">36 - National Ridership Growth (2019 vs 2024)</a></h3>
-    <p>Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies using NTD data; rank PRT nationally.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="37 - peer city ridership comparison track indexed monthly ridership for pittsburgh and 7 peer cities from 2019-2025 using ntd data; compare recovery trajectories and mode splits.">
-    <h3><a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a></h3>
-    <p>Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ridership & Recovery" data-output-kinds="data,image" data-text="38 - downtown recovery gap routes serving downtown recovered less ridership post-covid, but the gap is driven mainly by commuter/express services (34% recovered) rather than local buses (59% recovered). within local routes, downtown dependence alone does not predict worse recovery.">
-    <h3><a href="analyses/38_downtown_recovery/index.html">38 - Downtown Recovery Gap</a></h3>
-    <p>Routes serving downtown recovered less ridership post-COVID, but the gap is driven mainly by commuter/express services (34% recovered) rather than local buses (59% recovered). Within local routes, downtown dependence alone does not predict worse recovery.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="39 — national service cuts (2019 vs 2024) prt cut 13% of vehicle revenue hours between 2019 and 2024, ranking 104th of 150 large agencies. contrasts supply-side service cuts with demand-side ridership loss to distinguish agencies that cut service from those that lost riders despite maintaining service.">
-    <h3><a href="analyses/39_national_service_cuts/index.html">39 — National Service Cuts (2019 vs 2024)</a></h3>
-    <p>PRT cut 13% of vehicle revenue hours between 2019 and 2024, ranking 104th of 150 large agencies. Contrasts supply-side service cuts with demand-side ridership loss to distinguish agencies that cut service from those that lost riders despite maintaining service.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="40 - peer city dashboard pittsburgh lost 41% of riders and 13% of service hours between 2019 and 2024 — roughly middle-of-the-pack among 8 peer cities. but it is the only peer where fare revenue per trip increased ($1.57 to $1.70), suggesting prt maintained fares while others discounted. farebox recovery fell everywhere, though pittsburgh's 12.8% remains second-highest among peers.">
-    <h3><a href="analyses/40_peer_city_dashboard/index.html">40 - Peer City Dashboard</a></h3>
-    <p>Pittsburgh lost 41% of riders and 13% of service hours between 2019 and 2024 — roughly middle-of-the-pack among 8 peer cities. But it is the only peer where fare revenue per trip increased ($1.57 to $1.70), suggesting PRT maintained fares while others discounted. Farebox recovery fell everywhere, though Pittsburgh's 12.8% remains second-highest among peers.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="41 - operating cost drivers prt spends $3.34 per trip on vehicle maintenance — the highest of 8 peer cities and 47% above average. bus fleet age does not explain the gap (prt's buses are mid-age at 7.1 years), but the light rail fleet averages 32 years old. general administration is prt's leanest cost category at $2.23 per trip.">
-    <h3><a href="analyses/41_operating_cost_drivers/index.html">41 - Operating Cost Drivers</a></h3>
-    <p>PRT spends $3.34 per trip on vehicle maintenance — the highest of 8 peer cities and 47% above average. Bus fleet age does not explain the gap (PRT's buses are mid-age at 7.1 years), but the light rail fleet averages 32 years old. General administration is PRT's leanest cost category at $2.23 per trip.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="42 - allegheny go equity municipalities with poor bus reliability do not have lower allegheny go adoption — the program successfully reaches areas across the otp spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50).">
-    <h3><a href="analyses/42_allegheny_go_equity/index.html">42 - Allegheny Go Equity</a></h3>
-    <p>Municipalities with poor bus reliability do not have lower Allegheny Go adoption — the program successfully reaches areas across the OTP spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50).</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="43 - allegheny go program growth the allegheny go fare program grew from 262 rides per week to over 30,000 in 18 months, accumulating 2.27 million total rides. ridership growth is uncorrelated with system otp (r = 0.13, p = 0.60), driven by enrollment expansion rather than service quality.">
-    <h3><a href="analyses/43_allegheny_go_growth/index.html">43 - Allegheny Go Program Growth</a></h3>
-    <p>The Allegheny Go fare program grew from 262 rides per week to over 30,000 in 18 months, accumulating 2.27 million total rides. Ridership growth is uncorrelated with system OTP (r = 0.13, p = 0.60), driven by enrollment expansion rather than service quality.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="44 - route population reach the prt routes that reach the most residents are the red line lrt (58,000 people within walking distance), bus 69 to trafford (55,000), and the slvr line (53,000). the oakland-east end bus corridor (61a/b/c, 67) and the cross-town 54 each cover 43,000+ residents, making them the highest-impact routes when service is disrupted. light-rail stations average 3-5x more reach per stop than bus stops because of their wider walking-distance buffer and dense south hills catchments.">
-    <h3><a href="analyses/44_route_population_reach/index.html">44 - Route Population Reach</a></h3>
-    <p>The PRT routes that reach the most residents are the RED Line LRT (58,000 people within walking distance), bus 69 to Trafford (55,000), and the SLVR Line (53,000). The Oakland-East End bus corridor (61A/B/C, 67) and the cross-town 54 each cover 43,000+ residents, making them the highest-impact routes when service is disrupted. Light-rail stations average 3-5x more reach per stop than bus stops because of their wider walking-distance buffer and dense South Hills catchments.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Route and Service Drivers" data-output-kinds="data,image" data-text="45 - population-weighted system otp routes in prt's network where many people live run late more often than the system as a whole. the average resident-near-a-route experiences ~68.1% on-time service, vs ~67.3% for the average scheduled trip and ~69.4% across all routes equally — confirming that ridership and population concentrate on the more lateness-prone urban-core routes.">
-    <h3><a href="analyses/45_population_weighted_otp/index.html">45 - Population-Weighted System OTP</a></h3>
-    <p>Routes in PRT's network where many people live run late more often than the system as a whole. The average resident-near-a-route experiences ~68.1% on-time service, vs ~67.3% for the average scheduled trip and ~69.4% across all routes equally — confirming that ridership and population concentrate on the more lateness-prone urban-core routes.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="46 - population transit proximity allegheny county's densest neighborhoods are also its best-served: population density and distance to the nearest prt stop are strongly negatively correlated (spearman rho = -0.62). the median distance to a stop falls from 1,350 m in the sparsest quarter of census tracts to just 151 m in the densest. about 68% of county residents live within a half-mile of a stop; the rest are concentrated in lower-density tracts on the periphery.">
-    <h3><a href="analyses/46_population_transit_proximity/index.html">46 - Population Transit Proximity</a></h3>
-    <p>Allegheny County's densest neighborhoods are also its best-served: population density and distance to the nearest PRT stop are strongly negatively correlated (Spearman rho = -0.62). The median distance to a stop falls from 1,350 m in the sparsest quarter of census tracts to just 151 m in the densest. About 68% of county residents live within a half-mile of a stop; the rest are concentrated in lower-density tracts on the periphery.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Ungrouped" data-output-kinds="data,image" data-text="47 - route ridership ranking ranking pittsburgh's transit routes by weekday ridership from 2017 to 2024, the busiest is the p1 east busway bus (about 6,600 riders a day), ahead of the red line and blue line light rail and the 51 carrick bus. ridership is concentrated: the 18 busiest routes carry half of all weekday riders, while roughly half of the 103 routes each account for under 1%.">
-    <h3><a href="analyses/47_route_ridership_ranking/index.html">47 - Route Ridership Ranking</a></h3>
-    <p>Ranking Pittsburgh's transit routes by weekday ridership from 2017 to 2024, the busiest is the P1 East Busway bus (about 6,600 riders a day), ahead of the Red Line and Blue Line light rail and the 51 Carrick bus. Ridership is concentrated: the 18 busiest routes carry half of all weekday riders, while roughly half of the 103 routes each account for under 1%.</p>
-  </article>
-
-  <article class="card filter-card" data-kind="analysis" data-group="Equity and Strategic Planning" data-output-kinds="data,image" data-text="48 - service productivity (passengers per revenue hour) each hour of prt service carries fewer than half as many riders as it did in 1991 — productivity fell from 39 passengers per service hour to 18. the drop is not a deliberate cut: prt kept nearly the same amount of service running (down just 5% since 1991) while ridership fell 55%, so buses and trains are running emptier rather than being right-sized. prt's 32% drop since 2019 is the steepest of 8 peer cities.">
-    <h3><a href="analyses/48_service_productivity/index.html">48 - Service Productivity (Passengers per Revenue Hour)</a></h3>
-    <p>Each hour of PRT service carries fewer than half as many riders as it did in 1991 — productivity fell from 39 passengers per service hour to 18. The drop is not a deliberate cut: PRT kept nearly the same amount of service running (down just 5% since 1991) while ridership fell 55%, so buses and trains are running emptier rather than being right-sized. PRT's 32% drop since 2019 is the steepest of 8 peer cities.</p>
-  </article>
-
+<div class="table-controls">
+  <label class="search-field">
+    <span>Search</span>
+    <input id="table-search" type="search" placeholder="Search title or description">
+  </label>
+  <div class="group-chips" role="group" aria-label="Filter analyses by theme">
+    
+    <button type="button" class="group-chip" data-group="Core OTP Patterns" aria-pressed="true">Core OTP Patterns</button>
+    
+    <button type="button" class="group-chip" data-group="Equity and Strategic Planning" aria-pressed="true">Equity and Strategic Planning</button>
+    
+    <button type="button" class="group-chip" data-group="Ridership & Recovery" aria-pressed="true">Ridership & Recovery</button>
+    
+    <button type="button" class="group-chip" data-group="Ridership and External Factors" aria-pressed="true">Ridership and External Factors</button>
+    
+    <button type="button" class="group-chip" data-group="Route and Service Drivers" aria-pressed="true">Route and Service Drivers</button>
+    
+    <button type="button" class="group-chip" data-group="Ungrouped" aria-pressed="true">Ungrouped</button>
+    
+  </div>
+  <span class="result-count" id="result-count" aria-live="polite"></span>
 </div>
+<table class="analysis-table" id="analysis-table">
+  <thead>
+    <tr>
+      <th class="sortable col-num" data-key="number" role="columnheader" tabindex="0" aria-sort="ascending">#<span class="sort-arrow">▲</span></th>
+      <th class="sortable" data-key="title" role="columnheader" tabindex="0" aria-sort="none">Analysis<span class="sort-arrow">▲</span></th>
+      <th class="sortable" data-key="group" role="columnheader" tabindex="0" aria-sort="none">Theme<span class="sort-arrow">▲</span></th>
+      <th>Outputs</th>
+      <th>Summary</th>
+    </tr>
+  </thead>
+  <tbody>
+  
+    <tr class="analysis-row" data-number="1" data-title="system-wide otp trend" data-group="Core OTP Patterns" data-text="01 - system-wide otp trend tracks the overall prt on-time performance trend from 2019 through 2025, including covid impact and recovery.">
+      <td class="col-num">1</td>
+      <td><a href="analyses/01_system_trend/index.html">System-Wide OTP Trend</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Tracks the overall PRT on-time performance trend from 2019 through 2025, including COVID impact and recovery.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="2" data-title="mode comparison" data-group="Core OTP Patterns" data-text="02 - mode comparison compares on-time performance across service modes (bus, rail, incline) and route types (local, limited, express, busway).">
+      <td class="col-num">2</td>
+      <td><a href="analyses/02_mode_comparison/index.html">Mode Comparison</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Compares on-time performance across service modes (BUS, RAIL, INCLINE) and route types (local, limited, express, busway).</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="3" data-title="route ranking" data-group="Core OTP Patterns" data-text="03 - route ranking ranks routes by average otp, trend direction, and volatility to identify best/worst performers and most (in)consistent routes.">
+      <td class="col-num">3</td>
+      <td><a href="analyses/03_route_ranking/index.html">Route Ranking</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Ranks routes by average OTP, trend direction, and volatility to identify best/worst performers and most (in)consistent routes.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="4" data-title="tract equity" data-group="Core OTP Patterns" data-text="04 - tract equity prt routes serving the lowest-income census tracts run on time only ~65.2% of the time, vs ~68.8% for upper-middle-income tracts -- a ~3.6 percentage-point gap that the previous neighborhood-name analysis could not see. built by point-in-polygon assignment of every prt stop to its containing 2020 census tract, ranking 247 tracts (vs 89 hand-curated neighborhoods).">
+      <td class="col-num">4</td>
+      <td><a href="analyses/04_neighborhood_equity/index.html">Tract Equity</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">PRT routes serving the lowest-income census tracts run on time only ~65.2% of the time, vs ~68.8% for upper-middle-income tracts -- a ~3.6 percentage-point gap that the previous neighborhood-name analysis could not see.</span> <span class="summary-rest" hidden>Built by point-in-polygon assignment of every PRT stop to its containing 2020 census tract, ranking 247 tracts (vs 89 hand-curated neighborhoods).</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="5" data-title="anomaly investigation" data-group="Core OTP Patterns" data-text="05 - anomaly investigation identifies and investigates sharp otp drops that may indicate route restructuring, detours, or data quality issues.">
+      <td class="col-num">5</td>
+      <td><a href="analyses/05_anomaly_investigation/index.html">Anomaly Investigation</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Identifies and investigates sharp OTP drops that may indicate route restructuring, detours, or data quality issues.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="6" data-title="seasonal patterns" data-group="Core OTP Patterns" data-text="06: seasonal patterns decomposes route-level otp into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance.">
+      <td class="col-num">6</td>
+      <td><a href="analyses/06_seasonal_patterns/index.html">Seasonal Patterns</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Decomposes route-level OTP into trend, seasonal, and residual components to identify whether summer or winter months systematically affect performance.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="7" data-title="stop count vs otp" data-group="Core OTP Patterns" data-text="07: stop count vs otp tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average otp with mode-based coloring.">
+      <td class="col-num">7</td>
+      <td><a href="analyses/07_stop_count_vs_otp/index.html">Stop Count vs OTP</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Tests whether routes with more stops have worse on-time performance, using a scatter plot of stop count against average OTP with mode-based coloring.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="8" data-title="hot-spot map" data-group="Core OTP Patterns" data-text="08: hot-spot map visualizes stop-level on-time performance on a geographic scatter plot to identify corridor-level bottlenecks and clusters of poor performance.">
+      <td class="col-num">8</td>
+      <td><a href="analyses/08_hotspot_map/index.html">Hot-Spot Map</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">html</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Visualizes stop-level on-time performance on a geographic scatter plot to identify corridor-level bottlenecks and clusters of poor performance.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="9" data-title="incline investigation" data-group="Core OTP Patterns" data-text="09: incline investigation audits the monongahela incline data across all database tables to determine why it appears in otp data with zero/null values.">
+      <td class="col-num">9</td>
+      <td><a href="analyses/09_incline_investigation/index.html">Incline Investigation</a></td>
+      <td><span class="theme-chip">Core OTP Patterns</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Audits the Monongahela Incline data across all database tables to determine why it appears in OTP data with zero/null values.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="10" data-title="trip frequency vs otp" data-group="Route and Service Drivers" data-text="10: trip frequency vs otp tests whether high-frequency routes have worse on-time performance, using weekday trip counts as a proxy for service frequency.">
+      <td class="col-num">10</td>
+      <td><a href="analyses/10_frequency_vs_otp/index.html">Trip Frequency vs OTP</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Tests whether high-frequency routes have worse on-time performance, using weekday trip counts as a proxy for service frequency.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="11" data-title="directional asymmetry" data-group="Route and Service Drivers" data-text="11: directional asymmetry investigates whether routes with a structural imbalance between inbound and outbound trip frequency have worse on-time performance.">
+      <td class="col-num">11</td>
+      <td><a href="analyses/11_directional_asymmetry/index.html">Directional Asymmetry</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Investigates whether routes with a structural imbalance between inbound and outbound trip frequency have worse on-time performance.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="12" data-title="route geographic span vs otp" data-group="Route and Service Drivers" data-text="12: route geographic span vs otp computes the geographic span (max distance between any two stops) for each route and tests whether longer routes have worse on-time performance, disentangling route length from stop count.">
+      <td class="col-num">12</td>
+      <td><a href="analyses/12_geographic_span/index.html">Route Geographic Span vs OTP</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Computes the geographic span (max distance between any two stops) for each route and tests whether longer routes have worse on-time performance, disentangling route length from stop count.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="13" data-title="cross-route correlation clustering" data-group="Route and Service Drivers" data-text="13: cross-route correlation clustering computes pairwise otp time-series correlations between all routes and uses hierarchical clustering to identify groups of routes whose performance rises and falls together.">
+      <td class="col-num">13</td>
+      <td><a href="analyses/13_correlation_clustering/index.html">Cross-Route Correlation Clustering</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Computes pairwise OTP time-series correlations between all routes and uses hierarchical clustering to identify groups of routes whose performance rises and falls together.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="14" data-title="covid recovery trajectories" data-group="Route and Service Drivers" data-text="14: covid recovery trajectories measures how far each route's otp has recovered relative to its pre-covid baseline and identifies route characteristics that predict faster or slower recovery.">
+      <td class="col-num">14</td>
+      <td><a href="analyses/14_covid_recovery/index.html">COVID Recovery Trajectories</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Measures how far each route's OTP has recovered relative to its pre-COVID baseline and identifies route characteristics that predict faster or slower recovery.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="15" data-title="municipal/county equity" data-group="Route and Service Drivers" data-text="15: municipal/county equity aggregates on-time performance by municipality and county to assess service reliability equity at a broader geographic level than neighborhood analysis (analysis 04).">
+      <td class="col-num">15</td>
+      <td><a href="analyses/15_municipal_equity/index.html">Municipal/County Equity</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Aggregates on-time performance by municipality and county to assess service reliability equity at a broader geographic level than neighborhood analysis (Analysis 04).</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="16" data-title="transfer hub performance" data-group="Route and Service Drivers" data-text="16: transfer hub performance identifies high-connectivity stops (served by many routes) and tests whether passengers at transfer hubs experience worse otp than those at low-connectivity stops.">
+      <td class="col-num">16</td>
+      <td><a href="analyses/16_transfer_hub_performance/index.html">Transfer Hub Performance</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Identifies high-connectivity stops (served by many routes) and tests whether passengers at transfer hubs experience worse OTP than those at low-connectivity stops.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="17" data-title="weekend vs weekday service profile" data-group="Route and Service Drivers" data-text="17: weekend vs weekday service profile tests whether routes with different weekend-to-weekday service ratios show different otp patterns, distinguishing commuter-oriented routes from all-day service routes.">
+      <td class="col-num">17</td>
+      <td><a href="analyses/17_weekend_weekday_profile/index.html">Weekend vs Weekday Service Profile</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Tests whether routes with different weekend-to-weekday service ratios show different OTP patterns, distinguishing commuter-oriented routes from all-day service routes.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="18" data-title="multivariate otp model" data-group="Route and Service Drivers" data-text="18: multivariate otp model combines stop count, mode, bus subtype, geographic span, and service profile into a single ols regression model to quantify relative importance and total explained variance.">
+      <td class="col-num">18</td>
+      <td><a href="analyses/18_multivariate_model/index.html">Multivariate OTP Model</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Combines stop count, mode, bus subtype, geographic span, and service profile into a single OLS regression model to quantify relative importance and total explained variance.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="19" data-title="ridership-weighted otp" data-group="Route and Service Drivers" data-text="19 - ridership-weighted otp compute system otp weighted by actual average daily ridership instead of scheduled trip frequency, to measure the average rider's experience.">
+      <td class="col-num">19</td>
+      <td><a href="analyses/19_ridership_weighted_otp/index.html">Ridership-Weighted OTP</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Compute system OTP weighted by actual average daily ridership instead of scheduled trip frequency, to measure the average rider's experience.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="20" data-title="otp → ridership causality" data-group="Ridership and External Factors" data-text="20 - otp → ridership causality test whether otp declines predict subsequent ridership losses using lagged correlation and granger causality tests.">
+      <td class="col-num">20</td>
+      <td><a href="analyses/20_otp_ridership_causality/index.html">OTP → Ridership Causality</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Test whether OTP declines predict subsequent ridership losses using lagged correlation and Granger causality tests.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="21" data-title="covid ridership vs otp recovery" data-group="Ridership and External Factors" data-text="21 - covid ridership vs otp recovery compare ridership recovery trajectories with otp recovery trajectories post-covid to identify whether ridership recovery degrades otp.">
+      <td class="col-num">21</td>
+      <td><a href="analyses/21_covid_ridership_recovery/index.html">COVID Ridership vs OTP Recovery</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Compare ridership recovery trajectories with OTP recovery trajectories post-COVID to identify whether ridership recovery degrades OTP.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="22" data-title="passenger-weighted delay burden" data-group="Ridership and External Factors" data-text="22 - passenger-weighted delay burden estimate late rider-trips per route per month by combining ridership with otp to identify where the most total human impact occurs.">
+      <td class="col-num">22</td>
+      <td><a href="analyses/22_delay_burden/index.html">Passenger-Weighted Delay Burden</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Estimate late rider-trips per route per month by combining ridership with OTP to identify where the most total human impact occurs.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="23" data-title="garage-level performance" data-group="Ridership and External Factors" data-text="23 - garage-level performance compare otp and ridership trends across prt garages (ross, collier, east liberty, west mifflin) to surface operational differences.">
+      <td class="col-num">23</td>
+      <td><a href="analyses/23_garage_performance/index.html">Garage-Level Performance</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Compare OTP and ridership trends across PRT garages (Ross, Collier, East Liberty, West Mifflin) to surface operational differences.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="24" data-title="weekday vs weekend ridership trends" data-group="Ridership and External Factors" data-text="24 - weekday vs weekend ridership trends track how weekday, saturday, and sunday ridership patterns shifted post-covid and whether weekend ridership share correlates with otp.">
+      <td class="col-num">24</td>
+      <td><a href="analyses/24_daytype_ridership_trends/index.html">Weekday vs Weekend Ridership Trends</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Track how weekday, Saturday, and Sunday ridership patterns shifted post-COVID and whether weekend ridership share correlates with OTP.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="25" data-title="ridership concentration & equity" data-group="Ridership and External Factors" data-text="25 - ridership concentration & equity measure what share of total system ridership is carried by the lowest-otp routes using lorenz curves and gini coefficients.">
+      <td class="col-num">25</td>
+      <td><a href="analyses/25_ridership_equity/index.html">Ridership Concentration & Equity</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Measure what share of total system ridership is carried by the lowest-OTP routes using Lorenz curves and Gini coefficients.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="26" data-title="ridership in multivariate otp model" data-group="Ridership and External Factors" data-text="26 - ridership in multivariate otp model add ridership as a predictor to the analysis 18 ols model to test whether it adds explanatory power beyond stop count, span, and mode.">
+      <td class="col-num">26</td>
+      <td><a href="analyses/26_ridership_multivariate/index.html">Ridership in Multivariate OTP Model</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Add ridership as a predictor to the Analysis 18 OLS model to test whether it adds explanatory power beyond stop count, span, and mode.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="27" data-title="traffic congestion and otp" data-group="Ridership and External Factors" data-text="27 - traffic congestion and otp tests whether penndot aadt traffic volume explains otp variance beyond structural features">
+      <td class="col-num">27</td>
+      <td><a href="analyses/27_traffic_congestion/index.html">Traffic Congestion and OTP</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Tests whether PennDOT AADT traffic volume explains OTP variance beyond structural features</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="28" data-title="weather impact" data-group="Ridership and External Factors" data-text="28 - weather impact tests whether weather (precipitation, snow, temperature) explains otp variance or the counterintuitive seasonal pattern from analysis 06.">
+      <td class="col-num">28</td>
+      <td><a href="analyses/28_weather_impact/index.html">Weather Impact</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Tests whether weather (precipitation, snow, temperature) explains OTP variance or the counterintuitive seasonal pattern from Analysis 06.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="29" data-title="service change impact on otp" data-group="Ridership and External Factors" data-text="29 - service change impact on otp do schedule changes (pick period transitions) correlate with otp shifts?">
+      <td class="col-num">29</td>
+      <td><a href="analyses/29_service_change_impact/index.html">Service Change Impact on OTP</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Do schedule changes (pick period transitions) correlate with OTP shifts?</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="30" data-title="service level vs otp longitudinal" data-group="Equity and Strategic Planning" data-text="30 - service level vs otp longitudinal within-route panel: does changing trip frequency improve or degrade otp?">
+      <td class="col-num">30</td>
+      <td><a href="analyses/30_service_level_otp_longitudinal/index.html">Service Level vs OTP Longitudinal</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Within-route panel: does changing trip frequency improve or degrade OTP?</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="31" data-title="stop consolidation candidates" data-group="Equity and Strategic Planning" data-text="31 - stop consolidation candidates identify low-usage stops that could be consolidated to improve otp, leveraging the finding that stop count is the strongest otp predictor.">
+      <td class="col-num">31</td>
+      <td><a href="analyses/31_stop_consolidation/index.html">Stop Consolidation Candidates</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Identify low-usage stops that could be consolidated to improve OTP, leveraging the finding that stop count is the strongest OTP predictor.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="32" data-title="shelter equity" data-group="Equity and Strategic Planning" data-text="32 - shelter equity assess whether bus shelters are equitably placed relative to stop-level ridership volume and demographics.">
+      <td class="col-num">32</td>
+      <td><a href="analyses/32_shelter_equity/index.html">Shelter Equity</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Assess whether bus shelters are equitably placed relative to stop-level ridership volume and demographics.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="33" data-title="pandemic ridership geography" data-group="Equity and Strategic Planning" data-text="33 - pandemic ridership geography map the spatial pattern of stop-level ridership loss and recovery between pre-pandemic and pandemic periods.">
+      <td class="col-num">33</td>
+      <td><a href="analyses/33_pandemic_ridership_geography/index.html">Pandemic Ridership Geography</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Map the spatial pattern of stop-level ridership loss and recovery between pre-pandemic and pandemic periods.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="34" data-title="ridership concentration (pareto)" data-group="Equity and Strategic Planning" data-text="34 - ridership concentration (pareto) quantify how concentrated ridership is across stops and test whether concentration correlates with route otp.">
+      <td class="col-num">34</td>
+      <td><a href="analyses/34_ridership_concentration/index.html">Ridership Concentration (Pareto)</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Quantify how concentrated ridership is across stops and test whether concentration correlates with route OTP.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="35" data-title="boarding/alighting flow analysis" data-group="Equity and Strategic Planning" data-text="35 - boarding/alighting flow analysis analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors.">
+      <td class="col-num">35</td>
+      <td><a href="analyses/35_boarding_alighting_flows/index.html">Boarding/Alighting Flow Analysis</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Analyze net boarding-alighting flows by stop and direction to identify major trip generators and attractors.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="36" data-title="national ridership growth (2019 vs 2024)" data-group="Equity and Strategic Planning" data-text="36 - national ridership growth (2019 vs 2024) compare 2019-to-2024 ridership recovery across the 150 largest us transit agencies using ntd data; rank prt nationally.">
+      <td class="col-num">36</td>
+      <td><a href="analyses/36_national_ridership_growth/index.html">National Ridership Growth (2019 vs 2024)</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Compare 2019-to-2024 ridership recovery across the 150 largest US transit agencies using NTD data; rank PRT nationally.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="37" data-title="peer city ridership comparison" data-group="Equity and Strategic Planning" data-text="37 - peer city ridership comparison track indexed monthly ridership for pittsburgh and 7 peer cities from 2019-2025 using ntd data; compare recovery trajectories and mode splits.">
+      <td class="col-num">37</td>
+      <td><a href="analyses/37_peer_city_ridership/index.html">Peer City Ridership Comparison</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Track indexed monthly ridership for Pittsburgh and 7 peer cities from 2019-2025 using NTD data; compare recovery trajectories and mode splits.</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="38" data-title="downtown recovery gap" data-group="Ridership & Recovery" data-text="38 - downtown recovery gap routes serving downtown recovered less ridership post-covid, but the gap is driven mainly by commuter/express services (34% recovered) rather than local buses (59% recovered). within local routes, downtown dependence alone does not predict worse recovery.">
+      <td class="col-num">38</td>
+      <td><a href="analyses/38_downtown_recovery/index.html">Downtown Recovery Gap</a></td>
+      <td><span class="theme-chip">Ridership & Recovery</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Routes serving downtown recovered less ridership post-COVID, but the gap is driven mainly by commuter/express services (34% recovered) rather than local buses (59% recovered).</span> <span class="summary-rest" hidden>Within local routes, downtown dependence alone does not predict worse recovery.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="39" data-title="national service cuts (2019 vs 2024)" data-group="Equity and Strategic Planning" data-text="39 — national service cuts (2019 vs 2024) prt cut 13% of vehicle revenue hours between 2019 and 2024, ranking 104th of 150 large agencies. contrasts supply-side service cuts with demand-side ridership loss to distinguish agencies that cut service from those that lost riders despite maintaining service.">
+      <td class="col-num">39</td>
+      <td><a href="analyses/39_national_service_cuts/index.html">National Service Cuts (2019 vs 2024)</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">PRT cut 13% of vehicle revenue hours between 2019 and 2024, ranking 104th of 150 large agencies.</span> <span class="summary-rest" hidden>Contrasts supply-side service cuts with demand-side ridership loss to distinguish agencies that cut service from those that lost riders despite maintaining service.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="40" data-title="peer city dashboard" data-group="Equity and Strategic Planning" data-text="40 - peer city dashboard pittsburgh lost 41% of riders and 13% of service hours between 2019 and 2024 — roughly middle-of-the-pack among 8 peer cities. but it is the only peer where fare revenue per trip increased ($1.57 to $1.70), suggesting prt maintained fares while others discounted. farebox recovery fell everywhere, though pittsburgh's 12.8% remains second-highest among peers.">
+      <td class="col-num">40</td>
+      <td><a href="analyses/40_peer_city_dashboard/index.html">Peer City Dashboard</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Pittsburgh lost 41% of riders and 13% of service hours between 2019 and 2024 — roughly middle-of-the-pack among 8 peer cities.</span> <span class="summary-rest" hidden>But it is the only peer where fare revenue per trip increased ($1.57 to $1.70), suggesting PRT maintained fares while others discounted. Farebox recovery fell everywhere, though Pittsburgh's 12.8% remains second-highest among peers.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="41" data-title="operating cost drivers" data-group="Equity and Strategic Planning" data-text="41 - operating cost drivers prt spends $3.34 per trip on vehicle maintenance — the highest of 8 peer cities and 47% above average. bus fleet age does not explain the gap (prt's buses are mid-age at 7.1 years), but the light rail fleet averages 32 years old. general administration is prt's leanest cost category at $2.23 per trip.">
+      <td class="col-num">41</td>
+      <td><a href="analyses/41_operating_cost_drivers/index.html">Operating Cost Drivers</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">PRT spends $3.34 per trip on vehicle maintenance — the highest of 8 peer cities and 47% above average.</span> <span class="summary-rest" hidden>Bus fleet age does not explain the gap (PRT's buses are mid-age at 7.1 years), but the light rail fleet averages 32 years old. General administration is PRT's leanest cost category at $2.23 per trip.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="42" data-title="allegheny go equity" data-group="Ungrouped" data-text="42 - allegheny go equity municipalities with poor bus reliability do not have lower allegheny go adoption — the program successfully reaches areas across the otp spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50).">
+      <td class="col-num">42</td>
+      <td><a href="analyses/42_allegheny_go_equity/index.html">Allegheny Go Equity</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Municipalities with poor bus reliability do not have lower Allegheny Go adoption — the program successfully reaches areas across the OTP spectrum, with no significant correlation between on-time performance and enrollment (ρ = −0.08, p = 0.50).</span></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="43" data-title="allegheny go program growth" data-group="Ungrouped" data-text="43 - allegheny go program growth the allegheny go fare program grew from 262 rides per week to over 30,000 in 18 months, accumulating 2.27 million total rides. ridership growth is uncorrelated with system otp (r = 0.13, p = 0.60), driven by enrollment expansion rather than service quality.">
+      <td class="col-num">43</td>
+      <td><a href="analyses/43_allegheny_go_growth/index.html">Allegheny Go Program Growth</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">The Allegheny Go fare program grew from 262 rides per week to over 30,000 in 18 months, accumulating 2.27 million total rides.</span> <span class="summary-rest" hidden>Ridership growth is uncorrelated with system OTP (r = 0.13, p = 0.60), driven by enrollment expansion rather than service quality.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="44" data-title="route population reach" data-group="Ungrouped" data-text="44 - route population reach the prt routes that reach the most residents are the red line lrt (58,000 people within walking distance), bus 69 to trafford (55,000), and the slvr line (53,000). the oakland-east end bus corridor (61a/b/c, 67) and the cross-town 54 each cover 43,000+ residents, making them the highest-impact routes when service is disrupted. light-rail stations average 3-5x more reach per stop than bus stops because of their wider walking-distance buffer and dense south hills catchments.">
+      <td class="col-num">44</td>
+      <td><a href="analyses/44_route_population_reach/index.html">Route Population Reach</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">The PRT routes that reach the most residents are the RED Line LRT (58,000 people within walking distance), bus 69 to Trafford (55,000), and the SLVR Line (53,000).</span> <span class="summary-rest" hidden>The Oakland-East End bus corridor (61A/B/C, 67) and the cross-town 54 each cover 43,000+ residents, making them the highest-impact routes when service is disrupted. Light-rail stations average 3-5x more reach per stop than bus stops because of their wider walking-distance buffer and dense South Hills catchments.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="45" data-title="population-weighted system otp" data-group="Route and Service Drivers" data-text="45 - population-weighted system otp routes in prt's network where many people live run late more often than the system as a whole. the average resident-near-a-route experiences ~68.1% on-time service, vs ~67.3% for the average scheduled trip and ~69.4% across all routes equally — confirming that ridership and population concentrate on the more lateness-prone urban-core routes.">
+      <td class="col-num">45</td>
+      <td><a href="analyses/45_population_weighted_otp/index.html">Population-Weighted System OTP</a></td>
+      <td><span class="theme-chip">Route and Service Drivers</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Routes in PRT's network where many people live run late more often than the system as a whole.</span> <span class="summary-rest" hidden>The average resident-near-a-route experiences ~68.1% on-time service, vs ~67.3% for the average scheduled trip and ~69.4% across all routes equally — confirming that ridership and population concentrate on the more lateness-prone urban-core routes.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="46" data-title="population transit proximity" data-group="Ungrouped" data-text="46 - population transit proximity allegheny county's densest neighborhoods are also its best-served: population density and distance to the nearest prt stop are strongly negatively correlated (spearman rho = -0.62). the median distance to a stop falls from 1,350 m in the sparsest quarter of census tracts to just 151 m in the densest. about 68% of county residents live within a half-mile of a stop; the rest are concentrated in lower-density tracts on the periphery.">
+      <td class="col-num">46</td>
+      <td><a href="analyses/46_population_transit_proximity/index.html">Population Transit Proximity</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Allegheny County's densest neighborhoods are also its best-served: population density and distance to the nearest PRT stop are strongly negatively correlated (Spearman rho = -0.62).</span> <span class="summary-rest" hidden>The median distance to a stop falls from 1,350 m in the sparsest quarter of census tracts to just 151 m in the densest. About 68% of county residents live within a half-mile of a stop; the rest are concentrated in lower-density tracts on the periphery.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="47" data-title="route ridership ranking" data-group="Ungrouped" data-text="47 - route ridership ranking ranking pittsburgh's transit routes by weekday ridership from 2017 to 2024, the busiest is the p1 east busway bus (about 6,600 riders a day), ahead of the red line and blue line light rail and the 51 carrick bus. ridership is concentrated: the 18 busiest routes carry half of all weekday riders, while roughly half of the 103 routes each account for under 1%.">
+      <td class="col-num">47</td>
+      <td><a href="analyses/47_route_ridership_ranking/index.html">Route Ridership Ranking</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Ranking Pittsburgh's transit routes by weekday ridership from 2017 to 2024, the busiest is the P1 East Busway bus (about 6,600 riders a day), ahead of the Red Line and Blue Line light rail and the 51 Carrick bus.</span> <span class="summary-rest" hidden>Ridership is concentrated: the 18 busiest routes carry half of all weekday riders, while roughly half of the 103 routes each account for under 1%.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="48" data-title="service productivity (passengers per revenue hour)" data-group="Equity and Strategic Planning" data-text="48 - service productivity (passengers per revenue hour) each hour of prt service carries fewer than half as many riders as it did in 1991 — productivity fell from 39 passengers per service hour to 18. the drop is not a deliberate cut: prt kept nearly the same amount of service running (down just 5% since 1991) while ridership fell 55%, so buses and trains are running emptier rather than being right-sized. prt's 32% drop since 2019 is the steepest of 8 peer cities. population loss is not the cause either: allegheny county has only about 8% fewer residents than in 1991, so ridership per resident has itself roughly halved — fewer residents explains only about a tenth of the decline.">
+      <td class="col-num">48</td>
+      <td><a href="analyses/48_service_productivity/index.html">Service Productivity (Passengers per Revenue Hour)</a></td>
+      <td><span class="theme-chip">Equity and Strategic Planning</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Each hour of PRT service carries fewer than half as many riders as it did in 1991 — productivity fell from 39 passengers per service hour to 18.</span> <span class="summary-rest" hidden>The drop is not a deliberate cut: PRT kept nearly the same amount of service running (down just 5% since 1991) while ridership fell 55%, so buses and trains are running emptier rather than being right-sized. PRT's 32% drop since 2019 is the steepest of 8 peer cities. Population loss is not the cause either: Allegheny County has only about 8% fewer residents than in 1991, so ridership per resident has itself roughly halved — fewer residents explains only about a tenth of the decline.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr id="no-results" hidden><td colspan="5" class="no-results">No analyses match your filters.</td></tr>
+  </tbody>
+</table>
 </section>
 
   </main>
@@ -373,6 +532,85 @@
       [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
       [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
       apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
     }
 
     document.querySelectorAll(".output-tabs").forEach((tabs) => {

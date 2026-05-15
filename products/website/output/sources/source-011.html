@@ -36,7 +36,7 @@
   <h1>shapely</h1>
   <p class="lede">Python library dependency used by one or more analyses or pipeline steps.</p>
   <p class="lede">Owner: Open-source Python ecosystem maintainers. · Freshness: Version pinned by project environment until dependency updates are applied.</p>
-  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
+  <p class="lede">Built 2026-05-15 18:36 UTC · Commit 2317a81</p>
 </section>
 
 
@@ -118,6 +118,85 @@
       [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
       [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
       apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
     }
 
     document.querySelectorAll(".output-tabs").forEach((tabs) => {

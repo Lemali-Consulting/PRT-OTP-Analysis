@@ -269,6 +269,28 @@ def sentence(text: str) -> str:
     return value
 
 
+def analysis_number(slug: str) -> int:
+    """Return the leading numeric prefix of an analysis slug (0 if absent)."""
+    match = re.match(r"(\d+)", slug)
+    return int(match.group(1)) if match else 0
+
+
+def strip_leading_number(title: str) -> str:
+    """Remove a leading 'NN -', 'NN:' or 'NN —' prefix from an analysis title."""
+    return re.sub(r"^\d+\s*[-—:]\s*", "", title).strip()
+
+
+def split_summary(text: str) -> tuple[str, str]:
+    """Split a description into its lead sentence and the remaining text."""
+    value = text.strip()
+    if not value:
+        return "", ""
+    match = re.search(r"(?<=[.!?])\s+(?=[A-Z(])", value)
+    if not match:
+        return value, ""
+    return value[: match.start()].strip(), value[match.start() :].strip()
+
+
 def tables_produced_for_page(page: Page) -> list[dict[str, str]]:
     """Normalize pipeline tables_produced entries for page rendering."""
     out: list[dict[str, str]] = []
@@ -1024,10 +1046,122 @@ pre.mermaid {
 .code-table .code-content { padding: 1rem 1rem 1rem 0.75rem; }
 .code-table pre { margin: 0; padding: 0; background: transparent; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.85em; line-height: 1.5; }
 .code-table pre code.hljs { background: transparent; padding: 0; }
+/* Analysis table (home page) */
+.table-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.7rem 1rem;
+  margin-bottom: 0.9rem;
+}
+.search-field { display: grid; gap: 0.25rem; font-weight: 600; color: var(--ink-muted); flex: 1 1 220px; }
+.search-field input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  background: #fff;
+}
+.group-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.group-chip {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  background: #fffaf4;
+  color: var(--ink-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.group-chip::before { content: "\2713"; font-size: 0.85em; opacity: 0; }
+.group-chip[aria-pressed="true"] { background: var(--accent-soft); border-color: #d8b79a; color: #7a331d; }
+.group-chip[aria-pressed="true"]::before { opacity: 1; }
+.result-count { margin-left: auto; font-size: 0.85rem; font-weight: 600; color: var(--ink-muted); }
+.analysis-table { width: 100%; border-collapse: collapse; }
+.analysis-table thead th {
+  background: #f4e5d2;
+  font-family: "Fraunces", "Georgia", serif;
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  position: sticky;
+  top: 54px;
+  z-index: 4;
+}
+.analysis-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.analysis-table th.sortable:hover { color: var(--accent); }
+.analysis-table th .sort-arrow { font-size: 0.72em; margin-left: 0.3rem; opacity: 0.3; }
+.analysis-table th[aria-sort="ascending"] .sort-arrow,
+.analysis-table th[aria-sort="descending"] .sort-arrow { opacity: 1; }
+.analysis-table td { border: 1px solid var(--line); padding: 0.5rem 0.6rem; vertical-align: top; }
+.analysis-table tbody tr:hover { background: #fffaf4; }
+.analysis-table .col-num { width: 3rem; text-align: right; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.analysis-row a { font-weight: 600; }
+.theme-chip {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid #d8b79a;
+  background: var(--accent-soft);
+  color: #7a331d;
+  white-space: nowrap;
+}
+.output-badges { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.output-badge {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 0.1rem 0.34rem;
+  background: #eef0e8;
+  color: var(--ink-muted);
+  border: 1px solid var(--line);
+}
+.summary-cell { min-width: 22ch; }
+.summary-toggle {
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  color: var(--accent-alt);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.3rem;
+  white-space: nowrap;
+}
+.summary-toggle:hover { color: var(--accent); }
+.no-results { text-align: center; color: var(--ink-muted); font-weight: 600; padding: 1.2rem; }
+.group-chip:focus-visible,
+.summary-toggle:focus-visible,
+.analysis-table th.sortable:focus-visible {
+  outline: 2px solid var(--accent-alt);
+  outline-offset: 2px;
+}
 @media (max-width: 760px) {
   .glossary-table th:nth-child(3),
   .glossary-table td:nth-child(3) { display: none; }
   .glossary-term-cell { white-space: normal; }
+  .analysis-table thead { display: none; }
+  .analysis-table, .analysis-table tbody, .analysis-table tr, .analysis-table td { display: block; width: 100%; }
+  .analysis-table tr.analysis-row {
+    margin-bottom: 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .analysis-table tr[hidden] { display: none; }
+  .analysis-table td { border: none; border-bottom: 1px solid var(--line); }
+  .analysis-table tr.analysis-row td:last-child { border-bottom: none; }
+  .analysis-table .col-num { width: auto; text-align: left; }
+  .result-count { margin-left: 0; }
 }
 """
     (OUTPUT_DIR / "style.css").write_text(css.strip() + "\n", encoding="utf-8")
@@ -1271,14 +1405,20 @@ def main() -> None:
         })
 
         rel_path = f"{kind_path}/{page.slug}/index.html"
+        description = page.manifest.get("description", "")
+        summary_lead, summary_rest = split_summary(description)
         site_items.append(
             {
                 "title": page.title,
                 "path": rel_path,
                 "group": page.group,
-                "description": page.manifest.get("description", ""),
+                "description": description,
                 "kind": page.kind,
                 "output_kinds": sorted({str(o.get("kind", "file")) for o in page.manifest.get("outputs", [])}),
+                "number": analysis_number(page.slug),
+                "clean_title": strip_leading_number(page.title),
+                "summary_lead": summary_lead,
+                "summary_rest": summary_rest,
             }
         )
 
@@ -1312,15 +1452,13 @@ def main() -> None:
 
     pipeline_items = sorted([i for i in site_items if i["path"].startswith("pipeline/")], key=lambda x: x["path"])
     analysis_items = sorted([i for i in site_items if i["path"].startswith("analyses/")], key=lambda x: x["path"])
-    analysis_groups = sorted({i.get("group") for i in analysis_items if i.get("group")})
-    output_kind_options = sorted({k for i in analysis_items for k in i.get("output_kinds", [])})
+    analysis_groups = sorted({i.get("group") or "Ungrouped" for i in analysis_items})
 
     index_html = env.get_template("index.html").render(
         root="",
         pipeline=pipeline_items,
         analyses=analysis_items,
         analysis_groups=analysis_groups,
-        output_kind_options=output_kind_options,
         run_metadata=run_metadata,
     )
     (OUTPUT_DIR / "index.html").write_text(index_html, encoding="utf-8")

@@ -82,6 +82,41 @@ def test_collect_outputs_flags_missing_declared_file(tmp_path: Path):
     assert errors
 
 
+# --- Home page table helper tests ---
+
+
+def test_analysis_number_extracts_leading_digits():
+    """analysis_number returns the integer prefix of an analysis slug."""
+    assert website_main.analysis_number("01_system_trend") == 1
+    assert website_main.analysis_number("48_service_productivity") == 48
+    assert website_main.analysis_number("no_number_here") == 0
+
+
+def test_strip_leading_number_removes_numbered_prefix():
+    """strip_leading_number drops a 'NN -', 'NN:' or 'NN —' title prefix."""
+    assert website_main.strip_leading_number("01 - System-Wide OTP Trend") == "System-Wide OTP Trend"
+    assert website_main.strip_leading_number("06: Seasonal Patterns") == "Seasonal Patterns"
+    assert (
+        website_main.strip_leading_number("39 — National Service Cuts (2019 vs 2024)")
+        == "National Service Cuts (2019 vs 2024)"
+    )
+    assert website_main.strip_leading_number("No Prefix Here") == "No Prefix Here"
+
+
+def test_split_summary_separates_lead_sentence():
+    """split_summary returns the first sentence and the remaining text."""
+    lead, rest = website_main.split_summary("First sentence here. Second part follows. Third.")
+    assert lead == "First sentence here."
+    assert rest == "Second part follows. Third."
+    lead, rest = website_main.split_summary("Only one sentence here.")
+    assert (lead, rest) == ("Only one sentence here.", "")
+    assert website_main.split_summary("") == ("", "")
+    # A decimal point mid-sentence must not be treated as a sentence boundary.
+    lead, rest = website_main.split_summary("Productivity fell to 18.5 riders per hour.")
+    assert lead == "Productivity fell to 18.5 riders per hour."
+    assert rest == ""
+
+
 # --- Provenance chain tests ---
 
 

@@ -8,30 +8,11 @@
   <p class="lede">Built {{ run_metadata.generated_at_utc }} · Commit {{ run_metadata.git_revision }}</p>
 </section>
 
-<section class="panel">
-<h2>Explore</h2>
-<div class="filters" id="card-filters">
-  <label><span>Search</span><input id="filter-search" type="search" placeholder="Search title or description"></label>
-  <label><span>Group</span>
-    <select id="filter-group">
-      <option value="">All groups</option>
-      {% for g in analysis_groups %}<option value="{{ g }}">{{ g }}</option>{% endfor %}
-    </select>
-  </label>
-  <label><span>Output</span>
-    <select id="filter-output-kind">
-      <option value="">All output kinds</option>
-      {% for k in output_kind_options %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
-    </select>
-  </label>
-</div>
-</section>
-
 <section class="panel" id="pipeline-panel">
 <h2 id="pipeline">Pipeline</h2>
 <div class="card-grid">
 {% for p in pipeline %}
-  <article class="card filter-card" data-kind="pipeline" data-group="" data-output-kinds="" data-text="{{ (p.title ~ ' ' ~ p.description)|lower }}">
+  <article class="card">
     <h3><a href="{{ p.path }}">{{ p.title }}</a></h3>
     <p>{{ p.description }}</p>
   </article>
@@ -41,13 +22,40 @@
 
 <section class="panel">
 <h2 id="analyses">Analyses</h2>
-<div class="card-grid">
-{% for a in analyses %}
-  <article class="card filter-card" data-kind="analysis" data-group="{{ a.group or 'Ungrouped' }}" data-output-kinds="{{ a.output_kinds|join(',') }}" data-text="{{ (a.title ~ ' ' ~ a.description)|lower }}">
-    <h3><a href="{{ a.path }}">{{ a.title }}</a></h3>
-    <p>{{ a.description }}</p>
-  </article>
-{% endfor %}
+<div class="table-controls">
+  <label class="search-field">
+    <span>Search</span>
+    <input id="table-search" type="search" placeholder="Search title or description">
+  </label>
+  <div class="group-chips" role="group" aria-label="Filter analyses by theme">
+    {% for g in analysis_groups %}
+    <button type="button" class="group-chip" data-group="{{ g }}" aria-pressed="true">{{ g }}</button>
+    {% endfor %}
+  </div>
+  <span class="result-count" id="result-count" aria-live="polite"></span>
 </div>
+<table class="analysis-table" id="analysis-table">
+  <thead>
+    <tr>
+      <th class="sortable col-num" data-key="number" role="columnheader" tabindex="0" aria-sort="ascending">#<span class="sort-arrow">▲</span></th>
+      <th class="sortable" data-key="title" role="columnheader" tabindex="0" aria-sort="none">Analysis<span class="sort-arrow">▲</span></th>
+      <th class="sortable" data-key="group" role="columnheader" tabindex="0" aria-sort="none">Theme<span class="sort-arrow">▲</span></th>
+      <th>Outputs</th>
+      <th>Summary</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for a in analyses %}
+    <tr class="analysis-row" data-number="{{ a.number }}" data-title="{{ a.clean_title|lower }}" data-group="{{ a.group or 'Ungrouped' }}" data-text="{{ (a.title ~ ' ' ~ a.description)|lower }}">
+      <td class="col-num">{{ a.number }}</td>
+      <td><a href="{{ a.path }}">{{ a.clean_title }}</a></td>
+      <td><span class="theme-chip">{{ a.group or 'Ungrouped' }}</span></td>
+      <td><div class="output-badges">{% for k in a.output_kinds %}<span class="output-badge">{{ k }}</span>{% endfor %}</div></td>
+      <td class="summary-cell"><span class="summary-lead">{{ a.summary_lead }}</span>{% if a.summary_rest %} <span class="summary-rest" hidden>{{ a.summary_rest }}</span><button type="button" class="summary-toggle" aria-expanded="false">more</button>{% endif %}</td>
+    </tr>
+  {% endfor %}
+    <tr id="no-results" hidden><td colspan="5" class="no-results">No analyses match your filters.</td></tr>
+  </tbody>
+</table>
 </section>
 {% endblock %}

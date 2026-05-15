@@ -36,7 +36,7 @@
   <h1>48 - Service Productivity (Passengers per Revenue Hour)</h1>
   <p class="lede">Equity and Strategic Planning</p>
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-05-15 18:17 UTC · Commit e02c2d5</p>
+  <p class="lede">Built 2026-05-15 18:36 UTC · Commit 2317a81</p>
 </section>
 
 <section class="panel toc-panel">
@@ -105,6 +105,8 @@
 </li>
 <li><p><strong>PRT's 2024 productivity (18.3) is mid-pack, leaning low.</strong> It trails Minneapolis (25.1), Portland (22.8), Buffalo (18.7), and Denver (18.6), and sits above Baltimore (16.1), Cleveland (15.2), and St. Louis (14.7). Productivity fell at every peer — this is a national pattern, not a Pittsburgh-specific failure — but Pittsburgh's <em>rate</em> of recent decline stands out.</p>
 </li>
+<li><p><strong>Population decline explains only about a tenth of the drop.</strong> PRT serves Allegheny County, which lost roughly 8% of its residents between the 1990 census (1,336,449) and 2024 (1,231,809). But PRT ridership fell 55% over the same span, so ridership <em>per resident</em> roughly halved — from 64 to 31 trips per resident per year. A log decomposition of the ridership decline attributes ~10% to fewer residents and ~90% to each remaining resident riding less. Because service hours barely moved, the same split applies to the productivity decline: depopulation is a minor factor, and the collapse is overwhelmingly a demand problem.</p>
+</li>
 </ol>
 <h2>Limitations</h2>
 <ul>
@@ -112,10 +114,12 @@
 <li><strong>UPT counts boardings, not riders.</strong> Unlinked passenger trips count each boarding separately, so a rider who transfers is counted more than once. Productivity here measures boardings per service hour, not unique people moved.</li>
 <li><strong>VRH excludes deadhead.</strong> Vehicle revenue hours count only time in revenue service, not pull-out, layover, or repositioning, so this understates total operating effort behind each productive hour.</li>
 <li><strong>Productivity is not the only goal.</strong> Lower productivity can reflect a deliberate equity choice to serve lower-density areas. The metric describes how full the service runs, not whether the service is worth running.</li>
+<li><strong>Population normalization is coarse.</strong> County population is paired with the NTD record only at census/estimate years (1990/2000/2010/2020 decennial counts plus the 2024 estimate), with no annual interpolation; the 1990 count stands in for 1991 with a ~9-month offset. Allegheny County is also broader than PRT's true ridership catchment, so the per-capita figures are county-wide averages, not the usage of the population actually within reach of service. The ~10% population share is approximate but robust — even the City of Pittsburgh's steeper ~18% loss would still leave per-capita decline as the dominant factor.</li>
 </ul>
 <h2>Validation</h2>
 <ul>
-<li><strong>Data source verified.</strong> <code>upt</code> and <code>vrh</code> columns of <code>ntd_annual_service</code> (NTD annual data, TS2.2). No column mapping written from memory.</li>
+<li><strong>Data source verified.</strong> <code>upt</code> and <code>vrh</code> columns of <code>ntd_annual_service</code> (NTD annual data, TS2.2). No column mapping written from memory. Allegheny County population is from the U.S. Census Bureau: decennial counts for 1990–2020 and the Vintage 2024 Population Estimates Program figure (2020 census base less the reported 2020–2024 decline).</li>
+<li><strong>Population discontinuity avoided.</strong> Decennial census counts and intercensal estimates use different methods; mixing a pre-2020 estimate with the 2020 census produces a spurious population jump. The decomposition uses only decennial counts plus one post-2020 estimate, so no method break falls inside the series.</li>
 <li><strong>Null/missing handling.</strong> All 8 peer agencies have complete, non-null UPT and VRH for every year 1991–2024 (34 city-years each) — verified before analysis. No rows dropped.</li>
 <li><strong>Aggregates sanity-checked.</strong> PRT 2024 UPT (37.9M) and VRH (2.07M) match the figures used in Analysis 40. The implied 2024 productivity (18.3) is consistent with Analysis 40's reported −41% UPT / −13% VRH change over 2019–2024, which arithmetically yields a ≈−32% productivity change.</li>
 <li><strong>Direction of effects checked.</strong> Productivity fell at all 8 agencies post-COVID, consistent with the well-documented national decline in transit ridership relative to service. No directional reversal.</li>
@@ -130,9 +134,9 @@
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn active" data-target="charts">Charts (5)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
-    <button class="tab-btn" data-target="data">Data (2)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
   </div>
 
   <div class="output-pane active" data-pane="charts">
@@ -171,6 +175,15 @@
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/48_service_productivity/peer_productivity_trends.png" target="_blank" rel="noopener noreferrer">peer_productivity_trends.png</a>
           <p class="artifact-desc">Productivity trajectories 1991-2024 for all 8 peer cities, PRT highlighted.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/48_service_productivity/per_capita_normalization.png" alt="per_capita_normalization" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/48_service_productivity/per_capita_normalization.png" target="_blank" rel="noopener noreferrer">per_capita_normalization.png</a>
+          <p class="artifact-desc">County population, total ridership, and ridership per resident indexed to 1991 = 100.</p>
         </figcaption>
       </figure>
     
@@ -216,6 +229,20 @@
         </figcaption>
       </figure>
     
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/48_service_productivity/per_capita_decomposition.csv" target="_blank" rel="noopener noreferrer">per_capita_decomposition.csv</a>
+          <p class="artifact-desc">Allegheny County population, PRT ridership, service hours, productivity, and ridership per resident at 1991, 2000, 2010, 2020, and 2024.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/48_service_productivity/per_capita_decomposition.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
     
     </div>
   </div>
@@ -245,6 +272,12 @@ long-run secular trend from the COVID shock.</li>
 chart. If VRH (supply) holds roughly flat while UPT (demand) collapses, the
 productivity decline is demand-driven — empty buses — not a supply-side
 right-sizing.</li>
+<li>Normalize the demand side by population. Allegheny County (PRT's service
+area) has lost residents since 1991, so part of the ridership decline could
+simply be fewer people. Split ridership into <code>UPT = population x trips-per-capita</code> and partition the 1991→2024 ridership decline between the
+two factors using log shares: <code>share = ln(factor ratio) / ln(UPT ratio)</code>.
+This isolates how much of the drop is fewer residents versus each resident
+riding less.</li>
 <li>Benchmark PRT against peers two ways: a 2024 cross-section ranking, and the
 full 1991–2024 trajectory for all 8 cities.</li>
 <li>Report percent change in productivity over the full period (1991→2024) and
@@ -258,6 +291,12 @@ trips), <code>vrh</code> (vehicle revenue hours).</li>
 <li>All 8 agencies have complete, non-null UPT and VRH for every year 1991–2024
 (34 city-years each, 272 rows total) — verified before analysis, so no null
 handling is required.</li>
+<li>Allegheny County population (<code>COUNTY_POPULATION</code> in <code>main.py</code>): U.S. Census
+Bureau decennial counts for 1990 (1,336,449), 2000, 2010, and 2020
+(1,250,578), plus the Census Bureau's Vintage 2024 Population Estimates
+Program figure (1,231,809). The 1990 decennial count is used as the 1991
+population anchor — a ~9-month offset. Population is paired with the NTD
+record only at these census/estimate years; no annual interpolation is done.</li>
 </ul>
 <h2>Output</h2>
 <ul>
@@ -272,6 +311,10 @@ indexed to 1991 = 100.</li>
 productivity across the 8 peers, PRT highlighted.</li>
 <li><code>output/peer_productivity_trends.png</code> — productivity trajectories 1991–2024
 for all 8 peers, PRT highlighted.</li>
+<li><code>output/per_capita_decomposition.csv</code> — Allegheny County population, PRT UPT,
+VRH, productivity, and ridership per resident at 1991, 2000, 2010, 2020, 2024.</li>
+<li><code>output/per_capita_normalization.png</code> — county population, total ridership,
+and ridership per resident indexed to 1991 = 100.</li>
 </ul>
 </div>
   </details>
@@ -287,6 +330,8 @@ for all 8 peers, PRT highlighted.</li>
       <td class="line-numbers" aria-hidden="true"></td>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 48: tracks PRT service productivity (passengers per vehicle revenue
 hour) from 1991 to 2024 and benchmarks it against peer cities.&quot;&quot;&quot;
+
+import math
 
 import polars as pl
 
@@ -311,6 +356,21 @@ START_YEAR = 1991
 COVID_YEAR = 2020
 BASELINE_YEAR = 2019
 COMPARE_YEAR = 2024
+
+# Allegheny County resident population -- PRT&#x27;s service area. Decennial U.S.
+# Census counts (1990-2020) plus the Census Bureau&#x27;s Vintage 2024 Population
+# Estimates Program figure (2020 census base of 1,250,578 less the reported
+# 18,769 decline over 2020-2024). Used to normalize ridership per resident.
+COUNTY_POPULATION = {
+    1990: 1_336_449,
+    2000: 1_281_666,
+    2010: 1_223_348,
+    2020: 1_250_578,
+    2024: 1_231_809,
+}
+# The productivity record starts in 1991; the nearest decennial count is the
+# 1990 census, used as the 1991 population anchor (a ~9-month offset).
+POP_ANCHOR_YEARS = {1991: 1990, 2000: 2000, 2010: 2010, 2020: 2020, 2024: 2024}
 
 
 def load_peer_productivity() -&gt; pl.DataFrame:
@@ -454,6 +514,58 @@ def peer_change_table(peer_df: pl.DataFrame) -&gt; pl.DataFrame:
     ).sort(&quot;prod_2024&quot;, descending=True)
 
 
+def per_capita_decomposition(prt_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Normalize PRT ridership by Allegheny County population.
+
+    Pairs each census/estimate year with the matching year in the NTD
+    productivity record and derives ridership per resident (UPT / population).
+    This splits the ridership decline into a population component (fewer
+    residents) and a per-capita-usage component (each resident riding less).
+    &quot;&quot;&quot;
+    rows = []
+    for ntd_year, pop_year in POP_ANCHOR_YEARS.items():
+        r = prt_df.filter(pl.col(&quot;year&quot;) == ntd_year).row(0, named=True)
+        pop = COUNTY_POPULATION[pop_year]
+        rows.append({
+            &quot;year&quot;: ntd_year,
+            &quot;population&quot;: pop,
+            &quot;upt&quot;: r[&quot;upt&quot;],
+            &quot;vrh&quot;: r[&quot;vrh&quot;],
+            &quot;productivity&quot;: r[&quot;productivity&quot;],
+            &quot;trips_per_capita&quot;: r[&quot;upt&quot;] / pop,
+        })
+    return pl.DataFrame(rows)
+
+
+def chart_per_capita(plt, norm_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Index population, total ridership, and per-capita ridership to 1991 = 100.
+
+    Shows that PRT&#x27;s ridership collapse is overwhelmingly fewer trips per
+    resident, not fewer residents: county population barely moved while
+    ridership per resident roughly halved.
+    &quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 6))
+    years = norm_df[&quot;year&quot;].to_list()
+
+    for col, label, color, lw in [
+        (&quot;population&quot;, &quot;Allegheny County population&quot;, &quot;#6ACC65&quot;, 2.0),
+        (&quot;upt&quot;, &quot;Total ridership (UPT)&quot;, &quot;#4878CF&quot;, 2.0),
+        (&quot;trips_per_capita&quot;, &quot;Ridership per resident&quot;, COLOR_PRIMARY, 2.8),
+    ]:
+        vals = norm_df[col].to_list()
+        base = vals[0]
+        ax.plot(years, [v / base * 100 for v in vals], label=label,
+                color=color, linewidth=lw, marker=&quot;o&quot;, markersize=6)
+
+    ax.axhline(100, color=COLOR_GRAY, linestyle=&quot;:&quot;, linewidth=0.8)
+    ax.set_ylabel(&quot;Indexed to 1991 = 100&quot;)
+    ax.set_xlabel(&quot;Year&quot;)
+    ax.set_ylim(bottom=0)
+    ax.set_title(&quot;PRT Ridership per Resident vs. Population — Allegheny County&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;per_capita_normalization.png&quot;)
+
+
 @run_analysis(48, &quot;Service Productivity&quot;)
 def main():
     plt = setup_plotting()
@@ -484,16 +596,41 @@ def main():
                 r[&quot;city&quot;], r[&quot;prod_1991&quot;], r[&quot;prod_2019&quot;], r[&quot;prod_2024&quot;],
                 r[&quot;pct_change_1991_2024&quot;], r[&quot;pct_change_2019_2024&quot;], mark))
 
+    with phase(&quot;Normalizing ridership by population&quot;):
+        norm_df = per_capita_decomposition(prt_df)
+        base = norm_df.row(0, named=True)
+        end = norm_df.row(-1, named=True)
+        pop_ratio = end[&quot;population&quot;] / base[&quot;population&quot;]
+        upt_ratio = end[&quot;upt&quot;] / base[&quot;upt&quot;]
+        pc_ratio = end[&quot;trips_per_capita&quot;] / base[&quot;trips_per_capita&quot;]
+        # Multiplicative decomposition: UPT = population x trips-per-capita.
+        # Log shares partition the ridership decline between the two factors.
+        pop_share = math.log(pop_ratio) / math.log(upt_ratio)
+        pc_share = math.log(pc_ratio) / math.log(upt_ratio)
+        print(f&quot;   Allegheny County population {base[&#x27;year&#x27;]}: &quot;
+              f&quot;{base[&#x27;population&#x27;]:,} (1990 census)&quot;)
+        print(f&quot;   Allegheny County population {end[&#x27;year&#x27;]}: &quot;
+              f&quot;{end[&#x27;population&#x27;]:,}  ({(pop_ratio - 1) * 100:+.0f}%)&quot;)
+        print(f&quot;   ridership per resident: {base[&#x27;trips_per_capita&#x27;]:.1f} → &quot;
+              f&quot;{end[&#x27;trips_per_capita&#x27;]:.1f} trips/resident/yr  &quot;
+              f&quot;({(pc_ratio - 1) * 100:+.0f}%)&quot;)
+        print(f&quot;   share of ridership decline from population loss: &quot;
+              f&quot;{pop_share * 100:.0f}%&quot;)
+        print(f&quot;   share of ridership decline from lower per-capita use: &quot;
+              f&quot;{pc_share * 100:.0f}%&quot;)
+
     with phase(&quot;Saving data&quot;):
         save_csv(prt_df.select(&quot;year&quot;, &quot;upt&quot;, &quot;vrh&quot;, &quot;productivity&quot;),
                  OUT / &quot;prt_productivity_by_year.csv&quot;)
         save_csv(change_df, OUT / &quot;peer_productivity.csv&quot;)
+        save_csv(norm_df, OUT / &quot;per_capita_decomposition.csv&quot;)
 
     with phase(&quot;Generating charts&quot;):
         chart_prt_trend(plt, prt_df)
         chart_decomposition(plt, prt_df)
         chart_peer_2024(plt, peer_df)
         chart_peer_trends(plt, peer_df)
+        chart_per_capita(plt, norm_df)
 
 
 if __name__ == &quot;__main__&quot;:
@@ -596,6 +733,85 @@ if __name__ == &quot;__main__&quot;:
       [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
       [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
       apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
     }
 
     document.querySelectorAll(".output-tabs").forEach((tabs) => {
