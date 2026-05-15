@@ -21,6 +21,8 @@ analyses:
     relationship: uses the same 8 peer cities and NTD ridership/service-hour data.
   - id: 41
     relationship: complements the per-trip cost analysis with a physical service-productivity measure.
+  - id: 50
+    relationship: splits this agency-wide productivity metric into its four modes — bus, light rail, paratransit, and incline.
 dependencies:
   - polars
   - matplotlib

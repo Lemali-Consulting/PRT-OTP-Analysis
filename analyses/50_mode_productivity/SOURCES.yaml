@@ -1,0 +1,44 @@
+kind: analysis
+title: "50 - Bus vs. Rail: Productivity by Mode"
+group: Equity and Strategic Planning
+tables:
+- ntd_ridership
+files: []
+analyses:
+- id: 48
+  relationship: >-
+    breaks the agency-wide productivity decline of Analysis 48 down into its
+    four modes — motor bus, light rail, paratransit, and the incline.
+dependencies:
+- polars
+description: >-
+  Analysis 48 found that PRT carries about 18 passengers per hour of service it
+  runs, half what it managed in the 1990s. But that one number blends four very
+  different services. Splitting them apart, the light rail "T" actually runs
+  fuller than the bus — 25.7 passengers per service hour in 2024 versus 22.2 for
+  motor buses. The door-to-door ACCESS service for riders with disabilities
+  carries 1.9: it accounts for just 2.4% of trips but uses 23% of all service
+  hours, which is normal for a federally required service that picks people up
+  one at a time. Set ACCESS aside and PRT's regular bus-and-rail network runs at
+  22.5 passengers per hour — about a quarter higher than the headline figure
+  suggests. Productivity fell at every mode after 2019, with light rail down the
+  steepest of the two main modes.
+outputs:
+- path: mode_productivity_by_year.csv
+  kind: data
+  description: Passengers, revenue hours, and productivity for each PRT mode and calendar year, 2002-2024.
+- path: mode_summary.csv
+  kind: data
+  description: Per-mode productivity at 2007/2019/2024, the 2019-2024 change, and each mode's 2024 share of trips and service hours, including bus+rail and all-mode roll-ups.
+- path: mode_productivity_trends.png
+  kind: image
+  description: Line chart of passengers per revenue hour for each PRT mode, 2002-2024.
+- path: mode_productivity_2024.png
+  kind: image
+  description: Bar ranking of 2024 productivity by mode, with the fixed-route and all-mode roll-ups marked.
+- path: service_vs_ridership_2024.png
+  kind: image
+  description: Each mode's 2024 share of total trips compared with its share of total service hours.
+- path: productivity_decline_2019_2024.png
+  kind: image
+  description: Productivity by mode in 2019 versus 2024, with the percent change labeled.

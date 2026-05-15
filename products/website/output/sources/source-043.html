@@ -36,7 +36,7 @@
   <h1>stops</h1>
   <p class="lede">Physical stop dimension table. Produced by Data Ingestion.</p>
   <p class="lede">Owner: Produced by Data Ingestion. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
+  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
 </section>
 
 
@@ -58,6 +58,7 @@
   src --> c12["44 - Route Population Reach"]
   src --> c13["45 - Population-Weighted System OTP"]
   src --> c14["46 - Population Transit Proximity"]
+  src --> c15["49 - Transit Service & Boardings vs Population Density"]
 </pre>
 </section>
 
@@ -146,6 +147,11 @@
   
     <article class="card">
       <h3><a href="analyses/46_population_transit_proximity/index.html">46 - Population Transit Proximity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/49_transit_service_density/index.html">49 - Transit Service & Boardings vs Population Density</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

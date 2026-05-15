@@ -36,7 +36,7 @@
   <h1>routes</h1>
   <p class="lede">Route dimension table. Produced by Data Ingestion.</p>
   <p class="lede">Owner: Produced by Data Ingestion. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
+  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
 </section>
 
 
@@ -75,6 +75,7 @@
   src --> c29["34 - Ridership Concentration (Pareto)"]
   src --> c30["44 - Route Population Reach"]
   src --> c31["45 - Population-Weighted System OTP"]
+  src --> c32["49 - Transit Service & Boardings vs Population Density"]
 </pre>
 </section>
 
@@ -248,6 +249,11 @@
   
     <article class="card">
       <h3><a href="analyses/45_population_weighted_otp/index.html">45 - Population-Weighted System OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/49_transit_service_density/index.html">49 - Transit Service & Boardings vs Population Density</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

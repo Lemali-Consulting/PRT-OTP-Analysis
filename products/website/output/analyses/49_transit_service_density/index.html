@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>49 - Transit Service & Boardings vs Population Density - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>49 - Transit Service & Boardings vs Population Density</h1>
+  <p class="lede">Equity and Strategic Planning</p>
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../48_service_productivity/index.html">← 48 - Service Productivity (Passengers per Revenue Hour)</a>
+    <a href="../50_mode_productivity/index.html">50 - Bus vs. Rail: Productivity by Mode →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  49_transit_service_density(["49 - Transit Service & Boardings vs Population Density"])
+  f1_49_transit_service_density[/"data/bus-stop-usage/wprdc_stop_data.csv"/] --> 49_transit_service_density
+  t_route_stops[("route_stops")] --> 49_transit_service_density
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_routes[("routes")] --> 49_transit_service_density
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  t_stops[("stops")] --> 49_transit_service_density
+  01_data_ingestion[["Data Ingestion"]] --> t_stops
+  t_census_tracts[("census_tracts")] --> 49_transit_service_density
+  d1_49_transit_service_density(("geopandas (lib)")) --> 49_transit_service_density
+  d2_49_transit_service_density(("polars (lib)")) --> 49_transit_service_density
+  d3_49_transit_service_density(("scipy (lib)")) --> 49_transit_service_density
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 49_transit_service_density page;
+  class t_census_tracts,t_route_stops,t_routes,t_stops table;
+  class d1_49_transit_service_density,d2_49_transit_service_density,d3_49_transit_service_density dep;
+  class f1_49_transit_service_density,u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Transit Service &amp; Boardings vs Population Density</h1>
+<h2>Summary</h2>
+<p>Bus service scales strongly with residential density — denser Allegheny County
+tracts get far more service, not just a nearer stop (Spearman ρ = 0.49 between
+density and weekly bus trips). Boardings follow the same density gradient
+(ρ = 0.56) and track service almost perfectly (ρ = 0.90), but they <strong>diverge
+sharply from raw population</strong>: a tract's headcount barely predicts its boardings
+(ρ = −0.14), and boardings are far more concentrated than people — the densest
+quartile of tracts holds 23% of residents but generates 73% of boardings, and
+Downtown alone accounts for 27%.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>394 tracts</strong> analyzed (386 populated), Allegheny County. 139,221 average
+weekday boardings total (Sept 2019), of which 138,780 fall inside a tract.</li>
+<li><strong>Service vs density:</strong> Spearman ρ = <strong>0.49</strong> (p ≈ 7e-25). <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> weekly bus
+trips by density quartile: <strong>237 → 2,400 → 3,475 → 6,104</strong> — a ~26× rise from
+the sparsest to the densest quarter of tracts.</li>
+<li><strong>Boardings vs density:</strong> Spearman ρ = <strong>0.56</strong> (p ≈ 2e-33). <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">Median</a> weekday
+boardings by quartile: <strong>3.8 → 44 → 92 → 330</strong>.</li>
+<li><strong>Boardings vs population:</strong> Spearman ρ = <strong>−0.14</strong> — essentially no
+relationship. <strong>Boardings vs service:</strong> ρ = <strong>0.90</strong>.</li>
+<li><strong>Boardings per 1,000 residents</strong> by density quartile: <strong>0.7 → 12 → 44 → 122</strong>
+— a ~180× gradient, far steeper than the service gradient.</li>
+<li><strong>Concentration:</strong> the densest quartile (22.7% of county population) produces
+<strong>72.9%</strong> of boardings; the top 10 tracts produce <strong>46.6%</strong>; the Central
+Business District alone produces <strong>26.6%</strong>.</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>Q1 — service tracks density.</strong> Service is not just present in dense tracts,
+it is concentrated there. The 26× quartile gradient in weekly trips is steeper
+than the proximity gradient Analysis 46 found, so the answer is unambiguous:
+dense neighborhoods get both a closer stop <em>and</em> much more service on it.</li>
+<li><strong>Q2 — boardings follow density but diverge from population.</strong> Boardings rise
+with density at almost the same rank-correlation strength as service, and they
+shadow service itself extremely closely (ρ = 0.90). But the relationship is
+strongly <strong>super-linear</strong>: boardings per resident climb ~180× across density
+quartiles, so dense tracts board far more than their share of people. Raw
+population is a non-predictor (ρ = −0.14) because census tracts are drawn to
+hold roughly equal populations — what varies is density and destination role.</li>
+<li><strong>The biggest over-performers are destinations, not dense housing.</strong> The
+Central Business District boards 36,202 riders a day — 27% of the county
+total — against only ~142 predicted by its (moderate) residential density.
+Other large over-performers are near-empty riverfront/industrial tracts
+(Chateau, 12 residents; South Shore, 47) and the airport-area Findlay
+township. Boardings are recorded where trips start, which concentrates them
+at employment and activity hubs.</li>
+<li><strong>The under-performers are the light-rail South Hills.</strong> The tracts that board
+far below their density (Bethel Park, Castle Shannon, Mount Lebanon) are
+light-rail-served: their residents board the &quot;T&quot;, which the bus-stop dataset
+does not cover. These are flagged <code>rail_served</code> in the output.</li>
+</ul>
+<h2>Discussion</h2>
+<p>Analysis 46 showed PRT puts <em>stops</em> where the people are. This analysis shows
+the same logic governs <em>service volume</em>: dense tracts get disproportionately
+more bus service, and riders respond — boardings follow service almost
+one-for-one. In that sense boardings do <strong>not</strong> diverge from the density
+pattern; they amplify it.</p>
+<p>The divergence is one of <em>degree and driver</em>. Boardings are far more unequal
+than either population or service: they are destination-driven, so they pile up
+in a handful of dense activity centers — above all Downtown — rather than
+spreading across residential tracts in proportion to headcount. A planner
+reading this should note that &quot;serve the dense places&quot; and &quot;serve the most
+residents&quot; are not the same instruction: the boarding map is dominated by where
+people <em>go</em>, not only where they <em>live</em>.</p>
+<p>This is an <strong>area-level (ecological) association</strong>. It does not show that
+individuals in dense tracts ride more — only that dense tracts, as places,
+generate more boardings.</p>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Bus-only.</strong> The WPRDC stop-usage dataset covers bus and busway service;
+light rail has boarding data for a single stop. Both the service and the
+boardings metrics are therefore restricted to bus service. Light-rail-corridor
+tracts (notably the South Hills) genuinely show near-zero <em>bus</em> boardings
+because their riders use the &quot;T&quot;; they are flagged <code>rail_served</code>.</li>
+<li><strong>Temporal mismatch.</strong> Boardings are September 2019; bus trip counts are the
+current GTFS snapshot; population is the ACS 2018–2022 estimate. The analysis
+assumes the spatial pattern is stable, not that levels are contemporaneous.</li>
+<li><strong>Stop-to-tract assignment is point-in-polygon.</strong> A stop on a tract boundary
+counts entirely for one tract. Highland Park is the clearest artifact: it has
+1,580 weekly bus trips but ~0 recorded boardings because its service runs on
+perimeter corridors assigned to neighboring tracts and its interior is largely
+parkland.</li>
+<li><code>weekly_trips</code> counts scheduled trips, not capacity or time-of-day frequency.</li>
+<li>Zero-population tracts are excluded from quartiles and correlations.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data sources verified.</strong> <code>route_stops</code>, <code>routes</code>, <code>stops</code>, and
+<code>census_tracts</code> columns checked against the live schema; the boardings CSV
+schema inspected directly (long format, <code>datekey</code>/<code>serviceday</code>/<code>avg_ons</code>).</li>
+<li><strong>System total checked.</strong> Summed boardings = 139,221 average weekday
+boardings, consistent with PRT's known ~130–135k pre-pandemic weekday
+ridership. Tract count (394) matches Analysis 46.</li>
+<li><strong>Scope checked.</strong> Only 26 service / 35 boardings stops fall outside all
+Allegheny tracts — a small, expected edge effect (stops just over county/state
+lines).</li>
+<li><strong>Surprising result investigated.</strong> Tracts with high service but zero
+boardings were traced to a data-source limitation: the bus-stop-usage dataset
+excludes light rail (1 rail stop present vs 98 in the network). The service
+metric was restricted to bus service to match, and rail-served tracts are
+flagged rather than silently treated as poorly-used.</li>
+<li><strong>Direction of effects checked.</strong> Service-vs-density and boardings-vs-density
+correlations are both positive, consistent with Analysis 46; the near-zero
+boardings-vs-population correlation is explained by census tracts being drawn
+to roughly equal population.</li>
+<li><strong>Ecological framing</strong> applied throughout — results describe tracts, not
+individuals.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (6)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/49_transit_service_density/density_vs_service.png" alt="density_vs_service" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/density_vs_service.png" target="_blank" rel="noopener noreferrer">density_vs_service.png</a>
+          <p class="artifact-desc">Scatter of tract population density against weekly scheduled bus trips, annotated with the Spearman correlation.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/49_transit_service_density/service_by_density_quartile.png" alt="service_by_density_quartile" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/service_by_density_quartile.png" target="_blank" rel="noopener noreferrer">service_by_density_quartile.png</a>
+          <p class="artifact-desc">Bar chart of median weekly bus trips by population-density quartile.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/49_transit_service_density/density_vs_boardings.png" alt="density_vs_boardings" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/density_vs_boardings.png" target="_blank" rel="noopener noreferrer">density_vs_boardings.png</a>
+          <p class="artifact-desc">Scatter of tract population density against average weekday boardings, annotated with the Spearman correlation.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/49_transit_service_density/boardings_by_density_quartile.png" alt="boardings_by_density_quartile" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/boardings_by_density_quartile.png" target="_blank" rel="noopener noreferrer">boardings_by_density_quartile.png</a>
+          <p class="artifact-desc">Bar chart of median average weekday boardings by population-density quartile.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/49_transit_service_density/boardings_per_capita_by_quartile.png" alt="boardings_per_capita_by_quartile" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/boardings_per_capita_by_quartile.png" target="_blank" rel="noopener noreferrer">boardings_per_capita_by_quartile.png</a>
+          <p class="artifact-desc">Bar chart of median boardings per 1,000 residents by population-density quartile.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/49_transit_service_density/boardings_vs_density_residuals.png" alt="boardings_vs_density_residuals" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/boardings_vs_density_residuals.png" target="_blank" rel="noopener noreferrer">boardings_vs_density_residuals.png</a>
+          <p class="artifact-desc">Log-log scatter of boardings against density with the fitted line and labeled over-boarding outlier tracts.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/tract_service_boardings.csv" target="_blank" rel="noopener noreferrer">tract_service_boardings.csv</a>
+          <p class="artifact-desc">Per-tract population, density, weekly bus trips, boardings, boardings per 1,000 residents, density quartile, rail-served flag, and density-predicted boardings with residual.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/49_transit_service_density/tract_service_boardings.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/boardings_outlier_tracts.csv" target="_blank" rel="noopener noreferrer">boardings_outlier_tracts.csv</a>
+          <p class="artifact-desc">Tracts that board most above and below what their population density predicts.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/49_transit_service_density/boardings_outlier_tracts.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/49_transit_service_density/quartile_summary.csv" target="_blank" rel="noopener noreferrer">quartile_summary.csv</a>
+          <p class="artifact-desc">Median density, weekly trips, boardings, and boardings per 1,000 residents by population-density quartile.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/49_transit_service_density/quartile_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Transit Service &amp; Boardings vs Population Density</h1>
+<h2>Question</h2>
+<p>Analysis 46 showed that denser Allegheny County census tracts sit closer to a
+PRT stop — routes are <em>placed</em> near high-density areas. Two follow-up questions:</p>
+<ol>
+<li><strong>Service.</strong> Does the <em>amount</em> of transit service at a tract scale with its
+population density, or do dense areas just get a nearby stop without
+correspondingly more service?</li>
+<li><strong>Boardings.</strong> Do <em>boardings</em> follow the same density gradient, or do they
+diverge from residential population density?</li>
+</ol>
+<p>The unit of analysis is the census tract, mirroring Analysis 46 so the three
+gradients (proximity, service, boardings) are directly comparable.</p>
+<h2>Approach</h2>
+<ol>
+<li><strong>Tracts.</strong> Load Allegheny County tracts (<code>county_fips = '003'</code>) from
+<code>census_tracts</code> via <code>prt_otp_analysis.walksheds.load_tracts</code> (polygons in
+EPSG:32617, meters). Population density = <code>population / land_area_km2</code>.</li>
+<li><strong>Service.</strong> From <code>route_stops</code>, sum <code>trips_7d</code> (weekly scheduled trips)
+across all routes and directions at each stop. Point-in-polygon assign each
+stop to its tract and sum to get <strong>weekly scheduled trips serving the tract</strong>.</li>
+<li><strong>Boardings.</strong> From the WPRDC bus-stop-usage data, take the pre-pandemic
+weekday snapshot (<code>datekey = 201909</code>, <code>serviceday = Weekday</code>), sum <code>avg_ons</code>
+across routes per physical stop, assign stops to tracts, and sum to get
+<strong>average weekday boardings within the tract</strong>.</li>
+<li><strong>Spatial join.</strong> Stops are matched to tracts with a point-in-polygon join
+(<code>geopandas.sjoin</code>, <code>predicate=&quot;within&quot;</code>). Tracts with no stops keep a true
+zero for service and boardings rather than being dropped.</li>
+<li><strong>Correlation.</strong> Spearman rank correlation of population density against
+(a) weekly trips and (b) boardings, plus a population-density-quartile
+gradient for each. Expected sign is positive — denser tracts better served.</li>
+<li><strong>Divergence (Q2).</strong> Compare boardings against <em>population</em> as well as
+density: per-1,000-resident boarding rate by density quartile, a log-log
+regression of boardings on population, and the tracts with the largest
+positive/negative residuals — those that board far above or below what their
+resident population predicts.</li>
+</ol>
+<h2>Data</h2>
+<ul>
+<li><code>census_tracts</code> (<code>prt.db</code>) — <code>geoid</code>, <code>county_fips</code>, <code>population</code>,
+<code>land_area_m2</code>, tract polygon. Filtered to Allegheny County.</li>
+<li><code>route_stops</code> (<code>prt.db</code>) — <code>stop_id</code>, <code>trips_7d</code> (weekly scheduled trips).</li>
+<li><code>stops</code> (<code>prt.db</code>) — <code>stop_id</code>, <code>lat</code>, <code>lon</code>. Null coordinates excluded.</li>
+<li><code>data/bus-stop-usage/wprdc_stop_data.csv</code> — WPRDC stop-level boardings.
+Slice used: <code>datekey = 201909</code>, <code>serviceday = Weekday</code> (pre-pandemic);
+<code>avg_ons</code> is average daily boardings; the CSV carries its own <code>latitude</code>/
+<code>longitude</code> per stop.</li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>output/tract_service_boardings.csv</code> — per tract: population, density,
+weekly trips, boardings, boardings per 1,000 residents, density quartile,
+population-predicted boardings, and regression residual.</li>
+<li><code>output/boardings_outlier_tracts.csv</code> — tracts that board most above and
+below what their population predicts.</li>
+<li><code>output/quartile_summary.csv</code> — per-density-quartile medians.</li>
+<li><code>output/density_vs_service.png</code> — scatter of density vs weekly trips.</li>
+<li><code>output/service_by_density_quartile.png</code> — <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> weekly trips by quartile.</li>
+<li><code>output/density_vs_boardings.png</code> — scatter of density vs boardings.</li>
+<li><code>output/boardings_by_density_quartile.png</code> — <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> boardings by quartile.</li>
+<li><code>output/boardings_per_capita_by_quartile.png</code> — <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> boardings per 1,000
+residents by quartile (the divergence visual).</li>
+<li><code>output/boardings_vs_population_residuals.png</code> — log-log boardings vs
+population with fitted line and labeled outlier tracts.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li>Results are <strong>area-level (ecological) associations</strong>: they describe census
+tracts, not individual residents or their travel behavior.</li>
+<li><strong>Temporal mismatch.</strong> Boardings are September 2019; <code>route_stops</code> trip
+counts are the current GTFS snapshot; ACS population is the 2018–2022
+5-year estimate. The analysis assumes the <em>spatial pattern</em> of density,
+service, and ridership is reasonably stable across this window even though
+absolute levels are not contemporaneous. This is the largest caveat.</li>
+<li>A boarding is recorded where a <em>trip starts</em>, which is weighted toward
+employment and activity centers (Downtown, Oakland) as well as residences —
+so a gap between boardings and residential density is expected, and is the
+point of the divergence analysis rather than a data flaw.</li>
+<li><code>weekly_trips</code> counts scheduled trips, not vehicle capacity or time-of-day
+frequency: many low-frequency stops can sum to the same value as one
+high-frequency stop.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 49: test whether transit service and boardings track Allegheny
+County census-tract population density, the way stop proximity does (Analysis
+46) -- and whether boardings diverge from residential density.&quot;&quot;&quot;
+
+from pathlib import Path
+
+import geopandas as gpd
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    COLOR_GRAY,
+    COLOR_PRIMARY,
+    DATA_DIR,
+    output_dir,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.walksheds import CRS_GEO, CRS_M, load_tracts
+
+HERE = Path(__file__).resolve().parent
+OUT = output_dir(HERE)
+
+ALLEGHENY_FIPS = &quot;003&quot;
+BOARDINGS_DATEKEY = 201909  # September 2019 -- canonical pre-pandemic month
+BOARDINGS_SERVICEDAY = &quot;Weekday&quot;
+QUARTILE_LABELS = [&quot;Q1\n(sparsest)&quot;, &quot;Q2&quot;, &quot;Q3&quot;, &quot;Q4\n(densest)&quot;]
+
+
+def load_service_stops() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Weekly scheduled bus trips per stop, with coordinates and a label.
+
+    Restricted to bus (and busway) service: the WPRDC boardings dataset is
+    bus-only, so light-rail and incline service are excluded to keep the
+    service and boardings metrics on the same footing.
+    &quot;&quot;&quot;
+    rs_df = query_to_polars(
+        &quot;SELECT rs.stop_id, rs.trips_7d FROM route_stops rs &quot;
+        &quot;JOIN routes r ON rs.route_id = r.route_id WHERE r.mode = &#x27;BUS&#x27;&quot;
+    )
+    service_df = rs_df.group_by(&quot;stop_id&quot;).agg(weekly_trips=pl.col(&quot;trips_7d&quot;).sum())
+    stops_df = query_to_polars(
+        &quot;SELECT stop_id, lat, lon, hood, muni FROM stops &quot;
+        &quot;WHERE lat IS NOT NULL AND lon IS NOT NULL&quot;
+    )
+    return stops_df.join(service_df, on=&quot;stop_id&quot;, how=&quot;left&quot;).with_columns(
+        weekly_trips=pl.col(&quot;weekly_trips&quot;).fill_null(0)
+    )
+
+
+def load_boardings_stops() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Average weekday boardings per physical stop (pre-pandemic), with coordinates.&quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;], infer_schema_length=20000)
+    slc = df.filter(
+        (pl.col(&quot;datekey&quot;) == BOARDINGS_DATEKEY)
+        &amp; (pl.col(&quot;serviceday&quot;) == BOARDINGS_SERVICEDAY)
+    )
+    return slc.group_by(&quot;stop_id&quot;).agg(
+        boardings=pl.col(&quot;avg_ons&quot;).fill_null(0).sum(),
+        lat=pl.col(&quot;latitude&quot;).first(),
+        lon=pl.col(&quot;longitude&quot;).first(),
+    )
+
+
+def sum_to_tracts(
+    points_df: pl.DataFrame, tracts_gdf: gpd.GeoDataFrame, value_col: str
+) -&gt; tuple[pl.DataFrame, int]:
+    &quot;&quot;&quot;Point-in-polygon assign stops to tracts; return per-tract sums and the
+    count of stops that fell outside every tract.&quot;&quot;&quot;
+    pdf = points_df.to_pandas()
+    gdf = gpd.GeoDataFrame(
+        pdf, geometry=gpd.points_from_xy(pdf[&quot;lon&quot;], pdf[&quot;lat&quot;]), crs=CRS_GEO
+    ).to_crs(CRS_M)
+    joined = gpd.sjoin(
+        gdf, tracts_gdf[[&quot;geoid&quot;, &quot;geometry&quot;]], how=&quot;left&quot;, predicate=&quot;within&quot;
+    )
+    n_unmatched = int(joined[&quot;geoid&quot;].isna().sum())
+    matched_df = pl.from_pandas(joined.dropna(subset=[&quot;geoid&quot;])[[&quot;geoid&quot;, value_col]])
+    summed = matched_df.group_by(&quot;geoid&quot;).agg(pl.col(value_col).sum())
+    return summed, n_unmatched
+
+
+def tract_neighborhood_labels(
+    service_df: pl.DataFrame, tracts_gdf: gpd.GeoDataFrame
+) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Most common neighborhood/municipality among each tract&#x27;s stops, for labels.&quot;&quot;&quot;
+    pdf = service_df.to_pandas()
+    gdf = gpd.GeoDataFrame(
+        pdf, geometry=gpd.points_from_xy(pdf[&quot;lon&quot;], pdf[&quot;lat&quot;]), crs=CRS_GEO
+    ).to_crs(CRS_M)
+    joined = gpd.sjoin(
+        gdf, tracts_gdf[[&quot;geoid&quot;, &quot;geometry&quot;]], how=&quot;inner&quot;, predicate=&quot;within&quot;
+    )
+    labelled = pl.from_pandas(
+        joined[[&quot;geoid&quot;, &quot;hood&quot;, &quot;muni&quot;]]
+    ).with_columns(
+        area=pl.coalesce(pl.col(&quot;hood&quot;), pl.col(&quot;muni&quot;))
+    )
+    return (
+        labelled.drop_nulls(&quot;area&quot;)
+        .group_by(&quot;geoid&quot;, &quot;area&quot;)
+        .len()
+        .sort(&quot;len&quot;, descending=True)
+        .group_by(&quot;geoid&quot;)
+        .agg(area_label=pl.col(&quot;area&quot;).first())
+    )
+
+
+def rail_served_geoids(tracts_gdf: gpd.GeoDataFrame) -&gt; set[str]:
+    &quot;&quot;&quot;GEOIDs of tracts that contain at least one light-rail stop.
+
+    Light-rail-corridor tracts board mostly on the &#x27;T&#x27;, which the bus-stop-usage
+    dataset does not cover; flagging them keeps the boardings results honest.
+    &quot;&quot;&quot;
+    rail_df = query_to_polars(
+        &quot;SELECT DISTINCT s.stop_id, s.lat, s.lon FROM stops s &quot;
+        &quot;JOIN route_stops rs ON s.stop_id = rs.stop_id &quot;
+        &quot;JOIN routes r ON rs.route_id = r.route_id &quot;
+        &quot;WHERE r.mode = &#x27;RAIL&#x27; AND s.lat IS NOT NULL&quot;
+    )
+    pdf = rail_df.to_pandas()
+    gdf = gpd.GeoDataFrame(
+        pdf, geometry=gpd.points_from_xy(pdf[&quot;lon&quot;], pdf[&quot;lat&quot;]), crs=CRS_GEO
+    ).to_crs(CRS_M)
+    joined = gpd.sjoin(
+        gdf, tracts_gdf[[&quot;geoid&quot;, &quot;geometry&quot;]], how=&quot;inner&quot;, predicate=&quot;within&quot;
+    )
+    return set(joined[&quot;geoid&quot;])
+
+
+def build_tract_table(
+    tracts_gdf: gpd.GeoDataFrame,
+    service_by_tract: pl.DataFrame,
+    boardings_by_tract: pl.DataFrame,
+    labels_df: pl.DataFrame,
+    rail_geoids: set[str],
+) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;One row per Allegheny tract: density, service, boardings, and quartile.&quot;&quot;&quot;
+    tract_df = pl.from_pandas(
+        tracts_gdf[[&quot;geoid&quot;, &quot;population&quot;, &quot;land_area_m2&quot;]]
+    ).with_columns(rail_served=pl.col(&quot;geoid&quot;).is_in(list(rail_geoids)))
+    tract_df = (
+        tract_df.join(service_by_tract, on=&quot;geoid&quot;, how=&quot;left&quot;)
+        .join(boardings_by_tract, on=&quot;geoid&quot;, how=&quot;left&quot;)
+        .join(labels_df, on=&quot;geoid&quot;, how=&quot;left&quot;)
+        .with_columns(
+            weekly_trips=pl.col(&quot;weekly_trips&quot;).fill_null(0),
+            boardings=pl.col(&quot;boardings&quot;).fill_null(0.0),
+            pop_density=pl.col(&quot;population&quot;) / (pl.col(&quot;land_area_m2&quot;) / 1_000_000),
+        )
+        .with_columns(
+            boardings_per_1000=pl.when(pl.col(&quot;population&quot;) &gt; 0)
+            .then(1000 * pl.col(&quot;boardings&quot;) / pl.col(&quot;population&quot;))
+            .otherwise(None),
+        )
+    )
+    # Density quartile (1 = sparsest, 4 = densest); only for populated tracts.
+    populated = tract_df.filter(pl.col(&quot;population&quot;) &gt; 0)
+    populated = populated.with_columns(
+        density_quartile=(
+            (pl.col(&quot;pop_density&quot;).rank(method=&quot;ordinal&quot;) - 1)
+            / populated.height
+            * 4
+        )
+        .floor()
+        .clip(0, 3)
+        .cast(pl.Int64)
+        + 1
+    )
+    return tract_df.join(
+        populated.select(&quot;geoid&quot;, &quot;density_quartile&quot;), on=&quot;geoid&quot;, how=&quot;left&quot;
+    )
+
+
+def fit_residuals(tract_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Log-log regression of boardings on density; attach predicted + residual.
+
+    Residuals isolate tracts that board far above or below what their
+    residential density predicts -- the destination-driven divergence.
+    &quot;&quot;&quot;
+    populated = tract_df.filter(pl.col(&quot;population&quot;) &gt; 0)
+    x = np.log10(populated[&quot;pop_density&quot;].to_numpy())
+    y = np.log10(populated[&quot;boardings&quot;].to_numpy() + 1)
+    slope, intercept, r, p, _ = stats.linregress(x, y)
+    expected = 10 ** (slope * x + intercept) - 1
+    resid = y - (slope * x + intercept)
+    fitted = populated.select(&quot;geoid&quot;).with_columns(
+        expected_boardings=pl.Series(expected),
+        boardings_resid=pl.Series(resid),
+    )
+    out = tract_df.join(fitted, on=&quot;geoid&quot;, how=&quot;left&quot;)
+    return out, {&quot;slope&quot;: slope, &quot;intercept&quot;: intercept, &quot;r&quot;: r, &quot;p&quot;: p}
+
+
+def analyze(tract_df: pl.DataFrame) -&gt; dict:
+    &quot;&quot;&quot;Spearman correlations and density-quartile gradients.&quot;&quot;&quot;
+    populated = tract_df.filter(pl.col(&quot;population&quot;) &gt; 0)
+    rho_serv, p_serv = stats.spearmanr(
+        populated[&quot;pop_density&quot;], populated[&quot;weekly_trips&quot;]
+    )
+    rho_board, p_board = stats.spearmanr(
+        populated[&quot;pop_density&quot;], populated[&quot;boardings&quot;]
+    )
+    rho_board_pop, p_board_pop = stats.spearmanr(
+        populated[&quot;population&quot;], populated[&quot;boardings&quot;]
+    )
+    rho_serv_pop, _ = stats.spearmanr(
+        populated[&quot;population&quot;], populated[&quot;weekly_trips&quot;]
+    )
+    quartile_df = (
+        populated.group_by(&quot;density_quartile&quot;)
+        .agg(
+            n_tracts=pl.len(),
+            median_density=pl.col(&quot;pop_density&quot;).median(),
+            median_weekly_trips=pl.col(&quot;weekly_trips&quot;).median(),
+            median_boardings=pl.col(&quot;boardings&quot;).median(),
+            median_boardings_per_1000=pl.col(&quot;boardings_per_1000&quot;).median(),
+        )
+        .sort(&quot;density_quartile&quot;)
+    )
+    return {
+        &quot;n_populated&quot;: populated.height,
+        &quot;rho_serv&quot;: rho_serv,
+        &quot;p_serv&quot;: p_serv,
+        &quot;rho_board&quot;: rho_board,
+        &quot;p_board&quot;: p_board,
+        &quot;rho_board_pop&quot;: rho_board_pop,
+        &quot;p_board_pop&quot;: p_board_pop,
+        &quot;rho_serv_pop&quot;: rho_serv_pop,
+        &quot;quartile_df&quot;: quartile_df,
+    }
+
+
+def chart_scatter(tract_df: pl.DataFrame, y_col: str, ylabel: str,
+                  title: str, rho: float, p: float, path: Path,
+                  log_y: bool = False) -&gt; None:
+    &quot;&quot;&quot;Density-vs-metric scatter, annotated with the Spearman correlation.&quot;&quot;&quot;
+    plt = setup_plotting()
+    populated = tract_df.filter(pl.col(&quot;population&quot;) &gt; 0)
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax.scatter(
+        populated[&quot;pop_density&quot;].to_list(),
+        populated[y_col].to_list(),
+        color=COLOR_PRIMARY, s=28, alpha=0.6, edgecolors=&quot;white&quot;, linewidths=0.5,
+    )
+    ax.set_xscale(&quot;log&quot;)
+    if log_y:
+        ax.set_yscale(&quot;symlog&quot;)
+    ax.set_xlabel(&quot;Tract population density (people / km², log scale)&quot;)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.annotate(
+        f&quot;Spearman rho = {rho:.3f} (p = {p:.3g})&quot;,
+        xy=(0.04, 0.93), xycoords=&quot;axes fraction&quot;, fontsize=10,
+    )
+    save_chart(fig, path)
+
+
+def chart_quartile_bar(quartile_df: pl.DataFrame, col: str, ylabel: str,
+                       title: str, path: Path, fmt: str = &quot;,.0f&quot;) -&gt; None:
+    &quot;&quot;&quot;Bar chart of a metric&#x27;s median across density quartiles.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(9, 6))
+    vals = quartile_df[col].to_list()
+    ax.bar(QUARTILE_LABELS, vals, color=COLOR_PRIMARY)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    for i, v in enumerate(vals):
+        ax.text(i, v, f&quot;{v:{fmt}}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=9)
+    save_chart(fig, path)
+
+
+def chart_residuals(tract_df: pl.DataFrame, outliers: pl.DataFrame,
+                    fit: dict, path: Path) -&gt; None:
+    &quot;&quot;&quot;Log-log boardings-vs-density scatter with fit line and labeled outliers.&quot;&quot;&quot;
+    plt = setup_plotting()
+    populated = tract_df.filter(pl.col(&quot;population&quot;) &gt; 0)
+    dens = populated[&quot;pop_density&quot;].to_numpy()
+    board = populated[&quot;boardings&quot;].to_numpy()
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax.scatter(dens, board + 1, color=COLOR_GRAY, s=24, alpha=0.5,
+               edgecolors=&quot;white&quot;, linewidths=0.5)
+    xs = np.array([dens.min(), dens.max()])
+    ys = 10 ** (fit[&quot;slope&quot;] * np.log10(xs) + fit[&quot;intercept&quot;])
+    ax.plot(xs, ys, color=COLOR_PRIMARY, linewidth=2,
+            label=&quot;Boardings predicted by population density&quot;)
+    # Label the over-boarding (positive-residual) outliers; the under-boarding
+    # tracts all pile up at zero boardings, so labelling them just overprints.
+    for row in outliers.filter(pl.col(&quot;boardings_resid&quot;) &gt; 0).iter_rows(named=True):
+        ax.annotate(
+            str(row[&quot;area_label&quot;] or row[&quot;geoid&quot;]),
+            xy=(row[&quot;pop_density&quot;], row[&quot;boardings&quot;] + 1),
+            xytext=(4, 3), textcoords=&quot;offset points&quot;,
+            fontsize=7.5, alpha=0.9,
+        )
+    ax.set_xscale(&quot;log&quot;)
+    ax.set_yscale(&quot;log&quot;)
+    ax.set_xlabel(&quot;Tract population density (people / km², log scale)&quot;)
+    ax.set_ylabel(&quot;Average weekday boardings + 1 (log scale)&quot;)
+    ax.set_title(&quot;Boardings vs Density: Tracts That Over- and Under-Board\n&quot;
+                 &quot;(Allegheny County census tracts)&quot;)
+    ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+    save_chart(fig, path)
+
+
+@run_analysis(49, &quot;Transit Service &amp; Boardings vs Population Density&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Load data, assign stops to tracts, correlate, chart, and save.&quot;&quot;&quot;
+    with phase(&quot;Loading Allegheny County tracts and stop data&quot;):
+        tracts_gdf = load_tracts(extra_cols=[&quot;county_fips&quot;])
+        tracts_gdf = tracts_gdf[tracts_gdf[&quot;county_fips&quot;] == ALLEGHENY_FIPS].copy()
+        service_stops_df = load_service_stops()
+        boardings_stops_df = load_boardings_stops()
+        print(f&quot;  {len(tracts_gdf)} tracts, {service_stops_df.height} service stops, &quot;
+              f&quot;{boardings_stops_df.height} boardings stops&quot;)
+        print(f&quot;  total pre-pandemic weekday boardings: &quot;
+              f&quot;{boardings_stops_df[&#x27;boardings&#x27;].sum():,.0f}&quot;)
+
+    with phase(&quot;Assigning stops to tracts&quot;):
+        service_by_tract, n_unmatched_serv = sum_to_tracts(
+            service_stops_df.select(&quot;stop_id&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;weekly_trips&quot;),
+            tracts_gdf, &quot;weekly_trips&quot;,
+        )
+        boardings_by_tract, n_unmatched_board = sum_to_tracts(
+            boardings_stops_df, tracts_gdf, &quot;boardings&quot;,
+        )
+        labels_df = tract_neighborhood_labels(service_stops_df, tracts_gdf)
+        rail_geoids = rail_served_geoids(tracts_gdf)
+        print(f&quot;  stops outside all Allegheny tracts: &quot;
+              f&quot;{n_unmatched_serv} service, {n_unmatched_board} boardings&quot;)
+
+    with phase(&quot;Building tract table&quot;):
+        tract_df = build_tract_table(
+            tracts_gdf, service_by_tract, boardings_by_tract, labels_df,
+            rail_geoids,
+        )
+        tract_df, fit = fit_residuals(tract_df)
+        assigned_board = tract_df[&quot;boardings&quot;].sum()
+        print(f&quot;  {tract_df.height} tracts ({len(rail_geoids)} light-rail-served); &quot;
+              f&quot;{assigned_board:,.0f} boardings assigned to tracts&quot;)
+
+    with phase(&quot;Analyzing&quot;):
+        results = analyze(tract_df)
+        print(f&quot;  Q1 service: density vs weekly trips &quot;
+              f&quot;Spearman rho = {results[&#x27;rho_serv&#x27;]:.3f} &quot;
+              f&quot;(p = {results[&#x27;p_serv&#x27;]:.3g}), n = {results[&#x27;n_populated&#x27;]}&quot;)
+        print(f&quot;  Q2 boardings: density vs boardings &quot;
+              f&quot;Spearman rho = {results[&#x27;rho_board&#x27;]:.3f} &quot;
+              f&quot;(p = {results[&#x27;p_board&#x27;]:.3g})&quot;)
+        print(f&quot;     boardings vs population Spearman rho = &quot;
+              f&quot;{results[&#x27;rho_board_pop&#x27;]:.3f}&quot;)
+        for row in results[&quot;quartile_df&quot;].iter_rows(named=True):
+            print(f&quot;    Q{row[&#x27;density_quartile&#x27;]}: &quot;
+                  f&quot;{row[&#x27;median_weekly_trips&#x27;]:,.0f} weekly trips, &quot;
+                  f&quot;{row[&#x27;median_boardings&#x27;]:,.0f} boardings, &quot;
+                  f&quot;{row[&#x27;median_boardings_per_1000&#x27;]:,.0f} boardings/1k residents &quot;
+                  f&quot;({row[&#x27;n_tracts&#x27;]} tracts)&quot;)
+
+    with phase(&quot;Saving data and charts&quot;):
+        save_csv(
+            tract_df.select(
+                &quot;geoid&quot;, &quot;area_label&quot;, &quot;population&quot;, &quot;land_area_m2&quot;, &quot;pop_density&quot;,
+                &quot;weekly_trips&quot;, &quot;boardings&quot;, &quot;boardings_per_1000&quot;,
+                &quot;density_quartile&quot;, &quot;rail_served&quot;, &quot;expected_boardings&quot;,
+                &quot;boardings_resid&quot;,
+            ).sort(&quot;pop_density&quot;, descending=True),
+            OUT / &quot;tract_service_boardings.csv&quot;,
+        )
+        save_csv(results[&quot;quartile_df&quot;], OUT / &quot;quartile_summary.csv&quot;)
+
+        ranked = tract_df.filter(pl.col(&quot;boardings_resid&quot;).is_not_null()).sort(
+            &quot;boardings_resid&quot;, descending=True
+        )
+        outliers = pl.concat([ranked.head(10), ranked.tail(10)])
+        save_csv(
+            outliers.select(
+                &quot;geoid&quot;, &quot;area_label&quot;, &quot;population&quot;, &quot;pop_density&quot;,
+                &quot;boardings&quot;, &quot;rail_served&quot;, &quot;expected_boardings&quot;, &quot;boardings_resid&quot;,
+            ),
+            OUT / &quot;boardings_outlier_tracts.csv&quot;,
+        )
+
+        qdf = results[&quot;quartile_df&quot;]
+        chart_scatter(tract_df, &quot;weekly_trips&quot;, &quot;Weekly scheduled trips serving tract&quot;,
+                      &quot;Population Density vs Transit Service\n&quot;
+                      &quot;(Allegheny County census tracts)&quot;,
+                      results[&quot;rho_serv&quot;], results[&quot;p_serv&quot;],
+                      OUT / &quot;density_vs_service.png&quot;)
+        chart_quartile_bar(qdf, &quot;median_weekly_trips&quot;,
+                           &quot;Median weekly scheduled trips&quot;,
+                           &quot;Transit Service by Population-Density Quartile&quot;,
+                           OUT / &quot;service_by_density_quartile.png&quot;)
+        chart_scatter(tract_df, &quot;boardings&quot;, &quot;Average weekday boardings&quot;,
+                      &quot;Population Density vs Boardings\n&quot;
+                      &quot;(Allegheny County census tracts)&quot;,
+                      results[&quot;rho_board&quot;], results[&quot;p_board&quot;],
+                      OUT / &quot;density_vs_boardings.png&quot;, log_y=True)
+        chart_quartile_bar(qdf, &quot;median_boardings&quot;,
+                           &quot;Median average weekday boardings&quot;,
+                           &quot;Boardings by Population-Density Quartile&quot;,
+                           OUT / &quot;boardings_by_density_quartile.png&quot;)
+        chart_quartile_bar(qdf, &quot;median_boardings_per_1000&quot;,
+                           &quot;Median boardings per 1,000 residents&quot;,
+                           &quot;Boardings per Resident by Population-Density Quartile&quot;,
+                           OUT / &quot;boardings_per_capita_by_quartile.png&quot;)
+        chart_residuals(tract_df, outliers, fit,
+                        OUT / &quot;boardings_vs_density_residuals.png&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>data/bus-stop-usage/wprdc_stop_data.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Stop-level ridership with lat/lon, used to sum average weekday boardings per census tract.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>census_tracts</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Project pipeline owner not linked.</td>
+          <td>Refresh cadence unknown.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>geopandas</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

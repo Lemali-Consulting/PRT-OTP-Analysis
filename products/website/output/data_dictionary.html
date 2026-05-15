@@ -35,7 +35,7 @@
   <p class="kicker">Reference</p>
   <h1>Data Dictionary</h1>
   <p class="lede">Database tables, columns, types, and known data quality notes for the PRT OTP dataset.</p>
-  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
+  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
 </section>
 <section class="panel">
   <div class="markdown-body">
@@ -107,7 +107,7 @@
 <tr>
   <td><code>ntd_ridership</code></td>
   <td>673,920</td>
-  <td>Fact: monthly UPT by agency/mode/TOS</td>
+  <td>Fact: monthly UPT/VRH/VRM by agency/mode/TOS</td>
 </tr>
 <tr>
   <td><code>ntd_annual_service</code></td>
@@ -419,7 +419,7 @@
 </table>
 <p>Primary key: <code>(ntd_id, mode, tos)</code>. Source: NTD Monthly Module Excel, Master sheet.</p>
 <h3><code>ntd_ridership</code></h3>
-<p>Monthly unlinked passenger trips (UPT) from the NTD Monthly Module, Jan 2002–Dec 2025.</p>
+<p>Monthly ridership and service supply from the NTD Monthly Module, Jan 2002–Dec 2025, broken down by mode and type of service.</p>
 <table>
 <thead>
 <tr>
@@ -454,9 +454,19 @@
   <td>INTEGER</td>
   <td>Unlinked passenger trips (nullable)</td>
 </tr>
+<tr>
+  <td><code>vrh</code></td>
+  <td>REAL</td>
+  <td>Vehicle revenue hours (nullable)</td>
+</tr>
+<tr>
+  <td><code>vrm</code></td>
+  <td>REAL</td>
+  <td>Vehicle revenue miles (nullable)</td>
+</tr>
 </tbody>
 </table>
-<p>Primary key: <code>(ntd_id, mode, tos, month)</code>. Source: NTD Monthly Module Excel, UPT sheet. Built by <code>src/prt_otp_analysis/ntd_ridership.py</code>.</p>
+<p>Primary key: <code>(ntd_id, mode, tos, month)</code>. Source: NTD Monthly Module Excel — UPT, VRH, and VRM sheets (all share the agency/mode/TOS/month grain). Built by <code>src/prt_otp_analysis/ntd_ridership.py</code>. <code>vrh</code> enables per-mode productivity (<code>upt / vrh</code>), which <code>ntd_annual_service</code> cannot provide because it aggregates all modes.</p>
 <h3><code>ntd_annual_service</code></h3>
 <p>Annual service and financial metrics from the NTD TS2.2 &quot;Service Data and Operating Expenses Time-Series by System&quot; workbook, 1991–2024. System-level (all modes aggregated).</p>
 <table>

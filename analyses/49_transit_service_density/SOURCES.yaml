@@ -7,7 +7,8 @@ tables:
 - stops
 - census_tracts
 files:
-- data/bus-stop-usage/wprdc_stop_data.csv
+- path: data/bus-stop-usage/wprdc_stop_data.csv
+  description: Stop-level ridership with lat/lon, used to sum average weekday boardings per census tract.
 analyses:
 - id: 44
   relationship: extends the route-level population-reach work to a tract-level service measure.

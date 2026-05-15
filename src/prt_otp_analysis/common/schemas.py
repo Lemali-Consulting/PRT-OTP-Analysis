@@ -109,8 +109,10 @@ NTD_RIDERSHIP = Schema(
         "tos": pl.Utf8,
         "month": pl.Utf8,
         "upt": pl.Int64,
+        "vrh": pl.Float64,
+        "vrm": pl.Float64,
     },
-    nullable=frozenset({"upt"}),
+    nullable=frozenset({"upt", "vrh", "vrm"}),
 )
 
 NTD_ANNUAL_SERVICE = Schema(

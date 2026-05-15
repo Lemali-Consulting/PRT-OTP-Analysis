@@ -36,7 +36,7 @@
   <h1>data/bus-stop-usage/wprdc_stop_data.csv</h1>
   <p class="lede">Stop-level ridership with lat/lon, used to compute downtown-dependence scores per route from pre-pandemic weekday boardings.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
+  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
 </section>
 
 
@@ -50,6 +50,7 @@
   src --> c4["34 - Ridership Concentration (Pareto)"]
   src --> c5["35 - Boarding/Alighting Flow Analysis"]
   src --> c6["38 - Downtown Recovery Gap"]
+  src --> c7["49 - Transit Service & Boardings vs Population Density"]
 </pre>
 </section>
 
@@ -98,6 +99,11 @@
   
     <article class="card">
       <h3><a href="analyses/38_downtown_recovery/index.html">38 - Downtown Recovery Gap</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/49_transit_service_density/index.html">49 - Transit Service & Boardings vs Population Density</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

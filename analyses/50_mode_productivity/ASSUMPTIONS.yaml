@@ -1,0 +1,39 @@
+# Assumptions for Bus vs. Rail: Productivity by Mode
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+  - id: prt-runs-four-modes
+    statement: >-
+      PRT operates exactly four NTD modes — motor bus (MB), light rail (LR),
+      demand-response paratransit (DR), and inclined plane (IP) — and the
+      MODE_NAMES map covers all of them.
+    risk: >-
+      If PRT added or reclassified a mode (e.g. bus rapid transit reported
+      separately), it would be silently dropped from every chart and from the
+      all-mode roll-up, understating total service.
+  - id: zero-vrh-means-not-reported
+    statement: >-
+      A reported VRH of 0 for a mode-month means revenue hours were not yet
+      collected (true of paratransit and the incline before 2007), not that the
+      service ran zero hours. Such mode-years are left null, not divided into.
+    risk: >-
+      If a genuine zero-service month ever appeared it would also be nulled, but
+      a real transit mode never operates zero annual revenue hours, so the
+      treatment is safe in practice.
+  - id: monthly-module-vs-ts22
+    statement: >-
+      The NTD Monthly Module UPT/VRH used here differs slightly from the annual
+      TS2.2 workbook used by Analysis 48; the all-mode roll-up is expected to
+      land near, not exactly on, Analysis 48's figure.
+    risk: >-
+      A large divergence between the two NTD products would signal a reporting
+      error in one source rather than normal cross-product variance.
+  - id: incline-records-combined
+    statement: >-
+      The incline's two type-of-service records (IP/DO directly operated and
+      IP/PT purchased transportation) are summed into one Incline series; the
+      IP/PT record carries no data after 2012.
+    risk: >-
+      If PRT resumed purchased-transportation incline service, both records
+      would need to stay summed; treating only IP/DO as the incline would then
+      undercount it.

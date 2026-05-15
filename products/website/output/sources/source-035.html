@@ -36,7 +36,7 @@
   <h1>ntd_ridership</h1>
   <p class="lede">Monthly UPT facts by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</p>
   <p class="lede">Owner: Produced by NTD Ridership ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-05-15 18:56 UTC · Commit 2c8d0c5</p>
+  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
 </section>
 
 
@@ -46,6 +46,7 @@
   src["ntd_ridership"]
   src --> c1["36 - National Ridership Growth (2019 vs 2024)"]
   src --> c2["37 - Peer City Ridership Comparison"]
+  src --> c3["50 - Bus vs. Rail: Productivity by Mode"]
 </pre>
 </section>
 
@@ -74,6 +75,11 @@
   
     <article class="card">
       <h3><a href="analyses/37_peer_city_ridership/index.html">37 - Peer City Ridership Comparison</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/50_mode_productivity/index.html">50 - Bus vs. Rail: Productivity by Mode</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

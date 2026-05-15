@@ -16,7 +16,7 @@
 
 ## Limitations
 
-- **Agency-wide only.** NTD reports productivity for the whole agency; it cannot be broken down by route, mode, or neighborhood. A coverage-oriented route serving a low-density area will have low productivity by design, so this metric is not a verdict on any individual service.
+- **Agency-wide blend.** The figures here come from the NTD annual workbook, which aggregates all modes into one number — mixing motor bus, light rail, the ACCESS paratransit service, and the incline. Analysis 50 splits the metric by mode and shows the blend matters: PRT's fixed-route bus-and-rail network runs about 26% above the all-mode 2024 figure, because low-productivity paratransit (a federally mandated door-to-door service) drags the agency average down. Productivity still cannot be broken down by route or neighborhood — a coverage-oriented route serving a low-density area will have low productivity by design, so this metric is not a verdict on any individual service.
 - **UPT counts boardings, not riders.** Unlinked passenger trips count each boarding separately, so a rider who transfers is counted more than once. Productivity here measures boardings per service hour, not unique people moved.
 - **VRH excludes deadhead.** Vehicle revenue hours count only time in revenue service, not pull-out, layover, or repositioning, so this understates total operating effort behind each productive hour.
 - **Productivity is not the only goal.** Lower productivity can reflect a deliberate equity choice to serve lower-density areas. The metric describes how full the service runs, not whether the service is worth running.

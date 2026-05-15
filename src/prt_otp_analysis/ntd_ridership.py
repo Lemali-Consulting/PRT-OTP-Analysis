@@ -49,18 +49,18 @@ def load_master() -> pl.DataFrame:
     return agency
 
 
-def load_upt() -> pl.DataFrame:
-    """Read UPT sheet, unpivot wide months to long format."""
+def _load_metric_sheet(sheet_name: str, metric_col: str, dtype: pl.DataType) -> pl.DataFrame:
+    """Read one wide monthly sheet (UPT/VRH/VRM) and unpivot to long format."""
     import fastexcel
 
     wb = fastexcel.read_excel(str(XLSX_FILE))
-    df = wb.load_sheet_by_name("UPT").to_polars()
+    df = wb.load_sheet_by_name(sheet_name).to_polars()
 
     # Filter out rows with null NTD ID (footer/summary rows)
     df = df.filter(pl.col("NTD ID").is_not_null())
 
     # Identify month columns by regex
-    month_cols = [c for c in df.columns if MONTH_RE.match(c)]
+    month_cols = [c for c in df.columns if MONTH_RE.match(str(c))]
     id_cols = ["NTD ID", "Mode", "TOS"]
 
     # Unpivot wide to long
@@ -68,7 +68,7 @@ def load_upt() -> pl.DataFrame:
         on=month_cols,
         index=id_cols,
         variable_name="month_raw",
-        value_name="upt",
+        value_name=metric_col,
     )
 
     # Convert month format and types
@@ -76,10 +76,26 @@ def load_upt() -> pl.DataFrame:
     long = long.with_columns(
         ntd_id=pl.col("NTD ID").cast(pl.Int64),
         month=pl.col("month_raw").replace(month_map),
-        upt=pl.col("upt").cast(pl.Int64, strict=False),
-    ).select("ntd_id", pl.col("Mode").alias("mode"), pl.col("TOS").alias("tos"), "month", "upt")
+    ).with_columns(pl.col(metric_col).cast(dtype, strict=False))
 
-    return long
+    return long.select(
+        "ntd_id", pl.col("Mode").alias("mode"), pl.col("TOS").alias("tos"), "month", metric_col
+    )
+
+
+def load_ridership() -> pl.DataFrame:
+    """Load monthly UPT, VRH, and VRM by agency/mode/TOS, joined to one frame.
+
+    VRH (vehicle revenue hours) and VRM (vehicle revenue miles) come from
+    sibling sheets in the same workbook and share the UPT grain, so productivity
+    (UPT / VRH) can be computed per mode without a separate table.
+    """
+    upt = _load_metric_sheet("UPT", "upt", pl.Int64)
+    vrh = _load_metric_sheet("VRH", "vrh", pl.Float64)
+    vrm = _load_metric_sheet("VRM", "vrm", pl.Float64)
+
+    keys = ["ntd_id", "mode", "tos", "month"]
+    return upt.join(vrh, on=keys, how="left").join(vrm, on=keys, how="left")
 
 
 def write_to_db(agency: pl.DataFrame, ridership: pl.DataFrame) -> None:
@@ -115,13 +131,16 @@ def write_to_db(agency: pl.DataFrame, ridership: pl.DataFrame) -> None:
             tos     TEXT NOT NULL,
             month   TEXT NOT NULL,
             upt     INTEGER,
+            vrh     REAL,
+            vrm     REAL,
             PRIMARY KEY (ntd_id, mode, tos, month),
             FOREIGN KEY (ntd_id, mode, tos) REFERENCES ntd_agency(ntd_id, mode, tos)
         )
     """)
     conn.executemany(
-        "INSERT INTO ntd_ridership (ntd_id, mode, tos, month, upt) VALUES (?, ?, ?, ?, ?)",
-        ridership.rows(),
+        "INSERT INTO ntd_ridership (ntd_id, mode, tos, month, upt, vrh, vrm) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        ridership.select("ntd_id", "mode", "tos", "month", "upt", "vrh", "vrm").rows(),
     )
 
     conn.commit()
@@ -145,12 +164,14 @@ def main() -> None:
     print(f"  {len(agency)} agency-mode-TOS rows")
     print(f"  Unique agencies: {agency['ntd_id'].n_unique()}")
 
-    # Step 2: Load UPT sheet
-    print("\n2. Loading UPT sheet (ridership data)...")
-    ridership = load_upt()
+    # Step 2: Load UPT, VRH, VRM sheets
+    print("\n2. Loading UPT/VRH/VRM sheets (ridership + service data)...")
+    ridership = load_ridership()
     print(f"  {len(ridership)} ridership rows (long format)")
     non_null = ridership.filter(pl.col("upt").is_not_null())
     print(f"  {len(non_null)} rows with non-null UPT")
+    vrh_non_null = ridership.filter(pl.col("vrh").is_not_null())
+    print(f"  {len(vrh_non_null)} rows with non-null VRH")
     print(f"  Month range: {ridership['month'].min()} to {ridership['month'].max()}")
 
     # Step 3: Write to DB
@@ -162,7 +183,7 @@ def main() -> None:
 
     # PRT data
     prt = ridership.filter(pl.col("ntd_id") == 30022)
-    print(f"\n  PRT (NTD ID 30022):")
+    print("\n  PRT (NTD ID 30022):")
     print(f"    Rows: {len(prt)}")
     print(f"    Modes: {prt['mode'].unique().sort().to_list()}")
     prt_2024 = prt.filter(pl.col("month").str.starts_with("2024"))

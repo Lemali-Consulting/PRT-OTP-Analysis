@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>50 - Bus vs. Rail: Productivity by Mode - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>50 - Bus vs. Rail: Productivity by Mode</h1>
+  <p class="lede">Equity and Strategic Planning</p>
+  <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
+  <p class="lede">Built 2026-05-15 22:19 UTC · Commit 50b1002</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../49_transit_service_density/index.html">← 49 - Transit Service & Boardings vs Population Density</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  50_mode_productivity(["50 - Bus vs. Rail: Productivity by Mode"])
+  t_ntd_ridership[("ntd_ridership")] --> 50_mode_productivity
+  05_ntd_ridership[["NTD Ridership ETL"]] --> t_ntd_ridership
+  u1_05_ntd_ridership[/"data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx"/] --> 05_ntd_ridership
+  d1_50_mode_productivity(("polars (lib)")) --> 50_mode_productivity
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 50_mode_productivity page;
+  class t_ntd_ridership table;
+  class d1_50_mode_productivity dep;
+  class u1_05_ntd_ridership file;
+  class 05_ntd_ridership pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Bus vs. Rail — Productivity by Mode</h1>
+<h2>Key findings</h2>
+<ol>
+<li><p><strong>Rail runs fuller than bus.</strong> In 2024 PRT's light rail &quot;T&quot; carried 25.7
+passengers per vehicle revenue hour, against 22.2 for the motor bus network —
+rail was about 16% more productive per hour of service operated. The common
+assumption that buses are the workhorse and rail the showpiece has it
+backwards on this measure: each hour of light rail service moved more riders.</p>
+</li>
+<li><p><strong>Paratransit drags the agency average far below the bus-and-rail network.</strong>
+PRT's demand-response ACCESS service carried just 1.9 passengers per revenue
+hour in 2024 — roughly one-twelfth the fixed-route rate. It accounted for only
+2.4% of PRT's trips but consumed 22.8% of all revenue hours. This is not
+waste: door-to-door service for riders with disabilities is inherently
+low-productivity and is federally required under the Americans with
+Disabilities Act. But it means the agency-wide productivity figure is a blend
+that no rider of the bus or &quot;T&quot; actually experiences.</p>
+</li>
+<li><p><strong>The fixed-route network is meaningfully more productive than the agency
+number.</strong> Analysis 48 reported PRT's agency-wide productivity at about 18
+passengers per revenue hour. Strip out paratransit and the incline, and PRT's
+conventional bus-plus-rail network ran at 22.5 in 2024 — 26% higher. The
+service most riders use is healthier than the all-mode blend suggests.</p>
+</li>
+<li><p><strong>The incline is PRT's most productive service — but tiny and volatile.</strong> The
+Monongahela Incline carried 35.2 passengers per revenue hour in 2024, the
+highest of any mode: a short, frequently-boarded ride up Mount Washington. It
+is also the smallest, at 0.7% of trips, and its productivity swings sharply
+year to year because its revenue hours are small and sensitive to maintenance
+closures (it dropped to 35 in 2020, rebounded to 57 in 2022, then fell again).</p>
+</li>
+<li><p><strong>The post-2019 decline hit every mode.</strong> From 2019 to 2024, productivity fell
+34% for motor bus (33.7 → 22.2), 42% for light rail (44.6 → 25.7), 21% for
+paratransit (2.4 → 1.9), and 62% for the incline (93.3 → 35.2). Light rail's
+percentage drop was the steeper of the two fixed-route modes — its ridership
+fell faster than the bus while its service hours were cut less.</p>
+</li>
+<li><p><strong>Before COVID, bus and rail moved in opposite directions.</strong> Motor bus
+productivity <em>rose</em> from 28.4 in 2002 to a peak near 38 around 2011, then held
+in the low 30s: PRT cut bus service hours (2.23M → 1.47M <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>) faster than bus
+ridership fell — a genuine right-sizing. Light rail did the reverse, falling
+from about 73 in 2002 to 45 by 2019, as the 2012 North Shore Connector
+extension added service hours without adding proportional ridership. The
+agency-wide story of &quot;service held flat while riders disappeared&quot; is really
+two opposite mode trends averaged together.</p>
+</li>
+</ol>
+<h2>Limitations</h2>
+<ul>
+<li><strong>Agency and mode level only.</strong> NTD reports each mode for the whole agency, so
+this cannot distinguish a busy bus route from a coverage route, or one rail
+line from another. The per-mode figures are network averages.</li>
+<li><strong>The incline series is small-sample and volatile.</strong> The incline operates a
+few thousand revenue hours a year, so its productivity is sensitive to short
+closures and reporting quirks. Its 2019→2024 change should be read as
+directional, not precise.</li>
+<li><strong>Paratransit <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> begins in 2007.</strong> The NTD Monthly Module does not report
+revenue hours for demand-response or incline service before 2007, so those two
+productivity series — and the all-mode roll-up — start that year. Motor bus and
+light rail have a complete record from 2002.</li>
+<li><strong><a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> counts boardings, not riders.</strong> A passenger who transfers is counted on
+each vehicle boarded, so productivity here is boardings per service hour, not
+unique people moved. This inflates bus productivity slightly relative to rail,
+since bus trips involve more transfers.</li>
+<li><strong><a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> excludes deadhead.</strong> Revenue hours count only time in passenger service,
+not pull-out, layover, or repositioning, so this understates total operating
+effort behind each productive hour — equally across modes.</li>
+<li><strong>Productivity is not the only goal.</strong> Paratransit's low figure reflects a
+legal service mandate, not inefficiency; a coverage-oriented service is
+expected to score low. The metric describes how full a service runs, not
+whether it is worth running.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified.</strong> <code>upt</code> and <code>vrh</code> columns of <code>ntd_ridership</code>, sourced
+from the NTD Monthly Module workbook (<a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> and <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> sheets). The <code>vrh</code> column was
+added to the table for this analysis; the ETL (<code>src/prt_otp_analysis/ntd_ridership.py</code>)
+unpivots the <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> sheet on the same agency/mode/TOS/month grain as <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>. No
+column mapping was written from memory.</li>
+<li><strong>Temporal scope matches.</strong> All four modes are summed over the same calendar
+years (2002–2024). The all-mode and paratransit/incline series are restricted
+to 2007–2024, the span where every mode has reported <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>; this restriction is
+stated in METHODS.md.</li>
+<li><strong>Null/missing handling.</strong> Productivity is computed only where reported <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> is
+greater than zero. Pre-2007 demand-response and incline months report <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> = 0;
+these are left null, never treated as real zero-hour service that would yield
+an infinite ratio.</li>
+<li><strong>Aggregates sanity-checked.</strong> The all-mode 2024 figure (17.8) reconciles with
+Analysis 48's 18.3: Analysis 48 uses the NTD annual TS2.2 workbook (2024 <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>
+37.9M), this analysis uses the NTD Monthly Module (2024 <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> 36.9M). The ~3% gap
+between the two NTD products is normal cross-source <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a>; both place PRT
+near 18. Motor bus 2024 <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> (32.5M) is consistent with PRT carrying ~88% of its
+trips on the bus.</li>
+<li><strong>Direction of effects checked.</strong> Productivity fell at every mode after 2019,
+consistent with the documented national post-COVID ridership decline. No
+directional reversal.</li>
+<li><strong>Surprising result investigated.</strong> Light rail out-productive of motor bus is
+plausible, not a data error: rail serves dense, high-demand corridors at high
+frequency, while the bus network includes many low-density coverage routes.
+The incline ranking highest is also expected — a short ride with rapid
+boardings packs many trips into few service hours. Both were checked against
+the underlying <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> and <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> totals.</li>
+<li><strong>Ecological framing.</strong> All results are described as mode-level network
+averages for PRT, never as statements about individual routes or riders.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (2)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/50_mode_productivity/mode_productivity_trends.png" alt="mode_productivity_trends" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/50_mode_productivity/mode_productivity_trends.png" target="_blank" rel="noopener noreferrer">mode_productivity_trends.png</a>
+          <p class="artifact-desc">Line chart of passengers per revenue hour for each PRT mode, 2002-2024.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/50_mode_productivity/mode_productivity_2024.png" alt="mode_productivity_2024" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/50_mode_productivity/mode_productivity_2024.png" target="_blank" rel="noopener noreferrer">mode_productivity_2024.png</a>
+          <p class="artifact-desc">Bar ranking of 2024 productivity by mode, with the fixed-route and all-mode roll-ups marked.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/50_mode_productivity/service_vs_ridership_2024.png" alt="service_vs_ridership_2024" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/50_mode_productivity/service_vs_ridership_2024.png" target="_blank" rel="noopener noreferrer">service_vs_ridership_2024.png</a>
+          <p class="artifact-desc">Each mode's 2024 share of total trips compared with its share of total service hours.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/50_mode_productivity/productivity_decline_2019_2024.png" alt="productivity_decline_2019_2024" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/50_mode_productivity/productivity_decline_2019_2024.png" target="_blank" rel="noopener noreferrer">productivity_decline_2019_2024.png</a>
+          <p class="artifact-desc">Productivity by mode in 2019 versus 2024, with the percent change labeled.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/50_mode_productivity/mode_productivity_by_year.csv" target="_blank" rel="noopener noreferrer">mode_productivity_by_year.csv</a>
+          <p class="artifact-desc">Passengers, revenue hours, and productivity for each PRT mode and calendar year, 2002-2024.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/50_mode_productivity/mode_productivity_by_year.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/50_mode_productivity/mode_summary.csv" target="_blank" rel="noopener noreferrer">mode_summary.csv</a>
+          <p class="artifact-desc">Per-mode productivity at 2007/2019/2024, the 2019-2024 change, and each mode's 2024 share of trips and service hours, including bus+rail and all-mode roll-ups.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/50_mode_productivity/mode_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Bus vs. Rail — Productivity by Mode</h1>
+<h2>Question</h2>
+<p>Analysis 48 found that PRT's agency-wide service productivity — passengers
+carried per hour of service operated (<a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> / <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>) — has roughly halved, to about
+18 passengers per revenue hour in 2024. But that single number blends four very
+different services: the motor bus network, the light rail &quot;T&quot;, the door-to-door
+ACCESS paratransit service, and the Monongahela Incline. This analysis splits
+the agency figure apart. How productive is each mode? Is the low agency average
+dragged down by one service? And has the post-2019 decline hit bus and rail
+equally?</p>
+<h2>Approach</h2>
+<ul>
+<li>Define productivity exactly as Analysis 48 does — <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">unlinked passenger trips</a> per
+vehicle revenue hour, <code>productivity = UPT / VRH</code> — but compute it per mode
+instead of agency-wide.</li>
+<li>Pull PRT's monthly <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> and <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> by mode from <code>ntd_ridership</code> and aggregate to
+calendar years. The four NTD mode codes map to: <code>MB</code> = Motor Bus, <code>LR</code> = Light
+Rail, <code>DR</code> = Paratransit (demand-response ACCESS service), <code>IP</code> = Incline.</li>
+<li>Compute productivity only for mode-years with reported <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> &gt; 0. The NTD
+Monthly Module does not report <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> for <code>DR</code> or <code>IP</code> before 2007, so their
+productivity series begin in 2007; <code>MB</code> and <code>LR</code> have a complete <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> record
+from 2002. Mode-years without <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> are left null, never treated as zero.</li>
+<li>Build two roll-ups: <strong>fixed-route</strong> (<code>MB</code> + <code>LR</code>, the conventional bus + rail
+network) and <strong>all-mode</strong> (every mode, which reproduces the agency-wide figure
+of Analysis 48). The all-mode series is reported only for 2007–2024, the span
+where every mode has <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>.</li>
+<li>Compare modes three ways: a 2024 productivity snapshot, the 2019→2024 change
+(the COVID window used by Analysis 48), and each mode's 2024 share of trips
+versus its share of revenue hours — which exposes whether a mode consumes
+service out of proportion to the riders it carries.</li>
+<li>Reconcile the all-mode 2024 figure against Analysis 48's 18.3, which is built
+from a different NTD source (the annual TS2.2 workbook).</li>
+</ul>
+<h2>Data</h2>
+<ul>
+<li><code>ntd_ridership</code>: columns <code>ntd_id</code>, <code>mode</code>, <code>tos</code>, <code>month</code>, <code>upt</code>, <code>vrh</code>.
+Filtered to <code>ntd_id = 30022</code> (PRT). Monthly records summed to calendar years
+2002–2024. The <code>vrh</code> and <code>vrm</code> columns were added to this table specifically
+to support a per-mode productivity breakdown — the agency-level
+<code>ntd_annual_service</code> table used by Analysis 48 cannot be split by mode.</li>
+<li>The <code>IP</code> mode has two type-of-service records (<code>IP/DO</code> and <code>IP/PT</code>); the
+purchased-transportation record ends in 2012. Summing <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> and <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> across both
+records for each month combines them into one Incline series.</li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>output/mode_productivity_by_year.csv</code> — <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>, <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>, and productivity for every
+mode and calendar year 2002–2024.</li>
+<li><code>output/mode_summary.csv</code> — per mode (plus fixed-route and all-mode roll-ups):
+productivity at 2002/2007, 2019, and 2024, the 2019→2024 percent change, and
+the 2024 shares of trips and revenue hours.</li>
+<li><code>output/mode_productivity_trends.png</code> — productivity by mode, 2002–2024.</li>
+<li><code>output/mode_productivity_2024.png</code> — bar ranking of 2024 productivity by
+mode, with the fixed-route and all-mode roll-ups marked.</li>
+<li><code>output/service_vs_ridership_2024.png</code> — each mode's share of 2024 trips
+versus its share of 2024 revenue hours.</li>
+<li><code>output/productivity_decline_2019_2024.png</code> — productivity by mode in 2019
+versus 2024.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 50: splits PRT&#x27;s agency-wide service productivity (passengers per
+vehicle revenue hour) into its four modes — motor bus, light rail, paratransit,
+and the incline — to see which service the low agency average is hiding.&quot;&quot;&quot;
+
+import polars as pl
+
+from prt_otp_analysis.common import (
+    COLOR_GRAY,
+    analysis_dir,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.common.schemas import NTD_RIDERSHIP, validate
+
+OUT = analysis_dir(__file__)
+
+PRT_NTD_ID = 30022
+START_YEAR = 2002
+BASELINE_YEAR = 2019
+COMPARE_YEAR = 2024
+# VRH for paratransit and the incline is first reported in 2007; before that the
+# all-mode roll-up would understate revenue hours and overstate productivity.
+ALL_MODE_START = 2007
+
+# NTD mode codes -&gt; readable names. PRT runs exactly these four.
+MODE_NAMES = {
+    &quot;MB&quot;: &quot;Motor Bus&quot;,
+    &quot;LR&quot;: &quot;Light Rail&quot;,
+    &quot;DR&quot;: &quot;Paratransit&quot;,
+    &quot;IP&quot;: &quot;Incline&quot;,
+}
+MODE_ORDER = [&quot;MB&quot;, &quot;LR&quot;, &quot;DR&quot;, &quot;IP&quot;]
+MODE_COLORS = {
+    &quot;MB&quot;: &quot;#3b82f6&quot;,  # blue   — bus
+    &quot;LR&quot;: &quot;#22c55e&quot;,  # green  — rail
+    &quot;DR&quot;: &quot;#f59e0b&quot;,  # amber  — paratransit
+    &quot;IP&quot;: &quot;#a855f7&quot;,  # purple — incline
+}
+FIXED_ROUTE_MODES = [&quot;MB&quot;, &quot;LR&quot;]
+ROLLUP_NAMES = {
+    &quot;FIXED_ROUTE&quot;: &quot;Fixed route (bus + rail)&quot;,
+    &quot;ALL_MODE&quot;: &quot;All modes (agency-wide)&quot;,
+}
+
+
+def load_mode_year() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load PRT monthly UPT/VRH by mode and aggregate to calendar years.
+
+    Productivity (UPT / VRH) is computed only where VRH &gt; 0; mode-years with no
+    reported revenue hours are left null rather than counted as zero service.
+    &quot;&quot;&quot;
+    raw_df = query_to_polars(
+        &quot;SELECT mode, month, upt, vrh FROM ntd_ridership WHERE ntd_id = ?&quot;,
+        (PRT_NTD_ID,),
+    )
+    validate(raw_df, NTD_RIDERSHIP, subset=True)
+
+    year_df = (
+        raw_df.with_columns(year=pl.col(&quot;month&quot;).str.slice(0, 4).cast(pl.Int64))
+        .filter(pl.col(&quot;year&quot;).is_between(START_YEAR, COMPARE_YEAR))
+        .group_by(&quot;mode&quot;, &quot;year&quot;)
+        .agg(upt=pl.col(&quot;upt&quot;).sum(), vrh=pl.col(&quot;vrh&quot;).sum())
+        .sort(&quot;mode&quot;, &quot;year&quot;)
+    )
+    return year_df.with_columns(
+        productivity=pl.when(pl.col(&quot;vrh&quot;) &gt; 0)
+        .then(pl.col(&quot;upt&quot;) / pl.col(&quot;vrh&quot;))
+        .otherwise(None)
+    )
+
+
+def rollup(mode_df: pl.DataFrame, modes: list[str], label: str) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Sum UPT and VRH across a set of modes into one labelled productivity series.&quot;&quot;&quot;
+    sub = mode_df.filter(pl.col(&quot;mode&quot;).is_in(modes))
+    agg = (
+        sub.group_by(&quot;year&quot;)
+        .agg(upt=pl.col(&quot;upt&quot;).sum(), vrh=pl.col(&quot;vrh&quot;).sum())
+        .sort(&quot;year&quot;)
+    )
+    return agg.with_columns(
+        mode=pl.lit(label),
+        productivity=pl.when(pl.col(&quot;vrh&quot;) &gt; 0)
+        .then(pl.col(&quot;upt&quot;) / pl.col(&quot;vrh&quot;))
+        .otherwise(None),
+    ).select(&quot;mode&quot;, &quot;year&quot;, &quot;upt&quot;, &quot;vrh&quot;, &quot;productivity&quot;)
+
+
+def _val(df: pl.DataFrame, mode: str, year: int, col: str) -&gt; float | None:
+    &quot;&quot;&quot;Return one cell from a long mode/year frame, or None if absent.&quot;&quot;&quot;
+    rows = df.filter((pl.col(&quot;mode&quot;) == mode) &amp; (pl.col(&quot;year&quot;) == year))
+    return rows.row(0, named=True)[col] if len(rows) else None
+
+
+def build_summary(mode_df: pl.DataFrame, rollup_df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;One row per mode (and roll-up): productivity at key years and 2024 shares.&quot;&quot;&quot;
+    compare_df = mode_df.filter(pl.col(&quot;year&quot;) == COMPARE_YEAR)
+    total_upt = compare_df[&quot;upt&quot;].sum()
+    total_vrh = compare_df[&quot;vrh&quot;].sum()
+
+    rows = []
+    for mode in MODE_ORDER + [&quot;FIXED_ROUTE&quot;, &quot;ALL_MODE&quot;]:
+        src = rollup_df if mode in ROLLUP_NAMES else mode_df
+        p07 = _val(src, mode, ALL_MODE_START, &quot;productivity&quot;)
+        p19 = _val(src, mode, BASELINE_YEAR, &quot;productivity&quot;)
+        p24 = _val(src, mode, COMPARE_YEAR, &quot;productivity&quot;)
+        upt24 = _val(src, mode, COMPARE_YEAR, &quot;upt&quot;)
+        vrh24 = _val(src, mode, COMPARE_YEAR, &quot;vrh&quot;)
+        rows.append({
+            &quot;mode&quot;: ROLLUP_NAMES.get(mode, MODE_NAMES.get(mode, mode)),
+            &quot;prod_2007&quot;: p07,
+            &quot;prod_2019&quot;: p19,
+            &quot;prod_2024&quot;: p24,
+            &quot;pct_change_2019_2024&quot;: (p24 - p19) / p19 * 100 if p19 and p24 else None,
+            &quot;upt_share_2024&quot;: upt24 / total_upt * 100 if upt24 else None,
+            &quot;vrh_share_2024&quot;: vrh24 / total_vrh * 100 if vrh24 else None,
+        })
+    return pl.DataFrame(rows)
+
+
+def chart_trends(plt, mode_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Productivity by mode, 2002-2024 — one line per mode.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for mode in MODE_ORDER:
+        sub = mode_df.filter(
+            (pl.col(&quot;mode&quot;) == mode) &amp; pl.col(&quot;productivity&quot;).is_not_null()
+        ).sort(&quot;year&quot;)
+        ax.plot(sub[&quot;year&quot;].to_list(), sub[&quot;productivity&quot;].to_list(),
+                label=MODE_NAMES[mode], color=MODE_COLORS[mode],
+                linewidth=2.5, marker=&quot;o&quot;, markersize=3)
+
+    ax.axvline(2020, color=COLOR_GRAY, linestyle=&quot;--&quot;, linewidth=1)
+    ax.text(2020.3, ax.get_ylim()[1] * 0.95, &quot;COVID-19&quot;, fontsize=9, color=&quot;#555555&quot;)
+    ax.set_ylabel(&quot;Passengers per Vehicle Revenue Hour&quot;)
+    ax.set_xlabel(&quot;Year&quot;)
+    ax.set_ylim(bottom=0)
+    ax.set_title(&quot;PRT Service Productivity by Mode, 2002–2024&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;mode_productivity_trends.png&quot;)
+
+
+def chart_2024(plt, mode_df: pl.DataFrame, rollup_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bar ranking of 2024 productivity by mode, with roll-up reference lines.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(10, 6))
+    snap = mode_df.filter(pl.col(&quot;year&quot;) == COMPARE_YEAR).sort(&quot;productivity&quot;)
+    labels = [MODE_NAMES[m] for m in snap[&quot;mode&quot;].to_list()]
+    vals = snap[&quot;productivity&quot;].to_list()
+    colors = [MODE_COLORS[m] for m in snap[&quot;mode&quot;].to_list()]
+
+    ax.barh(labels, vals, color=colors, edgecolor=&quot;white&quot;)
+    for i, v in enumerate(vals):
+        ax.text(v + 0.4, i, f&quot;{v:.1f}&quot;, va=&quot;center&quot;, fontsize=10, fontweight=&quot;bold&quot;)
+
+    fixed = _val(rollup_df, &quot;FIXED_ROUTE&quot;, COMPARE_YEAR, &quot;productivity&quot;)
+    allm = _val(rollup_df, &quot;ALL_MODE&quot;, COMPARE_YEAR, &quot;productivity&quot;)
+    ax.axvline(fixed, color=&quot;#1f2937&quot;, linestyle=&quot;--&quot;, linewidth=1.4)
+    ax.text(fixed + 0.4, -0.55, f&quot;Fixed route (bus + rail): {fixed:.1f}&quot;,
+            fontsize=8.5, color=&quot;#1f2937&quot;)
+    ax.axvline(allm, color=COLOR_GRAY, linestyle=&quot;:&quot;, linewidth=1.4)
+    ax.text(allm + 0.4, -0.85, f&quot;All modes: {allm:.1f}&quot;, fontsize=8.5, color=&quot;#555555&quot;)
+
+    ax.set_xlabel(&quot;Passengers per Vehicle Revenue Hour&quot;)
+    ax.set_title(&quot;PRT Service Productivity by Mode, 2024&quot;)
+    ax.set_ylim(-1.1, len(labels) - 0.4)
+    save_chart(fig, OUT / &quot;mode_productivity_2024.png&quot;)
+
+
+def chart_service_vs_ridership(plt, summary_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Each mode&#x27;s 2024 share of trips vs its share of revenue hours.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(10, 6))
+    modes = [MODE_NAMES[m] for m in MODE_ORDER]
+    sub = summary_df.filter(pl.col(&quot;mode&quot;).is_in(modes))
+    upt_share = sub[&quot;upt_share_2024&quot;].to_list()
+    vrh_share = sub[&quot;vrh_share_2024&quot;].to_list()
+
+    y = list(range(len(modes)))
+    h = 0.38
+    ax.barh([i + h / 2 for i in y], upt_share, height=h,
+            color=&quot;#2563eb&quot;, label=&quot;Share of trips (UPT)&quot;)
+    ax.barh([i - h / 2 for i in y], vrh_share, height=h,
+            color=&quot;#f59e0b&quot;, label=&quot;Share of service hours (VRH)&quot;)
+    for i in y:
+        ax.text(upt_share[i] + 0.8, i + h / 2, f&quot;{upt_share[i]:.1f}%&quot;,
+                va=&quot;center&quot;, fontsize=8.5)
+        ax.text(vrh_share[i] + 0.8, i - h / 2, f&quot;{vrh_share[i]:.1f}%&quot;,
+                va=&quot;center&quot;, fontsize=8.5)
+
+    ax.set_yticks(y)
+    ax.set_yticklabels(modes)
+    ax.set_xlabel(&quot;Share of PRT total, 2024 (%)&quot;)
+    ax.set_title(&quot;Who Carries the Riders vs. Who Uses the Service Hours, 2024&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;service_vs_ridership_2024.png&quot;)
+
+
+def chart_decline(plt, mode_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Productivity by mode in 2019 vs 2024.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(10, 6))
+    p19 = [_val(mode_df, m, BASELINE_YEAR, &quot;productivity&quot;) for m in MODE_ORDER]
+    p24 = [_val(mode_df, m, COMPARE_YEAR, &quot;productivity&quot;) for m in MODE_ORDER]
+
+    x = list(range(len(MODE_ORDER)))
+    w = 0.38
+    ax.bar([i - w / 2 for i in x], p19, width=w, color=COLOR_GRAY, label=&quot;2019&quot;)
+    ax.bar([i + w / 2 for i in x], p24, width=w,
+           color=[MODE_COLORS[m] for m in MODE_ORDER], label=&quot;2024&quot;)
+    for i in x:
+        pct = (p24[i] - p19[i]) / p19[i] * 100
+        ax.text(i, max(p19[i], p24[i]) + 1.5, f&quot;{pct:+.0f}%&quot;, ha=&quot;center&quot;,
+                fontsize=9, fontweight=&quot;bold&quot;, color=&quot;#b91c1c&quot;)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels([MODE_NAMES[m] for m in MODE_ORDER])
+    ax.set_ylabel(&quot;Passengers per Vehicle Revenue Hour&quot;)
+    ax.set_title(&quot;Productivity Fell at Every Mode — 2019 vs. 2024&quot;)
+    ax.legend()
+    save_chart(fig, OUT / &quot;productivity_decline_2019_2024.png&quot;)
+
+
+@run_analysis(50, &quot;Bus vs. Rail — Productivity by Mode&quot;)
+def main():
+    plt = setup_plotting()
+
+    with phase(&quot;Loading per-mode UPT and VRH&quot;):
+        mode_df = load_mode_year()
+        rollup_df = pl.concat([
+            rollup(mode_df, FIXED_ROUTE_MODES, &quot;FIXED_ROUTE&quot;),
+            rollup(mode_df, MODE_ORDER, &quot;ALL_MODE&quot;),
+        ])
+        print(f&quot;   {len(mode_df)} mode-years across {mode_df[&#x27;mode&#x27;].n_unique()} modes&quot;)
+        print(f&quot;   record: {mode_df[&#x27;year&#x27;].min()}–{mode_df[&#x27;year&#x27;].max()}&quot;)
+
+    with phase(&quot;2024 productivity by mode&quot;):
+        for mode in MODE_ORDER:
+            p = _val(mode_df, mode, COMPARE_YEAR, &quot;productivity&quot;)
+            print(f&quot;   {MODE_NAMES[mode]:&lt;12s} {p:6.1f} pax/VRH&quot;)
+        fixed = _val(rollup_df, &quot;FIXED_ROUTE&quot;, COMPARE_YEAR, &quot;productivity&quot;)
+        allm = _val(rollup_df, &quot;ALL_MODE&quot;, COMPARE_YEAR, &quot;productivity&quot;)
+        print(f&quot;   {&#x27;Fixed route&#x27;:&lt;12s} {fixed:6.1f} pax/VRH  (bus + rail only)&quot;)
+        print(f&quot;   {&#x27;All modes&#x27;:&lt;12s} {allm:6.1f} pax/VRH  (cf. Analysis 48: 18.3)&quot;)
+
+    with phase(&quot;Building per-mode summary&quot;):
+        summary_df = build_summary(mode_df, rollup_df)
+        print(f&quot;   {&#x27;Mode&#x27;:&lt;26s} {&#x27;2007&#x27;:&gt;7s} {&#x27;2019&#x27;:&gt;7s} {&#x27;2024&#x27;:&gt;7s} {&#x27;19→24&#x27;:&gt;8s}&quot;)
+        for r in summary_df.iter_rows(named=True):
+            def fmt(v: float | None) -&gt; str:
+                return f&quot;{v:7.1f}&quot; if v is not None else f&quot;{&#x27;—&#x27;:&gt;7s}&quot;
+            pct = (f&quot;{r[&#x27;pct_change_2019_2024&#x27;]:+6.0f}%&quot;
+                   if r[&quot;pct_change_2019_2024&quot;] is not None else f&quot;{&#x27;—&#x27;:&gt;8s}&quot;)
+            print(f&quot;   {r[&#x27;mode&#x27;]:&lt;26s} {fmt(r[&#x27;prod_2007&#x27;])} {fmt(r[&#x27;prod_2019&#x27;])} &quot;
+                  f&quot;{fmt(r[&#x27;prod_2024&#x27;])} {pct}&quot;)
+
+    with phase(&quot;Saving data&quot;):
+        save_csv(
+            mode_df.with_columns(mode_name=pl.col(&quot;mode&quot;).replace(MODE_NAMES))
+            .select(&quot;year&quot;, &quot;mode&quot;, &quot;mode_name&quot;, &quot;upt&quot;, &quot;vrh&quot;, &quot;productivity&quot;),
+            OUT / &quot;mode_productivity_by_year.csv&quot;,
+        )
+        save_csv(summary_df, OUT / &quot;mode_summary.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        chart_trends(plt, mode_df)
+        chart_2024(plt, mode_df, rollup_df)
+        chart_service_vs_ridership(plt, summary_df)
+        chart_decline(plt, mode_df)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>ntd_ridership</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by NTD Ridership ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</strong> — NTD monthly ridership workbook containing agency metadata and UPT series.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

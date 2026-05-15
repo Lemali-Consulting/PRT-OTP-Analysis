@@ -20,7 +20,7 @@ Pittsburgh Regional Transit (PRT) on-time performance and system data, normalize
 | `stop_reference` | 7,554   | Dimension: historical stop reference     |
 | `otp_monthly`    | 7,651   | Fact: monthly on-time performance        |
 | `ntd_agency`     | 2,340   | Dimension: NTD agency-mode-TOS combos    |
-| `ntd_ridership`  | 673,920 | Fact: monthly UPT by agency/mode/TOS     |
+| `ntd_ridership`  | 673,920 | Fact: monthly UPT/VRH/VRM by agency/mode/TOS |
 | `ntd_annual_service` | 93,188 | Fact: annual VRH/VRM/UPT/VOMS/fares/opexp by agency |
 | `otp_null_classification` | 1,064 | Ref: why each missing OTP value is null |
 | `allegheny_go_weekly` | ~96 | Fact: weekly Allegheny Go program ridership |
@@ -110,17 +110,19 @@ Primary key: `(ntd_id, mode, tos)`. Source: NTD Monthly Module Excel, Master she
 
 ### `ntd_ridership`
 
-Monthly unlinked passenger trips (UPT) from the NTD Monthly Module, Jan 2002–Dec 2025.
+Monthly ridership and service supply from the NTD Monthly Module, Jan 2002–Dec 2025, broken down by mode and type of service.
 
-| Column   | Type        | Description                         |
-|----------|-------------|-------------------------------------|
-| `ntd_id` | INTEGER FK  | References `ntd_agency.ntd_id`      |
-| `mode`   | TEXT FK     | Mode code                           |
-| `tos`    | TEXT FK     | Type of service                     |
-| `month`  | TEXT PK     | `"2002-01"` through `"2025-12"`     |
-| `upt`    | INTEGER     | Unlinked passenger trips (nullable) |
+| Column   | Type        | Description                              |
+|----------|-------------|------------------------------------------|
+| `ntd_id` | INTEGER FK  | References `ntd_agency.ntd_id`           |
+| `mode`   | TEXT FK     | Mode code                                |
+| `tos`    | TEXT FK     | Type of service                          |
+| `month`  | TEXT PK     | `"2002-01"` through `"2025-12"`          |
+| `upt`    | INTEGER     | Unlinked passenger trips (nullable)      |
+| `vrh`    | REAL        | Vehicle revenue hours (nullable)         |
+| `vrm`    | REAL        | Vehicle revenue miles (nullable)         |
 
-Primary key: `(ntd_id, mode, tos, month)`. Source: NTD Monthly Module Excel, UPT sheet. Built by `src/prt_otp_analysis/ntd_ridership.py`.
+Primary key: `(ntd_id, mode, tos, month)`. Source: NTD Monthly Module Excel — UPT, VRH, and VRM sheets (all share the agency/mode/TOS/month grain). Built by `src/prt_otp_analysis/ntd_ridership.py`. `vrh` enables per-mode productivity (`upt / vrh`), which `ntd_annual_service` cannot provide because it aggregates all modes.
 
 ### `ntd_annual_service`
 
