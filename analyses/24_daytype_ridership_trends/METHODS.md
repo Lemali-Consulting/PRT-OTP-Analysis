@@ -17,7 +17,11 @@ How have weekday, Saturday, and Sunday ridership patterns changed over time, and
 | `ridership_monthly` | route_id, month, day_type, avg_riders, day_count; all day types used for ridership trends | `prt.db` table |
 | `otp_monthly` | route_id, month, otp; used for correlation with weekend share | `prt.db` table |
 
-**Notes:** Overlap period (Jan 2019 -- Oct 2024) for OTP correlation.
+**Notes:** Overlap period (Jan 2019 -- Oct 2024) for OTP correlation. Five route
+codes are excluded from `ridership_monthly`: `BLLB`/`BLSV` (superseded pre-2020
+Blue Line codes whose service is already counted under `BLUE`/`RED`/`SLVR`, so
+keeping both double-counts rail) and `NA`/`MNT`/`MNT1` (fragmentary rows with no
+route name).
 
 ## Output
 - `output/daytype_ridership_trend.png` -- indexed ridership by day type over time

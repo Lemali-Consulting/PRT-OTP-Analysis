@@ -7,13 +7,22 @@ from prt_otp_analysis.common import PRE_COVID_BASELINE_MONTH, analysis_dir, corr
 
 OUT = analysis_dir(__file__)
 
+# Route codes excluded from ridership aggregation. BLLB/BLSV are the superseded
+# pre-2020 Blue Line codes; the same light-rail service is recorded for the full
+# period under BLUE/RED/SLVR, so keeping both double-counts rail (~6.5% of the
+# system total) through Feb 2020. NA/MNT/MNT1 are fragmentary rows with no route
+# name. See errors/data-quality/light-rail-double-coded-... for the full audit.
+EXCLUDED_ROUTES = ("BLLB", "BLSV", "MNT", "MNT1", "NA")
+
 
 def load_ridership() -> pl.DataFrame:
-    """Load all ridership data across day types."""
-    return query_to_polars("""
+    """Load all ridership data across day types, dropping double-counted/junk codes."""
+    placeholders = ", ".join(f"'{r}'" for r in EXCLUDED_ROUTES)
+    return query_to_polars(f"""
         SELECT route_id, month, day_type, avg_riders, day_count
         FROM ridership_monthly
         WHERE avg_riders IS NOT NULL AND day_count IS NOT NULL
+          AND route_id NOT IN ({placeholders})
     """)
 
 
