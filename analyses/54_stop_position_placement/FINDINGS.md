@@ -48,10 +48,20 @@ overall near-side fraction. The fundamental constraint from Analysis 53 remains
 binding — near-side is so dominant (83% system-wide, 80–100% on most individual
 routes) that there is very little cross-route variance to correlate with anything.
 
-Testing the near-side/OTP mechanism properly would require stop-level or
-trip-level arrival time data (e.g., AVL logs or GTFS-RT archives) to compare
-actual dwell and departure times at near-side vs. far-side stops controlling for
-time-of-day, headway, and weather.
+The underlying issue is **range restriction**: to detect a correlation between
+near-side fraction and OTP, you need meaningful variance in near-side fraction.
+Most routes cluster at 85–100%, so comparisons are effectively near-side-heavy
+vs. slightly-less-near-side-heavy rather than near-side vs. far-side. This is
+not evidence that near-side placement has no effect — it is evidence that the
+current network is too uniformly near-side for a route-level correlation to
+emerge.
+
+The ideal test would be a **within-system paired comparison**: two otherwise
+identical stops at the same intersection, one near-side and one far-side, with
+stop-level arrival time data to directly compare delay contribution. That
+requires AVL logs or GTFS-RT archives, which are not in the current pipeline.
+A before/after study of a deliberate stop-relocation program would be the
+cleanest test of all.
 
 ## Caveats
 - **Canonical trip only.** Each stop is assigned to one canonical trip (longest

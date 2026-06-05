@@ -63,6 +63,14 @@ incremental delay per stop, but the bigger issue is that these routes encounter
 many signals at all — each one adding a stochastic cycle wait regardless of
 whether the stop is before or after it.
 
+The weak OTP correlation here (and in the follow-up Analysis 54) should not be
+read as evidence that placement type is irrelevant. The fundamental obstacle is
+**range restriction**: with 80–100% near-side fraction on most routes, there is
+not enough cross-route variance to detect an effect at the route level even if
+one exists at the stop level. The right test — a paired comparison of otherwise
+identical near-side and far-side stops using stop-level arrival time data — is
+not possible with the current data.
+
 ## Caveats
 - **Single-direction classification.** Each stop is classified using its
   canonical shape (most-served direction). A stop serving both inbound and
