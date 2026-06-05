@@ -35,7 +35,7 @@
   <p class="kicker">Transit Performance Knowledge Base</p>
   <h1>PRT OTP Analysis</h1>
   <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
-  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
+  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
 </section>
 
 <section class="panel" id="pipeline-panel">
@@ -75,6 +75,11 @@
   <article class="card">
     <h3><a href="pipeline/11_signal_overlay/index.html">Signal Overlay ETL</a></h3>
     <p>Computes route-level traffic signal exposure (count and density) by spatially joining GTFS routes with OpenStreetMap traffic-signal nodes.</p>
+  </article>
+
+  <article class="card">
+    <h3><a href="pipeline/12_road_classification/index.html">Road Classification Overlay ETL</a></h3>
+    <p>Computes route-level road-type metrics (lane count, functional class, posted speed, divided-road share) by spatially joining GTFS routes with PennDOT RMSSEG roadway segment and administrative layers.</p>
   </article>
 
 </div>
@@ -492,12 +497,12 @@
       <td class="summary-cell"><span class="summary-lead">Ranking Pittsburgh's transit routes by weekday ridership from 2017 to 2024, the busiest is the P1 East Busway bus (about 6,600 riders a day), ahead of the Red Line and Blue Line light rail and the 51 Carrick bus.</span> <span class="summary-rest" hidden>Ridership is concentrated: the 18 busiest routes carry half of all weekday riders, while roughly half of the 103 routes each account for under 1%.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
     </tr>
   
-    <tr class="analysis-row" data-number="48" data-title="service productivity (passengers per revenue hour)" data-group="Equity and Strategic Planning" data-text="48 - service productivity (passengers per revenue hour) each hour of prt service carries fewer than half as many riders as it did in 1991 — productivity fell from 39 passengers per service hour to 18. the drop is not a deliberate cut: prt kept nearly the same amount of service running (down just 5% since 1991) while ridership fell 55%, so buses and trains are running emptier rather than being right-sized. prt's 32% drop since 2019 is the steepest of 8 peer cities. population loss is not the cause either: allegheny county has only about 8% fewer residents than in 1991, so ridership per resident has itself roughly halved — fewer residents explains only about a tenth of the decline.">
+    <tr class="analysis-row" data-number="48" data-title="service productivity (passengers per revenue hour)" data-group="Equity and Strategic Planning" data-text="48 - service productivity (passengers per revenue hour) each hour of prt's fixed-route service carries about 40% fewer riders than it did in 1991 — productivity fell from 39 passengers per service hour to 23. both service and ridership fell, but ridership fell far faster: service hours dropped 26% while ridership dropped 57%, so buses and trains are running emptier rather than being right-sized to demand. prt's 32% drop since 2019 is the steepest of 8 peer cities. population loss is not the cause: allegheny county has only about 8% fewer residents than in 1991, so ridership per resident has itself roughly halved — fewer residents explains only about a tenth of the decline. correction (june 2026): an earlier version of this analysis reported service hours as "barely moved" (down just 5%). that figure was wrong because the federal ntd database quietly added access paratransit hours to its agency-wide total starting in 2008, creating an artificial 18% jump that masked real service cuts. the charts and numbers above use a corrected series that excludes paratransit throughout for a fair comparison.">
       <td class="col-num">48</td>
       <td><a href="analyses/48_service_productivity/index.html">Service Productivity (Passengers per Revenue Hour)</a></td>
       <td><span class="theme-chip">Equity and Strategic Planning</span></td>
       <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
-      <td class="summary-cell"><span class="summary-lead">Each hour of PRT service carries fewer than half as many riders as it did in 1991 — productivity fell from 39 passengers per service hour to 18.</span> <span class="summary-rest" hidden>The drop is not a deliberate cut: PRT kept nearly the same amount of service running (down just 5% since 1991) while ridership fell 55%, so buses and trains are running emptier rather than being right-sized. PRT's 32% drop since 2019 is the steepest of 8 peer cities. Population loss is not the cause either: Allegheny County has only about 8% fewer residents than in 1991, so ridership per resident has itself roughly halved — fewer residents explains only about a tenth of the decline.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+      <td class="summary-cell"><span class="summary-lead">Each hour of PRT's fixed-route service carries about 40% fewer riders than it did in 1991 — productivity fell from 39 passengers per service hour to 23.</span> <span class="summary-rest" hidden>Both service and ridership fell, but ridership fell far faster: service hours dropped 26% while ridership dropped 57%, so buses and trains are running emptier rather than being right-sized to demand. PRT's 32% drop since 2019 is the steepest of 8 peer cities. Population loss is not the cause: Allegheny County has only about 8% fewer residents than in 1991, so ridership per resident has itself roughly halved — fewer residents explains only about a tenth of the decline. Correction (June 2026): an earlier version of this analysis reported service hours as "barely moved" (down just 5%). That figure was wrong because the federal NTD database quietly added ACCESS paratransit hours to its agency-wide total starting in 2008, creating an artificial 18% jump that masked real service cuts. The charts and numbers above use a corrected series that excludes paratransit throughout for a fair comparison.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
     </tr>
   
     <tr class="analysis-row" data-number="49" data-title="transit service & boardings vs population density" data-group="Equity and Strategic Planning" data-text="49 - transit service & boardings vs population density pittsburgh's denser neighborhoods don't just get a closer bus stop -- they get far more service. across allegheny county census tracts, the densest quarter has about 26 times as many weekly bus trips as the sparsest. boardings follow the same pattern and shadow service almost exactly, but they pile up far more unevenly than people do: the densest quarter of tracts holds 23% of residents yet generates 73% of all boardings, and downtown alone accounts for 27%. a tract's population barely predicts its boardings at all -- riders board where trips start, which concentrates them in a few job and activity centers like downtown, the riverfront, and the airport, not evenly across where people live.">
@@ -522,6 +527,39 @@
       <td><span class="theme-chip">Ridership and External Factors</span></td>
       <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
       <td class="summary-cell"><span class="summary-lead">Buses that pass more traffic signals per mile run measurably later.</span> <span class="summary-rest" hidden>Counting every traffic signal along each route, the densest-signal routes -- inner-city local lines through the East End and Hill District -- average around 60% on time, while suburban routes with few signals run 70% or better. Signal density is a strong predictor of poor on-time performance even after accounting for how many stops a route has and how long it is, lifting the share of explained performance differences from 47% to 60%. Notably, an earlier analysis found that overall traffic volume had no such effect: it is the fixed stop-and-wait at each signal, not how busy the road is, that tracks with delay.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="52" data-title="vrh and vehicle revenue miles" data-group="Ungrouped" data-text="52 - vrh and vehicle revenue miles prt's bus operating speed has held steady at roughly 12.8–13.0 mph for 22 years (2002–2024), suggesting traffic congestion has not measurably slowed the fixed-route fleet. over the same period, bus service volume contracted ~34% (both vrh and vrm fell in lockstep). the main speed shift is in paratransit, which slowed from 15 mph in 2019 to 13.8 mph in 2024 — a 9% decline likely tied to longer or more complex trip routing. paratransit now makes up about 24% of all prt vehicle revenue hours.
+">
+      <td class="col-num">52</td>
+      <td><a href="analyses/52_vrh_with_miles/index.html">VRH and Vehicle Revenue Miles</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">PRT's bus operating speed has held steady at roughly 12.8–13.0 mph for 22 years (2002–2024), suggesting traffic congestion has not measurably slowed the fixed-route fleet.</span> <span class="summary-rest" hidden>Over the same period, bus service volume contracted ~34% (both VRH and VRM fell in lockstep). The main speed shift is in paratransit, which slowed from 15 mph in 2019 to 13.8 mph in 2024 — a 9% decline likely tied to longer or more complex trip routing. Paratransit now makes up about 24% of all PRT vehicle revenue hours.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="53" data-title="near-side vs. far-side stop placement" data-group="Ungrouped" data-text="53 - near-side vs. far-side stop placement 83% of prt bus stops at signalized intersections are near-side — placed before the traffic light — while only 17% are far-side. most prt stops (76%) are mid-block, away from intersections entirely. near-side placement is the overwhelming legacy default; modern transit guidance favors far-side stops because they eliminate the double-stop and give buses a rolling start on the green.">
+      <td class="col-num">53</td>
+      <td><a href="analyses/53_stop_signal_placement/index.html">Near-Side vs. Far-Side Stop Placement</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">83% of PRT bus stops at signalized intersections are near-side — placed before the traffic light — while only 17% are far-side.</span> <span class="summary-rest" hidden>Most PRT stops (76%) are mid-block, away from intersections entirely. Near-side placement is the overwhelming legacy default; modern transit guidance favors far-side stops because they eliminate the double-stop and give buses a rolling start on the green.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="54" data-title="stop position and near-side placement" data-group="Ungrouped" data-text="54 - stop position and near-side placement near-side stop placement is uniformly distributed along prt routes — 81–85% near-side at every position quintile, with no gradient toward the end where delay accumulates. splitting routes into first-half and second-half near-side fractions does not improve the otp correlation (r ≈ −0.12–0.14, all p > 0.28).">
+      <td class="col-num">54</td>
+      <td><a href="analyses/54_stop_position_placement/index.html">Stop Position and Near-Side Placement</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Near-side stop placement is uniformly distributed along PRT routes — 81–85% near-side at every position quintile, with no gradient toward the end where delay accumulates.</span> <span class="summary-rest" hidden>Splitting routes into first-half and second-half near-side fractions does not improve the OTP correlation (r ≈ −0.12–0.14, all p > 0.28).</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="55" data-title="road classification and otp" data-group="Ridership and External Factors" data-text="55 - road classification and otp buses that run along wider, multi-lane roads are consistently more likely to run late. accounting for the type of road a route travels — especially its number of lanes — explains far more of the gap in on-time performance between routes than route length, stop count, or overall traffic volume do, lifting the share of variation explained from 40% to 58%. the likely culprit is congested multi-lane city streets clogged with traffic signals and turning cars, not fast highways: where wide roads actually move at speed, buses keep their schedule.">
+      <td class="col-num">55</td>
+      <td><a href="analyses/55_road_classification_otp/index.html">Road Classification and OTP</a></td>
+      <td><span class="theme-chip">Ridership and External Factors</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">Buses that run along wider, multi-lane roads are consistently more likely to run late.</span> <span class="summary-rest" hidden>Accounting for the type of road a route travels — especially its number of lanes — explains far more of the gap in on-time performance between routes than route length, stop count, or overall traffic volume do, lifting the share of variation explained from 40% to 58%. The likely culprit is congested multi-lane city streets clogged with traffic signals and turning cars, not fast highways: where wide roads actually move at speed, buses keep their schedule.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
     </tr>
   
     <tr id="no-results" hidden><td colspan="5" class="no-results">No analyses match your filters.</td></tr>

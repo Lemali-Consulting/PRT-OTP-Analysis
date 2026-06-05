@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>52 - VRH and Vehicle Revenue Miles - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>52 - VRH and Vehicle Revenue Miles</h1>
+  
+  <p class="lede">Coverage: 2002-01 to 2025-12 (from ntd_ridership).</p>
+  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../51_traffic_signals_otp/index.html">← 51 - Traffic Signals and OTP</a>
+    <a href="../53_stop_signal_placement/index.html">53 - Near-Side vs. Far-Side Stop Placement →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  52_vrh_with_miles(["52 - VRH and Vehicle Revenue Miles"])
+  t_ntd_ridership[("ntd_ridership")] --> 52_vrh_with_miles
+  05_ntd_ridership[["NTD Ridership ETL"]] --> t_ntd_ridership
+  u1_05_ntd_ridership[/"data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx"/] --> 05_ntd_ridership
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 52_vrh_with_miles page;
+  class t_ntd_ridership table;
+  class u1_05_ntd_ridership file;
+  class 05_ntd_ridership pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and Vehicle Revenue Miles</h1>
+<h2>Summary</h2>
+<p>PRT's bus operating speed has been remarkably stable at roughly 12.8–13.0 mph over the full 2002–2024 record, suggesting that traffic congestion has not measurably degraded fixed-route service speeds system-wide. Bus and light rail <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM have both declined sharply since 2002 (~35% and ~40% respectively), but because they track each other closely, the speed ratio has stayed flat. The most notable speed shift is in paratransit, which slowed from 15.2 mph in 2019 to 13.8 mph in 2024 (−9%), likely reflecting longer or more complex trip patterns.</p>
+<h2>Key Numbers</h2>
+<table>
+<thead>
+<tr>
+  <th>Mode</th>
+  <th>2019 mph</th>
+  <th>2024 mph</th>
+  <th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Motor Bus</td>
+  <td>12.85</td>
+  <td>12.83</td>
+  <td>−0.2%</td>
+</tr>
+<tr>
+  <td>Light Rail</td>
+  <td>12.96</td>
+  <td>12.95</td>
+  <td>−0.0%</td>
+</tr>
+<tr>
+  <td>Paratransit</td>
+  <td>15.18</td>
+  <td>13.80</td>
+  <td>−9.1%</td>
+</tr>
+</tbody>
+</table>
+<h2>Observations</h2>
+<ul>
+<li><strong>Bus speed is flat over 22 years.</strong> Motor bus VRM/<a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> has barely moved — from 13.0 mph in 2002 to 12.8 mph in 2024. The COVID dip in 2021 (12.47 mph) reversed quickly. There is no evidence of a long-run speed decline.</li>
+<li><strong>Service volume fell substantially.</strong> Bus <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> fell from ~2.2 M hours in 2002 to ~1.47 M in 2024, a 34% drop. VRM fell in nearly equal proportion, keeping speed constant. This means the system is running fewer hours <em>and</em> fewer miles — a contraction in service, not a slowdown.</li>
+<li><strong>Light rail is similarly stable.</strong> Speed fluctuated 11–13.5 mph in early years (likely tied to service restructuring around the South Hills extensions) and has settled near 13 mph since 2006.</li>
+<li><strong>Paratransit speed decline is the standout finding.</strong> ACCESS paratransit went from 15.2 mph in 2019 to 13.8 mph in 2024. Over the same period <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> grew faster than VRM (<a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> up ~24% from 2019 baseline vs VRM up ~25%), so the decline is small but consistent. This may reflect shifts toward more complex trip routing or longer average trip distances.</li>
+<li><strong>Paratransit <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM both grew sharply post-2007</strong> (when NTD began reporting them) to become a large fraction of agency-wide service hours by 2024 (~24% of all <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>).</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li>NTD data is agency-reported and aggregated annually; it cannot distinguish speed changes on specific corridors or times of day.</li>
+<li>Paratransit data (<a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM) is not available before 2007, so the long-run speed trend for that mode is incomplete.</li>
+<li>The Incline (IP) is excluded from speed analysis; its 2.3 mph figure reflects extremely short, near-vertical track rather than congestion or service efficiency.</li>
+<li>&quot;Speed&quot; here is an average across all trips for the year and does not capture peak-hour vs. off-peak variation.</li>
+</ul>
+<h2>Validation</h2>
+<ol>
+<li><strong>Data source verified.</strong> <code>ntd_ridership</code> columns confirmed against <code>DATA_DICTIONARY.md</code>; mode codes validated against Analysis 50 constants.</li>
+<li><strong>Temporal scope.</strong> All data filtered to 2002–2024 calendar years; paratransit zeros before 2007 treated as no service and excluded from speed calculations (<a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> = 0 guard).</li>
+<li><strong>Plausibility.</strong> Bus speeds of 12–13 mph are consistent with published literature for U.S. urban bus systems. Paratransit speeds (13–15 mph) are plausible for demand-responsive service with deadheading.</li>
+<li><strong>Surprising result investigated.</strong> The paratransit speed decline (−9%) was checked against raw <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM year-by-year; the trend is consistent across 2020–2024 and not attributable to a single outlier year.</li>
+<li><strong>Known relationships verified.</strong> <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM track each other for bus and rail as expected (stable speed). No reversals noted.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (2)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/52_vrh_with_miles/speed_trends.png" alt="speed_trends" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/52_vrh_with_miles/speed_trends.png" target="_blank" rel="noopener noreferrer">speed_trends.png</a>
+          <p class="artifact-desc">operating speed trends by mode over time.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/52_vrh_with_miles/vrh_vrm_index.png" alt="vrh_vrm_index" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/52_vrh_with_miles/vrh_vrm_index.png" target="_blank" rel="noopener noreferrer">vrh_vrm_index.png</a>
+          <p class="artifact-desc">indexed vehicle revenue hours and miles over time.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/52_vrh_with_miles/speed_by_mode.csv" target="_blank" rel="noopener noreferrer">speed_by_mode.csv</a>
+          <p class="artifact-desc">per-mode operating speed (VRM/VRH) by year.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/52_vrh_with_miles/speed_by_mode.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/52_vrh_with_miles/mode_speed_summary.csv" target="_blank" rel="noopener noreferrer">mode_speed_summary.csv</a>
+          <p class="artifact-desc">summary speed statistics by mode.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/52_vrh_with_miles/mode_speed_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and Vehicle Revenue Miles</h1>
+<h2>Question</h2>
+<p>How has PRT's operating speed (vehicle revenue miles per vehicle revenue hour) changed over time, and does that speed vary by mode? Specifically, has bus speed declined in recent years — a signal of growing traffic congestion or service restructuring — relative to light rail and paratransit?</p>
+<h2>Approach</h2>
+<ol>
+<li>Load monthly <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM from <code>ntd_ridership</code> for PRT (ntd_id = 30022) for 2002–2024.</li>
+<li>Aggregate to annual totals by mode.</li>
+<li>Compute average operating speed in miles per hour: <code>mph = vrm / vrh</code> (only where <code>vrh &gt; 0</code>).</li>
+<li>Plot speed (mph) by mode over time — one line per mode — to reveal trends.</li>
+<li>Plot indexed <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM for each mode (base = 2019 = 100) to show whether hours and miles diverged post-pandemic.</li>
+<li>Produce a summary table of mph at key years (2007, 2019, 2024) and percent change.</li>
+<li>Exclude the Incline (IP) from speed comparisons because its extremely short track and near-vertical geometry make the mph figure uninformative for congestion analysis.</li>
+</ol>
+<h2>Data</h2>
+<ul>
+<li><strong><code>ntd_ridership</code></strong> (<code>ntd_id</code>, <code>mode</code>, <code>month</code>, <code>vrh</code>, <code>vrm</code>): PRT-only rows filtered to modes MB, LR, DR, IP.</li>
+<li>Rows with <code>vrh IS NULL</code> or <code>vrh = 0</code> are excluded from speed calculations.</li>
+<li>Calendar year aggregates: sum <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM across all months for a given mode-year.</li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>output/speed_by_mode.csv</code> — annual <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>, VRM, and mph by mode (2002–2024)</li>
+<li><code>output/speed_trends.png</code> — time-series of mph by mode (bus, rail, paratransit), 2002–2024</li>
+<li><code>output/vrh_vrm_index.png</code> — indexed <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and VRM for each mode (2019 = 100)</li>
+<li><code>output/mode_speed_summary.csv</code> — mph at key years and % change 2019→2024</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 52: trends in PRT&#x27;s vehicle revenue hours and vehicle revenue miles
+by mode, and what the VRM/VRH ratio (operating speed) reveals about service change.&quot;&quot;&quot;
+
+import polars as pl
+
+from prt_otp_analysis.common import (
+    COLOR_GRAY,
+    analysis_dir,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.common.schemas import NTD_RIDERSHIP, validate
+
+OUT = analysis_dir(__file__)
+
+PRT_NTD_ID = 30022
+START_YEAR = 2002
+BASELINE_YEAR = 2019
+COMPARE_YEAR = 2024
+
+MODE_NAMES = {
+    &quot;MB&quot;: &quot;Motor Bus&quot;,
+    &quot;LR&quot;: &quot;Light Rail&quot;,
+    &quot;DR&quot;: &quot;Paratransit&quot;,
+    &quot;IP&quot;: &quot;Incline&quot;,
+}
+# IP excluded from speed analysis — short vertical track makes mph uninformative.
+SPEED_MODES = [&quot;MB&quot;, &quot;LR&quot;, &quot;DR&quot;]
+MODE_COLORS = {
+    &quot;MB&quot;: &quot;#3b82f6&quot;,
+    &quot;LR&quot;: &quot;#22c55e&quot;,
+    &quot;DR&quot;: &quot;#f59e0b&quot;,
+}
+
+
+def load_mode_year() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load PRT monthly VRH/VRM by mode and aggregate to calendar years.&quot;&quot;&quot;
+    raw_df = query_to_polars(
+        &quot;SELECT mode, month, vrh, vrm FROM ntd_ridership WHERE ntd_id = ?&quot;,
+        (PRT_NTD_ID,),
+    )
+    validate(raw_df, NTD_RIDERSHIP, subset=True)
+
+    return (
+        raw_df.with_columns(year=pl.col(&quot;month&quot;).str.slice(0, 4).cast(pl.Int64))
+        .filter(pl.col(&quot;year&quot;).is_between(START_YEAR, COMPARE_YEAR))
+        .group_by(&quot;mode&quot;, &quot;year&quot;)
+        .agg(vrh=pl.col(&quot;vrh&quot;).sum(), vrm=pl.col(&quot;vrm&quot;).sum())
+        .sort(&quot;mode&quot;, &quot;year&quot;)
+        .with_columns(
+            mph=pl.when(pl.col(&quot;vrh&quot;) &gt; 0)
+            .then(pl.col(&quot;vrm&quot;) / pl.col(&quot;vrh&quot;))
+            .otherwise(None)
+        )
+    )
+
+
+def _val(df: pl.DataFrame, mode: str, year: int, col: str) -&gt; float | None:
+    rows = df.filter((pl.col(&quot;mode&quot;) == mode) &amp; (pl.col(&quot;year&quot;) == year))
+    return rows.row(0, named=True)[col] if len(rows) else None
+
+
+def build_summary(mode_df: pl.DataFrame) -&gt; pl.DataFrame:
+    rows = []
+    for mode in SPEED_MODES:
+        mph07 = _val(mode_df, mode, 2007, &quot;mph&quot;)
+        mph19 = _val(mode_df, mode, BASELINE_YEAR, &quot;mph&quot;)
+        mph24 = _val(mode_df, mode, COMPARE_YEAR, &quot;mph&quot;)
+        rows.append({
+            &quot;mode&quot;: MODE_NAMES[mode],
+            &quot;mph_2007&quot;: mph07,
+            &quot;mph_2019&quot;: mph19,
+            &quot;mph_2024&quot;: mph24,
+            &quot;pct_change_2019_2024&quot;: (mph24 - mph19) / mph19 * 100
+            if mph19 and mph24 else None,
+        })
+    return pl.DataFrame(rows)
+
+
+def chart_speed_trends(plt, mode_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Operating speed (mph) by mode, 2002–2024.&quot;&quot;&quot;
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for mode in SPEED_MODES:
+        sub = mode_df.filter(
+            (pl.col(&quot;mode&quot;) == mode) &amp; pl.col(&quot;mph&quot;).is_not_null()
+        ).sort(&quot;year&quot;)
+        ax.plot(
+            sub[&quot;year&quot;].to_list(),
+            sub[&quot;mph&quot;].to_list(),
+            label=MODE_NAMES[mode],
+            color=MODE_COLORS[mode],
+            linewidth=2.5,
+            marker=&quot;o&quot;,
+            markersize=3,
+        )
+
+    ax.axvline(2020, color=COLOR_GRAY, linestyle=&quot;--&quot;, linewidth=1)
+    ax.text(2020.3, ax.get_ylim()[1] * 0.95, &quot;COVID-19&quot;, fontsize=9, color=&quot;#555555&quot;)
+    ax.set_ylabel(&quot;Miles per Vehicle Revenue Hour (mph)&quot;)
+    ax.set_xlabel(&quot;Year&quot;)
+    ax.set_ylim(bottom=0)
+    ax.set_title(
+        &quot;PRT Operating Speed by Mode, 2002–2024\n&quot;
+        &quot;(Vehicle Revenue Miles ÷ Vehicle Revenue Hours)&quot;
+    )
+    ax.legend()
+    save_chart(fig, OUT / &quot;speed_trends.png&quot;)
+
+
+def chart_vrh_vrm_index(plt, mode_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Indexed VRH and VRM by mode (2019 = 100).&quot;&quot;&quot;
+    fig, axes = plt.subplots(1, len(SPEED_MODES), figsize=(15, 5), sharey=True)
+    fig.suptitle(
+        &quot;PRT Service Volume by Mode — VRH and VRM Indexed to 2019&quot;, fontsize=13
+    )
+
+    for ax, mode in zip(axes, SPEED_MODES):
+        sub = mode_df.filter(
+            (pl.col(&quot;mode&quot;) == mode)
+            &amp; pl.col(&quot;vrh&quot;).is_not_null()
+            &amp; pl.col(&quot;vrm&quot;).is_not_null()
+        ).sort(&quot;year&quot;)
+
+        base_vrh = _val(sub, mode, BASELINE_YEAR, &quot;vrh&quot;)
+        base_vrm = _val(sub, mode, BASELINE_YEAR, &quot;vrm&quot;)
+        if not base_vrh or not base_vrm:
+            continue
+
+        years = sub[&quot;year&quot;].to_list()
+        vrh_idx = [v / base_vrh * 100 for v in sub[&quot;vrh&quot;].to_list()]
+        vrm_idx = [v / base_vrm * 100 for v in sub[&quot;vrm&quot;].to_list()]
+
+        ax.plot(years, vrh_idx, label=&quot;VRH&quot;, color=&quot;#2563eb&quot;, linewidth=2)
+        ax.plot(
+            years, vrm_idx, label=&quot;VRM&quot;, color=&quot;#dc2626&quot;, linewidth=2, linestyle=&quot;--&quot;
+        )
+        ax.axhline(100, color=COLOR_GRAY, linewidth=0.8, linestyle=&quot;:&quot;)
+        ax.axvline(2020, color=COLOR_GRAY, linestyle=&quot;--&quot;, linewidth=0.8)
+        ax.set_title(MODE_NAMES[mode])
+        ax.set_xlabel(&quot;Year&quot;)
+        if ax == axes[0]:
+            ax.set_ylabel(&quot;Index (2019 = 100)&quot;)
+        ax.legend(fontsize=8)
+
+    save_chart(fig, OUT / &quot;vrh_vrm_index.png&quot;)
+
+
+@run_analysis(52, &quot;VRH and Vehicle Revenue Miles&quot;)
+def main():
+    plt = setup_plotting()
+
+    with phase(&quot;Loading VRH and VRM data&quot;):
+        mode_df = load_mode_year()
+        print(
+            f&quot;   {len(mode_df)} mode-years; range &quot;
+            f&quot;{mode_df[&#x27;year&#x27;].min()}–{mode_df[&#x27;year&#x27;].max()}&quot;
+        )
+
+    with phase(&quot;Operating speed by mode&quot;):
+        for mode in SPEED_MODES:
+            mph19 = _val(mode_df, mode, BASELINE_YEAR, &quot;mph&quot;)
+            mph24 = _val(mode_df, mode, COMPARE_YEAR, &quot;mph&quot;)
+            delta = (
+                (mph24 - mph19) / mph19 * 100
+                if mph19 and mph24
+                else float(&quot;nan&quot;)
+            )
+            print(
+                f&quot;   {MODE_NAMES[mode]:&lt;12s} &quot;
+                f&quot;2019: {mph19:5.2f} mph  &quot;
+                f&quot;2024: {mph24:5.2f} mph  ({delta:+.1f}%)&quot;
+            )
+
+    with phase(&quot;Building summary&quot;):
+        summary_df = build_summary(mode_df)
+
+    with phase(&quot;Saving data&quot;):
+        save_csv(
+            mode_df.with_columns(mode_name=pl.col(&quot;mode&quot;).replace(MODE_NAMES)),
+            OUT / &quot;speed_by_mode.csv&quot;,
+        )
+        save_csv(summary_df, OUT / &quot;mode_speed_summary.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        chart_speed_trends(plt, mode_df)
+        chart_vrh_vrm_index(plt, mode_df)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>ntd_ridership</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by NTD Ridership ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</strong> — NTD monthly ridership workbook containing agency metadata and UPT series.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

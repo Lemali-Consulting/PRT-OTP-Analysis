@@ -35,7 +35,7 @@
   <p class="kicker">Reference</p>
   <h1>Sources Inventory</h1>
   <p class="lede">Unified catalog of files, APIs, tables, and library dependencies used in this project.</p>
-  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
+  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
 </section>
 
 <section class="panel">
@@ -64,7 +64,25 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-002.html">PennDOT ArcGIS Roadway Traffic Layer</a></td>
+        <td><a href="sources/source-002.html">PennDOT ArcGIS Roadway Admin Layer</a></td>
+        <td><span class="tag">api</span></td>
+        <td>Public roadway administrative attributes including FHWA functional class and posted speed limit.</td>
+        <td>Hosted by gis.penndot.gov.</td>
+        <td>Queried during pipeline execution; freshness depends on upstream updates.</td>
+        <td>Availability and schema can change without notice.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-003.html">PennDOT ArcGIS Roadway Segments Layer (RMSSEG)</a></td>
+        <td><span class="tag">api</span></td>
+        <td>Public state-roadway segment attributes including lane count and median type.</td>
+        <td>Hosted by gis.penndot.gov.</td>
+        <td>Queried during pipeline execution; freshness depends on upstream updates.</td>
+        <td>Availability and schema can change without notice.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-004.html">PennDOT ArcGIS Roadway Traffic Layer</a></td>
         <td><span class="tag">api</span></td>
         <td>Public roadway segment AADT and truck percentage attributes.</td>
         <td>Hosted by gis.penndot.gov.</td>
@@ -73,7 +91,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-003.html">WPRDC Pick Lookup</a></td>
+        <td><a href="sources/source-005.html">WPRDC Pick Lookup</a></td>
         <td><span class="tag">api</span></td>
         <td>Public lookup for pick period date ranges.</td>
         <td>Hosted by data.wprdc.org.</td>
@@ -82,7 +100,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-004.html">WPRDC Schedule Monthly Aggregate</a></td>
+        <td><a href="sources/source-006.html">WPRDC Schedule Monthly Aggregate</a></td>
         <td><span class="tag">api</span></td>
         <td>Public dataset of route-level monthly schedule aggregates.</td>
         <td>Hosted by data.wprdc.org.</td>
@@ -91,7 +109,25 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-005.html">branca</a></td>
+        <td><a href="sources/source-007.html">analyses/51_traffic_signals_otp</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Python library dependency used by one or more analyses or pipeline steps.</td>
+        <td>Open-source Python ecosystem maintainers.</td>
+        <td>Version pinned by project environment until dependency updates are applied.</td>
+        <td>Library updates may change behavior or defaults.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-008.html">analyses/53_stop_signal_placement</a></td>
+        <td><span class="tag">dependency</span></td>
+        <td>Python library dependency used by one or more analyses or pipeline steps.</td>
+        <td>Open-source Python ecosystem maintainers.</td>
+        <td>Version pinned by project environment until dependency updates are applied.</td>
+        <td>Library updates may change behavior or defaults.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-009.html">branca</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Utility library used by Folium for map templating, colormaps, and HTML components.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -100,7 +136,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-006.html">folium</a></td>
+        <td><a href="sources/source-010.html">folium</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Mapping library used to render interactive geospatial visualizations.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -109,7 +145,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-007.html">geopandas</a></td>
+        <td><a href="sources/source-011.html">geopandas</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Python library dependency used by one or more analyses or pipeline steps.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -118,7 +154,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-008.html">matplotlib</a></td>
+        <td><a href="sources/source-012.html">matplotlib</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Plotting library used to generate static charts.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -127,7 +163,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-009.html">numpy</a></td>
+        <td><a href="sources/source-013.html">numpy</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Numerical computing library for vectorized arrays and matrix operations.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -136,7 +172,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-010.html">polars</a></td>
+        <td><a href="sources/source-014.html">polars</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Dataframe library used for fast tabular data transformations and aggregation.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -145,7 +181,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-011.html">scipy</a></td>
+        <td><a href="sources/source-015.html">scipy</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Scientific computing library used for statistical tests and numerical routines.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -154,7 +190,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-012.html">shapely</a></td>
+        <td><a href="sources/source-016.html">shapely</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Python library dependency used by one or more analyses or pipeline steps.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -163,7 +199,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-013.html">statsmodels</a></td>
+        <td><a href="sources/source-017.html">statsmodels</a></td>
         <td><span class="tag">dependency</span></td>
         <td>Statistical modeling library used for regression and time-series methods.</td>
         <td>Open-source Python ecosystem maintainers.</td>
@@ -172,7 +208,16 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-014.html">data/GTFS/shapes.txt</a></td>
+        <td><a href="sources/source-018.html">analyses/53_stop_signal_placement/output/stop_classifications.csv</a></td>
+        <td><span class="tag">file</span></td>
+        <td>Per-stop near-side / far-side / mid-block classification from Analysis 53.</td>
+        <td>Local project data owner not specified.</td>
+        <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+        <td>May lag upstream source updates.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-019.html">data/GTFS/shapes.txt</a></td>
         <td><span class="tag">file</span></td>
         <td>GTFS route shape geometry points.</td>
         <td>Local project data owner not specified.</td>
@@ -181,7 +226,25 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-015.html">data/GTFS/trips.txt</a></td>
+        <td><a href="sources/source-020.html">data/GTFS/stop_times.txt</a></td>
+        <td><span class="tag">file</span></td>
+        <td>GTFS stop sequence per trip.</td>
+        <td>Local project data owner not specified.</td>
+        <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+        <td>May lag upstream source updates.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-021.html">data/GTFS/stops.txt</a></td>
+        <td><span class="tag">file</span></td>
+        <td>GTFS stop locations.</td>
+        <td>Local project data owner not specified.</td>
+        <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+        <td>May lag upstream source updates.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-022.html">data/GTFS/trips.txt</a></td>
         <td><span class="tag">file</span></td>
         <td>GTFS shape-to-route mapping.</td>
         <td>Local project data owner not specified.</td>
@@ -190,7 +253,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-016.html">data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</a></td>
+        <td><a href="sources/source-023.html">data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Current route metadata and mode classifications.</td>
         <td>Local project data owner not specified.</td>
@@ -199,7 +262,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-017.html">data/PRT_Stop_Reference_Lookup_Table.csv</a></td>
+        <td><a href="sources/source-024.html">data/PRT_Stop_Reference_Lookup_Table.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Historical stop reference file with geography attributes.</td>
         <td>Local project data owner not specified.</td>
@@ -208,7 +271,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-018.html">data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</a></td>
+        <td><a href="sources/source-025.html">data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Current stop-to-route coverage and trip counts.</td>
         <td>Local project data owner not specified.</td>
@@ -217,7 +280,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-019.html">data/allegheny-go/demographics_summary.csv</a></td>
+        <td><a href="sources/source-026.html">data/allegheny-go/demographics_summary.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Allegheny Go enrollee demographic summary.</td>
         <td>Local project data owner not specified.</td>
@@ -226,7 +289,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-020.html">data/allegheny-go/enrollments_weekly.csv</a></td>
+        <td><a href="sources/source-027.html">data/allegheny-go/enrollments_weekly.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Weekly Allegheny Go enrollment counts by enrollment type.</td>
         <td>Local project data owner not specified.</td>
@@ -235,7 +298,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-021.html">data/allegheny-go/tract_reach.csv</a></td>
+        <td><a href="sources/source-028.html">data/allegheny-go/tract_reach.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Allegheny Go households reached per census tract.</td>
         <td>Local project data owner not specified.</td>
@@ -244,7 +307,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-022.html">data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</a></td>
+        <td><a href="sources/source-029.html">data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Average ridership by route and month.</td>
         <td>Local project data owner not specified.</td>
@@ -253,7 +316,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-023.html">data/bus-stop-usage/wprdc_stop_data.csv</a></td>
+        <td><a href="sources/source-030.html">data/bus-stop-usage/wprdc_stop_data.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Stop-level ridership with lat/lon, used to compute downtown-dependence scores per route from pre-pandemic weekday boardings.</td>
         <td>Local project data owner not specified.</td>
@@ -262,7 +325,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-024.html">data/noaa-weather/daily_raw.csv</a></td>
+        <td><a href="sources/source-031.html">data/noaa-weather/daily_raw.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Cached NOAA daily observations for Pittsburgh station.</td>
         <td>Local project data owner not specified.</td>
@@ -271,7 +334,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-025.html">data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</a></td>
+        <td><a href="sources/source-032.html">data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</a></td>
         <td><span class="tag">file</span></td>
         <td>NTD TS2.2 workbook with annual service data by system.</td>
         <td>Local project data owner not specified.</td>
@@ -280,7 +343,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-026.html">data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</a></td>
+        <td><a href="sources/source-033.html">data/ntd-monthly-ridership/December 2025 Complete Monthly Ridership (with adjustments and estimates)_260202.xlsx</a></td>
         <td><span class="tag">file</span></td>
         <td>NTD monthly ridership workbook containing agency metadata and UPT series.</td>
         <td>Local project data owner not specified.</td>
@@ -289,7 +352,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-027.html">data/osm-signals/traffic_signals_raw.json</a></td>
+        <td><a href="sources/source-034.html">data/osm-signals/traffic_signals_raw.json</a></td>
         <td><span class="tag">file</span></td>
         <td>Cached OpenStreetMap Overpass response of traffic-signal nodes for Allegheny County.</td>
         <td>Local project data owner not specified.</td>
@@ -298,7 +361,25 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-028.html">data/penndot-traffic/aadt_raw.json</a></td>
+        <td><a href="sources/source-035.html">data/penndot-roadclass/roadwayadmin.json</a></td>
+        <td><span class="tag">file</span></td>
+        <td>Cached PennDOT ArcGIS roadwayadmin response (functional class, posted speed) for Allegheny County.</td>
+        <td>Local project data owner not specified.</td>
+        <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+        <td>May lag upstream source updates.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-036.html">data/penndot-roadclass/roadwaysegments.json</a></td>
+        <td><span class="tag">file</span></td>
+        <td>Cached PennDOT ArcGIS roadwaysegments response (lane count, median type, geometry) for Allegheny County.</td>
+        <td>Local project data owner not specified.</td>
+        <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+        <td>May lag upstream source updates.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-037.html">data/penndot-traffic/aadt_raw.json</a></td>
         <td><span class="tag">file</span></td>
         <td>Cached PennDOT ArcGIS feature response for Allegheny County roadway segments.</td>
         <td>Local project data owner not specified.</td>
@@ -307,7 +388,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-029.html">data/routes_by_month.csv</a></td>
+        <td><a href="sources/source-038.html">data/routes_by_month.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Monthly route OTP source table in wide format.</td>
         <td>Local project data owner not specified.</td>
@@ -316,7 +397,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-030.html">data/wprdc-schedule/paac_pick_lookup.csv</a></td>
+        <td><a href="sources/source-039.html">data/wprdc-schedule/paac_pick_lookup.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Pick period lookup metadata (cached copy when available).</td>
         <td>Local project data owner not specified.</td>
@@ -325,7 +406,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-031.html">data/wprdc-schedule/schedule_monthly_agg.csv</a></td>
+        <td><a href="sources/source-040.html">data/wprdc-schedule/schedule_monthly_agg.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Monthly route/day-type schedule aggregates (cached copy when available).</td>
         <td>Local project data owner not specified.</td>
@@ -334,7 +415,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-032.html">allegheny_go_weekly</a></td>
+        <td><a href="sources/source-041.html">allegheny_go_weekly</a></td>
         <td><span class="tag">table</span></td>
         <td>Database table consumed by one or more analyses.</td>
         <td>Project pipeline owner not linked.</td>
@@ -343,7 +424,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-033.html">census_tracts</a></td>
+        <td><a href="sources/source-042.html">census_tracts</a></td>
         <td><span class="tag">table</span></td>
         <td>Database table consumed by one or more analyses.</td>
         <td>Project pipeline owner not linked.</td>
@@ -352,7 +433,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-034.html">ntd_agency</a></td>
+        <td><a href="sources/source-043.html">ntd_agency</a></td>
         <td><span class="tag">table</span></td>
         <td>Agency dimension table keyed by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</td>
         <td>Produced by NTD Ridership ETL.</td>
@@ -361,7 +442,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-035.html">ntd_annual_service</a></td>
+        <td><a href="sources/source-044.html">ntd_annual_service</a></td>
         <td><span class="tag">table</span></td>
         <td>Annual VRH, VRM, UPT, VOMS by NTD system (1991-2023). Produced by NTD Annual Service ETL.</td>
         <td>Produced by NTD Annual Service ETL.</td>
@@ -370,7 +451,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-036.html">ntd_fleet_age</a></td>
+        <td><a href="sources/source-045.html">ntd_fleet_age</a></td>
         <td><span class="tag">table</span></td>
         <td>Database table consumed by one or more analyses.</td>
         <td>Project pipeline owner not linked.</td>
@@ -379,7 +460,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-037.html">ntd_ridership</a></td>
+        <td><a href="sources/source-046.html">ntd_ridership</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly UPT facts by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</td>
         <td>Produced by NTD Ridership ETL.</td>
@@ -388,7 +469,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-038.html">otp_monthly</a></td>
+        <td><a href="sources/source-047.html">otp_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly OTP values by route. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -397,7 +478,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-039.html">ridership_monthly</a></td>
+        <td><a href="sources/source-048.html">ridership_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly ridership by route and day type. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -406,7 +487,16 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-040.html">route_signals</a></td>
+        <td><a href="sources/source-049.html">route_road_class</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Route-level road-type metrics including length-weighted lane count, functional class, posted speed, arterial share, and divided-road share. Produced by Road Classification Overlay ETL.</td>
+        <td>Produced by Road Classification Overlay ETL.</td>
+        <td>Updated when the producing pipeline step is rerun.</td>
+        <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-050.html">route_signals</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-level traffic signal count, representative route length, and signal density. Produced by Signal Overlay ETL.</td>
         <td>Produced by Signal Overlay ETL.</td>
@@ -415,7 +505,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-041.html">route_stops</a></td>
+        <td><a href="sources/source-051.html">route_stops</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -424,7 +514,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-042.html">route_traffic</a></td>
+        <td><a href="sources/source-052.html">route_traffic</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-level traffic exposure metrics including weighted AADT and match quality. Produced by Traffic Overlay ETL.</td>
         <td>Produced by Traffic Overlay ETL.</td>
@@ -433,7 +523,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-043.html">routes</a></td>
+        <td><a href="sources/source-053.html">routes</a></td>
         <td><span class="tag">table</span></td>
         <td>Route dimension table. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -442,7 +532,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-044.html">scheduled_trips_monthly</a></td>
+        <td><a href="sources/source-054.html">scheduled_trips_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly route/day-type scheduled trip counts and distance metrics. Produced by Scheduled Trips ETL.</td>
         <td>Produced by Scheduled Trips ETL.</td>
@@ -451,7 +541,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-045.html">stop_reference</a></td>
+        <td><a href="sources/source-055.html">stop_reference</a></td>
         <td><span class="tag">table</span></td>
         <td>Historical stop metadata and geography. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -460,7 +550,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-046.html">stops</a></td>
+        <td><a href="sources/source-056.html">stops</a></td>
         <td><span class="tag">table</span></td>
         <td>Physical stop dimension table. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -469,7 +559,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-047.html">weather_monthly</a></td>
+        <td><a href="sources/source-057.html">weather_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly precipitation, temperature, snowfall, and wind summary features. Produced by Weather ETL.</td>
         <td>Produced by Weather ETL.</td>

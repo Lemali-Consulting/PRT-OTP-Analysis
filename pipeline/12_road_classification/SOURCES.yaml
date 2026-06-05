@@ -1,0 +1,23 @@
+kind: pipeline
+title: Road Classification Overlay ETL
+description: Computes route-level road-type metrics (lane count, functional class, posted speed, divided-road share) by spatially joining GTFS routes with PennDOT RMSSEG roadway segment and administrative layers.
+files:
+  - path: data/penndot-roadclass/roadwaysegments.json
+    description: Cached PennDOT ArcGIS roadwaysegments response (lane count, median type, geometry) for Allegheny County.
+  - path: data/penndot-roadclass/roadwayadmin.json
+    description: Cached PennDOT ArcGIS roadwayadmin response (functional class, posted speed) for Allegheny County.
+  - path: data/GTFS/shapes.txt
+    description: GTFS route shape geometry points.
+  - path: data/GTFS/trips.txt
+    description: GTFS shape-to-route mapping.
+apis:
+  - name: PennDOT ArcGIS Roadway Segments Layer (RMSSEG)
+    url: https://gis.penndot.gov/arcgis/rest/services/opendata/roadwaysegments/MapServer/0/query
+    description: Public state-roadway segment attributes including lane count and median type.
+  - name: PennDOT ArcGIS Roadway Admin Layer
+    url: https://gis.penndot.gov/arcgis/rest/services/opendata/roadwayadmin/MapServer/0/query
+    description: Public roadway administrative attributes including FHWA functional class and posted speed limit.
+tables: []
+tables_produced:
+  - name: route_road_class
+    description: Route-level road-type metrics including length-weighted lane count, functional class, posted speed, arterial share, and divided-road share.

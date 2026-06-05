@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ridership_monthly - Source Detail</title>
+  <title>data/wprdc-schedule/paac_pick_lookup.csv - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -32,28 +32,19 @@
   <main class="container shell">
     
 <section class="hero hero-compact">
-  <p class="kicker">Table</p>
-  <h1>ridership_monthly</h1>
-  <p class="lede">Monthly ridership by route and day type. Produced by Data Ingestion.</p>
-  <p class="lede">Owner: Produced by Data Ingestion. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-05-15 22:40 UTC · Commit cf330ed</p>
+  <p class="kicker">File</p>
+  <h1>data/wprdc-schedule/paac_pick_lookup.csv</h1>
+  <p class="lede">Pick period lookup metadata (cached copy when available).</p>
+  <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
+  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["ridership_monthly"]
-  src --> c1["19 - Ridership-Weighted OTP"]
-  src --> c2["20 - OTP → Ridership Causality"]
-  src --> c3["21 - COVID Ridership vs OTP Recovery"]
-  src --> c4["22 - Passenger-Weighted Delay Burden"]
-  src --> c5["23 - Garage-Level Performance"]
-  src --> c6["24 - Weekday vs Weekend Ridership Trends"]
-  src --> c7["25 - Ridership Concentration & Equity"]
-  src --> c8["26 - Ridership in Multivariate OTP Model"]
-  src --> c9["38 - Downtown Recovery Gap"]
-  src --> c10["47 - Route Ridership Ranking"]
+  src["data/wprdc-schedule/paac_pick_lookup.csv"]
+  src --> c1["Scheduled Trips ETL"]
 </pre>
 </section>
 
@@ -64,8 +55,8 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Primary analytical table used in this page's computations.</td>
-        <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        <td>Pick period lookup metadata (cached copy when available).</td>
+        <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
   </table>
@@ -76,52 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/38_downtown_recovery/index.html">38 - Downtown Recovery Gap</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
-  
-    <article class="card">
-      <h3><a href="analyses/47_route_ridership_ranking/index.html">47 - Route Ridership Ranking</a></h3>
+      <h3><a href="pipeline/02_scheduled_trips/index.html">Scheduled Trips ETL</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

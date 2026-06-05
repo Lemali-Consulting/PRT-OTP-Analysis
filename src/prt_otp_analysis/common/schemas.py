@@ -216,6 +216,26 @@ ROUTE_SIGNALS = Schema(
     nullable=frozenset({"signal_density"}),
 )
 
+ROUTE_ROAD_CLASS = Schema(
+    name="route_road_class",
+    columns={
+        "route_id": pl.Utf8,
+        "n_segments": pl.Int64,
+        "total_length_ft": pl.Float64,
+        "weighted_lanes": pl.Float64,
+        "weighted_func_cls": pl.Float64,
+        "weighted_speed": pl.Float64,
+        "arterial_share": pl.Float64,
+        "divided_share": pl.Float64,
+        "n_route_points": pl.Int64,
+        "match_rate": pl.Float64,
+    },
+    nullable=frozenset({
+        "weighted_lanes", "weighted_func_cls", "weighted_speed",
+        "arterial_share", "divided_share",
+    }),
+)
+
 
 def validate(
     df: pl.DataFrame,

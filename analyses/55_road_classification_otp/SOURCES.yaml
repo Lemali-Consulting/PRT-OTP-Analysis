@@ -1,0 +1,46 @@
+kind: analysis
+title: 55 - Road Classification and OTP
+group: Ridership and External Factors
+tables:
+- otp_monthly
+- route_road_class
+- route_traffic
+- route_stops
+- routes
+- stops
+files: []
+analyses: []
+description: >-
+  Buses that run along wider, multi-lane roads are consistently more likely to run
+  late. Accounting for the type of road a route travels — especially its number of
+  lanes — explains far more of the gap in on-time performance between routes than
+  route length, stop count, or overall traffic volume do, lifting the share of
+  variation explained from 40% to 58%. The likely culprit is congested multi-lane
+  city streets clogged with traffic signals and turning cars, not fast highways:
+  where wide roads actually move at speed, buses keep their schedule.
+dependencies:
+- numpy
+- polars
+- scipy
+outputs:
+- path: lanes_vs_otp_scatter.png
+  kind: image
+  description: bivariate scatter of length-weighted lane count vs OTP.
+- path: r2_progression.png
+  kind: image
+  description: adjusted R-squared across the nested models (baseline, +truck %, +lane count, +road block).
+- path: coefficient_comparison.png
+  kind: image
+  description: beta-weight comparison between the structural baseline and the road-type model.
+- path: partial_residual.png
+  kind: image
+  description: partial-residual plot of baseline residuals vs lane count.
+- path: model_comparison.csv
+  kind: data
+  description: regression results for all models.
+- path: route_road_class_summary.csv
+  kind: data
+  description: per-route road-type metrics with OTP.
+- path: vif_table.csv
+  kind: data
+  description: VIF values for the full road-type model.

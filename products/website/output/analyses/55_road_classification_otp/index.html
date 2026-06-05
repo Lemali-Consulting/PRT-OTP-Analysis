@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>55 - Road Classification and OTP - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>55 - Road Classification and OTP</h1>
+  <p class="lede">Ridership and External Factors</p>
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../54_stop_position_placement/index.html">← 54 - Stop Position and Near-Side Placement</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  55_road_classification_otp(["55 - Road Classification and OTP"])
+  t_otp_monthly[("otp_monthly")] --> 55_road_classification_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_route_road_class[("route_road_class")] --> 55_road_classification_otp
+  12_road_classification[["Road Classification Overlay ETL"]] --> t_route_road_class
+  u1_12_road_classification[/"data/penndot-roadclass/roadwaysegments.json"/] --> 12_road_classification
+  u2_12_road_classification[/"data/penndot-roadclass/roadwayadmin.json"/] --> 12_road_classification
+  u3_12_road_classification[/"data/GTFS/shapes.txt"/] --> 12_road_classification
+  u4_12_road_classification[/"data/GTFS/trips.txt"/] --> 12_road_classification
+  u5_12_road_classification{"PennDOT ArcGIS Roadway Segments Layer (RMSSEG)"} --> 12_road_classification
+  u6_12_road_classification{"PennDOT ArcGIS Roadway Admin Layer"} --> 12_road_classification
+  t_route_traffic[("route_traffic")] --> 55_road_classification_otp
+  04_traffic_overlay[["Traffic Overlay ETL"]] --> t_route_traffic
+  u1_04_traffic_overlay[/"data/penndot-traffic/aadt_raw.json"/] --> 04_traffic_overlay
+  u2_04_traffic_overlay[/"data/GTFS/shapes.txt"/] --> 04_traffic_overlay
+  u3_04_traffic_overlay[/"data/GTFS/trips.txt"/] --> 04_traffic_overlay
+  u4_04_traffic_overlay{"PennDOT ArcGIS Roadway Traffic Layer"} --> 04_traffic_overlay
+  t_route_stops[("route_stops")] --> 55_road_classification_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_routes[("routes")] --> 55_road_classification_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  t_stops[("stops")] --> 55_road_classification_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_stops
+  d1_55_road_classification_otp(("numpy (lib)")) --> 55_road_classification_otp
+  d2_55_road_classification_otp(("polars (lib)")) --> 55_road_classification_otp
+  d3_55_road_classification_otp(("scipy (lib)")) --> 55_road_classification_otp
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 55_road_classification_otp page;
+  class t_otp_monthly,t_route_road_class,t_route_stops,t_route_traffic,t_routes,t_stops table;
+  class d1_55_road_classification_otp,d2_55_road_classification_otp,d3_55_road_classification_otp dep;
+  class u1_01_data_ingestion,u1_04_traffic_overlay,u1_12_road_classification,u2_01_data_ingestion,u2_04_traffic_overlay,u2_12_road_classification,u3_01_data_ingestion,u3_04_traffic_overlay,u3_12_road_classification,u4_01_data_ingestion,u4_12_road_classification,u5_01_data_ingestion file;
+  class u4_04_traffic_overlay,u5_12_road_classification,u6_12_road_classification api;
+  class 01_data_ingestion,04_traffic_overlay,12_road_classification pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Road Classification and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Summary</h2>
+<p><strong>Road type explains <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, and lane count is the driver.</strong> Adding a road-type block
+(length-weighted lane count, functional class, and posted speed) to the six-feature
+structural baseline raises R² from <strong>0.40 to 0.58</strong> (adjusted R² 0.36 → 0.54; joint
+F = 11.6, p &lt; 0.001). The single feature doing the work is <strong>lane count</strong>: routes that
+run along wider, multi-lane roads are reliably <em>later</em>, independent of how many stops
+they make or how far they travel. This succeeds where Analysis 27 found a null for
+traffic <em>volume</em> (AADT), and it more than doubles the explanatory gain that truck
+percentage — Analysis 27's best traffic predictor — could provide.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li>89 routes analyzed (88 bus, 1 rail) after filtering <code>match_rate &gt;= 0.3</code>; all 98 routes matched, none excluded for low coverage (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> match rate ~93%).</li>
+<li>Structural baseline (6 features): R² = 0.40, Adj R² = 0.357 — reproduces Analysis 27's baseline exactly.</li>
+<li><strong>+ lane count alone:</strong> Adj R² = 0.515 (+0.16).</li>
+<li><strong>+ full road-type block:</strong> R² = 0.583, Adj R² = 0.536 (+0.18 R²); joint F = 11.6, p &lt; 0.001.</li>
+<li><ul>
+<li>truck % (Analysis 27's predictor, same sample): R² = 0.451 — well below the road-type block.</li>
+</ul>
+</li>
+<li>Lane count <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight = <strong>−0.38</strong> (p &lt; 0.001), tied with span as the strongest predictor in the model.</li>
+<li>Posted speed <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> = +0.29 (p = 0.021); functional class not significant (p = 0.11).</li>
+<li>All VIFs ≤ 3.5 (lane count <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> = 1.46). Lane count is <strong>uncorrelated with stop count (r = +0.02) and span (r = −0.08)</strong> — its contribution is genuinely independent.</li>
+<li>Bus-only subset: identical story (Adj R² 0.328 → 0.515, joint F = 11.6, p &lt; 0.001).</li>
+<li>Lane-count range across matched routes: 1.6 – 2.5 weighted lanes.</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>More lanes, later buses.</strong> The bivariate correlation between length-weighted lane
+count and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is r = −0.47 — the strongest single road-attribute correlate of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> in
+the project. In the full model it survives at <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> = −0.38, p &lt; 0.001.</li>
+<li><strong>Lanes and speed pull in opposite directions, and that resolves Analysis 27's sign
+puzzle.</strong> Holding lane count fixed, <em>higher</em> posted speed is associated with <em>better</em>
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (<a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> +0.29). The coherent reading is that the problematic roads are <strong>congested
+multi-lane urban arterials with low effective speeds</strong> — many lanes, signalized
+intersections, heavy turning and cross-traffic — not high-speed highways. A wide road
+that also moves fast is fine; a wide road that crawls is where buses fall behind.</li>
+<li><strong>This is what truck % was reaching for.</strong> Analysis 27 found truck percentage was its
+only significant traffic predictor and argued it proxied road type. Replacing the proxy
+with direct road-type measures roughly triples the gain (truck adds +0.05 R²; the
+road-type block adds +0.18), confirming that interpretation and superseding it.</li>
+<li><strong>Independent of route geometry.</strong> Lane count's near-zero correlation with stop count
+and span (and its low <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a>) means it is not just re-encoding &quot;long route&quot; or &quot;many
+stops.&quot; It captures a distinct dimension: the <em>kind of road</em> the route operates on.</li>
+</ul>
+<h2>Discussion</h2>
+<p>Across Analyses 18, 26, and 27 the model-building narrative had stalled at ~40–47% of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>
+<a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> explained by route geometry and mode, with traffic volume contributing nothing
+and the remainder attributed to operational factors not in the data. This analysis moves
+the ceiling: a single, cleanly measured road attribute — how many lanes the route runs
+along — lifts explained <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> to ~58%.</p>
+<p>The mechanism is intuitive once lane count and speed are separated. Pittsburgh's
+worst-performing corridors (e.g., routes 71B, 88, 58, the 61-series) thread multi-lane
+arterials through dense neighborhoods: more lanes <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> more signal phases, more turning
+conflicts, more boarding friction at busy stops, and more exposure to incident-driven
+backups — all of which degrade schedule adherence even though the road has nominal
+capacity. The positive speed coefficient is the tell: where those wide roads actually
+carry traffic at speed, buses keep their schedule.</p>
+<p>For policy this is more actionable than the AADT null. Lane count and functional class
+are fixed, mappable attributes of the road network, so this offers a structural screen
+for where transit-priority treatments (signal priority, bus lanes, queue jumps, stop
+consolidation on arterials) are most likely to pay off — namely the multi-lane,
+low-speed arterial segments, not the quiet neighborhood streets.</p>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Ecological, area-level association.</strong> These are route-level relationships between the
+road network a route traverses and its average <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, not claims about individual trips
+or stops.</li>
+<li><strong>Lane count is a route-average exposure</strong>, length-weighted over PennDOT segments within
+30 m of the GTFS shape. It does not distinguish where along the route the wide-road
+segments fall, nor time-of-day conditions.</li>
+<li><strong>PennDOT state-route coverage.</strong> The RMSSEG layers cover state-administered roads;
+purely local streets are underrepresented (the same limitation as Analysis 27). Match
+rates are high (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> ~93%), but segments on city-maintained streets may be missing —
+the Pittsburgh city centerline is a documented phase-2 extension.</li>
+<li><strong>Functional class added little</strong> on its own (p = 0.11); the lane-count and speed
+channels carry the road-type signal, so the headline rests on those two.</li>
+<li><strong>Correlation, not proven causation.</strong> Lane count plausibly proxies a bundle of
+co-located features (signal density, land use, congestion); the analysis shows it is a
+strong, independent <em>predictor</em>, not that adding or removing a lane would change <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+</ul>
+<h2>Validation</h2>
+<h3>Data inputs</h3>
+<ol>
+<li><strong>Data source verified.</strong> All road-type columns were read from <code>route_road_class</code>,
+built by pipeline step 12 (<code>road_overlay.py</code>) from the PennDOT <code>roadwaysegments</code> and
+<code>roadwayadmin</code> ArcGIS layers; field names were taken from the live REST schema, not
+from memory, and documented in <code>data/penndot-roadclass/SOURCE.md</code>. The query result is
+validated against the <code>ROUTE_ROAD_CLASS</code> schema (<code>validate(..., subset=True)</code>).</li>
+<li><strong>Geographic/temporal scope matches.</strong> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is averaged over routes with 12+ months of
+data; road-type metrics are matched to the same GTFS route shapes and filtered to
+<code>match_rate &gt;= 0.3</code>, identical to Analysis 27's inclusion rule. All road data is
+Allegheny County (<code>CTY_CODE='02'</code>).</li>
+<li><strong>Null/missing handling.</strong> Routes lacking a weighted lane count, functional class,
+speed, or any structural feature are dropped before modeling (none were, beyond the
+match-rate filter). Length-weighting skips segments with missing values rather than
+counting them as zero.</li>
+</ol>
+<h3>Results plausibility</h3>
+<ol start="4">
+<li><strong>Aggregates sanity-checked.</strong> The structural baseline reproduces Analysis 27's R² of
+0.40 exactly on the same sample, confirming the baseline replication is correct.
+Lane-count range (1.6–2.5) and speed range are physically sensible for urban arterials.</li>
+<li><strong>Surprising result investigated.</strong> The large R² jump (+0.18) was checked for
+artifact: lane count's <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> is 1.46 and it is essentially uncorrelated with stop count
+(r = +0.02) and span (r = −0.08), so the gain is not collinearity-driven double-counting.
+The bivariate r = −0.47 is consistent with the multivariate <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a>.</li>
+<li><strong>Direction of effects checked.</strong> Known structural relationships retain expected signs
+(more stops → lower <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>; longer span → lower <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>; rail → higher <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>). The lane-count
+sign (more lanes → lower <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>) initially appears to conflict with Analysis 27's positive
+truck-% coefficient, but the simultaneous positive speed coefficient resolves it:
+the signal is congested low-speed arterials, consistent with both findings.</li>
+</ol>
+<h3>Statistical diagnostics</h3>
+<ol start="7">
+<li><strong>Multicollinearity checked.</strong> <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> computed for every predictor in the full model;
+all ≤ 3.5, none above the 5 threshold. Reported in <code>output/vif_table.csv</code>.</li>
+<li><strong>Small-sample routes flagged.</strong> Route-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> requires 12+ months; the match-rate
+floor (0.3) excludes routes with poor road coverage. 89 routes met both criteria.</li>
+<li><strong>Ecological framing.</strong> Findings are described as route-level / area-level associations
+throughout; no individual-trip claims are made.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/55_road_classification_otp/lanes_vs_otp_scatter.png" alt="lanes_vs_otp_scatter" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/55_road_classification_otp/lanes_vs_otp_scatter.png" target="_blank" rel="noopener noreferrer">lanes_vs_otp_scatter.png</a>
+          <p class="artifact-desc">bivariate scatter of length-weighted lane count vs OTP.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/55_road_classification_otp/r2_progression.png" alt="r2_progression" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/55_road_classification_otp/r2_progression.png" target="_blank" rel="noopener noreferrer">r2_progression.png</a>
+          <p class="artifact-desc">adjusted R-squared across the nested models (baseline, +truck %, +lane count, +road block).</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/55_road_classification_otp/coefficient_comparison.png" alt="coefficient_comparison" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/55_road_classification_otp/coefficient_comparison.png" target="_blank" rel="noopener noreferrer">coefficient_comparison.png</a>
+          <p class="artifact-desc">beta-weight comparison between the structural baseline and the road-type model.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/55_road_classification_otp/partial_residual.png" alt="partial_residual" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/55_road_classification_otp/partial_residual.png" target="_blank" rel="noopener noreferrer">partial_residual.png</a>
+          <p class="artifact-desc">partial-residual plot of baseline residuals vs lane count.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/55_road_classification_otp/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
+          <p class="artifact-desc">regression results for all models.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/55_road_classification_otp/model_comparison.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/55_road_classification_otp/route_road_class_summary.csv" target="_blank" rel="noopener noreferrer">route_road_class_summary.csv</a>
+          <p class="artifact-desc">per-route road-type metrics with OTP.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/55_road_classification_otp/route_road_class_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/55_road_classification_otp/vif_table.csv" target="_blank" rel="noopener noreferrer">vif_table.csv</a>
+          <p class="artifact-desc">VIF values for the full road-type model.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/55_road_classification_otp/vif_table.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Road Classification and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Question</h2>
+<p>Does the <strong>type of road</strong> a route runs on -- lane count, functional class, and posted
+speed -- explain <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> beyond the structural features (stop count, geographic
+span, mode, etc.) of the Analysis 18 model? Analysis 27 found that traffic <em>volume</em>
+(AADT) does not, and that the only traffic-related predictor with signal was truck
+percentage, which it argued was a noisy proxy for road type. This analysis tests road
+type directly.</p>
+<h2>Approach</h2>
+<ul>
+<li>Replicate the Analysis 18 / 27 six-feature structural <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> baseline on routes with
+matched road-classification data (<code>match_rate &gt;= 0.3</code>).</li>
+<li>Add a <strong>road-type block</strong> -- length-weighted lane count, functional class, and posted
+speed -- and compare <a href="../../glossary.html#adjusted-r-squared" class="glossary-link" data-definition="R2 variant that penalizes unnecessary predictors.">adjusted R-squared</a> against the baseline using a nested F-test.</li>
+<li>Fit an intermediate model with <strong>lane count alone</strong> to isolate its contribution
+(the bivariate spike showed lane count is by far the strongest road attribute,
+r = -0.47 with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>).</li>
+<li>Fit a <strong>truck-percentage</strong> model (base + <code>avg_truck_pct</code> from <code>route_traffic</code>) on the
+same sample, so the road-type block can be compared head-to-head against Analysis 27's
+best traffic predictor.</li>
+<li>Compute <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for the full road-type model. Lane count, functional class, and speed are
+expected to intercorrelate and to correlate with stop count and span -- flag any
+predictor with <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> &gt; 5 and interpret coefficient attribution with that in mind.</li>
+<li>Report <code>arterial_share</code> and <code>divided_share</code> descriptively (Pearson r with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>); they
+are not added to the regression to avoid inflating collinearity.</li>
+<li>Repeat the base-vs-road-block comparison on the bus-only subset.</li>
+<li>Charts: lane-count vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> scatter, adjusted-R² progression across nested models,
+standardized-coefficient comparison, and a partial-residual plot for lane count.</li>
+</ul>
+<p>All regression helpers (<code>compute_span</code>, <code>fit_ols</code>, <code>compute_vif</code>, <code>f_test_nested</code>) are
+replicated locally so the analysis does not import from Analysis 18/27 (analyses must be
+independent).</p>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>route_id, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">otp</a> (averaged to route level, 12+ months required)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_road_class</code></td>
+  <td>route_id, weighted_lanes, weighted_func_cls, weighted_speed, arterial_share, divided_share, match_rate (built by <code>road_overlay.py</code>, pipeline step 12)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_traffic</code></td>
+  <td>route_id, avg_truck_pct (for head-to-head comparison)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>stop counts, trip frequencies</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>lat, lon for geographic span; muni for municipality count</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>route_id, mode for subtype classification</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
+<p>Inclusion: routes with 12+ months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and <code>route_road_class.match_rate &gt;= 0.3</code>.
+Road-type metrics are length-weighted over the PennDOT segments within 30 m of the
+route's GTFS shape. Functional class uses FHWA codes (1 = Interstate ... 7 = Local);
+lower values denote more major roads. <code>divided_share</code> treats <code>DIVSR_TYPE = '0'</code> as
+undivided and any other code as divided.</p>
+<h2>Output</h2>
+<ul>
+<li><code>output/model_comparison.csv</code> -- regression results for all models</li>
+<li><code>output/vif_table.csv</code> -- <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> values for the full road-type model</li>
+<li><code>output/route_road_class_summary.csv</code> -- per-route road-type metrics with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/lanes_vs_otp_scatter.png</code> -- bivariate scatter of lane count vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/r2_progression.png</code> -- adjusted R² across the nested models</li>
+<li><code>output/coefficient_comparison.png</code> -- <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a>-weight comparison, base vs road-type model</li>
+<li><code>output/partial_residual.png</code> -- partial-residual plot for lane count</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 55: Test whether road type (lanes, functional class, speed) explains OTP beyond structural features.&quot;&quot;&quot;
+
+import math
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    analysis_dir,
+    classify_bus_route,
+    correlate,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.common.schemas import ROUTE_ROAD_CLASS, validate
+
+OUT = analysis_dir(__file__)
+
+MIN_MONTHS = 12
+MIN_MATCH_RATE = 0.3
+
+ROAD_FEATURES = [&quot;weighted_lanes&quot;, &quot;weighted_func_cls&quot;, &quot;weighted_speed&quot;]
+
+
+# ---------------------------------------------------------------------------
+# Helpers (replicated from Analysis 18/27 to keep analyses independent)
+# ---------------------------------------------------------------------------
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return the great-circle distance in km between two lat/lon points.&quot;&quot;&quot;
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
+         * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def compute_span(lats: list[float], lons: list[float]) -&gt; float:
+    &quot;&quot;&quot;Return the max pairwise haversine distance (km) among a set of points.&quot;&quot;&quot;
+    max_dist = 0.0
+    n = len(lats)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = haversine_km(lats[i], lons[i], lats[j], lons[j])
+            if d &gt; max_dist:
+                max_dist = d
+    return max_dist
+
+
+def compute_vif(X_raw: np.ndarray, feature_names: list[str]) -&gt; dict[str, float]:
+    &quot;&quot;&quot;Compute Variance Inflation Factor for each predictor.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    vifs = {}
+    for j in range(k):
+        y_j = X_raw[:, j]
+        X_other = np.delete(X_raw, j, axis=1)
+        X_other = np.column_stack([np.ones(n), X_other])
+        beta, _, _, _ = np.linalg.lstsq(X_other, y_j, rcond=None)
+        y_hat = X_other @ beta
+        ss_res = np.sum((y_j - y_hat) ** 2)
+        ss_tot = np.sum((y_j - np.mean(y_j)) ** 2)
+        r2_j = 1 - ss_res / ss_tot if ss_tot &gt; 0 else 0.0
+        vifs[feature_names[j]] = 1.0 / (1.0 - r2_j) if r2_j &lt; 1.0 else float(&quot;inf&quot;)
+    return vifs
+
+
+def fit_ols(y: np.ndarray, X_raw: np.ndarray, feature_names: list[str]) -&gt; dict:
+    &quot;&quot;&quot;Fit OLS regression and return results dict.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    X = np.column_stack([np.ones(n), X_raw])
+
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    y_hat = X @ beta
+    residuals = y - y_hat
+
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    adj_r_squared = 1 - (1 - r_squared) * (n - 1) / (n - k - 1)
+    mse = ss_res / (n - k - 1)
+
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    se = np.sqrt(np.diag(XtX_inv) * mse)
+    t_vals = beta / se
+    p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n - k - 1)) for t in t_vals]
+
+    x_stds = np.std(X_raw, axis=0, ddof=1)
+    y_std = np.std(y, ddof=1)
+    beta_weights = beta[1:] * x_stds / y_std
+
+    return {
+        &quot;r_squared&quot;: r_squared,
+        &quot;adj_r_squared&quot;: adj_r_squared,
+        &quot;ss_res&quot;: ss_res,
+        &quot;n&quot;: n,
+        &quot;k&quot;: k,
+        &quot;features&quot;: [&quot;intercept&quot;] + feature_names,
+        &quot;coefficients&quot;: beta.tolist(),
+        &quot;std_errors&quot;: se.tolist(),
+        &quot;t_values&quot;: t_vals.tolist(),
+        &quot;p_values&quot;: p_vals,
+        &quot;beta_weights&quot;: [None] + beta_weights.tolist(),
+        &quot;y_hat&quot;: y_hat,
+        &quot;residuals&quot;: residuals,
+    }
+
+
+def f_test_nested(base: dict, full: dict) -&gt; tuple[float, float]:
+    &quot;&quot;&quot;F-test comparing nested models. Returns (F_stat, p_value).&quot;&quot;&quot;
+    k_diff = full[&quot;k&quot;] - base[&quot;k&quot;]
+    n = full[&quot;n&quot;]
+    f_stat = ((base[&quot;ss_res&quot;] - full[&quot;ss_res&quot;]) / k_diff) / (full[&quot;ss_res&quot;] / (n - full[&quot;k&quot;] - 1))
+    f_p = 1 - stats.f.cdf(f_stat, k_diff, n - full[&quot;k&quot;] - 1)
+    return f_stat, f_p
+
+
+def print_model(results: dict, label: str) -&gt; None:
+    &quot;&quot;&quot;Print formatted model results.&quot;&quot;&quot;
+    print(f&quot;\n  {label}:&quot;)
+    print(f&quot;  R2 = {results[&#x27;r_squared&#x27;]:.4f}, Adj R2 = {results[&#x27;adj_r_squared&#x27;]:.4f}, &quot;
+          f&quot;n = {results[&#x27;n&#x27;]}, k = {results[&#x27;k&#x27;]}&quot;)
+    print(f&quot;  {&#x27;Feature&#x27;:&lt;20s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Std Err&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s} {&#x27;Beta&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*60}&quot;)
+    for i, feat in enumerate(results[&quot;features&quot;]):
+        coeff = results[&quot;coefficients&quot;][i]
+        se = results[&quot;std_errors&quot;][i]
+        p = results[&quot;p_values&quot;][i]
+        beta = results[&quot;beta_weights&quot;][i]
+        beta_str = f&quot;{beta:&gt;10.4f}&quot; if beta is not None else f&quot;{&#x27;--&#x27;:&gt;10s}&quot;
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;20s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {beta_str} {sig}&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_features() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Assemble structural features + road-classification data for the regression model.&quot;&quot;&quot;
+    avg_otp_df = query_to_polars(f&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp, COUNT(*) AS months
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(*) &gt;= {MIN_MONTHS}
+    &quot;&quot;&quot;)
+
+    stop_counts_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    trips_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id,
+               MAX(trips_wd) AS max_wd,
+               MAX(trips_sa) AS max_sa,
+               MAX(trips_su) AS max_su
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    munis_df = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, COUNT(DISTINCT s.muni) AS n_munis
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.route_id
+    &quot;&quot;&quot;)
+    stops_by_route_df = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, s.lat, s.lon
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.lat IS NOT NULL AND s.lon IS NOT NULL
+    &quot;&quot;&quot;)
+    spans = []
+    for route_id in stops_by_route_df[&quot;route_id&quot;].unique().sort().to_list():
+        subset = stops_by_route_df.filter(pl.col(&quot;route_id&quot;) == route_id)
+        span_km = compute_span(subset[&quot;lat&quot;].to_list(), subset[&quot;lon&quot;].to_list())
+        spans.append({&quot;route_id&quot;: route_id, &quot;span_km&quot;: span_km})
+    span_df = pl.DataFrame(spans)
+
+    road_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, weighted_lanes, weighted_func_cls, weighted_speed,
+               arterial_share, divided_share, match_rate, n_segments, total_length_ft
+        FROM route_road_class
+    &quot;&quot;&quot;)
+    validate(road_df, ROUTE_ROAD_CLASS, subset=True)
+
+    truck_df = query_to_polars(&quot;SELECT route_id, avg_truck_pct FROM route_traffic&quot;)
+
+    df = avg_otp_df
+    df = df.join(stop_counts_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(trips_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(munis_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(span_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(road_df, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    df = df.join(truck_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+
+    df = df.with_columns(
+        pl.when(pl.col(&quot;max_wd&quot;) &gt; 0)
+        .then((pl.col(&quot;max_sa&quot;) + pl.col(&quot;max_su&quot;)) / (2.0 * pl.col(&quot;max_wd&quot;)))
+        .otherwise(0.0)
+        .alias(&quot;weekend_ratio&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;).then(1.0).otherwise(0.0).alias(&quot;is_rail&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.Utf8))
+        .otherwise(pl.lit(&quot;non_bus&quot;))
+        .alias(&quot;bus_subtype&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;bus_subtype&quot;).is_in([&quot;busway&quot;, &quot;flyer&quot;, &quot;express&quot;, &quot;limited&quot;]))
+        .then(1.0)
+        .otherwise(0.0)
+        .alias(&quot;is_premium_bus&quot;),
+    )
+
+    # Road-type features and the structural baseline must be present.
+    df = df.drop_nulls(subset=[&quot;stop_count&quot;, &quot;span_km&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;] + ROAD_FEATURES)
+
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Charts
+# ---------------------------------------------------------------------------
+
+def make_lanes_scatter(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bivariate scatter: lane count vs OTP.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    lanes = df[&quot;weighted_lanes&quot;].to_numpy()
+    otp = df[&quot;avg_otp&quot;].to_numpy()
+    modes = df[&quot;mode&quot;].to_list()
+    bus_mask = np.array([m == &quot;BUS&quot; for m in modes])
+    rail_mask = ~bus_mask
+
+    ax.scatter(lanes[bus_mask], otp[bus_mask], alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Bus&quot;, zorder=2)
+    if np.any(rail_mask):
+        ax.scatter(lanes[rail_mask], otp[rail_mask], alpha=0.7, s=50, color=&quot;#dc2626&quot;,
+                   marker=&quot;D&quot;, edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Rail&quot;, zorder=3)
+
+    slope, intercept, r, p, _ = stats.linregress(lanes, otp)
+    x_line = np.array([lanes.min(), lanes.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, alpha=0.7, label=f&quot;fit: r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.set_xlabel(&quot;Length-weighted lane count&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;Road Width (Lane Count) vs On-Time Performance&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;lanes_vs_otp_scatter.png&quot;)
+
+
+def make_r2_progression(model_specs: list[tuple[str, dict]]) -&gt; None:
+    &quot;&quot;&quot;Bar chart of adjusted R^2 across the nested models (same sample).&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(9, 6))
+
+    labels = [label for label, _ in model_specs]
+    adj_r2 = [m[&quot;adj_r_squared&quot;] for _, m in model_specs]
+    colors = [&quot;#9ca3af&quot;, &quot;#a78bfa&quot;, &quot;#60a5fa&quot;, &quot;#2563eb&quot;][: len(labels)]
+
+    bars = ax.bar(labels, adj_r2, color=colors, alpha=0.85)
+    for bar, val in zip(bars, adj_r2):
+        ax.text(bar.get_x() + bar.get_width() / 2, val + 0.005, f&quot;{val:.3f}&quot;,
+                ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=10)
+
+    ax.set_ylabel(&quot;Adjusted R²&quot;)
+    ax.set_title(&quot;Explained OTP Variance: Structural Baseline vs Road-Type Additions&quot;)
+    ax.set_ylim(0, max(adj_r2) * 1.2)
+    plt.xticks(rotation=15, ha=&quot;right&quot;)
+    save_chart(fig, OUT / &quot;r2_progression.png&quot;)
+
+
+def make_coefficient_chart(base: dict, full: dict) -&gt; None:
+    &quot;&quot;&quot;Compare standardized coefficients between base and full road-type models.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    base_feats = base[&quot;features&quot;][1:]
+    full_feats = full[&quot;features&quot;][1:]
+    base_betas = {f: b for f, b in zip(base_feats, base[&quot;beta_weights&quot;][1:])}
+    full_betas = {f: b for f, b in zip(full_feats, full[&quot;beta_weights&quot;][1:])}
+    full_pvals = {f: p for f, p in zip(full_feats, full[&quot;p_values&quot;][1:])}
+
+    y_pos = np.arange(len(full_feats))
+    width = 0.35
+    base_vals = [base_betas.get(f, 0.0) for f in full_feats]
+    full_vals = [full_betas[f] for f in full_feats]
+
+    ax.barh(y_pos + width / 2, base_vals, width, label=&quot;Structural baseline&quot;,
+            color=&quot;#9ca3af&quot;, alpha=0.7)
+    ax.barh(y_pos - width / 2, full_vals, width, label=&quot;+ road-type block&quot;,
+            color=&quot;#2563eb&quot;, alpha=0.7)
+
+    for i, f in enumerate(full_feats):
+        p = full_pvals[f]
+        marker = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        val = full_vals[i]
+        ax.text(val + 0.01 if val &gt;= 0 else val - 0.01, i - width / 2, marker,
+                ha=&quot;left&quot; if val &gt;= 0 else &quot;right&quot;, va=&quot;center&quot;, fontsize=9)
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(full_feats)
+    ax.axvline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax.set_xlabel(&quot;Standardized Coefficient (Beta Weight)&quot;)
+    ax.set_title(f&quot;Model Comparison: Base R²={base[&#x27;r_squared&#x27;]:.3f} vs &quot;
+                 f&quot;Full R²={full[&#x27;r_squared&#x27;]:.3f}&quot;)
+    ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+    ax.invert_yaxis()
+    save_chart(fig, OUT / &quot;coefficient_comparison.png&quot;)
+
+
+def make_partial_residual_chart(df: pl.DataFrame, base: dict) -&gt; None:
+    &quot;&quot;&quot;Partial residual plot: base model residuals vs lane count.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    residuals = base[&quot;residuals&quot;]
+    lanes = df[&quot;weighted_lanes&quot;].to_numpy()
+
+    ax.scatter(lanes, residuals, alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5)
+    slope, intercept, r, p, _ = stats.linregress(lanes, residuals)
+    x_line = np.array([lanes.min(), lanes.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, alpha=0.7, label=f&quot;r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.axhline(0, color=&quot;gray&quot;, linewidth=0.5, alpha=0.5)
+    ax.set_xlabel(&quot;Length-weighted lane count&quot;)
+    ax.set_ylabel(&quot;Base Model Residual (OTP)&quot;)
+    ax.set_title(&quot;Partial Residual: Does Road Width Explain Remaining OTP Variance?&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;partial_residual.png&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+@run_analysis(55, &quot;Road Classification and OTP&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load features, fit nested models, compare, chart, and save.&quot;&quot;&quot;
+
+    with phase(&quot;Loading and assembling features&quot;):
+        df_all = load_features()
+        df = df_all.filter(pl.col(&quot;match_rate&quot;) &gt;= MIN_MATCH_RATE)
+        excluded = df_all.filter(pl.col(&quot;match_rate&quot;) &lt; MIN_MATCH_RATE)
+        n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
+        n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+        print(f&quot;  {len(df)} routes after match_rate &gt;= {MIN_MATCH_RATE} filter &quot;
+              f&quot;({n_bus} BUS, {n_rail} RAIL)&quot;)
+        if len(excluded) &gt; 0:
+            print(f&quot;  Excluded ({len(excluded)}): &quot;
+                  + &quot;, &quot;.join(excluded.sort(&quot;match_rate&quot;)[&quot;route_id&quot;].to_list()))
+        print(f&quot;\n  Lane count range: {df[&#x27;weighted_lanes&#x27;].min():.2f} -- &quot;
+              f&quot;{df[&#x27;weighted_lanes&#x27;].max():.2f}&quot;)
+        print(f&quot;  Functional class range: {df[&#x27;weighted_func_cls&#x27;].min():.2f} -- &quot;
+              f&quot;{df[&#x27;weighted_func_cls&#x27;].max():.2f}&quot;)
+        print(f&quot;  Speed range: {df[&#x27;weighted_speed&#x27;].min():.0f} -- &quot;
+              f&quot;{df[&#x27;weighted_speed&#x27;].max():.0f} mph&quot;)
+        print(f&quot;  Median match rate: {df[&#x27;match_rate&#x27;].median():.1%}&quot;)
+
+    y = df[&quot;avg_otp&quot;].to_numpy()
+    base_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
+                     &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+
+    # --- Model 1: structural baseline (Analysis 18 replication) ---
+    X_base = np.column_stack([df[f].to_numpy().astype(float) for f in base_features])
+    with phase(&quot;Fitting structural baseline (6 features)&quot;):
+        base = fit_ols(y, X_base, base_features)
+        print_model(base, &quot;Structural baseline (6 features)&quot;)
+
+    # --- Model 2: + lane count alone ---
+    lane_features = base_features + [&quot;weighted_lanes&quot;]
+    X_lane = np.column_stack([df[f].to_numpy().astype(float) for f in lane_features])
+    with phase(&quot;Fitting + lane count&quot;):
+        lane_model = fit_ols(y, X_lane, lane_features)
+        print_model(lane_model, &quot;Base + lane count&quot;)
+        f_l, fp_l = f_test_nested(base, lane_model)
+        print(f&quot;\n  F-test for lane count: F = {f_l:.3f}, p = {fp_l:.4f}&quot;)
+        print(f&quot;  Adj R2: {base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {lane_model[&#x27;adj_r_squared&#x27;]:.4f}&quot;)
+
+    # --- Model 3: full road-type block ---
+    full_features = base_features + ROAD_FEATURES
+    X_full = np.column_stack([df[f].to_numpy().astype(float) for f in full_features])
+    with phase(&quot;Fitting full road-type block (lanes + func_cls + speed)&quot;):
+        full = fit_ols(y, X_full, full_features)
+        print_model(full, &quot;Base + road-type block&quot;)
+        f_f, fp_f = f_test_nested(base, full)
+        print(f&quot;\n  Joint F-test for road-type block: F = {f_f:.3f}, p = {fp_f:.4f}&quot;)
+        print(f&quot;  R2 change: {base[&#x27;r_squared&#x27;]:.4f} -&gt; {full[&#x27;r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{full[&#x27;r_squared&#x27;] - base[&#x27;r_squared&#x27;]:.4f})&quot;)
+        print(f&quot;  Adj R2 change: {base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {full[&#x27;adj_r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{full[&#x27;adj_r_squared&#x27;] - base[&#x27;adj_r_squared&#x27;]:.4f})&quot;)
+        if fp_f &lt; 0.05:
+            print(&quot;  =&gt; Road type IS significant after controlling for structural features.&quot;)
+        else:
+            print(&quot;  =&gt; Road type is NOT significant after controlling for structural features.&quot;)
+
+    # --- Model 4: truck_pct comparison (Analysis 27&#x27;s best traffic predictor) ---
+    truck_subset = df.filter(pl.col(&quot;avg_truck_pct&quot;).is_not_null())
+    truck_model = None
+    if len(truck_subset) &gt;= 20:
+        with phase(f&quot;Fitting + truck_pct comparison (n={len(truck_subset)})&quot;):
+            y_t = truck_subset[&quot;avg_otp&quot;].to_numpy()
+            truck_features = base_features + [&quot;avg_truck_pct&quot;]
+            X_t = np.column_stack([truck_subset[f].to_numpy().astype(float) for f in truck_features])
+            truck_model = fit_ols(y_t, X_t, truck_features)
+            print_model(truck_model, &quot;Base + truck_pct (for comparison)&quot;)
+
+    # --- VIF for full model ---
+    with phase(&quot;VIF (full road-type model)&quot;):
+        vifs = compute_vif(X_full, full_features)
+        for feat, vif in vifs.items():
+            flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
+
+    # --- Descriptive correlations ---
+    with phase(&quot;Descriptive correlations with OTP&quot;):
+        for feat in ROAD_FEATURES + [&quot;arterial_share&quot;, &quot;divided_share&quot;]:
+            sub = df.drop_nulls(subset=[feat])
+            corr = correlate(sub, feat, &quot;avg_otp&quot;)
+            sig = &quot;*&quot; if corr[&quot;pearson_p&quot;] &lt; 0.05 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} r = {corr[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+                  f&quot;p = {corr[&#x27;pearson_p&#x27;]:.4f} (n={len(sub)}) {sig}&quot;)
+        print(&quot;\n  Road-type collinearity with structural features:&quot;)
+        for feat in [&quot;stop_count&quot;, &quot;span_km&quot;]:
+            corr = correlate(df, &quot;weighted_lanes&quot;, feat)
+            print(f&quot;  weighted_lanes vs {feat:&lt;14s}: r = {corr[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+                  f&quot;p = {corr[&#x27;pearson_p&#x27;]:.4f}&quot;)
+
+    # --- Bus-only subgroup ---
+    bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    with phase(f&quot;Fitting bus-only models ({len(bus_df)} routes)&quot;):
+        y_bus = bus_df[&quot;avg_otp&quot;].to_numpy()
+        bus_base_feats = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_premium_bus&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+        bus_full_feats = bus_base_feats + ROAD_FEATURES
+        X_bus_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_base_feats])
+        X_bus_full = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_full_feats])
+        bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
+        bus_full = fit_ols(y_bus, X_bus_full, bus_full_feats)
+        f_b, fp_b = f_test_nested(bus_base, bus_full)
+        print(f&quot;  Bus-only joint F-test for road-type block: F = {f_b:.3f}, p = {fp_b:.4f}&quot;)
+        print(f&quot;  Adj R2: {bus_base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {bus_full[&#x27;adj_r_squared&#x27;]:.4f}&quot;)
+
+    with phase(&quot;Saving CSVs&quot;):
+        rows = []
+        models = [
+            (base, &quot;base_6feat&quot;),
+            (lane_model, &quot;base_plus_lanes&quot;),
+            (full, &quot;base_plus_roadblock&quot;),
+            (bus_base, &quot;bus_base&quot;),
+            (bus_full, &quot;bus_plus_roadblock&quot;),
+        ]
+        if truck_model is not None:
+            models.append((truck_model, &quot;base_plus_truck&quot;))
+        for model, label in models:
+            for i, feat in enumerate(model[&quot;features&quot;]):
+                bw = model[&quot;beta_weights&quot;][i]
+                rows.append({
+                    &quot;model&quot;: label,
+                    &quot;feature&quot;: feat,
+                    &quot;coefficient&quot;: model[&quot;coefficients&quot;][i],
+                    &quot;std_error&quot;: model[&quot;std_errors&quot;][i],
+                    &quot;p_value&quot;: model[&quot;p_values&quot;][i],
+                    &quot;beta_weight&quot;: bw if bw is not None else float(&quot;nan&quot;),
+                    &quot;r_squared&quot;: model[&quot;r_squared&quot;],
+                    &quot;adj_r_squared&quot;: model[&quot;adj_r_squared&quot;],
+                    &quot;n&quot;: model[&quot;n&quot;],
+                })
+        save_csv(pl.DataFrame(rows), OUT / &quot;model_comparison.csv&quot;)
+
+        vif_df = pl.DataFrame([{&quot;feature&quot;: f, &quot;vif&quot;: v} for f, v in vifs.items()])
+        save_csv(vif_df, OUT / &quot;vif_table.csv&quot;)
+
+        summary_df = df.select([
+            &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;avg_otp&quot;,
+            &quot;weighted_lanes&quot;, &quot;weighted_func_cls&quot;, &quot;weighted_speed&quot;,
+            &quot;arterial_share&quot;, &quot;divided_share&quot;, &quot;avg_truck_pct&quot;,
+            &quot;match_rate&quot;, &quot;n_segments&quot;, &quot;stop_count&quot;, &quot;span_km&quot;,
+        ]).sort(&quot;weighted_lanes&quot;, descending=True)
+        save_csv(summary_df, OUT / &quot;route_road_class_summary.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        make_lanes_scatter(df)
+        progression = [
+            (&quot;Baseline\n(structural)&quot;, base),
+            (&quot;+ lane count&quot;, lane_model),
+            (&quot;+ road block\n(lanes+func+speed)&quot;, full),
+        ]
+        if truck_model is None:
+            make_r2_progression(progression)
+        else:
+            # truck_model uses the same sample only if no nulls dropped; guard on n.
+            specs = list(progression)
+            if truck_model[&quot;n&quot;] == base[&quot;n&quot;]:
+                specs.insert(1, (&quot;+ truck %\n(Analysis 27)&quot;, truck_model))
+            make_r2_progression(specs)
+        make_coefficient_chart(base, full)
+        make_partial_residual_chart(df, base)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_road_class</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Road Classification Overlay ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (6)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/penndot-roadclass/roadwaysegments.json</strong> — Cached PennDOT ArcGIS roadwaysegments response (lane count, median type, geometry) for Allegheny County.</li>
+              
+                <li><span class="tag">file</span> <strong>data/penndot-roadclass/roadwayadmin.json</strong> — Cached PennDOT ArcGIS roadwayadmin response (functional class, posted speed) for Allegheny County.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/shapes.txt</strong> — GTFS route shape geometry points.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/trips.txt</strong> — GTFS shape-to-route mapping.</li>
+              
+                <li><span class="tag">api</span> <strong>PennDOT ArcGIS Roadway Segments Layer (RMSSEG)</strong> — Public state-roadway segment attributes including lane count and median type.</li>
+              
+                <li><span class="tag">api</span> <strong>PennDOT ArcGIS Roadway Admin Layer</strong> — Public roadway administrative attributes including FHWA functional class and posted speed limit.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_traffic</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Traffic Overlay ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (4)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/penndot-traffic/aadt_raw.json</strong> — Cached PennDOT ArcGIS feature response for Allegheny County roadway segments.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/shapes.txt</strong> — GTFS route shape geometry points.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/trips.txt</strong> — GTFS shape-to-route mapping.</li>
+              
+                <li><span class="tag">api</span> <strong>PennDOT ArcGIS Roadway Traffic Layer</strong> — Public roadway segment AADT and truck percentage attributes.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

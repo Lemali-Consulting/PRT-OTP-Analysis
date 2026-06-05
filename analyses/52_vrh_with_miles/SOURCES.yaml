@@ -13,7 +13,15 @@ description: >
   PRT vehicle revenue hours.
 dependencies: []
 outputs:
-  - output/speed_by_mode.csv
-  - output/mode_speed_summary.csv
-  - output/speed_trends.png
-  - output/vrh_vrm_index.png
+  - path: speed_by_mode.csv
+    kind: data
+    description: per-mode operating speed (VRM/VRH) by year.
+  - path: mode_speed_summary.csv
+    kind: data
+    description: summary speed statistics by mode.
+  - path: speed_trends.png
+    kind: image
+    description: operating speed trends by mode over time.
+  - path: vrh_vrm_index.png
+    kind: image
+    description: indexed vehicle revenue hours and miles over time.

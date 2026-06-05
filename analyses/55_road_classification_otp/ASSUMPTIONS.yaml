@@ -1,0 +1,25 @@
+# Assumptions for Road Classification and OTP
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+  - id: nlf_join
+    statement: >-
+      A road segment's functional class and posted speed can be joined from the
+      roadwayadmin layer to the roadwaysegments layer via NLF_ID (length-weighted
+      within each NLF_ID when multiple admin rows exist).
+    risk_if_violated: >-
+      Mismatched or many-to-many NLF_ID joins would assign the wrong functional
+      class/speed to a segment, biasing the road-type features.
+  - id: divided_code
+    statement: "DIVSR_TYPE = '0' denotes an undivided road; any other code denotes a median (divided)."
+    risk_if_violated: divided_share would mislabel road segments; this field is descriptive only and not in the regression.
+  - id: arterial_threshold
+    statement: "FHWA functional class <= 4 (Interstate, Other Freeway/Expressway, Other Principal Arterial, Minor Arterial) counts as arterial."
+    risk_if_violated: arterial_share would be miscomputed; descriptive only, not in the regression.
+  - id: match_buffer
+    statement: >-
+      A 30 m buffer around the GTFS shape correctly associates a route with the road
+      segments it actually runs on (inherited from the traffic_overlay match).
+    risk_if_violated: >-
+      Routes could be matched to adjacent parallel roads in dense areas, attenuating
+      the road-type signal.

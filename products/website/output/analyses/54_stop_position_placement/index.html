@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>54 - Stop Position and Near-Side Placement - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>54 - Stop Position and Near-Side Placement</h1>
+  
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../53_stop_signal_placement/index.html">← 53 - Near-Side vs. Far-Side Stop Placement</a>
+    <a href="../55_road_classification_otp/index.html">55 - Road Classification and OTP →</a>
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  54_stop_position_placement(["54 - Stop Position and Near-Side Placement"])
+  f1_54_stop_position_placement[/"data/GTFS/stop_times.txt"/] --> 54_stop_position_placement
+  f2_54_stop_position_placement[/"data/GTFS/trips.txt"/] --> 54_stop_position_placement
+  f3_54_stop_position_placement[/"analyses/53_stop_signal_placement/output/stop_classifications.csv"/] --> 54_stop_position_placement
+  t_otp_monthly[("otp_monthly")] --> 54_stop_position_placement
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  d1_54_stop_position_placement(("analyses/53_stop_signal_placement (lib)")) --> 54_stop_position_placement
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 54_stop_position_placement page;
+  class t_otp_monthly table;
+  class d1_54_stop_position_placement dep;
+  class f1_54_stop_position_placement,f2_54_stop_position_placement,f3_54_stop_position_placement,u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Stop Position and Near-Side Placement</h1>
+<h2>Summary</h2>
+<p>Near-side stop placement is <strong>uniformly distributed along PRT routes</strong> — it is
+just as common at the start, middle, and end of a route. The near-side fraction
+is virtually flat across all five position quintiles (81–85%, all within 4 pp of
+the 83% system average), and a logistic regression of classification on
+normalized position yields a negligible coefficient (−0.27, close to zero on the
+log-odds scale). Splitting routes into first-half and second-half near-side
+fractions does not improve the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation: both halves give r ≈ −0.12 to
+−0.14, no better than the overall near-side fraction from Analysis 53. Position
+along the route is not a meaningful moderator of the near-side/<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> relationship.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>1,512 stops</strong> matched to position data (near_side + far_side from Analysis 53).</li>
+<li>Near-side fraction by quintile: <strong>82.9% / 82.8% / 85.0% / 81.3% / 81.4%</strong> —
+range of only 3.7 pp, no systematic trend.</li>
+<li>Logistic regression coefficient on normalized position: <strong>−0.27</strong> (near-zero;
+the model predicts essentially the same near-side probability at every point).</li>
+<li><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlations: overall r = −0.13, first-half r = −0.12, second-half
+r = −0.12. None significant (all p &gt; 0.29, n = 63–64 routes).</li>
+<li>KDE of stop position: near-side and far-side stops have nearly identical
+distributions along the route — both roughly uniform with shallow humps near
+the 20% and 80% marks.</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>No position gradient in near-side placement.</strong> The hypothesis that PRT
+might have more far-side stops near terminals (where planners have more
+right-of-way flexibility) or more near-side stops in the busy middle of routes
+is not supported. Near-side is the default at every position.</li>
+<li><strong>Second-half placement is no better an <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> predictor than first-half.</strong> The
+delay-accumulation argument — that a near-side stop at position 0.9 costs more
+than one at 0.1 — is theoretically sound but not detectable at the route level
+with the data available. The likely reason is the same as in Analysis 53: with
+80–100% near-side fraction everywhere on most routes, there is simply not
+enough <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> between routes for either half to explain <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</li>
+<li><strong>Far-side stops have a mild second-half lean.</strong> The KDE shows far-side stops
+slightly more concentrated in the 60–90% position range, while near-side stops
+are modestly more concentrated in the 10–40% range. The difference is subtle
+and not large enough to affect the quintile percentages, but it is consistent
+with the hypothesis that stops converted or planned as far-side tend to appear
+on the outbound half of routes where intersection geometry allows it.</li>
+</ul>
+<h2>Discussion</h2>
+<p>This analysis closes the position-moderation question: knowing <em>where</em> along a
+route a near-side stop sits does not add predictive power beyond knowing the
+overall near-side fraction. The fundamental constraint from Analysis 53 remains
+binding — near-side is so dominant (83% system-wide, 80–100% on most individual
+routes) that there is very little cross-route <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> to correlate with anything.</p>
+<p>The underlying issue is <strong>range restriction</strong>: to detect a correlation between
+near-side fraction and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, you need meaningful <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> in near-side fraction.
+Most routes cluster at 85–100%, so comparisons are effectively near-side-heavy
+vs. slightly-less-near-side-heavy rather than near-side vs. far-side. This is
+not evidence that near-side placement has no effect — it is evidence that the
+current network is too uniformly near-side for a route-level correlation to
+emerge.</p>
+<p>The ideal test would be a <strong>within-system paired comparison</strong>: two otherwise
+identical stops at the same intersection, one near-side and one far-side, with
+stop-level arrival time data to directly compare delay contribution. That
+requires AVL logs or GTFS-RT archives, which are not in the current pipeline.
+A before/after study of a deliberate stop-relocation program would be the
+cleanest test of all.</p>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Canonical trip only.</strong> Each stop is assigned to one canonical trip (longest
+shape for its shape_id). Position on other trips may differ slightly.</li>
+<li><strong><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is route-level, not stop-level.</strong> The route <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> used here is the
+monthly average across all stops and all trips; it does not capture within-
+route delay accumulation patterns.</li>
+<li><strong>Ecological framing.</strong> All correlations are route-level. No stop-level or
+rider-level causal claims are made.</li>
+</ul>
+<h2>Validation</h2>
+<ol>
+<li><strong>Data source verified.</strong> Classifications from
+<code>analyses/53_stop_signal_placement/output/stop_classifications.csv</code>; stop
+sequences from <code>data/GTFS/stop_times.txt</code>. Position computation checked: the
+range of normalized position is [0, 1] and the quintile counts are
+approximately equal (286, 309, 301, 310, 306).</li>
+<li><strong>Null handling.</strong> 37 stops from Analysis 53 had no <code>stop_times</code> match after
+joining on shape_id + stop_id; these are silently dropped (inner join).</li>
+<li><strong>Flat quintile chart inspected.</strong> The near-constant bars (81–85%) are
+consistent with a near-uniform distribution confirmed by the KDE. A
+systematic gradient of ≥5 pp would have been flagged for investigation.</li>
+<li><strong>Direction of logistic coefficient.</strong> The coefficient (−0.27) indicates
+slightly <em>fewer</em> near-side stops toward the end of routes, consistent with
+the mild far-side lean seen in the KDE second half. Sign is as expected from
+the KDE; magnitude is too small to be operationally significant.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (3)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (1)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/54_stop_position_placement/position_quintile_nearside.png" alt="position_quintile_nearside" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/54_stop_position_placement/position_quintile_nearside.png" target="_blank" rel="noopener noreferrer">position_quintile_nearside.png</a>
+          <p class="artifact-desc">near-side fraction by route-position quintile.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/54_stop_position_placement/position_kde.png" alt="position_kde" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/54_stop_position_placement/position_kde.png" target="_blank" rel="noopener noreferrer">position_kde.png</a>
+          <p class="artifact-desc">density of near-side stop positions along the route.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/54_stop_position_placement/splithalf_otp_comparison.png" alt="splithalf_otp_comparison" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/54_stop_position_placement/splithalf_otp_comparison.png" target="_blank" rel="noopener noreferrer">splithalf_otp_comparison.png</a>
+          <p class="artifact-desc">first-half vs. second-half near-side fraction vs. OTP.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/54_stop_position_placement/route_position_summary.csv" target="_blank" rel="noopener noreferrer">route_position_summary.csv</a>
+          <p class="artifact-desc">per-route position and near-side summary.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/54_stop_position_placement/route_position_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Stop Position and Near-Side Placement</h1>
+<h2>Question</h2>
+<p>Does near-side vs. far-side stop placement vary by position along the route?
+And does the near-side fraction in the <em>second half</em> of a route — where delay
+has had more time to accumulate — predict route <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> better than the overall
+near-side fraction?</p>
+<h2>Approach</h2>
+<h3>Step 1 — Assign normalized position to each classified stop</h3>
+<p>Join the stop classifications from Analysis 53 to <code>stop_times</code> via the stop's
+canonical <code>shape_id</code> → <code>trip_id</code> mapping. For each stop on its canonical trip,
+compute:</p>
+<p><code>position = (stop_sequence − 1) / (max_stop_sequence − 1)</code></p>
+<p>This gives a value in [0, 1] where 0 = first stop, 1 = last stop. Only
+near_side and far_side stops are included; mid-block and ambiguous are excluded.</p>
+<h3>Step 2 — Test for position gradient in near-side fraction</h3>
+<p>Bin stops into 5 equal-width position quintiles (0–20%, 20–40%, …, 80–100%)
+and compute the near-side fraction within each quintile. Plot as a bar chart.
+Run a logistic regression of classification (near_side = 1, far_side = 0) on
+normalized position to test whether position is a significant predictor.</p>
+<h3>Step 3 — Split-half <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> predictor comparison</h3>
+<p>For each route, compute:</p>
+<ul>
+<li><code>ns_first_half</code>: near-side fraction among stops with position &lt; 0.5</li>
+<li><code>ns_second_half</code>: near-side fraction among stops with position ≥ 0.5</li>
+</ul>
+<p>Join to route <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. Compare the Pearson r of each fraction with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>
+against the overall near-side fraction from Analysis 53. The hypothesis is that
+<code>ns_second_half</code> is a stronger predictor because delay accumulates along the
+route — a near-side stop near the terminus costs more in end-point <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</p>
+<h3>Step 4 — KDE of stop position by classification</h3>
+<p>Overlay kernel density estimates of normalized stop position for near-side and
+far-side stops to show whether the two classes cluster differently along routes.</p>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Source</th>
+  <th>How used</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>analyses/53_stop_signal_placement/output/stop_classifications.csv</code></td>
+  <td>Classification + canonical shape_id</td>
+</tr>
+<tr>
+  <td><code>data/GTFS/stop_times.txt</code></td>
+  <td>stop_id → stop_sequence per trip</td>
+</tr>
+<tr>
+  <td><code>data/GTFS/trips.txt</code></td>
+  <td>trip_id → shape_id, route_id</td>
+</tr>
+<tr>
+  <td><code>otp_monthly</code> table in <code>prt.db</code></td>
+  <td>Route <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></td>
+</tr>
+</tbody>
+</table>
+<h2>Output</h2>
+<ul>
+<li><code>output/position_quintile_nearside.png</code> — near-side fraction by route-position quintile</li>
+<li><code>output/position_kde.png</code> — KDE of stop position by classification</li>
+<li><code>output/splithalf_otp_comparison.png</code> — first-half vs. second-half near-side fraction vs. <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/route_position_summary.csv</code> — per-route ns_first_half, ns_second_half, ns_overall, mean_otp</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Test whether near-side/far-side placement varies by stop position along the route.&quot;&quot;&quot;
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import polars as pl
+from scipy.stats import pearsonr
+from scipy.special import expit
+
+from prt_otp_analysis.common import get_db
+
+ANALYSIS_DIR = Path(__file__).parent
+OUTPUT_DIR = ANALYSIS_DIR / &quot;output&quot;
+GTFS_DIR = Path(__file__).parent.parent.parent / &quot;data&quot; / &quot;GTFS&quot;
+CLASSIFICATIONS_CSV = (
+    Path(__file__).parent.parent / &quot;53_stop_signal_placement&quot; / &quot;output&quot; / &quot;stop_classifications.csv&quot;
+)
+
+MIN_SIGNALIZED = 5  # minimum signalized stops per route for OTP comparison
+
+
+def load_stop_positions() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Return classified stops with their normalized position [0,1] along their canonical route.
+
+    Normalized position = (stop_sequence - 1) / (max_stop_sequence - 1) per trip,
+    using the canonical trip (most-served shape for that stop).
+    &quot;&quot;&quot;
+    class_df = pl.read_csv(
+        CLASSIFICATIONS_CSV,
+        schema_overrides={&quot;stop_id&quot;: pl.Utf8, &quot;shape_id&quot;: pl.Utf8},
+    ).filter(pl.col(&quot;classification&quot;).is_in([&quot;near_side&quot;, &quot;far_side&quot;]))
+
+    trips_df = pl.read_csv(
+        GTFS_DIR / &quot;trips.txt&quot;,
+        schema_overrides={
+            &quot;trip_id&quot;: pl.Utf8,
+            &quot;shape_id&quot;: pl.Utf8,
+            &quot;route_id&quot;: pl.Utf8,
+            &quot;service_id&quot;: pl.Utf8,
+        },
+    ).select([&quot;trip_id&quot;, &quot;shape_id&quot;, &quot;route_id&quot;])
+
+    stop_times_df = pl.read_csv(
+        GTFS_DIR / &quot;stop_times.txt&quot;,
+        schema_overrides={&quot;trip_id&quot;: pl.Utf8, &quot;stop_id&quot;: pl.Utf8},
+    ).select([&quot;trip_id&quot;, &quot;stop_id&quot;, &quot;stop_sequence&quot;])
+
+    # For each shape_id, pick the canonical trip (most stops = most representative)
+    trip_lengths_df = (
+        stop_times_df
+        .join(trips_df.select([&quot;trip_id&quot;, &quot;shape_id&quot;]), on=&quot;trip_id&quot;)
+        .group_by([&quot;shape_id&quot;, &quot;trip_id&quot;])
+        .agg(pl.len().alias(&quot;n_stops&quot;))
+        .sort(&quot;n_stops&quot;, descending=True)
+        .unique(subset=[&quot;shape_id&quot;], keep=&quot;first&quot;)
+        .select([&quot;shape_id&quot;, &quot;trip_id&quot;])
+    )
+
+    # Get stop_times for canonical trips only, with max_sequence
+    canonical_trips = trip_lengths_df[&quot;trip_id&quot;].to_list()
+    canonical_stop_times_df = (
+        stop_times_df
+        .filter(pl.col(&quot;trip_id&quot;).is_in(canonical_trips))
+        .join(
+            stop_times_df
+            .filter(pl.col(&quot;trip_id&quot;).is_in(canonical_trips))
+            .group_by(&quot;trip_id&quot;)
+            .agg(pl.col(&quot;stop_sequence&quot;).max().alias(&quot;max_seq&quot;)),
+            on=&quot;trip_id&quot;,
+        )
+        .with_columns(
+            ((pl.col(&quot;stop_sequence&quot;) - 1) / (pl.col(&quot;max_seq&quot;) - 1)).alias(&quot;position&quot;)
+        )
+        .select([&quot;trip_id&quot;, &quot;stop_id&quot;, &quot;stop_sequence&quot;, &quot;max_seq&quot;, &quot;position&quot;])
+    )
+
+    # Join canonical trip back via shape_id
+    canonical_stop_times_df = canonical_stop_times_df.join(
+        trip_lengths_df, on=&quot;trip_id&quot;
+    )
+
+    # Join classification (which carries shape_id) to get positions
+    result_df = (
+        class_df
+        .join(
+            canonical_stop_times_df.select([&quot;shape_id&quot;, &quot;stop_id&quot;, &quot;stop_sequence&quot;, &quot;max_seq&quot;, &quot;position&quot;]),
+            on=[&quot;shape_id&quot;, &quot;stop_id&quot;],
+            how=&quot;inner&quot;,
+        )
+        .join(
+            trips_df.unique(subset=[&quot;shape_id&quot;]).select([&quot;shape_id&quot;, &quot;route_id&quot;]),
+            on=&quot;shape_id&quot;,
+            how=&quot;left&quot;,
+        )
+    )
+    return result_df
+
+
+def main() -&gt; None:
+    OUTPUT_DIR.mkdir(exist_ok=True)
+
+    print(&quot;Loading stop positions…&quot;)
+    stops_df = load_stop_positions()
+    print(f&quot;  {len(stops_df)} classified stops with position data&quot;)
+    print(f&quot;  near_side: {(stops_df[&#x27;classification&#x27;] == &#x27;near_side&#x27;).sum()}, &quot;
+          f&quot;far_side: {(stops_df[&#x27;classification&#x27;] == &#x27;far_side&#x27;).sum()}&quot;)
+
+    positions = stops_df[&quot;position&quot;].to_numpy()
+    is_nearside = (stops_df[&quot;classification&quot;] == &quot;near_side&quot;).to_numpy().astype(int)
+
+    # ── Output 1: near-side fraction by position quintile ─────────────────────
+    quintile_labels = [&quot;0–20%&quot;, &quot;20–40%&quot;, &quot;40–60%&quot;, &quot;60–80%&quot;, &quot;80–100%&quot;]
+    edges = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0001]
+    ns_fracs, n_stops = [], []
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        mask = (positions &gt;= lo) &amp; (positions &lt; hi)
+        total = mask.sum()
+        ns = is_nearside[mask].sum()
+        ns_fracs.append(ns / total if total &gt; 0 else np.nan)
+        n_stops.append(total)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    bars = ax.bar(quintile_labels, [f * 100 for f in ns_fracs], color=&quot;#e74c3c&quot;, edgecolor=&quot;white&quot;)
+    ax.bar_label(bars, fmt=&quot;%.1f%%&quot;, padding=4, fontsize=10)
+    for i, n in enumerate(n_stops):
+        ax.text(i, 2, f&quot;n={n}&quot;, ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=8, color=&quot;white&quot;)
+    ax.set_ylim(0, 100)
+    ax.axhline(83, color=&quot;#555&quot;, linewidth=1, linestyle=&quot;--&quot;, label=&quot;System avg (83%)&quot;)
+    ax.set_xlabel(&quot;Stop position along route&quot;)
+    ax.set_ylabel(&quot;Near-side fraction (%)&quot;)
+    ax.set_title(&quot;Near-Side Fraction by Route Position Quintile&quot;, fontsize=13, fontweight=&quot;bold&quot;)
+    ax.legend()
+    plt.tight_layout()
+    fig.savefig(OUTPUT_DIR / &quot;position_quintile_nearside.png&quot;, dpi=150)
+    plt.close(fig)
+    print(&quot;Wrote position_quintile_nearside.png&quot;)
+    for lbl, frac, n in zip(quintile_labels, ns_fracs, n_stops):
+        print(f&quot;  {lbl}: {frac*100:.1f}%  (n={n})&quot;)
+
+    # ── Logistic regression: position → near_side? ────────────────────────────
+    # Manual MLE via scipy.optimize since sklearn is not available
+    from scipy.optimize import minimize
+
+    def neg_log_likelihood(params: np.ndarray) -&gt; float:
+        b0, b1 = params
+        logit = b0 + b1 * positions
+        prob = expit(logit)
+        eps = 1e-12
+        return -np.sum(is_nearside * np.log(prob + eps) + (1 - is_nearside) * np.log(1 - prob + eps))
+
+    res = minimize(neg_log_likelihood, [0.0, 0.0], method=&quot;L-BFGS-B&quot;)
+    b0, b1 = res.x
+    coef = b1
+    print(f&quot;\nLogistic regression coef (position → near_side): {coef:.3f}&quot;)
+    print(&quot;  (positive = more near-side toward end; negative = more far-side toward end)&quot;)
+
+    # ── Output 2: KDE of position by classification ───────────────────────────
+    from scipy.stats import gaussian_kde
+
+    ns_pos = positions[is_nearside == 1]
+    fs_pos = positions[is_nearside == 0]
+    x_grid = np.linspace(0, 1, 300)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    if len(ns_pos) &gt; 5:
+        kde_ns = gaussian_kde(ns_pos, bw_method=0.15)
+        ax.fill_between(x_grid, kde_ns(x_grid), alpha=0.35, color=&quot;#e74c3c&quot;, label=f&quot;Near-side (n={len(ns_pos)})&quot;)
+        ax.plot(x_grid, kde_ns(x_grid), color=&quot;#e74c3c&quot;, linewidth=1.5)
+    if len(fs_pos) &gt; 5:
+        kde_fs = gaussian_kde(fs_pos, bw_method=0.15)
+        ax.fill_between(x_grid, kde_fs(x_grid), alpha=0.35, color=&quot;#2980b9&quot;, label=f&quot;Far-side (n={len(fs_pos)})&quot;)
+        ax.plot(x_grid, kde_fs(x_grid), color=&quot;#2980b9&quot;, linewidth=1.5)
+    ax.set_xlabel(&quot;Normalized stop position (0 = route start, 1 = route end)&quot;)
+    ax.set_ylabel(&quot;Density&quot;)
+    ax.set_title(&quot;Distribution of Stop Position by Classification&quot;, fontsize=13, fontweight=&quot;bold&quot;)
+    ax.legend()
+    plt.tight_layout()
+    fig.savefig(OUTPUT_DIR / &quot;position_kde.png&quot;, dpi=150)
+    plt.close(fig)
+    print(&quot;Wrote position_kde.png&quot;)
+
+    # ── Output 3: split-half route summaries ─────────────────────────────────
+    route_df = (
+        stops_df
+        .with_columns(
+            (pl.col(&quot;position&quot;) &gt;= 0.5).alias(&quot;second_half&quot;)
+        )
+        .group_by([&quot;route_id&quot;, &quot;second_half&quot;])
+        .agg([
+            (pl.col(&quot;classification&quot;) == &quot;near_side&quot;).sum().alias(&quot;ns&quot;),
+            pl.len().alias(&quot;total&quot;),
+        ])
+        .with_columns(
+            (pl.col(&quot;ns&quot;) / pl.col(&quot;total&quot;)).alias(&quot;ns_frac&quot;)
+        )
+    )
+
+    first_half_df = (
+        route_df.filter(~pl.col(&quot;second_half&quot;))
+        .select([&quot;route_id&quot;, pl.col(&quot;ns_frac&quot;).alias(&quot;ns_first_half&quot;), pl.col(&quot;total&quot;).alias(&quot;n_first&quot;)])
+    )
+    second_half_df = (
+        route_df.filter(pl.col(&quot;second_half&quot;))
+        .select([&quot;route_id&quot;, pl.col(&quot;ns_frac&quot;).alias(&quot;ns_second_half&quot;), pl.col(&quot;total&quot;).alias(&quot;n_second&quot;)])
+    )
+    overall_df = (
+        stops_df
+        .group_by(&quot;route_id&quot;)
+        .agg([
+            (pl.col(&quot;classification&quot;) == &quot;near_side&quot;).sum().alias(&quot;ns_total&quot;),
+            pl.len().alias(&quot;total&quot;),
+        ])
+        .with_columns((pl.col(&quot;ns_total&quot;) / pl.col(&quot;total&quot;)).alias(&quot;ns_overall&quot;))
+        .filter(pl.col(&quot;total&quot;) &gt;= MIN_SIGNALIZED)
+        .select([&quot;route_id&quot;, &quot;ns_overall&quot;, &quot;total&quot;])
+    )
+
+    db = get_db()
+    otp_df = pl.from_records(
+        db.execute(
+            &quot;SELECT route_id, AVG(otp) AS mean_otp FROM otp_monthly GROUP BY route_id&quot;
+        ).fetchall(),
+        schema=[&quot;route_id&quot;, &quot;mean_otp&quot;],
+        orient=&quot;row&quot;,
+    )
+
+    summary_df = (
+        overall_df
+        .join(first_half_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+        .join(second_half_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+        .join(otp_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+        .drop_nulls(subset=[&quot;ns_overall&quot;, &quot;mean_otp&quot;])
+    )
+    summary_df.write_csv(OUTPUT_DIR / &quot;route_position_summary.csv&quot;)
+    print(f&quot;\nWrote {len(summary_df)} rows → route_position_summary.csv&quot;)
+
+    # Correlations
+    for col, label in [
+        (&quot;ns_overall&quot;, &quot;Overall near-side fraction&quot;),
+        (&quot;ns_first_half&quot;, &quot;First-half near-side fraction&quot;),
+        (&quot;ns_second_half&quot;, &quot;Second-half near-side fraction&quot;),
+    ]:
+        sub = summary_df.drop_nulls(subset=[col, &quot;mean_otp&quot;])
+        if len(sub) &lt; 10:
+            print(f&quot;  {label}: too few routes&quot;)
+            continue
+        r, p = pearsonr(sub[col].to_numpy(), sub[&quot;mean_otp&quot;].to_numpy())
+        print(f&quot;  {label}: r={r:.3f}  p={p:.4f}  n={len(sub)}&quot;)
+
+    # ── Output 4: side-by-side scatter: first-half vs second-half vs OTP ──────
+    sub = summary_df.drop_nulls(subset=[&quot;ns_first_half&quot;, &quot;ns_second_half&quot;, &quot;mean_otp&quot;])
+    if len(sub) &gt;= 10:
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
+        for ax, col, title, color in [
+            (axes[0], &quot;ns_first_half&quot;, &quot;First-half near-side fraction&quot;, &quot;#e67e22&quot;),
+            (axes[1], &quot;ns_second_half&quot;, &quot;Second-half near-side fraction&quot;, &quot;#e74c3c&quot;),
+        ]:
+            x = sub[col].to_numpy()
+            y = sub[&quot;mean_otp&quot;].to_numpy()
+            r, p = pearsonr(x, y)
+            ax.scatter(x * 100, y * 100, alpha=0.6, s=50, color=color,
+                       edgecolors=&quot;white&quot;, linewidths=0.5)
+            m, b = np.polyfit(x, y, 1)
+            xline = np.linspace(x.min(), x.max(), 100)
+            ax.plot(xline * 100, (m * xline + b) * 100, color=&quot;#333&quot;,
+                    linewidth=1.5, linestyle=&quot;--&quot;)
+            ax.set_title(f&quot;{title}\nr = {r:.2f}  (p = {p:.3f})&quot;, fontsize=11, fontweight=&quot;bold&quot;)
+            ax.set_xlabel(&quot;Near-side fraction (%)&quot;)
+        axes[0].set_ylabel(&quot;Mean OTP (%)&quot;)
+        fig.suptitle(&quot;Near-Side Fraction vs. Route OTP: First Half vs. Second Half of Route&quot;,
+                     fontsize=12, fontweight=&quot;bold&quot;, y=1.01)
+        plt.tight_layout()
+        fig.savefig(OUTPUT_DIR / &quot;splithalf_otp_comparison.png&quot;, dpi=150, bbox_inches=&quot;tight&quot;)
+        plt.close(fig)
+        print(&quot;Wrote splithalf_otp_comparison.png&quot;)
+
+    print(&quot;\nDone.&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>data/GTFS/stop_times.txt</td>
+          <td><span class="tag">file</span></td>
+          <td>GTFS stop sequence per trip.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>data/GTFS/trips.txt</td>
+          <td><span class="tag">file</span></td>
+          <td>GTFS shape-to-route mapping.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>analyses/53_stop_signal_placement/output/stop_classifications.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Per-stop near-side / far-side / mid-block classification from Analysis 53.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>analyses/53_stop_signal_placement</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
