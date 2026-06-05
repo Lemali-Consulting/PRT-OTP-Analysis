@@ -1,0 +1,17 @@
+kind: analysis
+title: "54 - Stop Position and Near-Side Placement"
+tables:
+  - otp_monthly
+files:
+  - data/GTFS/stop_times.txt
+  - data/GTFS/trips.txt
+  - analyses/53_stop_signal_placement/output/stop_classifications.csv
+analyses: []
+description: "Near-side stop placement is uniformly distributed along PRT routes — 81–85% near-side at every position quintile, with no gradient toward the end where delay accumulates. Splitting routes into first-half and second-half near-side fractions does not improve the OTP correlation (r ≈ −0.12–0.14, all p > 0.28)."
+dependencies:
+  - analyses/53_stop_signal_placement
+outputs:
+  - output/position_quintile_nearside.png
+  - output/position_kde.png
+  - output/splithalf_otp_comparison.png
+  - output/route_position_summary.csv
