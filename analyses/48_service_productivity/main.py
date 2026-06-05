@@ -27,6 +27,12 @@ COVID_YEAR = 2020
 BASELINE_YEAR = 2019
 COMPARE_YEAR = 2024
 
+# ntd_annual_service started including ACCESS paratransit (DR mode) in its VRH
+# aggregate beginning in 2008. Pre-2008 figures are fixed-route only. To keep
+# the PRT long-run trend on a consistent fixed-route basis, DR UPT and VRH are
+# subtracted from the aggregate for years >= this cutoff.
+ACCESS_CORRECTION_YEAR = 2008
+
 # Allegheny County resident population -- PRT's service area. Decennial U.S.
 # Census counts (1990-2020) plus the Census Bureau's Vintage 2024 Population
 # Estimates Program figure (2020 census base of 1,250,578 less the reported
@@ -48,6 +54,8 @@ def load_peer_productivity() -> pl.DataFrame:
 
     Productivity is unlinked passenger trips per vehicle revenue hour
     (UPT / VRH) -- how many riders each hour of service carried.
+    Uses ntd_annual_service (agency-wide, all modes) for consistency across
+    agencies in the peer comparison.
     """
     id_list = ",".join(str(i) for i in PEERS)
     df = query_ntd(f"""
@@ -62,6 +70,53 @@ def load_peer_productivity() -> pl.DataFrame:
     })
     df = df.join(peer_map, on="ntd_id", how="left")
     return df.with_columns(productivity=(pl.col("upt") / pl.col("vrh")))
+
+
+def load_prt_fixed_route() -> pl.DataFrame:
+    """Build a consistent fixed-route UPT/VRH series for PRT, 1991-2024.
+
+    ntd_annual_service excluded ACCESS (DR mode) from VRH before 2008, then
+    started including it -- creating an artificial ~18% jump. For years >=
+    ACCESS_CORRECTION_YEAR, DR UPT and VRH are subtracted from the aggregate
+    using annual totals computed from ntd_ridership.
+    Pre-2008 rows are taken from ntd_annual_service without adjustment (ACCESS
+    was not in that aggregate).
+    """
+    conn = get_db()
+    try:
+        annual_rows = conn.execute("""
+            SELECT year, upt, vrh
+            FROM ntd_annual_service
+            WHERE ntd_id = ?
+            ORDER BY year
+        """, (PRT_NTD_ID,)).fetchall()
+
+        access_rows = conn.execute("""
+            SELECT CAST(SUBSTR(month, 1, 4) AS INTEGER) AS year,
+                   SUM(upt) AS dr_upt,
+                   SUM(vrh) AS dr_vrh
+            FROM ntd_ridership
+            WHERE ntd_id = ? AND mode = 'DR'
+            GROUP BY year
+        """, (PRT_NTD_ID,)).fetchall()
+    finally:
+        conn.close()
+
+    access_map: dict[int, tuple[float, float]] = {
+        r[0]: (float(r[1] or 0), float(r[2] or 0)) for r in access_rows
+    }
+
+    rows = []
+    for r in annual_rows:
+        year, upt, vrh = r[0], float(r[1]), float(r[2])
+        if year >= ACCESS_CORRECTION_YEAR:
+            dr_upt, dr_vrh = access_map.get(year, (0.0, 0.0))
+            upt -= dr_upt
+            vrh -= dr_vrh
+        rows.append({"year": year, "upt": upt, "vrh": vrh})
+
+    df = pl.DataFrame(rows, schema={"year": pl.Int64, "upt": pl.Float64, "vrh": pl.Float64})
+    return df.with_columns(productivity=pl.col("upt") / pl.col("vrh"))
 
 
 def query_ntd(sql: str) -> pl.DataFrame:
@@ -242,7 +297,10 @@ def main():
 
     with phase("Loading NTD productivity data"):
         peer_df = load_peer_productivity()
-        prt_df = peer_df.filter(pl.col("ntd_id") == PRT_NTD_ID).sort("year")
+        # Fixed-route-only series for PRT trend/decomposition charts. Peer
+        # comparison charts use peer_df (agency-wide ntd_annual_service),
+        # which is consistent across agencies for comparison purposes.
+        prt_df = load_prt_fixed_route()
         print(f"   {len(peer_df)} city-years across {peer_df['city'].n_unique()} agencies")
         print(f"   PRT record: {prt_df['year'].min()}–{prt_df['year'].max()}")
 

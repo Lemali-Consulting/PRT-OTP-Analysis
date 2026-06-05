@@ -12,12 +12,18 @@ deliberate right-sizing of service to match demand?
   ratio — how many riders each hour of operated service actually carried.
 - Pull the full 1991–2024 annual record of UPT and VRH for PRT and 7 peer
   cities from `ntd_annual_service`.
+- For PRT trend and decomposition charts, build a corrected fixed-route series
+  to remove an NTD reporting discontinuity: `ntd_annual_service` excluded
+  ACCESS paratransit (DR mode) from VRH before 2008, then started including
+  ~700K hours/year. For years ≥ 2008, DR UPT and VRH are subtracted from the
+  aggregate using annual sums from `ntd_ridership`. Peer comparison charts
+  continue to use `ntd_annual_service` directly (consistent across all 8
+  agencies).
 - Plot PRT's productivity curve across the whole record to separate the
   long-run secular trend from the COVID shock.
 - Decompose the ratio: index UPT, VRH, and productivity to 1991 = 100 on one
-  chart. If VRH (supply) holds roughly flat while UPT (demand) collapses, the
-  productivity decline is demand-driven — empty buses — not a supply-side
-  right-sizing.
+  chart. Shows whether service cuts or ridership loss drove the productivity
+  change.
 - Normalize the demand side by population. Allegheny County (PRT's service
   area) has lost residents since 1991, so part of the ridership decline could
   simply be fewer people. Split ridership into `UPT = population x
