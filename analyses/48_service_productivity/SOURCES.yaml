@@ -5,15 +5,15 @@ tables:
   - ntd_annual_service
 files: []
 description: >-
-  Each hour of PRT service carries fewer than half as many riders as it did
-  in 1991 — productivity fell from 39 passengers per service hour to 18. The
-  drop is not a deliberate cut: PRT kept nearly the same amount of service
-  running (down just 5% since 1991) while ridership fell 55%, so buses and
-  trains are running emptier rather than being right-sized. PRT's 32% drop
+  Each hour of PRT's fixed-route service carries about 40% fewer riders than
+  it did in 1991 — productivity fell from 39 passengers per service hour to
+  23. Both service and ridership fell, but ridership fell far faster: service
+  hours dropped 26% while ridership dropped 57%, so buses and trains are
+  running emptier rather than being right-sized to demand. PRT's 32% drop
   since 2019 is the steepest of 8 peer cities. Population loss is not the
-  cause either: Allegheny County has only about 8% fewer residents than in
-  1991, so ridership per resident has itself roughly halved — fewer
-  residents explains only about a tenth of the decline.
+  cause: Allegheny County has only about 8% fewer residents than in 1991, so
+  ridership per resident has itself roughly halved — fewer residents explains
+  only about a tenth of the decline.
 analyses:
   - id: 39
     relationship: pairs supply-side service-cut analysis with the productivity ratio it feeds into.
