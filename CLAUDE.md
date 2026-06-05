@@ -100,3 +100,5 @@ When running inside a devcontainer, killing processes carelessly will bring down
 ## Mistakes
 
 - **[tooling]**: `data/prt.db` and `data/GTFS/stop_times.txt` are Git LFS files (`.gitattributes`). Running `git reset --hard`/`checkout` without `git-lfs` installed silently replaces them with 133-byte pointer text. Verify `git lfs version` works before any hard reset or branch switch; recover with `git lfs pull`.
+- **[convention]**: In analysis `SOURCES.yaml`, `outputs:` and `files:` entries must be dict-format (`- path: x.png` / `kind:` / `description:`), not bare strings. Bare strings pass `yaml` but crash the website build (`products/website/main.py`, `item.get` on a str) and fail `tests/test_website_outputs.py`. The scaffold tool emits dict format; hand-edits sometimes don't. Run `uv run python products/website/main.py` before deploy — it is the deploy gate and `tools/deploy.sh` only pushes the pre-built `output/`.
+- **[tooling]**: `scaffold.py index` regenerates the FINDINGS.md analysis-index table row from the scaffold/README summary, overwriting any hand-edited row text. Edit the index row *after* running `index`, not before.
