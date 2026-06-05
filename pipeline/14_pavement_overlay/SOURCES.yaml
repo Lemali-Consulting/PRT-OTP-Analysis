@@ -1,0 +1,18 @@
+kind: pipeline
+title: NHS Pavement-Condition Overlay ETL
+description: Computes route-level pavement-quality metrics (length-weighted IRI roughness, overall pavement index, poor-condition share) by spatially joining GTFS routes with SPC's National Highway System pavement-condition layer.
+files:
+  - path: data/spc-pavement/pavement_raw.geojson
+    description: Cached SPC NHS pavement-condition GeoJSON (ROUGH_INDX/IRI, OVERALL_PV, IRI_RATING, geometry) in WGS84.
+  - path: data/GTFS/shapes.txt
+    description: GTFS route shape geometry points.
+  - path: data/GTFS/trips.txt
+    description: GTFS shape-to-route mapping.
+apis:
+  - name: SPC NHS Pavement Condition (PM2_Roadways, ArcGIS)
+    url: https://services3.arcgis.com/MV5wh5WkCMqlwISp/arcgis/rest/services/PM2_Roadways/FeatureServer/0
+    description: Southwestern Pennsylvania Commission feature service of NHS pavement condition (IRI roughness, overall pavement index, IRI rating) derived from PennDOT roadway-management data.
+tables: []
+tables_produced:
+  - name: route_road_pavement
+    description: Route-level pavement-quality metrics including length-weighted IRI roughness, overall pavement index, and share of length rated poor.

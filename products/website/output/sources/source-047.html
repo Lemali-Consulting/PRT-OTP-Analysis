@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ntd_annual_service - Source Detail</title>
+  <title>census_tracts - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,21 +33,22 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Table</p>
-  <h1>ntd_annual_service</h1>
-  <p class="lede">Annual VRH, VRM, UPT, VOMS by NTD system (1991-2023). Produced by NTD Annual Service ETL.</p>
-  <p class="lede">Owner: Produced by NTD Annual Service ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
+  <h1>census_tracts</h1>
+  <p class="lede">Database table consumed by one or more analyses.</p>
+  <p class="lede">Owner: Project pipeline owner not linked. · Freshness: Refresh cadence unknown.</p>
+  <p class="lede">Built 2026-06-05 17:58 UTC · Commit 7493239</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["ntd_annual_service"]
-  src --> c1["39 — National Service Cuts (2019 vs 2024)"]
-  src --> c2["40 - Peer City Dashboard"]
-  src --> c3["41 - Operating Cost Drivers"]
-  src --> c4["48 - Service Productivity (Passengers per Revenue Hour)"]
+  src["census_tracts"]
+  src --> c1["04 - Tract Equity"]
+  src --> c2["44 - Route Population Reach"]
+  src --> c3["45 - Population-Weighted System OTP"]
+  src --> c4["46 - Population Transit Proximity"]
+  src --> c5["49 - Transit Service & Boardings vs Population Density"]
 </pre>
 </section>
 
@@ -70,22 +71,27 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/39_national_service_cuts/index.html">39 — National Service Cuts (2019 vs 2024)</a></h3>
+      <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Tract Equity</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
     <article class="card">
-      <h3><a href="analyses/40_peer_city_dashboard/index.html">40 - Peer City Dashboard</a></h3>
+      <h3><a href="analyses/44_route_population_reach/index.html">44 - Route Population Reach</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
     <article class="card">
-      <h3><a href="analyses/41_operating_cost_drivers/index.html">41 - Operating Cost Drivers</a></h3>
+      <h3><a href="analyses/45_population_weighted_otp/index.html">45 - Population-Weighted System OTP</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
     <article class="card">
-      <h3><a href="analyses/48_service_productivity/index.html">48 - Service Productivity (Passengers per Revenue Hour)</a></h3>
+      <h3><a href="analyses/46_population_transit_proximity/index.html">46 - Population Transit Proximity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/49_transit_service_density/index.html">49 - Transit Service & Boardings vs Population Density</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

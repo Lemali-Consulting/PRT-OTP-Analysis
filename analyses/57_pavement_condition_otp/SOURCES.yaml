@@ -1,0 +1,36 @@
+kind: analysis
+title: "57 - Pavement Condition and OTP"
+tables:
+  - otp_monthly
+  - route_road_pavement
+  - route_road_class
+  - route_stops
+  - stops
+  - routes
+files: []
+analyses: []
+description: "Bumpy roads don't make buses late -- once you account for road width. Rough pavement does sit on routes that run a little later, but that's because the roughest roads are the wide, busy arterials that were already shown to hurt on-time performance. After controlling for road width, pavement roughness adds nothing measurable (no significant effect; the share of on-time-performance differences explained barely moves, 56% to 57%). The takeaway: the road-type effect on reliability is about how a road is laid out -- lanes, traffic, stops -- not the condition of its surface, so repaving alone would not be expected to make buses more punctual."
+dependencies:
+  - analyses/55_road_classification_otp
+outputs:
+  - path: iri_vs_otp.png
+    kind: image
+    description: pavement roughness (IRI) vs on-time performance, with fit line.
+  - path: iri_vs_lanes.png
+    kind: image
+    description: pavement roughness vs road width (lane count), showing the confound.
+  - path: r2_progression.png
+    kind: image
+    description: adjusted R-squared across the nested model ladder (baseline, +IRI, +lanes, +lanes+IRI).
+  - path: coefficient_comparison.png
+    kind: image
+    description: standardized coefficients, baseline+lanes vs adding pavement roughness.
+  - path: model_comparison.csv
+    kind: data
+    description: regression results for the baseline, +IRI, width-control, and bus-only models.
+  - path: vif_table.csv
+    kind: data
+    description: variance inflation factors for the full model.
+  - path: route_pavement_summary.csv
+    kind: data
+    description: per-route pavement roughness, overall pavement index, poor-share, lane count, and OTP.

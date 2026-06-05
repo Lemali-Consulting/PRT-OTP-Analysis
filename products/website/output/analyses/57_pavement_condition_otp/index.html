@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>57 - Pavement Condition and OTP - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>57 - Pavement Condition and OTP</h1>
+  
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-06-05 17:58 UTC · Commit 7493239</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../56_city_centerline_otp/index.html">← 56 - City Centerline and OTP</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  57_pavement_condition_otp(["57 - Pavement Condition and OTP"])
+  t_otp_monthly[("otp_monthly")] --> 57_pavement_condition_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_route_road_pavement[("route_road_pavement")] --> 57_pavement_condition_otp
+  14_pavement_overlay[["NHS Pavement-Condition Overlay ETL"]] --> t_route_road_pavement
+  u1_14_pavement_overlay[/"data/spc-pavement/pavement_raw.geojson"/] --> 14_pavement_overlay
+  u2_14_pavement_overlay[/"data/GTFS/shapes.txt"/] --> 14_pavement_overlay
+  u3_14_pavement_overlay[/"data/GTFS/trips.txt"/] --> 14_pavement_overlay
+  u4_14_pavement_overlay{"SPC NHS Pavement Condition (PM2_Roadways, ArcGIS)"} --> 14_pavement_overlay
+  t_route_road_class[("route_road_class")] --> 57_pavement_condition_otp
+  12_road_classification[["Road Classification Overlay ETL"]] --> t_route_road_class
+  u1_12_road_classification[/"data/penndot-roadclass/roadwaysegments.json"/] --> 12_road_classification
+  u2_12_road_classification[/"data/penndot-roadclass/roadwayadmin.json"/] --> 12_road_classification
+  u3_12_road_classification[/"data/GTFS/shapes.txt"/] --> 12_road_classification
+  u4_12_road_classification[/"data/GTFS/trips.txt"/] --> 12_road_classification
+  u5_12_road_classification{"PennDOT ArcGIS Roadway Segments Layer (RMSSEG)"} --> 12_road_classification
+  u6_12_road_classification{"PennDOT ArcGIS Roadway Admin Layer"} --> 12_road_classification
+  t_route_stops[("route_stops")] --> 57_pavement_condition_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_stops[("stops")] --> 57_pavement_condition_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_stops
+  t_routes[("routes")] --> 57_pavement_condition_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  d1_57_pavement_condition_otp(("analyses/55_road_classification_otp (lib)")) --> 57_pavement_condition_otp
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 57_pavement_condition_otp page;
+  class t_otp_monthly,t_route_road_class,t_route_road_pavement,t_route_stops,t_routes,t_stops table;
+  class d1_57_pavement_condition_otp dep;
+  class u1_01_data_ingestion,u1_12_road_classification,u1_14_pavement_overlay,u2_01_data_ingestion,u2_12_road_classification,u2_14_pavement_overlay,u3_01_data_ingestion,u3_12_road_classification,u3_14_pavement_overlay,u4_01_data_ingestion,u4_12_road_classification,u5_01_data_ingestion file;
+  class u4_14_pavement_overlay,u5_12_road_classification,u6_12_road_classification api;
+  class 01_data_ingestion,12_road_classification,14_pavement_overlay pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Pavement Condition and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Summary</h2>
+<p>Analyses 55 and 56 showed that <strong>road width</strong> (lane count) robustly tracks on-time
+performance. This analysis tested whether <strong>road quality</strong> -- pavement roughness, the
+International Roughness Index (IRI) -- adds anything beyond that. The answer is a clean
+<strong>null</strong>: once road width is controlled, pavement roughness has <strong>no</strong> detectable
+association with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (F = 2.68, p = 0.11; adjusted R² rises only 0.562 → 0.575). The
+weak raw hint that rougher roads run a little later (r = −0.14, not significant) is
+explained by a confound -- rough pavement sits on the same wide arterials we already
+know run late (IRI vs lane count r = +0.33, p = 0.009). The road-type signal is about
+<strong>geometry</strong> (how a road channels traffic and stops), not the physical condition of the
+surface. This is a useful negative result: repaving a corridor would not, on this
+evidence, be expected to improve schedule reliability.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>IRI vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bivariate):</strong> r = −0.144, p = 0.259 (n = 63 routes) -- <strong>not significant</strong>.</li>
+<li><strong>The confound is real:</strong> IRI vs lane count r = +0.325, p = 0.009. Rougher NHS pavement is on the wider arterials.</li>
+<li><strong>IRI over the structural baseline (no width control):</strong> F = 3.74, p = 0.058 -- marginal, adj R² 0.240 → 0.275.</li>
+<li><strong>IRI net of lane count (the decisive test):</strong> F = 2.68, <strong>p = 0.107 -- not significant</strong>. Adj R² 0.562 → 0.575 (+0.013).</li>
+<li><strong>Lane count, by contrast, dominates:</strong> β = −0.68, p &lt; 0.0001; adding it lifts adj R² 0.240 → 0.562 (F = 42.9).</li>
+<li><strong>No collinearity excuse:</strong> in the full model <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> = 1.78 for IRI and 1.57 for lane count (all predictors &lt; 5). IRI had independent <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> available and still added nothing.</li>
+<li><strong>Coverage:</strong> 63 of 92 routes clear NHS match_rate ≥ 0.3; <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> NHS coverage 52%. IRI range 104–215 in/mi (<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> 161).</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>Pavement roughness does not survive the road-width control.</strong> The headline question
+was whether road <em>quality</em> explains <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> beyond road <em>geometry</em>. It does not. Lane count
+absorbs essentially all of the road-related signal; IRI's marginal contribution after
+controlling for width is statistically indistinguishable from zero.</li>
+<li><strong>The raw IRI hint is a confound, not a finding.</strong> Bivariately IRI is weakly negative
+(rougher → later) but not significant, and it co-varies with lane count (r = +0.33).
+This is exactly the trap flagged before the analysis: the roughest roads are busy
+arterials. Treating the raw correlation as a pavement effect would have been wrong.</li>
+<li><strong><code>poor_share</code> runs the &quot;wrong&quot; way and is not robust.</strong> The share of a route on
+poor-rated pavement is weakly <em>positively</em> correlated with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (r = +0.29, p = 0.02) --
+i.e., more poor pavement, slightly <em>better</em> on-time. This sign flip (opposite to the
+continuous IRI measure) is a hallmark of a confounded bivariate, not a real protective
+effect of bad roads; it is reported descriptively and excluded from the regression.</li>
+<li><strong>Rail dropped out of the sample, as expected.</strong> All 63 included routes are bus. The
+light-rail lines (BLUE, RED, SILVER) run on their own right-of-way, not NHS roads, so
+they fall below the coverage threshold -- a sanity check that the spatial match behaves.</li>
+<li><strong>This complements, not contradicts, Analyses 55/56.</strong> Those found road width matters;
+this finds that, given width, surface condition does not. Together they sharpen the
+mechanism: the road-type effect operates through arterial geometry and the traffic/stop
+environment it implies, not through ride quality.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Area-level (ecological) association.</strong> This is a route-level relationship between the
+roads a route runs along and its aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, not an individual-trip causal claim.</li>
+<li><strong>NHS-only coverage.</strong> The pavement layer covers the National Highway System
+(interstates and principal arterials) only, so each route's IRI characterizes its
+major-arterial running, not its local-street segments. 29 routes with &lt; 30% NHS
+coverage were excluded; the included routes have <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 52% coverage.</li>
+<li><strong>A null is not proof of no effect.</strong> With n = 63 the analysis is powered to detect a
+moderate independent IRI effect; a small one could be missed. The point estimate is
+small and the same sign as the (confounded) bivariate, so a large hidden effect is
+unlikely, but this rules out a <em>strong</em> pavement→<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> relationship, not a tiny one.</li>
+<li><strong>IRI measures roughness, not all pavement distress.</strong> Potholes, patching, and
+work-zone repaving -- which could plausibly affect buses more acutely than average
+roughness -- are not captured by a length-weighted IRI <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>.</li>
+<li><strong>Static snapshot.</strong> Pavement condition and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> are each aggregated over time, not
+matched month-to-month, so this cannot detect whether a repaving event changed a
+route's reliability.</li>
+</ul>
+<h2>Validation</h2>
+<h3>Data inputs</h3>
+<ol>
+<li><strong>Data source verified.</strong> <code>route_road_pavement</code> columns checked against
+<code>prt_otp_analysis.common.schemas.ROUTE_ROAD_PAVEMENT</code> and validated at load
+(<code>validate(..., subset=True)</code>). Pavement fields (<code>ROUGH_INDX</code>, <code>OVERALL_PV</code>,
+<code>IRI_RATING</code>) confirmed against the live SPC service before building (see
+<code>data/spc-pavement/SOURCE.md</code>).</li>
+<li><strong>Geographic/temporal scope matches.</strong> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> averaged over routes with 12+ months; IRI
+matched to the same GTFS route shapes used throughout the project (30 m buffer,
+identical KDTree machinery as Analyses 27/55/56). The lane-count control comes from
+<code>route_road_class</code> (Analysis 55) on the same routes; all 63 pavement-matched routes
+also clear the lane match threshold, so Q1 and Q2 use one identical sample.</li>
+<li><strong>Null/missing handling.</strong> IRI is filtered to <code>&gt; 0</code> at query time; OPI <code>0</code> treated as
+missing. Routes with NHS match_rate &lt; 0.3 excluded, not imputed.</li>
+</ol>
+<h3>Results plausibility</h3>
+<ol start="4">
+<li><strong>Aggregates sanity-checked.</strong> <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> IRI 161 in/mi (range 104–215) is consistent with
+FAIR-to-POOR urban arterial pavement; the roughest routes (71A–D, 88, 61A) are known
+busy corridors. Values are in the expected band for NHS roads.</li>
+<li><strong>Surprising results investigated.</strong> The result is <em>not</em> surprising and is the honest
+outcome: the raw IRI hint was anticipated to be a road-width confound, and it is. The
+<code>poor_share</code> sign flip was investigated and attributed to confounding, not reported as
+a protective effect.</li>
+<li><strong>Direction of effects checked.</strong> Lane count reproduces the Analysis 55/56 negative
+sign and dominates; stop count and span negative; n_munis positive -- all consistent
+with prior structural models.</li>
+</ol>
+<h3>Statistical diagnostics</h3>
+<ol start="7">
+<li><strong>Multicollinearity checked.</strong> <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> reported for all predictors in the full model; max
+is is_premium_bus at 3.34. IRI = 1.78, lane count = 1.57. No predictor exceeds 5, so
+the null IRI result is not a collinearity artifact.</li>
+<li><strong>Small-sample routes flagged.</strong> Minimum 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and NHS match_rate ≥ 0.3
+enforced; n = 63 routes (all bus). Constant dummy columns (is_rail, with no rail in
+the sample) are dropped before fitting so the design matrix stays well-conditioned.</li>
+<li><strong>Ecological framing.</strong> Results described as route/area-level associations throughout;
+no individual-trip causal claim is made.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/57_pavement_condition_otp/iri_vs_otp.png" alt="iri_vs_otp" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/57_pavement_condition_otp/iri_vs_otp.png" target="_blank" rel="noopener noreferrer">iri_vs_otp.png</a>
+          <p class="artifact-desc">pavement roughness (IRI) vs on-time performance, with fit line.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/57_pavement_condition_otp/iri_vs_lanes.png" alt="iri_vs_lanes" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/57_pavement_condition_otp/iri_vs_lanes.png" target="_blank" rel="noopener noreferrer">iri_vs_lanes.png</a>
+          <p class="artifact-desc">pavement roughness vs road width (lane count), showing the confound.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/57_pavement_condition_otp/r2_progression.png" alt="r2_progression" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/57_pavement_condition_otp/r2_progression.png" target="_blank" rel="noopener noreferrer">r2_progression.png</a>
+          <p class="artifact-desc">adjusted R-squared across the nested model ladder (baseline, +IRI, +lanes, +lanes+IRI).</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/57_pavement_condition_otp/coefficient_comparison.png" alt="coefficient_comparison" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/57_pavement_condition_otp/coefficient_comparison.png" target="_blank" rel="noopener noreferrer">coefficient_comparison.png</a>
+          <p class="artifact-desc">standardized coefficients, baseline+lanes vs adding pavement roughness.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/57_pavement_condition_otp/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
+          <p class="artifact-desc">regression results for the baseline, +IRI, width-control, and bus-only models.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/57_pavement_condition_otp/model_comparison.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/57_pavement_condition_otp/vif_table.csv" target="_blank" rel="noopener noreferrer">vif_table.csv</a>
+          <p class="artifact-desc">variance inflation factors for the full model.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/57_pavement_condition_otp/vif_table.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/57_pavement_condition_otp/route_pavement_summary.csv" target="_blank" rel="noopener noreferrer">route_pavement_summary.csv</a>
+          <p class="artifact-desc">per-route pavement roughness, overall pavement index, poor-share, lane count, and OTP.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/57_pavement_condition_otp/route_pavement_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Pavement Condition and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Question</h2>
+<p>Analyses 55 and 56 established that <strong>road width</strong> (lane count) is a robust
+correlate of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a>: buses on wider, multi-lane roads run late more
+often. But both measured road <em>geometry</em>. They never tested road <em>quality</em>. SPC's
+National Highway System pavement-condition layer adds one attribute neither dataset
+has: <strong>pavement roughness</strong>, the International Roughness Index (IRI). This analysis
+asks two questions:</p>
+<ol>
+<li><strong>Does pavement roughness correlate with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> at all?</strong> Rougher pavement plausibly
+forces slower, more variable bus speeds.</li>
+<li><strong>Does roughness add explanatory power <em>net of road width</em>?</strong> This is the decisive
+question. The roughest roads are busy urban arterials -- which are also the wide,
+multi-lane roads we already know run late. So a raw IRI-&gt;<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation is almost
+certainly confounded with lane count. The honest test is whether IRI survives once
+road width is controlled. A null here is itself a clean finding: it would <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> the
+road-type signal is about geometry (how a road channels traffic and stops), not the
+physical condition of the surface.</li>
+</ol>
+<p>This is deliberately framed as a confound-aware test, not a hunt for a positive result.</p>
+<h2>Approach</h2>
+<ul>
+<li>Build <code>route_road_pavement</code> (pipeline step 14): for each route, the length-weighted
+<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> IRI of NHS pavement segments within 30 m of its GTFS shape, plus the
+length-weighted overall pavement index (OPI) and the share of length rated POOR.
+Match rate records the within-buffer (≈ on-NHS) fraction of the route.</li>
+<li>Include routes with 12+ months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and <code>route_road_pavement.match_rate &gt;= 0.3</code>.</li>
+<li><strong>Bivariate:</strong> correlate IRI with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. Also correlate IRI with the PennDOT lane
+count (Analysis 55's <code>route_road_class.weighted_lanes</code>) to quantify the confound
+directly.</li>
+<li><strong>Regression (the core):</strong> replicate the Analysis 18/55 six-feature structural <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a>
+baseline on the pavement-matched sample, then build a nested ladder:<ul>
+<li>Model A: structural baseline (6 features).</li>
+<li>Model B: baseline + IRI (does roughness matter beyond structure?).</li>
+<li>Model C: baseline + lane count (the road-width control).</li>
+<li>Model D: baseline + lane count + IRI (<strong>does IRI survive controlling for width?</strong>).
+Test each addition with a nested F-test; compute <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for the full model and flag any
+predictor with <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> &gt; 5 (IRI and lane count are expected to be correlated).</li>
+</ul>
+</li>
+<li>Report OPI and poor-share descriptively (Pearson r with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>).</li>
+<li>Repeat the baseline-vs-IRI comparison on the bus-only subset.</li>
+</ul>
+<p>All regression helpers (<code>compute_span</code>, <code>fit_ols</code>, <code>compute_vif</code>, <code>f_test_nested</code>) are
+replicated locally so the analysis does not import from Analysis 18/55/56 (analyses
+must be independent).</p>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>route_id, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">otp</a> (averaged to route level, 12+ months required)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_road_pavement</code></td>
+  <td>route_id, weighted_iri, weighted_opi, poor_share, match_rate (built by <code>road_overlay_pavement.py</code>, pipeline step 14)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_road_class</code></td>
+  <td>route_id, weighted_lanes (PennDOT, the road-width control)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>stop counts, trip frequencies</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>lat, lon for geographic span; muni for municipality count</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>route_id, mode for subtype classification</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
+<p>Inclusion: routes with 12+ months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and <code>route_road_pavement.match_rate &gt;= 0.3</code>.
+IRI is length-weighted over the NHS pavement segments within 30 m of the route's GTFS
+shape. The layer is <strong>NHS-only</strong> (interstates and principal arterials), so each route's
+IRI characterizes only its major-arterial running; the match rate quantifies the
+covered share. The lane-count control models are fit on the subset of routes that also
+clear <code>route_road_class.match_rate &gt;= 0.3</code>.</p>
+<h2>Output</h2>
+<ul>
+<li><code>output/model_comparison.csv</code> -- regression results (baseline, +IRI, +lanes, +lanes+IRI, bus subset)</li>
+<li><code>output/vif_table.csv</code> -- <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> values for the full model</li>
+<li><code>output/route_pavement_summary.csv</code> -- per-route IRI, OPI, poor-share, lane count, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/iri_vs_otp.png</code> -- bivariate scatter of IRI vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/iri_vs_lanes.png</code> -- IRI vs lane count, showing the confound</li>
+<li><code>output/r2_progression.png</code> -- adjusted R² across the nested model ladder</li>
+<li><code>output/coefficient_comparison.png</code> -- <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weights, baseline vs full model</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 57: Test whether pavement roughness (IRI) predicts OTP, and whether
+that signal survives controlling for road width (lane count from Analysis 55).&quot;&quot;&quot;
+
+import math
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    analysis_dir,
+    classify_bus_route,
+    correlate,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.common.schemas import ROUTE_ROAD_PAVEMENT, validate
+
+OUT = analysis_dir(__file__)
+
+MIN_MONTHS = 12
+MIN_MATCH_RATE = 0.3
+
+
+# ---------------------------------------------------------------------------
+# Helpers (replicated from Analysis 18/55/56 to keep analyses independent)
+# ---------------------------------------------------------------------------
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return the great-circle distance in km between two lat/lon points.&quot;&quot;&quot;
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
+         * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def compute_span(lats: list[float], lons: list[float]) -&gt; float:
+    &quot;&quot;&quot;Return the max pairwise haversine distance (km) among a set of points.&quot;&quot;&quot;
+    max_dist = 0.0
+    n = len(lats)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = haversine_km(lats[i], lons[i], lats[j], lons[j])
+            if d &gt; max_dist:
+                max_dist = d
+    return max_dist
+
+
+def compute_vif(X_raw: np.ndarray, feature_names: list[str]) -&gt; dict[str, float]:
+    &quot;&quot;&quot;Compute Variance Inflation Factor for each predictor.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    vifs = {}
+    for j in range(k):
+        y_j = X_raw[:, j]
+        X_other = np.delete(X_raw, j, axis=1)
+        X_other = np.column_stack([np.ones(n), X_other])
+        beta, _, _, _ = np.linalg.lstsq(X_other, y_j, rcond=None)
+        y_hat = X_other @ beta
+        ss_res = np.sum((y_j - y_hat) ** 2)
+        ss_tot = np.sum((y_j - np.mean(y_j)) ** 2)
+        r2_j = 1 - ss_res / ss_tot if ss_tot &gt; 0 else 0.0
+        vifs[feature_names[j]] = 1.0 / (1.0 - r2_j) if r2_j &lt; 1.0 else float(&quot;inf&quot;)
+    return vifs
+
+
+def fit_ols(y: np.ndarray, X_raw: np.ndarray, feature_names: list[str]) -&gt; dict:
+    &quot;&quot;&quot;Fit OLS regression and return results dict.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    X = np.column_stack([np.ones(n), X_raw])
+
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    y_hat = X @ beta
+    residuals = y - y_hat
+
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    adj_r_squared = 1 - (1 - r_squared) * (n - 1) / (n - k - 1)
+    mse = ss_res / (n - k - 1)
+
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    se = np.sqrt(np.diag(XtX_inv) * mse)
+    t_vals = beta / se
+    p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n - k - 1)) for t in t_vals]
+
+    x_stds = np.std(X_raw, axis=0, ddof=1)
+    y_std = np.std(y, ddof=1)
+    beta_weights = beta[1:] * x_stds / y_std
+
+    return {
+        &quot;r_squared&quot;: r_squared,
+        &quot;adj_r_squared&quot;: adj_r_squared,
+        &quot;ss_res&quot;: ss_res,
+        &quot;n&quot;: n,
+        &quot;k&quot;: k,
+        &quot;features&quot;: [&quot;intercept&quot;] + feature_names,
+        &quot;coefficients&quot;: beta.tolist(),
+        &quot;std_errors&quot;: se.tolist(),
+        &quot;t_values&quot;: t_vals.tolist(),
+        &quot;p_values&quot;: p_vals,
+        &quot;beta_weights&quot;: [None] + beta_weights.tolist(),
+        &quot;y_hat&quot;: y_hat,
+        &quot;residuals&quot;: residuals,
+    }
+
+
+def f_test_nested(base: dict, full: dict) -&gt; tuple[float, float]:
+    &quot;&quot;&quot;F-test comparing nested models. Returns (F_stat, p_value).&quot;&quot;&quot;
+    k_diff = full[&quot;k&quot;] - base[&quot;k&quot;]
+    n = full[&quot;n&quot;]
+    f_stat = ((base[&quot;ss_res&quot;] - full[&quot;ss_res&quot;]) / k_diff) / (full[&quot;ss_res&quot;] / (n - full[&quot;k&quot;] - 1))
+    f_p = 1 - stats.f.cdf(f_stat, k_diff, n - full[&quot;k&quot;] - 1)
+    return f_stat, f_p
+
+
+def print_model(results: dict, label: str) -&gt; None:
+    &quot;&quot;&quot;Print formatted model results.&quot;&quot;&quot;
+    print(f&quot;\n  {label}:&quot;)
+    print(f&quot;  R2 = {results[&#x27;r_squared&#x27;]:.4f}, Adj R2 = {results[&#x27;adj_r_squared&#x27;]:.4f}, &quot;
+          f&quot;n = {results[&#x27;n&#x27;]}, k = {results[&#x27;k&#x27;]}&quot;)
+    print(f&quot;  {&#x27;Feature&#x27;:&lt;20s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Std Err&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s} {&#x27;Beta&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*60}&quot;)
+    for i, feat in enumerate(results[&quot;features&quot;]):
+        coeff = results[&quot;coefficients&quot;][i]
+        se = results[&quot;std_errors&quot;][i]
+        p = results[&quot;p_values&quot;][i]
+        beta = results[&quot;beta_weights&quot;][i]
+        beta_str = f&quot;{beta:&gt;10.4f}&quot; if beta is not None else f&quot;{&#x27;--&#x27;:&gt;10s}&quot;
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;20s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {beta_str} {sig}&quot;)
+
+
+def vary(df: pl.DataFrame, features: list[str]) -&gt; list[str]:
+    &quot;&quot;&quot;Keep only features with more than one unique value in this sample.
+
+    Dummies like is_rail can be constant on the NHS-only subset (rail routes run
+    on their own right-of-way and drop out), which would make them collinear with
+    the intercept; drop them so the design matrix stays well-conditioned.
+    &quot;&quot;&quot;
+    return [f for f in features if df[f].n_unique() &gt; 1]
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_features() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Assemble structural features + pavement (IRI) + PennDOT lane count.&quot;&quot;&quot;
+    avg_otp_df = query_to_polars(f&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp, COUNT(*) AS months
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(*) &gt;= {MIN_MONTHS}
+    &quot;&quot;&quot;)
+
+    stop_counts_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    trips_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id,
+               MAX(trips_wd) AS max_wd,
+               MAX(trips_sa) AS max_sa,
+               MAX(trips_su) AS max_su
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    munis_df = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, COUNT(DISTINCT s.muni) AS n_munis
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.route_id
+    &quot;&quot;&quot;)
+    stops_by_route_df = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, s.lat, s.lon
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.lat IS NOT NULL AND s.lon IS NOT NULL
+    &quot;&quot;&quot;)
+    spans = []
+    for route_id in stops_by_route_df[&quot;route_id&quot;].unique().sort().to_list():
+        subset = stops_by_route_df.filter(pl.col(&quot;route_id&quot;) == route_id)
+        span_km = compute_span(subset[&quot;lat&quot;].to_list(), subset[&quot;lon&quot;].to_list())
+        spans.append({&quot;route_id&quot;: route_id, &quot;span_km&quot;: span_km})
+    span_df = pl.DataFrame(spans)
+
+    pavement_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, weighted_iri, weighted_opi, poor_share,
+               match_rate, n_segments, total_length_ft
+        FROM route_road_pavement
+    &quot;&quot;&quot;)
+    validate(pavement_df, ROUTE_ROAD_PAVEMENT, subset=True)
+
+    # PennDOT lane count: the road-width control (Analysis 55).
+    penndot_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, weighted_lanes AS penndot_lanes,
+               match_rate AS penndot_match_rate
+        FROM route_road_class
+    &quot;&quot;&quot;)
+
+    df = avg_otp_df
+    df = df.join(stop_counts_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(trips_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(munis_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(span_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(pavement_df, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    df = df.join(penndot_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+
+    df = df.with_columns(
+        pl.when(pl.col(&quot;max_wd&quot;) &gt; 0)
+        .then((pl.col(&quot;max_sa&quot;) + pl.col(&quot;max_su&quot;)) / (2.0 * pl.col(&quot;max_wd&quot;)))
+        .otherwise(0.0)
+        .alias(&quot;weekend_ratio&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;).then(1.0).otherwise(0.0).alias(&quot;is_rail&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.Utf8))
+        .otherwise(pl.lit(&quot;non_bus&quot;))
+        .alias(&quot;bus_subtype&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;bus_subtype&quot;).is_in([&quot;busway&quot;, &quot;flyer&quot;, &quot;express&quot;, &quot;limited&quot;]))
+        .then(1.0)
+        .otherwise(0.0)
+        .alias(&quot;is_premium_bus&quot;),
+    )
+
+    df = df.drop_nulls(subset=[&quot;stop_count&quot;, &quot;span_km&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;, &quot;weighted_iri&quot;])
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Charts
+# ---------------------------------------------------------------------------
+
+def make_iri_scatter(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bivariate scatter: pavement roughness (IRI) vs OTP.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    iri = df[&quot;weighted_iri&quot;].to_numpy()
+    otp = df[&quot;avg_otp&quot;].to_numpy()
+    modes = df[&quot;mode&quot;].to_list()
+    bus_mask = np.array([m == &quot;BUS&quot; for m in modes])
+    rail_mask = ~bus_mask
+
+    ax.scatter(iri[bus_mask], otp[bus_mask], alpha=0.5, s=30, color=&quot;#0d9488&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Bus&quot;, zorder=2)
+    if np.any(rail_mask):
+        ax.scatter(iri[rail_mask], otp[rail_mask], alpha=0.7, s=50, color=&quot;#dc2626&quot;,
+                   marker=&quot;D&quot;, edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Rail&quot;, zorder=3)
+
+    slope, intercept, r, p, _ = stats.linregress(iri, otp)
+    x_line = np.array([iri.min(), iri.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, alpha=0.7, label=f&quot;fit: r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.set_xlabel(&quot;Length-weighted pavement roughness (IRI, in/mi) — higher = rougher&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;Pavement Roughness vs On-Time Performance (NHS roads)&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;iri_vs_otp.png&quot;)
+
+
+def make_iri_vs_lanes(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter of IRI vs PennDOT lane count, showing the road-width confound.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(7, 7))
+
+    sub = df.drop_nulls(subset=[&quot;penndot_lanes&quot;]).filter(
+        pl.col(&quot;penndot_match_rate&quot;) &gt;= MIN_MATCH_RATE
+    )
+    iri = sub[&quot;weighted_iri&quot;].to_numpy()
+    lanes = sub[&quot;penndot_lanes&quot;].to_numpy()
+
+    ax.scatter(lanes, iri, alpha=0.55, s=35, color=&quot;#7c3aed&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5, zorder=2)
+    slope, intercept, r, p, _ = stats.linregress(lanes, iri)
+    x_line = np.array([lanes.min(), lanes.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;gray&quot;, linewidth=1.0,
+            linestyle=&quot;:&quot;, alpha=0.8, label=f&quot;fit: r={r:.3f}&quot;)
+    ax.set_xlabel(&quot;PennDOT lane count (Analysis 55)&quot;)
+    ax.set_ylabel(&quot;Pavement roughness (IRI, in/mi)&quot;)
+    ax.set_title(f&quot;Roughness Co-Varies with Road Width (r={r:.3f}, n={len(sub)})&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;iri_vs_lanes.png&quot;)
+
+
+def make_r2_progression(model_specs: list[tuple[str, dict]]) -&gt; None:
+    &quot;&quot;&quot;Bar chart of adjusted R^2 across the nested ladder (same sample).&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(9, 6))
+
+    labels = [label for label, _ in model_specs]
+    adj_r2 = [m[&quot;adj_r_squared&quot;] for _, m in model_specs]
+    colors = [&quot;#9ca3af&quot;, &quot;#0d9488&quot;, &quot;#2563eb&quot;, &quot;#7c3aed&quot;][: len(labels)]
+
+    bars = ax.bar(labels, adj_r2, color=colors, alpha=0.85)
+    for bar, val in zip(bars, adj_r2):
+        ax.text(bar.get_x() + bar.get_width() / 2, val + 0.005, f&quot;{val:.3f}&quot;,
+                ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=10)
+
+    ax.set_ylabel(&quot;Adjusted R²&quot;)
+    ax.set_title(&quot;Explained OTP Variance Across the Nested Model Ladder&quot;)
+    ax.set_ylim(0, max(adj_r2) * 1.25)
+    plt.xticks(rotation=10, ha=&quot;right&quot;)
+    save_chart(fig, OUT / &quot;r2_progression.png&quot;)
+
+
+def make_coefficient_chart(base: dict, full: dict) -&gt; None:
+    &quot;&quot;&quot;Compare standardized coefficients between baseline and full (+lanes+IRI) model.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    full_feats = full[&quot;features&quot;][1:]
+    base_betas = {f: b for f, b in zip(base[&quot;features&quot;][1:], base[&quot;beta_weights&quot;][1:])}
+    full_betas = {f: b for f, b in zip(full_feats, full[&quot;beta_weights&quot;][1:])}
+    full_pvals = {f: p for f, p in zip(full_feats, full[&quot;p_values&quot;][1:])}
+
+    y_pos = np.arange(len(full_feats))
+    width = 0.35
+    base_vals = [base_betas.get(f, 0.0) for f in full_feats]
+    full_vals = [full_betas[f] for f in full_feats]
+
+    ax.barh(y_pos + width / 2, base_vals, width, label=&quot;Baseline + lanes&quot;,
+            color=&quot;#9ca3af&quot;, alpha=0.7)
+    ax.barh(y_pos - width / 2, full_vals, width, label=&quot;+ IRI&quot;,
+            color=&quot;#7c3aed&quot;, alpha=0.7)
+
+    for i, f in enumerate(full_feats):
+        p = full_pvals[f]
+        marker = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        val = full_vals[i]
+        ax.text(val + 0.01 if val &gt;= 0 else val - 0.01, i - width / 2, marker,
+                ha=&quot;left&quot; if val &gt;= 0 else &quot;right&quot;, va=&quot;center&quot;, fontsize=9)
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(full_feats)
+    ax.axvline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax.set_xlabel(&quot;Standardized Coefficient (Beta Weight)&quot;)
+    ax.set_title(f&quot;Does IRI Survive the Width Control? &quot;
+                 f&quot;(full R²={full[&#x27;r_squared&#x27;]:.3f})&quot;)
+    ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+    ax.invert_yaxis()
+    save_chart(fig, OUT / &quot;coefficient_comparison.png&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+@run_analysis(57, &quot;Pavement Condition and OTP&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: test IRI-&gt;OTP and whether it survives the road-width control.&quot;&quot;&quot;
+
+    with phase(&quot;Loading and assembling features&quot;):
+        df_all = load_features()
+        df = df_all.filter(pl.col(&quot;match_rate&quot;) &gt;= MIN_MATCH_RATE)
+        excluded = df_all.filter(pl.col(&quot;match_rate&quot;) &lt; MIN_MATCH_RATE)
+        n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
+        n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+        print(f&quot;  {len(df)} routes after match_rate &gt;= {MIN_MATCH_RATE} filter &quot;
+              f&quot;({n_bus} BUS, {n_rail} RAIL)&quot;)
+        if len(excluded) &gt; 0:
+            print(f&quot;  Excluded ({len(excluded)}, low NHS coverage): &quot;
+                  + &quot;, &quot;.join(excluded.sort(&quot;match_rate&quot;)[&quot;route_id&quot;].to_list()))
+        print(f&quot;\n  IRI range: {df[&#x27;weighted_iri&#x27;].min():.0f} -- &quot;
+              f&quot;{df[&#x27;weighted_iri&#x27;].max():.0f} (mean {df[&#x27;weighted_iri&#x27;].mean():.0f} in/mi)&quot;)
+        print(f&quot;  Median NHS match rate: {df[&#x27;match_rate&#x27;].median():.1%}&quot;)
+
+    y = df[&quot;avg_otp&quot;].to_numpy()
+
+    # --- Bivariate: IRI vs OTP, and the confound IRI vs lane count ---
+    with phase(&quot;Bivariate associations&quot;):
+        c_otp = correlate(df, &quot;weighted_iri&quot;, &quot;avg_otp&quot;)
+        print(f&quot;  IRI vs OTP:           r = {c_otp[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {c_otp[&#x27;pearson_p&#x27;]:.4f} (n={len(df)})&quot;)
+        for feat in [&quot;weighted_opi&quot;, &quot;poor_share&quot;]:
+            sub = df.drop_nulls(subset=[feat])
+            c = correlate(sub, feat, &quot;avg_otp&quot;)
+            sig = &quot;*&quot; if c[&quot;pearson_p&quot;] &lt; 0.05 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} r = {c[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+                  f&quot;p = {c[&#x27;pearson_p&#x27;]:.4f} (n={len(sub)}) {sig}&quot;)
+        width_df = df.drop_nulls(subset=[&quot;penndot_lanes&quot;]).filter(
+            pl.col(&quot;penndot_match_rate&quot;) &gt;= MIN_MATCH_RATE
+        )
+        c_conf = correlate(width_df, &quot;weighted_iri&quot;, &quot;penndot_lanes&quot;)
+        print(f&quot;\n  CONFOUND -- IRI vs lane count: r = {c_conf[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {c_conf[&#x27;pearson_p&#x27;]:.4f} (n={len(width_df)})&quot;)
+        print(&quot;  (Rougher roads tend to be the wider arterials we already know run late.)&quot;)
+
+    cand_base = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
+                 &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+
+    # --- Q1: does IRI matter beyond structure? (pavement sample) ---
+    base_features = vary(df, cand_base)
+    X_base = np.column_stack([df[f].to_numpy().astype(float) for f in base_features])
+    X_base_iri = np.column_stack([df[f].to_numpy().astype(float)
+                                  for f in base_features + [&quot;weighted_iri&quot;]])
+    with phase(&quot;Q1: structural baseline vs + IRI (pavement sample)&quot;):
+        base = fit_ols(y, X_base, base_features)
+        base_iri = fit_ols(y, X_base_iri, base_features + [&quot;weighted_iri&quot;])
+        print_model(base, f&quot;Structural baseline ({len(base_features)} features)&quot;)
+        print_model(base_iri, &quot;Baseline + IRI&quot;)
+        f1, p1 = f_test_nested(base, base_iri)
+        print(f&quot;\n  F-test for IRI (no width control): F = {f1:.3f}, p = {p1:.4f}&quot;)
+        print(f&quot;  Adj R2: {base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {base_iri[&#x27;adj_r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{base_iri[&#x27;adj_r_squared&#x27;] - base[&#x27;adj_r_squared&#x27;]:.4f})&quot;)
+
+    # --- Q2: does IRI survive the road-width control? (width sample) ---
+    with phase(f&quot;Q2: IRI net of lane count (width sample, n={len(width_df)})&quot;):
+        yw = width_df[&quot;avg_otp&quot;].to_numpy()
+        wbase_feats = vary(width_df, cand_base)
+        w_lane_feats = wbase_feats + [&quot;penndot_lanes&quot;]
+        w_iri_feats = wbase_feats + [&quot;weighted_iri&quot;]
+        w_full_feats = wbase_feats + [&quot;penndot_lanes&quot;, &quot;weighted_iri&quot;]
+
+        Xw_base = np.column_stack([width_df[f].to_numpy().astype(float) for f in wbase_feats])
+        Xw_lane = np.column_stack([width_df[f].to_numpy().astype(float) for f in w_lane_feats])
+        Xw_iri = np.column_stack([width_df[f].to_numpy().astype(float) for f in w_iri_feats])
+        Xw_full = np.column_stack([width_df[f].to_numpy().astype(float) for f in w_full_feats])
+
+        wbase = fit_ols(yw, Xw_base, wbase_feats)
+        w_lane = fit_ols(yw, Xw_lane, w_lane_feats)
+        w_iri = fit_ols(yw, Xw_iri, w_iri_feats)
+        w_full = fit_ols(yw, Xw_full, w_full_feats)
+
+        print_model(w_lane, &quot;Baseline + lane count&quot;)
+        print_model(w_full, &quot;Baseline + lane count + IRI&quot;)
+        f_lane, p_lane = f_test_nested(wbase, w_lane)
+        f_iri_only, p_iri_only = f_test_nested(wbase, w_iri)
+        f_net, p_net = f_test_nested(w_lane, w_full)
+        print(f&quot;\n  Lane count over baseline:      F = {f_lane:.3f}, p = {p_lane:.4f} &quot;
+              f&quot;(Adj R2 {wbase[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {w_lane[&#x27;adj_r_squared&#x27;]:.4f})&quot;)
+        print(f&quot;  IRI alone over baseline:       F = {f_iri_only:.3f}, p = {p_iri_only:.4f} &quot;
+              f&quot;(Adj R2 {wbase[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {w_iri[&#x27;adj_r_squared&#x27;]:.4f})&quot;)
+        print(f&quot;  *** IRI NET OF LANE COUNT:     F = {f_net:.3f}, p = {p_net:.4f} &quot;
+              f&quot;(Adj R2 {w_lane[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {w_full[&#x27;adj_r_squared&#x27;]:.4f}) ***&quot;)
+        if p_net &lt; 0.05:
+            print(&quot;  =&gt; IRI SURVIVES the road-width control: pavement quality adds signal.&quot;)
+        else:
+            print(&quot;  =&gt; IRI does NOT survive: the road signal is geometry, not surface condition.&quot;)
+
+    # --- VIF on the full model ---
+    with phase(&quot;VIF (full model: baseline + lanes + IRI)&quot;):
+        vifs = compute_vif(Xw_full, w_full_feats)
+        for feat, vif in vifs.items():
+            flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
+
+    # --- Bus-only subgroup (Q1 on buses) ---
+    bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    with phase(f&quot;Bus-only: baseline vs + IRI ({len(bus_df)} routes)&quot;):
+        y_bus = bus_df[&quot;avg_otp&quot;].to_numpy()
+        bus_base_feats = vary(bus_df, [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_premium_bus&quot;,
+                                       &quot;weekend_ratio&quot;, &quot;n_munis&quot;])
+        bus_full_feats = bus_base_feats + [&quot;weighted_iri&quot;]
+        X_bus_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_base_feats])
+        X_bus_full = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_full_feats])
+        bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
+        bus_full = fit_ols(y_bus, X_bus_full, bus_full_feats)
+        f_b, fp_b = f_test_nested(bus_base, bus_full)
+        print(f&quot;  Bus-only F-test for IRI: F = {f_b:.3f}, p = {fp_b:.4f}&quot;)
+        print(f&quot;  Adj R2: {bus_base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {bus_full[&#x27;adj_r_squared&#x27;]:.4f}&quot;)
+
+    with phase(&quot;Saving CSVs&quot;):
+        rows = []
+        models = [
+            (base, &quot;base&quot;),
+            (base_iri, &quot;base_plus_iri&quot;),
+            (w_lane, &quot;width_base_plus_lanes&quot;),
+            (w_full, &quot;width_base_plus_lanes_iri&quot;),
+            (bus_base, &quot;bus_base&quot;),
+            (bus_full, &quot;bus_plus_iri&quot;),
+        ]
+        for model, label in models:
+            for i, feat in enumerate(model[&quot;features&quot;]):
+                bw = model[&quot;beta_weights&quot;][i]
+                rows.append({
+                    &quot;model&quot;: label,
+                    &quot;feature&quot;: feat,
+                    &quot;coefficient&quot;: model[&quot;coefficients&quot;][i],
+                    &quot;std_error&quot;: model[&quot;std_errors&quot;][i],
+                    &quot;p_value&quot;: model[&quot;p_values&quot;][i],
+                    &quot;beta_weight&quot;: bw if bw is not None else float(&quot;nan&quot;),
+                    &quot;r_squared&quot;: model[&quot;r_squared&quot;],
+                    &quot;adj_r_squared&quot;: model[&quot;adj_r_squared&quot;],
+                    &quot;n&quot;: model[&quot;n&quot;],
+                })
+        save_csv(pl.DataFrame(rows), OUT / &quot;model_comparison.csv&quot;)
+
+        vif_df = pl.DataFrame([{&quot;feature&quot;: f, &quot;vif&quot;: v} for f, v in vifs.items()])
+        save_csv(vif_df, OUT / &quot;vif_table.csv&quot;)
+
+        summary_df = df.select([
+            &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;avg_otp&quot;,
+            &quot;weighted_iri&quot;, &quot;weighted_opi&quot;, &quot;poor_share&quot;, &quot;penndot_lanes&quot;,
+            &quot;match_rate&quot;, &quot;penndot_match_rate&quot;, &quot;n_segments&quot;, &quot;stop_count&quot;, &quot;span_km&quot;,
+        ]).sort(&quot;weighted_iri&quot;, descending=True)
+        save_csv(summary_df, OUT / &quot;route_pavement_summary.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        make_iri_scatter(df)
+        make_iri_vs_lanes(df)
+        make_r2_progression([
+            (&quot;Baseline\n(structural)&quot;, wbase),
+            (&quot;+ IRI&quot;, w_iri),
+            (&quot;+ lanes&quot;, w_lane),
+            (&quot;+ lanes + IRI&quot;, w_full),
+        ])
+        make_coefficient_chart(w_lane, w_full)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_road_pavement</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by NHS Pavement-Condition Overlay ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (4)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/spc-pavement/pavement_raw.geojson</strong> — Cached SPC NHS pavement-condition GeoJSON (ROUGH_INDX/IRI, OVERALL_PV, IRI_RATING, geometry) in WGS84.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/shapes.txt</strong> — GTFS route shape geometry points.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/trips.txt</strong> — GTFS shape-to-route mapping.</li>
+              
+                <li><span class="tag">api</span> <strong>SPC NHS Pavement Condition (PM2_Roadways, ArcGIS)</strong> — Southwestern Pennsylvania Commission feature service of NHS pavement condition (IRI roughness, overall pavement index, IRI rating) derived from PennDOT roadway-management data.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_road_class</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Road Classification Overlay ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (6)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/penndot-roadclass/roadwaysegments.json</strong> — Cached PennDOT ArcGIS roadwaysegments response (lane count, median type, geometry) for Allegheny County.</li>
+              
+                <li><span class="tag">file</span> <strong>data/penndot-roadclass/roadwayadmin.json</strong> — Cached PennDOT ArcGIS roadwayadmin response (functional class, posted speed) for Allegheny County.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/shapes.txt</strong> — GTFS route shape geometry points.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/trips.txt</strong> — GTFS shape-to-route mapping.</li>
+              
+                <li><span class="tag">api</span> <strong>PennDOT ArcGIS Roadway Segments Layer (RMSSEG)</strong> — Public state-roadway segment attributes including lane count and median type.</li>
+              
+                <li><span class="tag">api</span> <strong>PennDOT ArcGIS Roadway Admin Layer</strong> — Public roadway administrative attributes including FHWA functional class and posted speed limit.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>analyses/55_road_classification_otp</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

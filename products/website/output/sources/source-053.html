@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>route_road_class - Source Detail</title>
+  <title>ridership_monthly - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,19 +33,27 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Table</p>
-  <h1>route_road_class</h1>
-  <p class="lede">Route-level road-type metrics including length-weighted lane count, functional class, posted speed, arterial share, and divided-road share. Produced by Road Classification Overlay ETL.</p>
-  <p class="lede">Owner: Produced by Road Classification Overlay ETL. · Freshness: Updated when the producing pipeline step is rerun.</p>
-  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
+  <h1>ridership_monthly</h1>
+  <p class="lede">Monthly ridership by route and day type. Produced by Data Ingestion.</p>
+  <p class="lede">Owner: Produced by Data Ingestion. · Freshness: Updated when the producing pipeline step is rerun.</p>
+  <p class="lede">Built 2026-06-05 17:58 UTC · Commit 7493239</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["route_road_class"]
-  src --> c1["55 - Road Classification and OTP"]
-  src --> c2["56 - City Centerline and OTP"]
+  src["ridership_monthly"]
+  src --> c1["19 - Ridership-Weighted OTP"]
+  src --> c2["20 - OTP → Ridership Causality"]
+  src --> c3["21 - COVID Ridership vs OTP Recovery"]
+  src --> c4["22 - Passenger-Weighted Delay Burden"]
+  src --> c5["23 - Garage-Level Performance"]
+  src --> c6["24 - Weekday vs Weekend Ridership Trends"]
+  src --> c7["25 - Ridership Concentration & Equity"]
+  src --> c8["26 - Ridership in Multivariate OTP Model"]
+  src --> c9["38 - Downtown Recovery Gap"]
+  src --> c10["47 - Route Ridership Ranking"]
 </pre>
 </section>
 
@@ -68,12 +76,52 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/55_road_classification_otp/index.html">55 - Road Classification and OTP</a></h3>
+      <h3><a href="analyses/19_ridership_weighted_otp/index.html">19 - Ridership-Weighted OTP</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   
     <article class="card">
-      <h3><a href="analyses/56_city_centerline_otp/index.html">56 - City Centerline and OTP</a></h3>
+      <h3><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/21_covid_ridership_recovery/index.html">21 - COVID Ridership vs OTP Recovery</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/22_delay_burden/index.html">22 - Passenger-Weighted Delay Burden</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/24_daytype_ridership_trends/index.html">24 - Weekday vs Weekend Ridership Trends</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/25_ridership_equity/index.html">25 - Ridership Concentration & Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/38_downtown_recovery/index.html">38 - Downtown Recovery Gap</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/47_route_ridership_ranking/index.html">47 - Route Ridership Ranking</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

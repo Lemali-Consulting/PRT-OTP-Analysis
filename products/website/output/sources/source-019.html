@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>statsmodels - Source Detail</title>
+  <title>shapely - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,20 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Dependency</p>
-  <h1>statsmodels</h1>
-  <p class="lede">Statistical modeling library used for regression and time-series methods.</p>
+  <h1>shapely</h1>
+  <p class="lede">Python library dependency used by one or more analyses or pipeline steps.</p>
   <p class="lede">Owner: Open-source Python ecosystem maintainers. · Freshness: Version pinned by project environment until dependency updates are applied.</p>
-  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
+  <p class="lede">Built 2026-06-05 17:58 UTC · Commit 7493239</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["statsmodels"]
-  src --> c1["20 - OTP → Ridership Causality"]
+  src["shapely"]
+  src --> c1["04 - Tract Equity"]
+  src --> c2["44 - Route Population Reach"]
+  src --> c3["45 - Population-Weighted System OTP"]
 </pre>
 </section>
 
@@ -67,7 +69,17 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="analyses/20_otp_ridership_causality/index.html">20 - OTP → Ridership Causality</a></h3>
+      <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Tract Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/44_route_population_reach/index.html">44 - Route Population Reach</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/45_population_weighted_otp/index.html">45 - Population-Weighted System OTP</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

@@ -1,0 +1,39 @@
+# Assumptions for Pavement Condition and OTP
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+  - id: iri_measures_roughness
+    statement: >-
+      ROUGH_INDX is the International Roughness Index (IRI, inches/mile), a continuous
+      measure of pavement smoothness where higher means rougher, and a length-weighted
+      mean over a route's NHS segments meaningfully summarizes the ride quality of its
+      major-arterial running.
+    risk_if_violated: >-
+      If ROUGH_INDX were a coded/binned value or a different metric, the length-weighted
+      mean and its correlation with OTP would be mis-scaled.
+  - id: opi_zero_missing
+    statement: "An OVERALL_PV (overall pavement index) value of 0 means unmeasured, not a real worst-possible condition."
+    risk_if_violated: "Treating 0 as a real score would bias the OPI mean downward; OPI is descriptive only and not in the regression."
+  - id: nhs_coverage
+    statement: >-
+      match_rate (fraction of a route's shape points within 30 m of an NHS pavement
+      segment) approximates the on-NHS share of the route, and >= 0.3 is enough coverage
+      for the IRI mean to characterize the route's major-arterial pavement.
+    risk_if_violated: >-
+      Low-coverage routes would have IRI means based on a small, possibly unrepresentative
+      NHS fragment; such routes are excluded.
+  - id: width_control_valid
+    statement: >-
+      route_road_class.weighted_lanes (PennDOT lane count, Analysis 55) is a valid control
+      for road width on the same routes, so a nested F-test of IRI added on top of it
+      isolates pavement quality net of geometry.
+    risk_if_violated: >-
+      If lane count were a poor width proxy, the "net of width" test could wrongly credit
+      or discount IRI; VIF is checked to confirm the two are not collinear.
+  - id: match_buffer
+    statement: >-
+      A 30 m buffer around the GTFS shape correctly associates a route with the NHS
+      pavement segments it runs on (inherited from the traffic_overlay match).
+    risk_if_violated: >-
+      Routes could be matched to adjacent parallel roads in dense areas, attenuating the
+      pavement signal.

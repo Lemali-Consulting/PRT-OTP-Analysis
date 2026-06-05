@@ -253,6 +253,23 @@ ROUTE_ROAD_CITY = Schema(
     }),
 )
 
+ROUTE_ROAD_PAVEMENT = Schema(
+    name="route_road_pavement",
+    columns={
+        "route_id": pl.Utf8,
+        "n_segments": pl.Int64,
+        "total_length_ft": pl.Float64,
+        "weighted_iri": pl.Float64,
+        "weighted_opi": pl.Float64,
+        "poor_share": pl.Float64,
+        "n_route_points": pl.Int64,
+        "match_rate": pl.Float64,
+    },
+    nullable=frozenset({
+        "weighted_iri", "weighted_opi", "poor_share",
+    }),
+)
+
 
 def validate(
     df: pl.DataFrame,

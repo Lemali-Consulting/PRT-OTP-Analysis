@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 56 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 57 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -336,6 +336,10 @@ The **type of road** a route runs on explains substantially more OTP variance th
 
 A robustness check confirms the lane-count finding on a **fully independent dataset**. Analysis 55 measured lane count from PennDOT's *state-road* inventory; this analysis recomputes it from the **City of Pittsburgh street centerline**, which counts lanes on every city street — local roads included — and the result barely moves. City-network lane count correlates with OTP at **r = −0.44** (vs PennDOT's −0.47), and adding it to the six-feature structural baseline lifts adjusted R² from **0.43 to 0.60** (+0.16; nested F = 29.4, p < 0.0001; beta = −0.42, VIF = 1.12). The two lane-count measures, built by different agencies from different source data, correlate at r = +0.51 yet predict OTP about equally — exactly the pattern expected if road width is a genuine correlate of lateness rather than an artifact of one agency's road selection. One-way share and limited-access (freeway) share show no association. The hoped-for coverage gain proved modest (city routes spend ~half their length outside city limits, median within-city coverage 66%), so the contribution is cross-validation, not expansion. Area-level association.
 
+## 57. Pavement Condition and OTP (Analysis 57)
+
+Having shown that road *width* drives OTP (Analyses 55/56), this analysis tested road *quality* — pavement roughness (the International Roughness Index, IRI) — using SPC's National Highway System pavement layer, an attribute neither earlier dataset had. The result is a clean **null**: once road width is controlled, pavement roughness adds nothing measurable to OTP (nested F = 2.68, **p = 0.11**; adjusted R² 0.562 → 0.575). The weak raw hint that rougher roads run later (r = −0.14, n.s.) is a confound — rough pavement sits on the same wide arterials already known to run late (IRI vs lane count r = +0.33, p = 0.009). With VIF = 1.78 for IRI, this is not a collinearity artifact: roughness had independent variance available and still contributed nothing. The road-type effect on reliability is therefore about **geometry** (lanes, traffic, stops), not surface condition — so repaving alone would not be expected to improve punctuality. Area-level association; NHS-only coverage (63 bus routes, median 52% coverage), so this rules out a *strong* pavement effect, not a tiny one.
+
 ## Key Takeaways
 
 ### What drives OTP
@@ -344,7 +348,7 @@ A robustness check confirms the lane-count finding on a **fully independent data
 2. **Dedicated right-of-way matters most**: rail (84%) and busway (74%) routes dramatically outperform local bus (66%) routes.
 3. **Stop count is the strongest predictor** of poor OTP (r = -0.53 all routes n=92, r = -0.50 bus-only n=89). Routes with 150+ stops consistently underperform. This finding survives bus-only stratification, ruling out Simpson's paradox.
 4. **Route length independently degrades OTP** (partial r = -0.23 after controlling for stop count), but stop count has roughly twice the impact (partial r = -0.41).
-5. **Road type and route geometry together explain ~58% of OTP variance** (stop count, span, mode, and especially **lane count**; Analysis 55). Lane count alone lifts the structural baseline from R² 0.40 to 0.52 — wider, multi-lane roads run later. The lane-count effect **replicates on a fully independent dataset** (the City of Pittsburgh street centerline; Analysis 56: r = −0.44 vs −0.47), confirming it is not an artifact of PennDOT's state-road selection. The remaining variance likely requires operational data (schedule padding, driver availability, real-time traffic) not in this dataset.
+5. **Road type and route geometry together explain ~58% of OTP variance** (stop count, span, mode, and especially **lane count**; Analysis 55). Lane count alone lifts the structural baseline from R² 0.40 to 0.52 — wider, multi-lane roads run later. The lane-count effect **replicates on a fully independent dataset** (the City of Pittsburgh street centerline; Analysis 56: r = −0.44 vs −0.47), confirming it is not an artifact of PennDOT's state-road selection. Road *quality*, by contrast, adds nothing: pavement roughness (IRI) shows no association with OTP once road width is controlled (Analysis 57, p = 0.11), so the effect is about arterial geometry, not surface condition. The remaining variance likely requires operational data (schedule padding, driver availability, real-time traffic) not in this dataset.
 6. **Garage differences reflect corridor congestion, not garage operations.** Collier routes run +5.4 pp above East Liberty after controlling for stop count and span (p < 0.001), but operational feedback confirms this reflects Collier's less congested western suburbs and shorter downtown routing rather than garage-level practices.
 
 ### What does not drive OTP
@@ -437,4 +441,5 @@ A robustness check confirms the lane-count finding on a **fully independent data
 | 53 | [Stop Signal Placement](analyses/53_stop_signal_placement/) | Classifies each PRT bus stop as near-side (before the traffic light), far-side (after it), or mid-block using GTFS shapes and OSM signal locations. 83% of stops at signalized intersections are near-side — the legacy default — vs. 17% far-side. |
 | 54 | [Stop Position Placement](analyses/54_stop_position_placement/) | Tests whether near-side placement varies by position along the route (it doesn't — 81–85% near-side at every quintile) and whether second-half near-side fraction better predicts OTP than the overall fraction (it doesn't — r ≈ −0.12 either way). |
 | 55 | [Road Classification Otp](analyses/55_road_classification_otp/) | Tests whether road type (lane count, functional class, speed limit) explains route OTP beyond structural features. |
-| 56 | [City Centerline Otp](analyses/56_city_centerline_otp/) | Cross-validates Analysis 55's lane-count -> OTP finding using the independent City of |
+| 56 | [City Centerline Otp](analyses/56_city_centerline_otp/) | Cross-validates Analysis 55's lane-count -> OTP finding using the independent City of Pittsburgh street centerline (which includes local streets, not just state roads). |
+| 57 | [Pavement Condition Otp](analyses/57_pavement_condition_otp/) | Tests whether pavement roughness (IRI) predicts route OTP, and finds it does not once road width is controlled — the road-type effect is geometry, not surface condition. |
