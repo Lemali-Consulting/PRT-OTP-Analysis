@@ -1,6 +1,6 @@
 # Findings
 
-Summary of results from 51 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
+Summary of results from 52 analyses of PRT on-time performance data (January 2019 -- November 2025, 98 routes, 7,651 monthly observations).
 
 ## 1. System-Wide Trend (Analysis 01)
 
@@ -324,6 +324,10 @@ Analysis 48 reported PRT's agency-wide productivity at about **18 passengers per
 
 Analysis 27 found that traffic *volume* (AADT) does not explain OTP. This analysis tests traffic *signals* instead, counting the OpenStreetMap `highway=traffic_signals` nodes within 30 m of each route's GTFS shape (2,820 signals county-wide) and dividing by route length. **Signal density is a strong, independent predictor of OTP.** Adding it to the six-feature structural model lifts R² from 0.47 to 0.60 (adjusted 0.43 → 0.57; nested F-test p < 0.0001), and each additional signal per route-km is associated with **about -1.75 pp OTP** (beta -0.42, p < 0.0001). The effect survives bus-only stratification (R² 0.38 → 0.53). Crucially, **raw signal count overstates the relationship** — it correlates with OTP at r = -0.65 but also with route length at r = +0.47, so the length-adjusted density (r = -0.38) is the honest predictor. Signal density is nearly orthogonal to stop count (r = -0.04, VIF 1.35): signals and stops are two separate, comparably strong delay mechanisms. The densest-signal routes are inner-city East End / Hill District local lines (71B Highland Park at 7.8 signals/km, 59% OTP); the sparsest are suburban routes (79 East Hills at 0.9/km, 71% OTP). The policy lever this points to is transit-signal priority and corridor signal-timing coordination on dense city routes, not rerouting.
 
+## 52. VRH and Vehicle Revenue Miles (Analysis 52)
+
+PRT's bus operating speed has been essentially flat at 12.8–13.0 mph for the entire 2002–2024 record, indicating that traffic congestion has not measurably slowed the bus fleet system-wide. Bus VRH fell from ~2.2 M hours in 2002 to ~1.47 M in 2024 (−34%), and VRM fell in nearly equal proportion — meaning the system contracted without becoming slower. Light rail speed is similarly stable near 13 mph. The most notable change is in paratransit (ACCESS), which slowed from 15.2 mph in 2019 to 13.8 mph in 2024 (−9%), likely from longer or more complex trip routing. Paratransit now accounts for ~24% of all PRT vehicle revenue hours.
+
 ## Key Takeaways
 
 ### What drives OTP
@@ -421,3 +425,4 @@ Analysis 27 found that traffic *volume* (AADT) does not explain OTP. This analys
 | 49 | [Transit Service Density](analyses/49_transit_service_density/) | Tests whether the amount of PRT bus service and the number of boardings at each Allegheny County census tract scale with the tract's residential population density, following up on Analysis 46's finding that denser tracts sit closer to transit. Reports density-vs-service and density-vs-boardings correlations, density-quartile gradients, and a divergence analysis that identifies tracts boarding far above or below what their density predicts. |
 | 50 | [Mode Productivity](analyses/50_mode_productivity/) | Splits the agency-wide service productivity decline of Analysis 48 — passengers carried per hour of service operated — into PRT's four modes: motor bus, light rail, paratransit (the door-to-door ACCESS service), and the Monongahela Incline. Reports each mode's productivity from 2002 to 2024, how the post-2019 decline differed by mode, and how each mode's share of service hours compares with its share of riders. |
 | 51 | [Traffic Signals Otp](analyses/51_traffic_signals_otp/) | Tests whether traffic-signal density along a route explains on-time performance beyond route geometry |
+| 52 | [Vrh With Miles](analyses/52_vrh_with_miles/) | Examines how PRT's vehicle revenue hours (VRH) and vehicle revenue miles (VRM) have trended over time, and what the VRM/VRH ratio reveals about operating speed by mode. |

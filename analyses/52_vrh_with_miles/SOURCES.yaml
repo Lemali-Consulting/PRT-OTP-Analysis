@@ -1,0 +1,19 @@
+kind: analysis
+title: "52 - VRH and Vehicle Revenue Miles"
+tables:
+  - ntd_ridership
+files: []
+analyses: []
+description: >
+  PRT's bus operating speed has held steady at roughly 12.8–13.0 mph for 22 years (2002–2024),
+  suggesting traffic congestion has not measurably slowed the fixed-route fleet. Over the same
+  period, bus service volume contracted ~34% (both VRH and VRM fell in lockstep). The main speed
+  shift is in paratransit, which slowed from 15 mph in 2019 to 13.8 mph in 2024 — a 9% decline
+  likely tied to longer or more complex trip routing. Paratransit now makes up about 24% of all
+  PRT vehicle revenue hours.
+dependencies: []
+outputs:
+  - output/speed_by_mode.csv
+  - output/mode_speed_summary.csv
+  - output/speed_trends.png
+  - output/vrh_vrm_index.png
