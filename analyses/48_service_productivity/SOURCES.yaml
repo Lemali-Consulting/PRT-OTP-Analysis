@@ -13,7 +13,13 @@ description: >-
   since 2019 is the steepest of 8 peer cities. Population loss is not the
   cause: Allegheny County has only about 8% fewer residents than in 1991, so
   ridership per resident has itself roughly halved — fewer residents explains
-  only about a tenth of the decline.
+  only about a tenth of the decline. Correction (June 2026): an earlier
+  version of this analysis reported service hours as "barely moved" (down
+  just 5%). That figure was wrong because the federal NTD database quietly
+  added ACCESS paratransit hours to its agency-wide total starting in 2008,
+  creating an artificial 18% jump that masked real service cuts. The charts
+  and numbers above use a corrected series that excludes paratransit
+  throughout for a fair comparison.
 analyses:
   - id: 39
     relationship: pairs supply-side service-cut analysis with the productivity ratio it feeds into.
