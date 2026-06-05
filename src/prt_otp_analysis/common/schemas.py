@@ -236,6 +236,23 @@ ROUTE_ROAD_CLASS = Schema(
     }),
 )
 
+ROUTE_ROAD_CITY = Schema(
+    name="route_road_city",
+    columns={
+        "route_id": pl.Utf8,
+        "n_segments": pl.Int64,
+        "total_length_ft": pl.Float64,
+        "weighted_lanes": pl.Float64,
+        "oneway_share": pl.Float64,
+        "limited_access_share": pl.Float64,
+        "n_route_points": pl.Int64,
+        "match_rate": pl.Float64,
+    },
+    nullable=frozenset({
+        "weighted_lanes", "oneway_share", "limited_access_share",
+    }),
+)
+
 
 def validate(
     df: pl.DataFrame,

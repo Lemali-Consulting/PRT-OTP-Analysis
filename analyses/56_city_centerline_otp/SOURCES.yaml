@@ -1,0 +1,36 @@
+kind: analysis
+title: "56 - City Centerline and OTP"
+tables:
+  - otp_monthly
+  - route_road_city
+  - route_road_class
+  - route_stops
+  - stops
+  - routes
+files: []
+analyses: []
+description: "An independent check confirms the earlier finding: buses on wider, multi-lane roads run late more often. Using the City of Pittsburgh's own street map — which counts lanes on every city street, not just state highways — road width still tracks on-time performance just as strongly (correlation -0.44, versus -0.47 from the state-road data). Adding lane count to a model of route structure raises the share of on-time-performance differences explained from 43% to 60%. Two maps built by different agencies pointing to the same answer means road width is a real, robust correlate of lateness, not a quirk of one dataset."
+dependencies:
+  - analyses/55_road_classification_otp
+outputs:
+  - path: city_lanes_vs_otp.png
+    kind: image
+    description: city-network lane count vs on-time performance, with fit line.
+  - path: city_vs_penndot_lanes.png
+    kind: image
+    description: agreement between city-centerline and PennDOT state-road lane counts.
+  - path: r2_progression.png
+    kind: image
+    description: adjusted R-squared, structural baseline vs adding city lane count.
+  - path: coefficient_comparison.png
+    kind: image
+    description: standardized coefficients, baseline vs augmented model.
+  - path: model_comparison.csv
+    kind: data
+    description: regression results for baseline, augmented, and bus-only models.
+  - path: vif_table.csv
+    kind: data
+    description: variance inflation factors for the augmented model.
+  - path: route_road_city_summary.csv
+    kind: data
+    description: per-route city vs PennDOT lane metrics with OTP.

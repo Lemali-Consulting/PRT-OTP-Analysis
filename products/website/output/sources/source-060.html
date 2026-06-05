@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>stops - Source Detail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../index.html#pipeline">Pipeline</a>
+        <a href="../index.html#analyses">Analyses</a>
+        <a href="../sources.html">Sources</a>
+        <a href="../primer.html">Methods</a>
+        <a href="../glossary.html">Glossary</a>
+        <a href="../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Table</p>
+  <h1>stops</h1>
+  <p class="lede">Physical stop dimension table. Produced by Data Ingestion.</p>
+  <p class="lede">Owner: Produced by Data Ingestion. · Freshness: Updated when the producing pipeline step is rerun.</p>
+  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
+</section>
+
+
+<section class="panel">
+  <h2>Lineage</h2>
+  <pre class="mermaid">flowchart LR
+  src["stops"]
+  src --> c1["04 - Tract Equity"]
+  src --> c2["08: Hot-Spot Map"]
+  src --> c3["09: Incline Investigation"]
+  src --> c4["12: Route Geographic Span vs OTP"]
+  src --> c5["15: Municipal/County Equity"]
+  src --> c6["16: Transfer Hub Performance"]
+  src --> c7["18: Multivariate OTP Model"]
+  src --> c8["23 - Garage-Level Performance"]
+  src --> c9["26 - Ridership in Multivariate OTP Model"]
+  src --> c10["27 - Traffic Congestion and OTP"]
+  src --> c11["42 - Allegheny Go Equity"]
+  src --> c12["44 - Route Population Reach"]
+  src --> c13["45 - Population-Weighted System OTP"]
+  src --> c14["46 - Population Transit Proximity"]
+  src --> c15["49 - Transit Service & Boardings vs Population Density"]
+  src --> c16["51 - Traffic Signals and OTP"]
+  src --> c17["55 - Road Classification and OTP"]
+  src --> c18["56 - City Centerline and OTP"]
+</pre>
+</section>
+
+
+<section class="panel">
+  <h2>Context</h2>
+  <table class="source-table">
+    <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Primary analytical table used in this page's computations.</td>
+        <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="panel">
+  <h2>Consumed By</h2>
+  <div class="card-grid">
+  
+    <article class="card">
+      <h3><a href="analyses/04_neighborhood_equity/index.html">04 - Tract Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/08_hotspot_map/index.html">08: Hot-Spot Map</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/09_incline_investigation/index.html">09: Incline Investigation</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/12_geographic_span/index.html">12: Route Geographic Span vs OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/15_municipal_equity/index.html">15: Municipal/County Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/16_transfer_hub_performance/index.html">16: Transfer Hub Performance</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/18_multivariate_model/index.html">18: Multivariate OTP Model</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/23_garage_performance/index.html">23 - Garage-Level Performance</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/26_ridership_multivariate/index.html">26 - Ridership in Multivariate OTP Model</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/27_traffic_congestion/index.html">27 - Traffic Congestion and OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/42_allegheny_go_equity/index.html">42 - Allegheny Go Equity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/44_route_population_reach/index.html">44 - Route Population Reach</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/45_population_weighted_otp/index.html">45 - Population-Weighted System OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/46_population_transit_proximity/index.html">46 - Population Transit Proximity</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/49_transit_service_density/index.html">49 - Transit Service & Boardings vs Population Density</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/51_traffic_signals_otp/index.html">51 - Traffic Signals and OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/55_road_classification_otp/index.html">55 - Road Classification and OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/56_city_centerline_otp/index.html">56 - City Centerline and OTP</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+  </div>
+</section>
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

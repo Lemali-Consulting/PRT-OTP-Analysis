@@ -14,6 +14,7 @@ data/prt.db-shm
 data/prt.db-wal
 data/penndot-traffic/*.json
 data/penndot-roadclass/*.json
+data/pgh-centerline/*.geojson
 data/osm-signals/*.json
 data/noaa-weather/*.csv
 data/wprdc-schedule/*.csv

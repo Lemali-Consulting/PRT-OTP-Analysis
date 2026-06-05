@@ -1,0 +1,36 @@
+# Assumptions for City Centerline and OTP
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+  - id: lanes_zero_missing
+    statement: >-
+      A centerline segment's no_lanes value of 0 (or null) means the lane count is
+      unknown, not that the street genuinely has zero travel lanes.
+    risk_if_violated: >-
+      If 0 were a real value it would deflate the length-weighted lane mean; instead
+      these segments are dropped from the weighting.
+  - id: cfcc_limited_access
+    statement: "CFCC codes beginning with 'A1' denote limited-access (freeway/ramp) segments; other A-codes are not used for functional class."
+    risk_if_violated: limited_access_share would be mislabeled; it is descriptive only and not in the regression.
+  - id: city_coverage
+    statement: >-
+      match_rate (fraction of a route's shape points within 30 m of a city street)
+      approximates the within-Pittsburgh share of the route, and >= 0.3 is enough
+      city coverage for the lane mean to characterize the route's urban roads.
+    risk_if_violated: >-
+      Low-coverage routes would have lane means based on a small, possibly unrepresentative
+      city fragment; such routes are excluded.
+  - id: match_buffer
+    statement: >-
+      A 30 m buffer around the GTFS shape correctly associates a route with the city
+      street segments it runs on (inherited from the traffic_overlay match).
+    risk_if_violated: >-
+      Routes could be matched to adjacent parallel streets in dense areas, attenuating
+      the lane-count signal.
+  - id: independent_measure
+    statement: >-
+      The City of Pittsburgh centerline is an independent inventory from PennDOT RMSSEG,
+      so agreement between the two lane-count measures is a genuine robustness check.
+    risk_if_violated: >-
+      If the city centerline were derived from the same source as PennDOT, agreement
+      would be circular rather than corroborating.

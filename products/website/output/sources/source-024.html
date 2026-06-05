@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/PRT_Stop_Reference_Lookup_Table.csv - Source Detail</title>
+  <title>data/GTFS/trips.txt - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,23 @@
     
 <section class="hero hero-compact">
   <p class="kicker">File</p>
-  <h1>data/PRT_Stop_Reference_Lookup_Table.csv</h1>
-  <p class="lede">Historical stop reference file with geography attributes.</p>
+  <h1>data/GTFS/trips.txt</h1>
+  <p class="lede">GTFS shape-to-route mapping.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
+  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/PRT_Stop_Reference_Lookup_Table.csv"]
-  src --> c1["Data Ingestion"]
+  src["data/GTFS/trips.txt"]
+  src --> c1["Traffic Overlay ETL"]
+  src --> c2["Signal Overlay ETL"]
+  src --> c3["Road Classification Overlay ETL"]
+  src --> c4["City Centerline Overlay ETL"]
+  src --> c5["53 - Near-Side vs. Far-Side Stop Placement"]
+  src --> c6["54 - Stop Position and Near-Side Placement"]
 </pre>
 </section>
 
@@ -55,7 +60,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Historical stop reference file with geography attributes.</td>
+        <td>GTFS shape-to-route mapping.</td>
         <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
@@ -67,7 +72,32 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a></h3>
+      <h3><a href="pipeline/04_traffic_overlay/index.html">Traffic Overlay ETL</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="pipeline/11_signal_overlay/index.html">Signal Overlay ETL</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="pipeline/12_road_classification/index.html">Road Classification Overlay ETL</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="pipeline/13_city_centerline/index.html">City Centerline Overlay ETL</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/53_stop_signal_placement/index.html">53 - Near-Side vs. Far-Side Stop Placement</a></h3>
+      <p>Consumes this source in its data lineage graph.</p>
+    </article>
+  
+    <article class="card">
+      <h3><a href="analyses/54_stop_position_placement/index.html">54 - Stop Position and Near-Side Placement</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NOAA NCEI Daily Summaries API - Source Detail</title>
+  <title>City of Pittsburgh Street Centerline (ArcGIS Hub) - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">Api</p>
-  <h1>NOAA NCEI Daily Summaries API</h1>
-  <p class="lede">Daily weather observations for station USW00094823 (Pittsburgh).</p>
-  <p class="lede">Owner: Hosted by www.ncei.noaa.gov. · Freshness: Queried during pipeline execution; freshness depends on upstream updates.</p>
-  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
+  <h1>City of Pittsburgh Street Centerline (ArcGIS Hub)</h1>
+  <p class="lede">Public city street-centerline feature service with lane count, Census Feature Class Code, and one-way attributes.</p>
+  <p class="lede">Owner: Hosted by hub.arcgis.com. · Freshness: Queried during pipeline execution; freshness depends on upstream updates.</p>
+  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["NOAA NCEI Daily Summaries API"]
-  src --> c1["Weather ETL"]
+  src["City of Pittsburgh Street Centerline (ArcGIS Hub)"]
+  src --> c1["City Centerline Overlay ETL"]
 </pre>
 </section>
 
@@ -55,7 +55,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Daily weather observations for station USW00094823 (Pittsburgh).</td>
+        <td>Public city street-centerline feature service with lane count, Census Feature Class Code, and one-way attributes.</td>
         <td>Availability and schema can change without notice.</td>
       </tr>
     </tbody>
@@ -67,7 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/03_weather/index.html">Weather ETL</a></h3>
+      <h3><a href="pipeline/13_city_centerline/index.html">City Centerline Overlay ETL</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

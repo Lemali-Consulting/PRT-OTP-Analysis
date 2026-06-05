@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>56 - City Centerline and OTP - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>56 - City Centerline and OTP</h1>
+  
+  <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
+  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../55_road_classification_otp/index.html">← 55 - Road Classification and OTP</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  56_city_centerline_otp(["56 - City Centerline and OTP"])
+  t_otp_monthly[("otp_monthly")] --> 56_city_centerline_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_otp_monthly
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_route_road_city[("route_road_city")] --> 56_city_centerline_otp
+  13_city_centerline[["City Centerline Overlay ETL"]] --> t_route_road_city
+  u1_13_city_centerline[/"data/pgh-centerline/centerline_raw.geojson"/] --> 13_city_centerline
+  u2_13_city_centerline[/"data/GTFS/shapes.txt"/] --> 13_city_centerline
+  u3_13_city_centerline[/"data/GTFS/trips.txt"/] --> 13_city_centerline
+  u4_13_city_centerline{"City of Pittsburgh Street Centerline (ArcGIS Hub)"} --> 13_city_centerline
+  t_route_road_class[("route_road_class")] --> 56_city_centerline_otp
+  12_road_classification[["Road Classification Overlay ETL"]] --> t_route_road_class
+  u1_12_road_classification[/"data/penndot-roadclass/roadwaysegments.json"/] --> 12_road_classification
+  u2_12_road_classification[/"data/penndot-roadclass/roadwayadmin.json"/] --> 12_road_classification
+  u3_12_road_classification[/"data/GTFS/shapes.txt"/] --> 12_road_classification
+  u4_12_road_classification[/"data/GTFS/trips.txt"/] --> 12_road_classification
+  u5_12_road_classification{"PennDOT ArcGIS Roadway Segments Layer (RMSSEG)"} --> 12_road_classification
+  u6_12_road_classification{"PennDOT ArcGIS Roadway Admin Layer"} --> 12_road_classification
+  t_route_stops[("route_stops")] --> 56_city_centerline_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
+  t_stops[("stops")] --> 56_city_centerline_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_stops
+  t_routes[("routes")] --> 56_city_centerline_otp
+  01_data_ingestion[["Data Ingestion"]] --> t_routes
+  d1_56_city_centerline_otp(("analyses/55_road_classification_otp (lib)")) --> 56_city_centerline_otp
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 56_city_centerline_otp page;
+  class t_otp_monthly,t_route_road_city,t_route_road_class,t_route_stops,t_routes,t_stops table;
+  class d1_56_city_centerline_otp dep;
+  class u1_01_data_ingestion,u1_12_road_classification,u1_13_city_centerline,u2_01_data_ingestion,u2_12_road_classification,u2_13_city_centerline,u3_01_data_ingestion,u3_12_road_classification,u3_13_city_centerline,u4_01_data_ingestion,u4_12_road_classification,u5_01_data_ingestion file;
+  class u4_13_city_centerline,u5_12_road_classification,u6_12_road_classification api;
+  class 01_data_ingestion,12_road_classification,13_city_centerline pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: City Centerline and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Summary</h2>
+<p>Analysis 55 found that buses on wider, multi-lane roads run late more often, using
+PennDOT's <strong>state-road</strong> inventory. This analysis re-tests that finding with a fully
+independent dataset -- the <strong>City of Pittsburgh street centerline</strong>, which counts lanes
+on the <em>entire</em> city street network, local streets included -- and the result holds
+almost exactly. City-network lane count correlates with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> at <strong>r = -0.44</strong> (vs PennDOT's
+-0.47), and adding it to the structural baseline lifts explained <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> from <strong>43% to
+60%</strong> (a +0.16 jump in adjusted R², F = 29.4, p &lt; 0.0001). Two lane-count measures built
+from different agencies' data, by different methods, point to the same conclusion: road
+width is a real, robust correlate of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">on-time performance</a>, not an artifact of which roads
+PennDOT happens to inventory.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>City lane count vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>:</strong> r = -0.438 (p = 0.0001, n = 77 routes). Analysis 55 PennDOT: r = -0.470.</li>
+<li><strong>Regression gain:</strong> adjusted R² 0.432 -&gt; 0.596 (+0.164) when city lane count is added to the 6-feature structural baseline. Nested F = 29.4, p &lt; 0.0001.</li>
+<li><strong>City lane count <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight:</strong> -0.418 (p &lt; 0.0001) -- the largest standardized effect in the augmented model, comparable to stop count (-0.483) and span (-0.294).</li>
+<li><strong><a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for city lane count = 1.12</strong> -- essentially no collinearity with the structural features; it carries independent information.</li>
+<li><strong>Two measures agree:</strong> city vs PennDOT lane count correlate at r = +0.511 (n = 75); means 2.14 (city) vs 2.21 (PennDOT) lanes.</li>
+<li><strong>Bus-only:</strong> adjusted R² 0.365 -&gt; 0.549 when city lane count is added (F = 29.1, p &lt; 0.0001).</li>
+<li><strong>Coverage:</strong> 77 of 89 city-matched routes have match_rate &gt;= 0.3; <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> within-city coverage 66%.</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>The lane-count finding replicates on an independent dataset.</strong> The whole point of this
+analysis was to check whether Analysis 55's lane-count effect was an artifact of PennDOT's
+state-road selection. It is not: a different agency's inventory, covering a broader set of
+streets (including local roads PennDOT omits), produces a near-identical correlation and an
+even larger single-predictor R² gain.</li>
+<li><strong>The two lane-count measures are related but not identical (r = +0.51), yet both predict
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> about equally.</strong> If the effect were a measurement artifact, the two differently-built
+measures would not agree this consistently on direction and magnitude. Their partial
+agreement (city lanes fold in local 1-2 lane streets, lowering the <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> slightly from 2.21
+to 2.14) is what we would expect from two honest measures of the same underlying road width.</li>
+<li><strong>Coverage expansion turned out modest.</strong> The original phase-2 hope was that the city
+centerline would fill in routes PennDOT misses. In practice it added only ~2 such routes:
+city routes spend roughly half their length outside Pittsburgh limits (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> within-city
+coverage 66%), where the centerline does not reach. The analysis's value is robustness, not
+coverage.</li>
+<li><strong>One-way share and limited-access (freeway) share show no association with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></strong> (r = +0.03
+and +0.01, both n.s.). Lane count alone carries the road-width signal, consistent with
+Analysis 55, where lane count dominated functional class and posted speed.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Area-level (ecological) association.</strong> This is a route-level relationship between the
+roads a route runs along and its aggregate <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>. It does not establish that any individual
+trip is late <em>because</em> of a wide road; lane count co-varies with downtown/arterial operating
+environments, signal density, and traffic that are not all separately controlled here.</li>
+<li><strong>City-limits coverage only.</strong> The centerline covers City of Pittsburgh streets, so suburban
+portions of routes are unmeasured. Routes are included only when at least 30% of their shape
+matches a city street; 12 low-coverage routes were excluded. The lane metric describes each
+route's <em>within-city</em> roads.</li>
+<li><strong>CFCC functional class is not usable here.</strong> The dataset's Census Feature Class Codes are
+largely degenerate (A3* lumps ~88% of streets), so functional class was not used as a
+predictor. Only lane count and the A1* limited-access flag were derived.</li>
+<li><strong>Lane count <code>0</code>/null treated as missing.</strong> ~8% of segments lack a usable lane count; these
+are dropped from the length-weighted <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> rather than counted as zero-lane roads.</li>
+<li><strong>Not a causal or independent corroboration of magnitude.</strong> Because city and PennDOT lane
+counts are correlated (r = 0.51), this is a robustness check on the <em>existence and direction</em>
+of the effect, not a fully independent second estimate of its size.</li>
+</ul>
+<h2>Validation</h2>
+<h3>Data inputs</h3>
+<ol>
+<li><strong>Data source verified.</strong> <code>route_road_city</code> columns checked against
+<code>prt_otp_analysis.common.schemas.ROUTE_ROAD_CITY</code> and validated at load
+(<code>validate(..., subset=True)</code>). Centerline fields (<code>no_lanes</code>, <code>cfcc</code>, <code>oneway</code>) confirmed
+against the live ArcGIS service before building (see <code>data/pgh-centerline/SOURCE.md</code>).</li>
+<li><strong>Geographic/temporal scope matches.</strong> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> averaged over routes with 12+ months; lane
+metrics matched to the same GTFS route shapes used throughout the project (30 m buffer,
+identical KDTree machinery as Analyses 27/55). City-limits coverage limitation documented.</li>
+<li><strong>Null/missing handling.</strong> Lane count <code>0</code> and null treated as missing in the length-weighted
+<a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> (not as zero-lane roads). Routes with match_rate &lt; 0.3 excluded, not imputed.</li>
+</ol>
+<h3>Results plausibility</h3>
+<ol start="4">
+<li><strong>Aggregates sanity-checked.</strong> <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">Mean</a> lane count 2.14 (city) is consistent with a
+predominantly 1-2-lane urban street network and sits just below PennDOT's 2.21 (state roads
+skew wider), exactly as expected when local streets are folded in.</li>
+<li><strong>Surprising results investigated.</strong> The result is <em>not</em> surprising -- it confirms Analysis
+55 with an independent dataset, which was the goal. The direction (more lanes -&gt; lower <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>)
+matches the established finding.</li>
+<li><strong>Direction of effects checked.</strong> Negative lane-count -&gt; <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> slope reproduces Analysis 55;
+rail dummy positive; stop count and span negative -- all consistent with prior structural
+models.</li>
+</ol>
+<h3>Statistical diagnostics</h3>
+<ol start="7">
+<li><strong>Multicollinearity checked.</strong> <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> reported for all predictors; max is span_km at 3.66.
+City lane count <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> = 1.12. No predictor exceeds 5.</li>
+<li><strong>Small-sample routes flagged.</strong> Minimum 12 months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and match_rate &gt;= 0.3 enforced;
+n = 77 routes (75 bus, 2 rail). The 2-route rail subset is noted, not over-interpreted.</li>
+<li><strong>Ecological framing.</strong> Results described as route/area-level associations throughout; no
+individual-trip causal claim is made.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/56_city_centerline_otp/city_lanes_vs_otp.png" alt="city_lanes_vs_otp" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/56_city_centerline_otp/city_lanes_vs_otp.png" target="_blank" rel="noopener noreferrer">city_lanes_vs_otp.png</a>
+          <p class="artifact-desc">city-network lane count vs on-time performance, with fit line.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/56_city_centerline_otp/city_vs_penndot_lanes.png" alt="city_vs_penndot_lanes" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/56_city_centerline_otp/city_vs_penndot_lanes.png" target="_blank" rel="noopener noreferrer">city_vs_penndot_lanes.png</a>
+          <p class="artifact-desc">agreement between city-centerline and PennDOT state-road lane counts.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/56_city_centerline_otp/r2_progression.png" alt="r2_progression" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/56_city_centerline_otp/r2_progression.png" target="_blank" rel="noopener noreferrer">r2_progression.png</a>
+          <p class="artifact-desc">adjusted R-squared, structural baseline vs adding city lane count.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/56_city_centerline_otp/coefficient_comparison.png" alt="coefficient_comparison" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/56_city_centerline_otp/coefficient_comparison.png" target="_blank" rel="noopener noreferrer">coefficient_comparison.png</a>
+          <p class="artifact-desc">standardized coefficients, baseline vs augmented model.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/56_city_centerline_otp/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
+          <p class="artifact-desc">regression results for baseline, augmented, and bus-only models.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/56_city_centerline_otp/model_comparison.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/56_city_centerline_otp/vif_table.csv" target="_blank" rel="noopener noreferrer">vif_table.csv</a>
+          <p class="artifact-desc">variance inflation factors for the augmented model.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/56_city_centerline_otp/vif_table.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/56_city_centerline_otp/route_road_city_summary.csv" target="_blank" rel="noopener noreferrer">route_road_city_summary.csv</a>
+          <p class="artifact-desc">per-route city vs PennDOT lane metrics with OTP.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/56_city_centerline_otp/route_road_city_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: City Centerline and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></h1>
+<h2>Question</h2>
+<p>Analysis 55 found that <strong>lane count</strong> is the strongest road-type predictor of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>
+(r = -0.47), but it was computed only over <strong>PennDOT state roads</strong> -- the major,
+arterial portion of each route. Two concerns follow: (1) is the lane-count signal a
+real road-width effect, or an artifact of which segments PennDOT happens to inventory?
+(2) does it hold on the broader street network, including the local 1-2 lane streets
+that state-road data omits? This analysis answers both by recomputing route lane count
+from a fully independent dataset -- the <strong>City of Pittsburgh street centerline</strong> -- and
+re-testing it against <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.</p>
+<p>This is primarily a <strong>robustness / cross-validation</strong> analysis, not a coverage-expansion
+one: the city centerline matches almost the same routes PennDOT does (the centerline is
+city-limits-only, so suburban route segments are uncovered), but it measures lane count
+a completely different way, from a different agency's inventory of a broader set of streets.</p>
+<h2>Approach</h2>
+<ul>
+<li>Build <code>route_road_city</code> (pipeline step 13): for each route, the length-weighted <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>
+lane count of city street segments within 30 m of its GTFS shape, plus one-way share
+and limited-access (freeway, CFCC <code>A1*</code>) share. Lane count <code>0</code>/null is treated as
+missing. Match rate records the within-buffer (≈ within-city) fraction of the route.</li>
+<li>Include routes with 12+ months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and <code>route_road_city.match_rate &gt;= 0.3</code>.</li>
+<li><strong>Bivariate:</strong> correlate city-network lane count with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, and compare against
+Analysis 55's PennDOT lane-count correlation.</li>
+<li><strong>Head-to-head:</strong> for routes matched by both datasets, compare the city vs PennDOT
+lane count (means and Pearson r) to show they are related but distinct measures.</li>
+<li><strong>Regression:</strong> replicate the Analysis 18/55 six-feature structural <a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a> baseline on the
+city-matched sample, then add city lane count and test the improvement with a nested
+F-test. Compute <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for the augmented model and flag any predictor with <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> &gt; 5.</li>
+<li>Report one-way share and limited-access share descriptively (Pearson r with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>).</li>
+<li>Repeat the base-vs-lanes comparison on the bus-only subset.</li>
+</ul>
+<p>The CFCC functional-class codes in this dataset are largely degenerate (A3* lumps ~88%
+of streets), so functional class is <strong>not</strong> used as a predictor; lane count carries the
+road-width signal, consistent with Analysis 55 where lane count dominated.</p>
+<p>All regression helpers (<code>compute_span</code>, <code>fit_ols</code>, <code>compute_vif</code>, <code>f_test_nested</code>) are
+replicated locally so the analysis does not import from Analysis 18/55 (analyses must be
+independent).</p>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>otp_monthly</code></td>
+  <td>route_id, month, <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">otp</a> (averaged to route level, 12+ months required)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_road_city</code></td>
+  <td>route_id, weighted_lanes, oneway_share, limited_access_share, match_rate (built by <code>road_overlay_city.py</code>, pipeline step 13)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_road_class</code></td>
+  <td>route_id, weighted_lanes (PennDOT, for head-to-head comparison)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>route_stops</code></td>
+  <td>stop counts, trip frequencies</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>stops</code></td>
+  <td>lat, lon for geographic span; muni for municipality count</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
+  <td><code>routes</code></td>
+  <td>route_id, mode for subtype classification</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+</tbody>
+</table>
+<p>Inclusion: routes with 12+ months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> and <code>route_road_city.match_rate &gt;= 0.3</code>.
+Lane count is length-weighted over the City of Pittsburgh centerline segments within 30 m
+of the route's GTFS shape. Because the centerline is city-limits-only, routes that run
+into the suburbs are only partially covered; the match rate quantifies the covered share.</p>
+<h2>Output</h2>
+<ul>
+<li><code>output/model_comparison.csv</code> -- regression results (base vs + city lanes, bus subset)</li>
+<li><code>output/vif_table.csv</code> -- <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> values for the augmented model</li>
+<li><code>output/route_road_city_summary.csv</code> -- per-route city vs PennDOT lane metrics with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/city_lanes_vs_otp.png</code> -- bivariate scatter of city lane count vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/city_vs_penndot_lanes.png</code> -- city vs PennDOT lane count agreement scatter</li>
+<li><code>output/r2_progression.png</code> -- adjusted R² baseline vs + city lanes</li>
+<li><code>output/coefficient_comparison.png</code> -- <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a>-weight comparison, base vs augmented model</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 56: Cross-validate the Analysis 55 lane-count -&gt; OTP finding using the
+independent City of Pittsburgh street-centerline lane counts (which include local streets).&quot;&quot;&quot;
+
+import math
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+from prt_otp_analysis.common import (
+    analysis_dir,
+    classify_bus_route,
+    correlate,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.common.schemas import ROUTE_ROAD_CITY, validate
+
+OUT = analysis_dir(__file__)
+
+MIN_MONTHS = 12
+MIN_MATCH_RATE = 0.3
+
+
+# ---------------------------------------------------------------------------
+# Helpers (replicated from Analysis 18/55 to keep analyses independent)
+# ---------------------------------------------------------------------------
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -&gt; float:
+    &quot;&quot;&quot;Return the great-circle distance in km between two lat/lon points.&quot;&quot;&quot;
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2))
+         * math.sin(dlon / 2) ** 2)
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def compute_span(lats: list[float], lons: list[float]) -&gt; float:
+    &quot;&quot;&quot;Return the max pairwise haversine distance (km) among a set of points.&quot;&quot;&quot;
+    max_dist = 0.0
+    n = len(lats)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = haversine_km(lats[i], lons[i], lats[j], lons[j])
+            if d &gt; max_dist:
+                max_dist = d
+    return max_dist
+
+
+def compute_vif(X_raw: np.ndarray, feature_names: list[str]) -&gt; dict[str, float]:
+    &quot;&quot;&quot;Compute Variance Inflation Factor for each predictor.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    vifs = {}
+    for j in range(k):
+        y_j = X_raw[:, j]
+        X_other = np.delete(X_raw, j, axis=1)
+        X_other = np.column_stack([np.ones(n), X_other])
+        beta, _, _, _ = np.linalg.lstsq(X_other, y_j, rcond=None)
+        y_hat = X_other @ beta
+        ss_res = np.sum((y_j - y_hat) ** 2)
+        ss_tot = np.sum((y_j - np.mean(y_j)) ** 2)
+        r2_j = 1 - ss_res / ss_tot if ss_tot &gt; 0 else 0.0
+        vifs[feature_names[j]] = 1.0 / (1.0 - r2_j) if r2_j &lt; 1.0 else float(&quot;inf&quot;)
+    return vifs
+
+
+def fit_ols(y: np.ndarray, X_raw: np.ndarray, feature_names: list[str]) -&gt; dict:
+    &quot;&quot;&quot;Fit OLS regression and return results dict.&quot;&quot;&quot;
+    n, k = X_raw.shape
+    X = np.column_stack([np.ones(n), X_raw])
+
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    y_hat = X @ beta
+    residuals = y - y_hat
+
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    adj_r_squared = 1 - (1 - r_squared) * (n - 1) / (n - k - 1)
+    mse = ss_res / (n - k - 1)
+
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    se = np.sqrt(np.diag(XtX_inv) * mse)
+    t_vals = beta / se
+    p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n - k - 1)) for t in t_vals]
+
+    x_stds = np.std(X_raw, axis=0, ddof=1)
+    y_std = np.std(y, ddof=1)
+    beta_weights = beta[1:] * x_stds / y_std
+
+    return {
+        &quot;r_squared&quot;: r_squared,
+        &quot;adj_r_squared&quot;: adj_r_squared,
+        &quot;ss_res&quot;: ss_res,
+        &quot;n&quot;: n,
+        &quot;k&quot;: k,
+        &quot;features&quot;: [&quot;intercept&quot;] + feature_names,
+        &quot;coefficients&quot;: beta.tolist(),
+        &quot;std_errors&quot;: se.tolist(),
+        &quot;t_values&quot;: t_vals.tolist(),
+        &quot;p_values&quot;: p_vals,
+        &quot;beta_weights&quot;: [None] + beta_weights.tolist(),
+        &quot;y_hat&quot;: y_hat,
+        &quot;residuals&quot;: residuals,
+    }
+
+
+def f_test_nested(base: dict, full: dict) -&gt; tuple[float, float]:
+    &quot;&quot;&quot;F-test comparing nested models. Returns (F_stat, p_value).&quot;&quot;&quot;
+    k_diff = full[&quot;k&quot;] - base[&quot;k&quot;]
+    n = full[&quot;n&quot;]
+    f_stat = ((base[&quot;ss_res&quot;] - full[&quot;ss_res&quot;]) / k_diff) / (full[&quot;ss_res&quot;] / (n - full[&quot;k&quot;] - 1))
+    f_p = 1 - stats.f.cdf(f_stat, k_diff, n - full[&quot;k&quot;] - 1)
+    return f_stat, f_p
+
+
+def print_model(results: dict, label: str) -&gt; None:
+    &quot;&quot;&quot;Print formatted model results.&quot;&quot;&quot;
+    print(f&quot;\n  {label}:&quot;)
+    print(f&quot;  R2 = {results[&#x27;r_squared&#x27;]:.4f}, Adj R2 = {results[&#x27;adj_r_squared&#x27;]:.4f}, &quot;
+          f&quot;n = {results[&#x27;n&#x27;]}, k = {results[&#x27;k&#x27;]}&quot;)
+    print(f&quot;  {&#x27;Feature&#x27;:&lt;20s} {&#x27;Coeff&#x27;:&gt;10s} {&#x27;Std Err&#x27;:&gt;10s} {&#x27;p-value&#x27;:&gt;10s} {&#x27;Beta&#x27;:&gt;10s}&quot;)
+    print(f&quot;  {&#x27;-&#x27;*60}&quot;)
+    for i, feat in enumerate(results[&quot;features&quot;]):
+        coeff = results[&quot;coefficients&quot;][i]
+        se = results[&quot;std_errors&quot;][i]
+        p = results[&quot;p_values&quot;][i]
+        beta = results[&quot;beta_weights&quot;][i]
+        beta_str = f&quot;{beta:&gt;10.4f}&quot; if beta is not None else f&quot;{&#x27;--&#x27;:&gt;10s}&quot;
+        sig = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        print(f&quot;  {feat:&lt;20s} {coeff:&gt;10.6f} {se:&gt;10.6f} {p:&gt;10.4f} {beta_str} {sig}&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_features() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Assemble structural features + city-centerline lane data for the regression.&quot;&quot;&quot;
+    avg_otp_df = query_to_polars(f&quot;&quot;&quot;
+        SELECT o.route_id, r.route_name, r.mode,
+               AVG(o.otp) AS avg_otp, COUNT(*) AS months
+        FROM otp_monthly o
+        JOIN routes r ON o.route_id = r.route_id
+        GROUP BY o.route_id
+        HAVING COUNT(*) &gt;= {MIN_MONTHS}
+    &quot;&quot;&quot;)
+
+    stop_counts_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, COUNT(DISTINCT stop_id) AS stop_count
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    trips_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id,
+               MAX(trips_wd) AS max_wd,
+               MAX(trips_sa) AS max_sa,
+               MAX(trips_su) AS max_su
+        FROM route_stops GROUP BY route_id
+    &quot;&quot;&quot;)
+    munis_df = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, COUNT(DISTINCT s.muni) AS n_munis
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.muni IS NOT NULL AND s.muni != &#x27;0&#x27;
+        GROUP BY rs.route_id
+    &quot;&quot;&quot;)
+    stops_by_route_df = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id, s.lat, s.lon
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.stop_id
+        WHERE s.lat IS NOT NULL AND s.lon IS NOT NULL
+    &quot;&quot;&quot;)
+    spans = []
+    for route_id in stops_by_route_df[&quot;route_id&quot;].unique().sort().to_list():
+        subset = stops_by_route_df.filter(pl.col(&quot;route_id&quot;) == route_id)
+        span_km = compute_span(subset[&quot;lat&quot;].to_list(), subset[&quot;lon&quot;].to_list())
+        spans.append({&quot;route_id&quot;: route_id, &quot;span_km&quot;: span_km})
+    span_df = pl.DataFrame(spans)
+
+    city_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, weighted_lanes AS city_lanes, oneway_share,
+               limited_access_share, match_rate, n_segments, total_length_ft
+        FROM route_road_city
+    &quot;&quot;&quot;)
+    validate(
+        city_df.rename({&quot;city_lanes&quot;: &quot;weighted_lanes&quot;}),
+        ROUTE_ROAD_CITY, subset=True,
+    )
+
+    # PennDOT lanes for head-to-head comparison (renamed to avoid collision).
+    penndot_df = query_to_polars(&quot;&quot;&quot;
+        SELECT route_id, weighted_lanes AS penndot_lanes, match_rate AS penndot_match_rate
+        FROM route_road_class
+    &quot;&quot;&quot;)
+
+    df = avg_otp_df
+    df = df.join(stop_counts_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(trips_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(munis_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(span_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    df = df.join(city_df, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    df = df.join(penndot_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+
+    df = df.with_columns(
+        pl.when(pl.col(&quot;max_wd&quot;) &gt; 0)
+        .then((pl.col(&quot;max_sa&quot;) + pl.col(&quot;max_su&quot;)) / (2.0 * pl.col(&quot;max_wd&quot;)))
+        .otherwise(0.0)
+        .alias(&quot;weekend_ratio&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;RAIL&quot;).then(1.0).otherwise(0.0).alias(&quot;is_rail&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+        .then(pl.col(&quot;route_id&quot;).map_elements(classify_bus_route, return_dtype=pl.Utf8))
+        .otherwise(pl.lit(&quot;non_bus&quot;))
+        .alias(&quot;bus_subtype&quot;),
+    )
+    df = df.with_columns(
+        pl.when(pl.col(&quot;bus_subtype&quot;).is_in([&quot;busway&quot;, &quot;flyer&quot;, &quot;express&quot;, &quot;limited&quot;]))
+        .then(1.0)
+        .otherwise(0.0)
+        .alias(&quot;is_premium_bus&quot;),
+    )
+
+    df = df.drop_nulls(subset=[&quot;stop_count&quot;, &quot;span_km&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;, &quot;city_lanes&quot;])
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Charts
+# ---------------------------------------------------------------------------
+
+def make_city_lanes_scatter(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Bivariate scatter: city-network lane count vs OTP.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    lanes = df[&quot;city_lanes&quot;].to_numpy()
+    otp = df[&quot;avg_otp&quot;].to_numpy()
+    modes = df[&quot;mode&quot;].to_list()
+    bus_mask = np.array([m == &quot;BUS&quot; for m in modes])
+    rail_mask = ~bus_mask
+
+    ax.scatter(lanes[bus_mask], otp[bus_mask], alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Bus&quot;, zorder=2)
+    if np.any(rail_mask):
+        ax.scatter(lanes[rail_mask], otp[rail_mask], alpha=0.7, s=50, color=&quot;#dc2626&quot;,
+                   marker=&quot;D&quot;, edgecolors=&quot;white&quot;, linewidth=0.5, label=&quot;Rail&quot;, zorder=3)
+
+    slope, intercept, r, p, _ = stats.linregress(lanes, otp)
+    x_line = np.array([lanes.min(), lanes.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, alpha=0.7, label=f&quot;fit: r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.set_xlabel(&quot;Length-weighted lane count (City of Pittsburgh centerline)&quot;)
+    ax.set_ylabel(&quot;Average OTP&quot;)
+    ax.set_title(&quot;City-Network Road Width vs On-Time Performance&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;city_lanes_vs_otp.png&quot;)
+
+
+def make_city_vs_penndot(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter of city-centerline lane count vs PennDOT lane count for shared routes.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(7, 7))
+
+    sub = df.drop_nulls(subset=[&quot;penndot_lanes&quot;]).filter(
+        pl.col(&quot;penndot_match_rate&quot;) &gt;= MIN_MATCH_RATE
+    )
+    city = sub[&quot;city_lanes&quot;].to_numpy()
+    pdot = sub[&quot;penndot_lanes&quot;].to_numpy()
+
+    ax.scatter(pdot, city, alpha=0.55, s=35, color=&quot;#7c3aed&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5, zorder=2)
+    lo = min(city.min(), pdot.min())
+    hi = max(city.max(), pdot.max())
+    ax.plot([lo, hi], [lo, hi], color=&quot;gray&quot;, linewidth=1.0, linestyle=&quot;:&quot;,
+            alpha=0.7, label=&quot;y = x&quot;)
+    r, p = stats.pearsonr(pdot, city)
+    ax.set_xlabel(&quot;PennDOT state-road lane count (Analysis 55)&quot;)
+    ax.set_ylabel(&quot;City-centerline lane count&quot;)
+    ax.set_title(f&quot;Two Independent Lane-Count Measures Agree (r={r:.3f}, n={len(sub)})&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;city_vs_penndot_lanes.png&quot;)
+
+
+def make_r2_progression(model_specs: list[tuple[str, dict]]) -&gt; None:
+    &quot;&quot;&quot;Bar chart of adjusted R^2 across the nested models (same sample).&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    labels = [label for label, _ in model_specs]
+    adj_r2 = [m[&quot;adj_r_squared&quot;] for _, m in model_specs]
+    colors = [&quot;#9ca3af&quot;, &quot;#2563eb&quot;][: len(labels)]
+
+    bars = ax.bar(labels, adj_r2, color=colors, alpha=0.85)
+    for bar, val in zip(bars, adj_r2):
+        ax.text(bar.get_x() + bar.get_width() / 2, val + 0.005, f&quot;{val:.3f}&quot;,
+                ha=&quot;center&quot;, va=&quot;bottom&quot;, fontsize=10)
+
+    ax.set_ylabel(&quot;Adjusted R²&quot;)
+    ax.set_title(&quot;Explained OTP Variance: Structural Baseline vs + City Lane Count&quot;)
+    ax.set_ylim(0, max(adj_r2) * 1.2)
+    plt.xticks(rotation=10, ha=&quot;right&quot;)
+    save_chart(fig, OUT / &quot;r2_progression.png&quot;)
+
+
+def make_coefficient_chart(base: dict, full: dict) -&gt; None:
+    &quot;&quot;&quot;Compare standardized coefficients between base and augmented models.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    full_feats = full[&quot;features&quot;][1:]
+    base_betas = {f: b for f, b in zip(base[&quot;features&quot;][1:], base[&quot;beta_weights&quot;][1:])}
+    full_betas = {f: b for f, b in zip(full_feats, full[&quot;beta_weights&quot;][1:])}
+    full_pvals = {f: p for f, p in zip(full_feats, full[&quot;p_values&quot;][1:])}
+
+    y_pos = np.arange(len(full_feats))
+    width = 0.35
+    base_vals = [base_betas.get(f, 0.0) for f in full_feats]
+    full_vals = [full_betas[f] for f in full_feats]
+
+    ax.barh(y_pos + width / 2, base_vals, width, label=&quot;Structural baseline&quot;,
+            color=&quot;#9ca3af&quot;, alpha=0.7)
+    ax.barh(y_pos - width / 2, full_vals, width, label=&quot;+ city lane count&quot;,
+            color=&quot;#2563eb&quot;, alpha=0.7)
+
+    for i, f in enumerate(full_feats):
+        p = full_pvals[f]
+        marker = &quot;***&quot; if p &lt; 0.001 else &quot;**&quot; if p &lt; 0.01 else &quot;*&quot; if p &lt; 0.05 else &quot;&quot;
+        val = full_vals[i]
+        ax.text(val + 0.01 if val &gt;= 0 else val - 0.01, i - width / 2, marker,
+                ha=&quot;left&quot; if val &gt;= 0 else &quot;right&quot;, va=&quot;center&quot;, fontsize=9)
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(full_feats)
+    ax.axvline(0, color=&quot;black&quot;, linewidth=0.5)
+    ax.set_xlabel(&quot;Standardized Coefficient (Beta Weight)&quot;)
+    ax.set_title(f&quot;Model Comparison: Base R²={base[&#x27;r_squared&#x27;]:.3f} vs &quot;
+                 f&quot;+City Lanes R²={full[&#x27;r_squared&#x27;]:.3f}&quot;)
+    ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+    ax.invert_yaxis()
+    save_chart(fig, OUT / &quot;coefficient_comparison.png&quot;)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+@run_analysis(56, &quot;City Centerline and OTP&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: load features, cross-validate lane-&gt;OTP, fit nested models, chart.&quot;&quot;&quot;
+
+    with phase(&quot;Loading and assembling features&quot;):
+        df_all = load_features()
+        df = df_all.filter(pl.col(&quot;match_rate&quot;) &gt;= MIN_MATCH_RATE)
+        excluded = df_all.filter(pl.col(&quot;match_rate&quot;) &lt; MIN_MATCH_RATE)
+        n_rail = len(df.filter(pl.col(&quot;is_rail&quot;) == 1.0))
+        n_bus = len(df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;))
+        print(f&quot;  {len(df)} routes after match_rate &gt;= {MIN_MATCH_RATE} filter &quot;
+              f&quot;({n_bus} BUS, {n_rail} RAIL)&quot;)
+        if len(excluded) &gt; 0:
+            print(f&quot;  Excluded ({len(excluded)}, low city coverage): &quot;
+                  + &quot;, &quot;.join(excluded.sort(&quot;match_rate&quot;)[&quot;route_id&quot;].to_list()))
+        print(f&quot;\n  City lane count range: {df[&#x27;city_lanes&#x27;].min():.2f} -- &quot;
+              f&quot;{df[&#x27;city_lanes&#x27;].max():.2f} (mean {df[&#x27;city_lanes&#x27;].mean():.2f})&quot;)
+        print(f&quot;  Median city match rate: {df[&#x27;match_rate&#x27;].median():.1%}&quot;)
+
+    y = df[&quot;avg_otp&quot;].to_numpy()
+
+    # --- Bivariate cross-validation against Analysis 55 ---
+    with phase(&quot;Bivariate: city lane count vs OTP (cross-validation)&quot;):
+        corr = correlate(df, &quot;city_lanes&quot;, &quot;avg_otp&quot;)
+        print(f&quot;  City lanes vs OTP:    r = {corr[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {corr[&#x27;pearson_p&#x27;]:.4f} (n={len(df)})&quot;)
+        print(&quot;  Analysis 55 PennDOT:  r = -0.470 (state roads only)&quot;)
+        for feat in [&quot;oneway_share&quot;, &quot;limited_access_share&quot;]:
+            sub = df.drop_nulls(subset=[feat])
+            c = correlate(sub, feat, &quot;avg_otp&quot;)
+            sig = &quot;*&quot; if c[&quot;pearson_p&quot;] &lt; 0.05 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} r = {c[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+                  f&quot;p = {c[&#x27;pearson_p&#x27;]:.4f} (n={len(sub)}) {sig}&quot;)
+
+    # --- Head-to-head: city vs PennDOT lanes ---
+    both_df = df.drop_nulls(subset=[&quot;penndot_lanes&quot;]).filter(
+        pl.col(&quot;penndot_match_rate&quot;) &gt;= MIN_MATCH_RATE
+    )
+    with phase(f&quot;Head-to-head city vs PennDOT lanes (n={len(both_df)})&quot;):
+        cl = both_df[&quot;city_lanes&quot;].to_numpy()
+        pdot = both_df[&quot;penndot_lanes&quot;].to_numpy()
+        r_cp, p_cp = stats.pearsonr(cl, pdot)
+        print(f&quot;  Mean lanes -- city: {cl.mean():.2f}, PennDOT: {pdot.mean():.2f}&quot;)
+        print(f&quot;  Correlation between the two measures: r = {r_cp:+.3f}, p = {p_cp:.4f}&quot;)
+        print(&quot;  (Two independently-built measures agreeing =&gt; real road-width signal.)&quot;)
+
+    base_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
+                     &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+
+    # --- Model 1: structural baseline ---
+    X_base = np.column_stack([df[f].to_numpy().astype(float) for f in base_features])
+    with phase(&quot;Fitting structural baseline (6 features)&quot;):
+        base = fit_ols(y, X_base, base_features)
+        print_model(base, &quot;Structural baseline (6 features)&quot;)
+
+    # --- Model 2: + city lane count ---
+    full_features = base_features + [&quot;city_lanes&quot;]
+    X_full = np.column_stack([df[f].to_numpy().astype(float) for f in full_features])
+    with phase(&quot;Fitting + city lane count&quot;):
+        full = fit_ols(y, X_full, full_features)
+        print_model(full, &quot;Base + city lane count&quot;)
+        f_stat, f_p = f_test_nested(base, full)
+        print(f&quot;\n  F-test for city lane count: F = {f_stat:.3f}, p = {f_p:.4f}&quot;)
+        print(f&quot;  Adj R2: {base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {full[&#x27;adj_r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{full[&#x27;adj_r_squared&#x27;] - base[&#x27;adj_r_squared&#x27;]:.4f})&quot;)
+        if f_p &lt; 0.05:
+            print(&quot;  =&gt; City lane count IS significant after controlling for structural features.&quot;)
+        else:
+            print(&quot;  =&gt; City lane count is NOT significant after structural controls.&quot;)
+
+    # --- VIF ---
+    with phase(&quot;VIF (augmented model)&quot;):
+        vifs = compute_vif(X_full, full_features)
+        for feat, vif in vifs.items():
+            flag = &quot; ** HIGH&quot; if vif &gt; 5 else &quot;&quot;
+            print(f&quot;  {feat:&lt;20s} VIF = {vif:.2f}{flag}&quot;)
+
+    # --- Bus-only subgroup ---
+    bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
+    with phase(f&quot;Fitting bus-only models ({len(bus_df)} routes)&quot;):
+        y_bus = bus_df[&quot;avg_otp&quot;].to_numpy()
+        bus_base_feats = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_premium_bus&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;]
+        bus_full_feats = bus_base_feats + [&quot;city_lanes&quot;]
+        X_bus_base = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_base_feats])
+        X_bus_full = np.column_stack([bus_df[f].to_numpy().astype(float) for f in bus_full_feats])
+        bus_base = fit_ols(y_bus, X_bus_base, bus_base_feats)
+        bus_full = fit_ols(y_bus, X_bus_full, bus_full_feats)
+        f_b, fp_b = f_test_nested(bus_base, bus_full)
+        print(f&quot;  Bus-only F-test for city lane count: F = {f_b:.3f}, p = {fp_b:.4f}&quot;)
+        print(f&quot;  Adj R2: {bus_base[&#x27;adj_r_squared&#x27;]:.4f} -&gt; {bus_full[&#x27;adj_r_squared&#x27;]:.4f}&quot;)
+
+    with phase(&quot;Saving CSVs&quot;):
+        rows = []
+        models = [
+            (base, &quot;base_6feat&quot;),
+            (full, &quot;base_plus_city_lanes&quot;),
+            (bus_base, &quot;bus_base&quot;),
+            (bus_full, &quot;bus_plus_city_lanes&quot;),
+        ]
+        for model, label in models:
+            for i, feat in enumerate(model[&quot;features&quot;]):
+                bw = model[&quot;beta_weights&quot;][i]
+                rows.append({
+                    &quot;model&quot;: label,
+                    &quot;feature&quot;: feat,
+                    &quot;coefficient&quot;: model[&quot;coefficients&quot;][i],
+                    &quot;std_error&quot;: model[&quot;std_errors&quot;][i],
+                    &quot;p_value&quot;: model[&quot;p_values&quot;][i],
+                    &quot;beta_weight&quot;: bw if bw is not None else float(&quot;nan&quot;),
+                    &quot;r_squared&quot;: model[&quot;r_squared&quot;],
+                    &quot;adj_r_squared&quot;: model[&quot;adj_r_squared&quot;],
+                    &quot;n&quot;: model[&quot;n&quot;],
+                })
+        save_csv(pl.DataFrame(rows), OUT / &quot;model_comparison.csv&quot;)
+
+        vif_df = pl.DataFrame([{&quot;feature&quot;: f, &quot;vif&quot;: v} for f, v in vifs.items()])
+        save_csv(vif_df, OUT / &quot;vif_table.csv&quot;)
+
+        summary_df = df.select([
+            &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;avg_otp&quot;,
+            &quot;city_lanes&quot;, &quot;penndot_lanes&quot;, &quot;oneway_share&quot;, &quot;limited_access_share&quot;,
+            &quot;match_rate&quot;, &quot;penndot_match_rate&quot;, &quot;n_segments&quot;, &quot;stop_count&quot;, &quot;span_km&quot;,
+        ]).sort(&quot;city_lanes&quot;, descending=True)
+        save_csv(summary_df, OUT / &quot;route_road_city_summary.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        make_city_lanes_scatter(df)
+        make_city_vs_penndot(df)
+        make_r2_progression([
+            (&quot;Baseline\n(structural)&quot;, base),
+            (&quot;+ city lane count&quot;, full),
+        ])
+        make_coefficient_chart(base, full)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_road_city</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by City Centerline Overlay ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (4)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/pgh-centerline/centerline_raw.geojson</strong> — Cached City of Pittsburgh street-centerline GeoJSON (lane count, CFCC road class, one-way flag, geometry) in WGS84.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/shapes.txt</strong> — GTFS route shape geometry points.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/trips.txt</strong> — GTFS shape-to-route mapping.</li>
+              
+                <li><span class="tag">api</span> <strong>City of Pittsburgh Street Centerline (ArcGIS Hub)</strong> — Public city street-centerline feature service with lane count, Census Feature Class Code, and one-way attributes.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_road_class</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Road Classification Overlay ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (6)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/penndot-roadclass/roadwaysegments.json</strong> — Cached PennDOT ArcGIS roadwaysegments response (lane count, median type, geometry) for Allegheny County.</li>
+              
+                <li><span class="tag">file</span> <strong>data/penndot-roadclass/roadwayadmin.json</strong> — Cached PennDOT ArcGIS roadwayadmin response (functional class, posted speed) for Allegheny County.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/shapes.txt</strong> — GTFS route shape geometry points.</li>
+              
+                <li><span class="tag">file</span> <strong>data/GTFS/trips.txt</strong> — GTFS shape-to-route mapping.</li>
+              
+                <li><span class="tag">api</span> <strong>PennDOT ArcGIS Roadway Segments Layer (RMSSEG)</strong> — Public state-roadway segment attributes including lane count and median type.</li>
+              
+                <li><span class="tag">api</span> <strong>PennDOT ArcGIS Roadway Admin Layer</strong> — Public roadway administrative attributes including FHWA functional class and posted speed limit.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>routes</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>analyses/55_road_classification_otp</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

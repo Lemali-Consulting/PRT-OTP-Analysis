@@ -35,7 +35,7 @@
   <p class="kicker">Transit Performance Knowledge Base</p>
   <h1>PRT OTP Analysis</h1>
   <p class="lede">Pipeline, analyses, and source lineage for on-time performance and ridership research.</p>
-  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
+  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
 </section>
 
 <section class="panel" id="pipeline-panel">
@@ -80,6 +80,11 @@
   <article class="card">
     <h3><a href="pipeline/12_road_classification/index.html">Road Classification Overlay ETL</a></h3>
     <p>Computes route-level road-type metrics (lane count, functional class, posted speed, divided-road share) by spatially joining GTFS routes with PennDOT RMSSEG roadway segment and administrative layers.</p>
+  </article>
+
+  <article class="card">
+    <h3><a href="pipeline/13_city_centerline/index.html">City Centerline Overlay ETL</a></h3>
+    <p>Computes route-level road-width metrics (length-weighted lane count, one-way share, limited-access share) by spatially joining GTFS routes with the City of Pittsburgh street centerline, which (unlike PennDOT RMSSEG) includes local streets.</p>
   </article>
 
 </div>
@@ -560,6 +565,14 @@
       <td><span class="theme-chip">Ridership and External Factors</span></td>
       <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
       <td class="summary-cell"><span class="summary-lead">Buses that run along wider, multi-lane roads are consistently more likely to run late.</span> <span class="summary-rest" hidden>Accounting for the type of road a route travels — especially its number of lanes — explains far more of the gap in on-time performance between routes than route length, stop count, or overall traffic volume do, lifting the share of variation explained from 40% to 58%. The likely culprit is congested multi-lane city streets clogged with traffic signals and turning cars, not fast highways: where wide roads actually move at speed, buses keep their schedule.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
+    </tr>
+  
+    <tr class="analysis-row" data-number="56" data-title="city centerline and otp" data-group="Ungrouped" data-text="56 - city centerline and otp an independent check confirms the earlier finding: buses on wider, multi-lane roads run late more often. using the city of pittsburgh's own street map — which counts lanes on every city street, not just state highways — road width still tracks on-time performance just as strongly (correlation -0.44, versus -0.47 from the state-road data). adding lane count to a model of route structure raises the share of on-time-performance differences explained from 43% to 60%. two maps built by different agencies pointing to the same answer means road width is a real, robust correlate of lateness, not a quirk of one dataset.">
+      <td class="col-num">56</td>
+      <td><a href="analyses/56_city_centerline_otp/index.html">City Centerline and OTP</a></td>
+      <td><span class="theme-chip">Ungrouped</span></td>
+      <td><div class="output-badges"><span class="output-badge">data</span><span class="output-badge">image</span></div></td>
+      <td class="summary-cell"><span class="summary-lead">An independent check confirms the earlier finding: buses on wider, multi-lane roads run late more often.</span> <span class="summary-rest" hidden>Using the City of Pittsburgh's own street map — which counts lanes on every city street, not just state highways — road width still tracks on-time performance just as strongly (correlation -0.44, versus -0.47 from the state-road data). Adding lane count to a model of route structure raises the share of on-time-performance differences explained from 43% to 60%. Two maps built by different agencies pointing to the same answer means road width is a real, robust correlate of lateness, not a quirk of one dataset.</span><button type="button" class="summary-toggle" aria-expanded="false">more</button></td>
     </tr>
   
     <tr id="no-results" hidden><td colspan="5" class="no-results">No analyses match your filters.</td></tr>

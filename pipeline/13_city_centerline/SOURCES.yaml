@@ -1,0 +1,18 @@
+kind: pipeline
+title: City Centerline Overlay ETL
+description: Computes route-level road-width metrics (length-weighted lane count, one-way share, limited-access share) by spatially joining GTFS routes with the City of Pittsburgh street centerline, which (unlike PennDOT RMSSEG) includes local streets.
+files:
+  - path: data/pgh-centerline/centerline_raw.geojson
+    description: Cached City of Pittsburgh street-centerline GeoJSON (lane count, CFCC road class, one-way flag, geometry) in WGS84.
+  - path: data/GTFS/shapes.txt
+    description: GTFS route shape geometry points.
+  - path: data/GTFS/trips.txt
+    description: GTFS shape-to-route mapping.
+apis:
+  - name: City of Pittsburgh Street Centerline (ArcGIS Hub)
+    url: https://hub.arcgis.com/api/download/v1/items/db12137760a64e86bc4ea74574c4dd30/geojson
+    description: Public city street-centerline feature service with lane count, Census Feature Class Code, and one-way attributes.
+tables: []
+tables_produced:
+  - name: route_road_city
+    description: Route-level city-network road-width metrics including length-weighted lane count, one-way share, and limited-access (freeway) share.

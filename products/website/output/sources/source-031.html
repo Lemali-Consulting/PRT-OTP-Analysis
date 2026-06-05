@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/noaa-weather/daily_raw.csv - Source Detail</title>
+  <title>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">File</p>
-  <h1>data/noaa-weather/daily_raw.csv</h1>
-  <p class="lede">Cached NOAA daily observations for Pittsburgh station.</p>
+  <h1>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</h1>
+  <p class="lede">Average ridership by route and month.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
+  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/noaa-weather/daily_raw.csv"]
-  src --> c1["Weather ETL"]
+  src["data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"]
+  src --> c1["Data Ingestion"]
 </pre>
 </section>
 
@@ -55,7 +55,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Cached NOAA daily observations for Pittsburgh station.</td>
+        <td>Average ridership by route and month.</td>
         <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
@@ -67,7 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/03_weather/index.html">Weather ETL</a></h3>
+      <h3><a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/GTFS/stop_times.txt - Source Detail</title>
+  <title>analyses/53_stop_signal_placement/output/stop_classifications.csv - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,19 +33,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">File</p>
-  <h1>data/GTFS/stop_times.txt</h1>
-  <p class="lede">GTFS stop sequence per trip.</p>
+  <h1>analyses/53_stop_signal_placement/output/stop_classifications.csv</h1>
+  <p class="lede">Per-stop near-side / far-side / mid-block classification from Analysis 53.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-06-05 17:09 UTC · Commit 5dead49</p>
+  <p class="lede">Built 2026-06-05 17:39 UTC · Commit 1196b7f</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/GTFS/stop_times.txt"]
-  src --> c1["53 - Near-Side vs. Far-Side Stop Placement"]
-  src --> c2["54 - Stop Position and Near-Side Placement"]
+  src["analyses/53_stop_signal_placement/output/stop_classifications.csv"]
+  src --> c1["54 - Stop Position and Near-Side Placement"]
 </pre>
 </section>
 
@@ -56,7 +55,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>GTFS stop sequence per trip.</td>
+        <td>Per-stop near-side / far-side / mid-block classification from Analysis 53.</td>
         <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
@@ -66,11 +65,6 @@
 <section class="panel">
   <h2>Consumed By</h2>
   <div class="card-grid">
-  
-    <article class="card">
-      <h3><a href="analyses/53_stop_signal_placement/index.html">53 - Near-Side vs. Far-Side Stop Placement</a></h3>
-      <p>Consumes this source in its data lineage graph.</p>
-    </article>
   
     <article class="card">
       <h3><a href="analyses/54_stop_position_placement/index.html">54 - Stop Position and Near-Side Placement</a></h3>
