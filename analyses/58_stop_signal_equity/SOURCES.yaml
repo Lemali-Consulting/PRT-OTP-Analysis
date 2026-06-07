@@ -4,7 +4,9 @@ tables:
   - stop_signals
   - stops
   - census_tracts
-files: []
+files:
+  - path: data/bus-stop-usage/wprdc_stop_data.csv
+    description: Pre-pandemic weekday boardings and alightings per stop (WPRDC), keyed by PRT internal stop_id; used to weight signal-stop placement by ridership.
 analyses:
   - id: 53
     relationship: uses the same PRT authoritative stop-signal classification and tests its near-side default for demographic disparity.
@@ -21,7 +23,8 @@ description: >-
   quartile of neighborhoods, and no demographic measure shows a meaningful
   relationship with where signalized stops are placed. The legacy near-side
   pattern is a system-wide design inheritance, not an equity gap — so fixing it
-  would help riders broadly rather than redress a disparity.
+  would help riders broadly rather than redress a disparity. The finding holds
+  even after weighting each stop by how many riders actually use it.
 outputs:
   - path: signal_share_by_income_quartile.png
     kind: image
@@ -29,15 +32,18 @@ outputs:
   - path: tract_income_vs_signal_share.png
     kind: image
     description: Scatter of tract median household income against signalized-stop share with fitted trend.
+  - path: nearside_share_rider_weighted.png
+    kind: image
+    description: Near-side share by neighborhood income quartile, per stop vs. weighted by ridership (flat under both).
   - path: stop_equity.csv
     kind: data
-    description: Per-stop signal class, signalized flag, census tract, and tract median household income.
+    description: Per-stop signal class, signalized flag, ridership, census tract, and tract median household income.
   - path: tract_equity_summary.csv
     kind: data
-    description: Per-tract signalized-stop and near-side shares with income, vehicle-access, and race demographics.
+    description: Per-tract signalized-stop and near-side shares (per-stop and ridership-weighted) with income, vehicle-access, and race demographics.
   - path: income_quartile_shares.csv
     kind: data
-    description: Signalized and near-side shares aggregated by income quartile.
+    description: Signalized and near-side shares aggregated by income quartile, per-stop and ridership-weighted.
   - path: demographic_correlations.csv
     kind: data
-    description: Spearman correlations of signalized/near-side share against income, zero-vehicle share, and Black population share.
+    description: Spearman correlations of signalized/near-side share against income, zero-vehicle share, and Black population share, for per-stop and per-rider weightings.

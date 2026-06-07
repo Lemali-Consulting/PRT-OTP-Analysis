@@ -1,6 +1,7 @@
 """Analysis 58: Test whether traffic-signal stop placement varies with neighborhood demographics."""
 
 from prt_otp_analysis.common import (
+    DATA_DIR,
     analysis_dir,
     correlate,
     phase,
@@ -42,9 +43,36 @@ def load_stop_signals() -> pl.DataFrame:
     return df
 
 
+def load_stop_ridership() -> pl.DataFrame:
+    """Per-stop pre-pandemic weekday usage (boardings + alightings).
+
+    Keyed by the PRT internal `stop_id` (E-code), the same namespace as
+    `stop_signals` and the `stops` table, so it joins directly. Usage is
+    averaged across measurement days within a route, then summed across the
+    routes serving each physical stop — the same construction Analysis 32/34
+    use for stop-level ridership.
+    """
+    csv_path = DATA_DIR / "bus-stop-usage" / "wprdc_stop_data.csv"
+    df = pl.read_csv(csv_path, null_values=["NA", ""]).filter(
+        (pl.col("time_period") == "Pre-pandemic")
+        & (pl.col("serviceday") == "Weekday")
+    )
+    per_stop_route = (
+        df.group_by(["stop_id", "route_name"])
+        .agg(pl.col("avg_ons").mean(), pl.col("avg_offs").mean())
+    )
+    return (
+        per_stop_route.group_by("stop_id")
+        .agg(pl.col("avg_ons").sum(), pl.col("avg_offs").sum())
+        .with_columns(usage=pl.col("avg_ons") + pl.col("avg_offs"))
+        .select("stop_id", "usage")
+    )
+
+
 def build_stop_demographics() -> pl.DataFrame:
     """Join authoritative signal class to each stop's census-tract demographics."""
     signals_df = load_stop_signals()
+    ridership_df = load_stop_ridership()
     tract_df = assign_stops_to_tracts(
         ["median_household_income", "households_total",
          "households_zero_vehicle", "pop_black_nh"],
@@ -56,7 +84,7 @@ def build_stop_demographics() -> pl.DataFrame:
         ),
         on="stop_id",
         how="inner",
-    )
+    ).join(ridership_df, on="stop_id", how="left")
     return df.with_columns(
         is_nearside=(pl.col("signal_class") == "nearside").cast(pl.Int64),
         is_signalized=pl.col("has_signal"),
@@ -78,18 +106,32 @@ def income_quartile_table(df: pl.DataFrame) -> pl.DataFrame:
         .map_elements(to_quartile, return_dtype=pl.Utf8)
         .alias("income_quartile"),
     )
+    # Ridership weights (usage at signalized / near-side stops vs all stops).
+    classified = pl.col("signal_class").is_in(["nearside", "farside"])
+    use = pl.col("usage")
     return (
         inc_df.group_by("income_quartile")
         .agg(
             n_stops=pl.len(),
             n_signalized=pl.col("is_signalized").sum(),
             n_nearside=pl.col("is_nearside").sum(),
-            n_signal_classified=pl.col("signal_class").is_in(["nearside", "farside"]).sum(),
+            n_signal_classified=classified.sum(),
+            # Ridership-weighted numerators/denominators (usage-null stops drop out).
+            use_total=use.sum(),
+            use_signalized=use.filter(pl.col("is_signalized") == 1).sum(),
+            use_classified=use.filter(classified).sum(),
+            use_nearside=use.filter(pl.col("is_nearside") == 1).sum(),
         )
         .with_columns(
             signalized_share=pl.col("n_signalized") / pl.col("n_stops"),
             nearside_share=pl.when(pl.col("n_signal_classified") > 0)
             .then(pl.col("n_nearside") / pl.col("n_signal_classified"))
+            .otherwise(None),
+            rw_signalized_share=pl.when(pl.col("use_total") > 0)
+            .then(pl.col("use_signalized") / pl.col("use_total"))
+            .otherwise(None),
+            rw_nearside_share=pl.when(pl.col("use_classified") > 0)
+            .then(pl.col("use_nearside") / pl.col("use_classified"))
             .otherwise(None),
         )
         .sort("income_quartile")
@@ -98,13 +140,19 @@ def income_quartile_table(df: pl.DataFrame) -> pl.DataFrame:
 
 def tract_summary(df: pl.DataFrame) -> pl.DataFrame:
     """Per-tract signalized/near-side shares plus demographic ratios."""
+    classified = pl.col("signal_class").is_in(["nearside", "farside"])
+    use = pl.col("usage")
     return (
         df.group_by("geoid")
         .agg(
             n_stops=pl.len(),
             n_signalized=pl.col("is_signalized").sum(),
             n_nearside=pl.col("is_nearside").sum(),
-            n_signal_classified=pl.col("signal_class").is_in(["nearside", "farside"]).sum(),
+            n_signal_classified=classified.sum(),
+            use_total=use.sum(),
+            use_signalized=use.filter(pl.col("is_signalized") == 1).sum(),
+            use_classified=use.filter(classified).sum(),
+            use_nearside=use.filter(pl.col("is_nearside") == 1).sum(),
             median_household_income=pl.col("median_household_income").first(),
             population=pl.col("population").first(),
             households_total=pl.col("households_total").first(),
@@ -115,6 +163,12 @@ def tract_summary(df: pl.DataFrame) -> pl.DataFrame:
             signalized_share=pl.col("n_signalized") / pl.col("n_stops"),
             nearside_share=pl.when(pl.col("n_signal_classified") > 0)
             .then(pl.col("n_nearside") / pl.col("n_signal_classified"))
+            .otherwise(None),
+            rw_signalized_share=pl.when(pl.col("use_total") > 0)
+            .then(pl.col("use_signalized") / pl.col("use_total"))
+            .otherwise(None),
+            rw_nearside_share=pl.when(pl.col("use_classified") > 0)
+            .then(pl.col("use_nearside") / pl.col("use_classified"))
             .otherwise(None),
             zero_vehicle_share=pl.when(pl.col("households_total") > 0)
             .then(pl.col("households_zero_vehicle") / pl.col("households_total"))
@@ -182,6 +236,35 @@ def make_scatter_chart(tract_df: pl.DataFrame) -> None:
     save_chart(fig, OUT / "tract_income_vs_signal_share.png")
 
 
+def make_weighted_comparison_chart(quartile_df: pl.DataFrame) -> None:
+    """Stop-counted vs ridership-weighted near-side share by income quartile."""
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(9, 6))
+
+    order = quartile_df.sort("income_quartile")
+    labels = order["income_quartile"].to_list()
+    unweighted = (order["nearside_share"] * 100).to_list()
+    weighted = (order["rw_nearside_share"] * 100).to_list()
+
+    x = np.arange(len(labels))
+    width = 0.38
+    b1 = ax.bar(x - width / 2, unweighted, width, label="Per stop (unweighted)",
+                color="#64748b", alpha=0.85)
+    b2 = ax.bar(x + width / 2, weighted, width, label="Per rider (ridership-weighted)",
+                color="#e11d48", alpha=0.85)
+    ax.bar_label(b1, fmt="%.1f%%", padding=3, fontsize=9)
+    ax.bar_label(b2, fmt="%.1f%%", padding=3, fontsize=9)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=9)
+    ax.set_ylabel("Near-side share of signalized stops (%)")
+    ax.set_ylim(0, max(unweighted + weighted) * 1.18)
+    ax.set_title("Near-Side Exposure by Income Quartile: Per Stop vs Per Rider\n"
+                 "(flat across quartiles under both weightings)", fontweight="bold")
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / "nearside_share_rider_weighted.png")
+
+
 @run_analysis(58, "Stop Signal Placement Equity")
 def main() -> None:
     """Entry point: join signals to tract demographics and test for disparity."""
@@ -190,38 +273,41 @@ def main() -> None:
         n_income = df.drop_nulls("median_household_income").height
         print(f"  {df.height} stops joined to a tract; {n_income} have median income")
 
-    with phase("Income-quartile shares"):
+    with phase("Income-quartile shares (per stop and per rider)"):
         quartile_df = income_quartile_table(df)
         for row in quartile_df.iter_rows(named=True):
-            print(f"  {row['income_quartile']:<22s} "
-                  f"n={row['n_stops']:5d}  signalized={row['signalized_share']:.1%}  "
-                  f"near-side={row['nearside_share']:.1%}")
+            print(f"  {row['income_quartile']:<22s} n={row['n_stops']:5d}  "
+                  f"near-side per-stop={row['nearside_share']:.1%}  "
+                  f"per-rider={row['rw_nearside_share']:.1%}")
 
-    with phase("Tract-level demographic correlations"):
+    with phase("Tract-level demographic correlations (per stop and per rider)"):
         tract_df = tract_summary(df)
         sig_df = tract_df.filter(pl.col("n_stops") >= MIN_STOPS_PER_TRACT)
         near_df = tract_df.filter(pl.col("n_signal_classified") >= MIN_SIGNALIZED_PER_TRACT)
         corr_rows = []
-        print(f"  Signalized-share correlations (tracts with >= {MIN_STOPS_PER_TRACT} "
-              f"stops, n = {sig_df.height}):")
-        for col, label in DEMOGRAPHICS:
-            c = correlate(sig_df, col, "signalized_share")
-            print(f"    vs {label:<28s}: rho = {c['spearman_r']:+.3f}, p = {c['spearman_p']:.4f}")
-            corr_rows.append({"outcome": "signalized_share", "demographic": col,
-                              "spearman_r": c["spearman_r"], "spearman_p": c["spearman_p"],
-                              "n": c["n"]})
-        print(f"  Near-side-share correlations (tracts with >= {MIN_SIGNALIZED_PER_TRACT} "
-              f"signalized stops, n = {near_df.height}):")
-        for col, label in DEMOGRAPHICS:
-            c = correlate(near_df, col, "nearside_share")
-            print(f"    vs {label:<28s}: rho = {c['spearman_r']:+.3f}, p = {c['spearman_p']:.4f}")
-            corr_rows.append({"outcome": "nearside_share", "demographic": col,
-                              "spearman_r": c["spearman_r"], "spearman_p": c["spearman_p"],
-                              "n": c["n"]})
+        # (outcome label, tract subset, unweighted col, ridership-weighted col)
+        outcomes = [
+            ("signalized_share", sig_df, "signalized_share", "rw_signalized_share"),
+            ("nearside_share", near_df, "nearside_share", "rw_nearside_share"),
+        ]
+        for name, subset_df, uw_col, rw_col in outcomes:
+            print(f"  {name} (n = {subset_df.height} tracts):")
+            for col, label in DEMOGRAPHICS:
+                cu = correlate(subset_df, col, uw_col)
+                cw = correlate(subset_df, col, rw_col)
+                print(f"    vs {label:<28s}: per-stop rho={cu['spearman_r']:+.3f} "
+                      f"(p={cu['spearman_p']:.3f})  per-rider rho={cw['spearman_r']:+.3f} "
+                      f"(p={cw['spearman_p']:.3f})")
+                corr_rows.append({"outcome": name, "demographic": col, "weighting": "per_stop",
+                                  "spearman_r": cu["spearman_r"], "spearman_p": cu["spearman_p"],
+                                  "n": cu["n"]})
+                corr_rows.append({"outcome": name, "demographic": col, "weighting": "per_rider",
+                                  "spearman_r": cw["spearman_r"], "spearman_p": cw["spearman_p"],
+                                  "n": cw["n"]})
 
     with phase("Saving outputs"):
         save_csv(
-            df.select("stop_id", "signal_class", "has_signal", "geoid",
+            df.select("stop_id", "signal_class", "has_signal", "usage", "geoid",
                       "median_household_income"),
             OUT / "stop_equity.csv",
         )
@@ -232,6 +318,7 @@ def main() -> None:
     with phase("Generating charts"):
         make_quartile_chart(quartile_df)
         make_scatter_chart(tract_df)
+        make_weighted_comparison_chart(quartile_df)
 
 
 if __name__ == "__main__":

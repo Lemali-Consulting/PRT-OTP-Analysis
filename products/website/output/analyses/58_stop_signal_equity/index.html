@@ -36,7 +36,7 @@
   <h1>58 - Stop Signal Placement Equity</h1>
   
   <p class="lede">Coverage: Coverage window unavailable for this page.</p>
-  <p class="lede">Built 2026-06-07 14:04 UTC · Commit ebc369b</p>
+  <p class="lede">Built 2026-06-07 20:31 UTC · Commit 6f3a91e</p>
 </section>
 
 <section class="panel toc-panel">
@@ -68,6 +68,7 @@
     <summary><h2>Data Provenance</h2></summary>
     <pre class="mermaid">flowchart LR
   58_stop_signal_equity(["58 - Stop Signal Placement Equity"])
+  f1_58_stop_signal_equity[/"data/bus-stop-usage/wprdc_stop_data.csv"/] --> 58_stop_signal_equity
   t_stop_signals[("stop_signals")] --> 58_stop_signal_equity
   15_stop_signals[["PRT Stop-Signal Classification ETL"]] --> t_stop_signals
   u1_15_stop_signals[/"data/prt-stop-signals/bus_stops_with_signals_2602.xlsx"/] --> 15_stop_signals
@@ -92,7 +93,7 @@
   class 58_stop_signal_equity page;
   class t_census_tracts,t_stop_signals,t_stops table;
   class d1_58_stop_signal_equity,d2_58_stop_signal_equity,d3_58_stop_signal_equity,d4_58_stop_signal_equity dep;
-  class u1_01_data_ingestion,u1_15_stop_signals,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class f1_58_stop_signal_equity,u1_01_data_ingestion,u1_15_stop_signals,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
   class 01_data_ingestion,15_stop_signals pipeline;</pre>
   </details>
 </section>
@@ -110,12 +111,17 @@ near-side share of signalized stops holds at roughly <strong>85% across every in
 quartile</strong> (86.2% in the lowest-income quartile vs. 84.9% in the highest), and at
 the census-tract level neither the signalized-stop share nor the near-side share
 correlates with <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income, zero-vehicle household share, or Black
-population share (all |Spearman ρ| ≤ 0.11, all p &gt; 0.07). Near-side placement is
-a <strong>system-wide legacy inheritance</strong>, not a pattern concentrated in disadvantaged
-neighborhoods. The equity implication is encouraging in one sense — riders in
-low-income areas are not disproportionately burdened by the worse placement — and
-practical in another: converting near-side stops to far-side (where warranted)
-would benefit riders broadly rather than redress a specific inequity.</p>
+population share (all |Spearman ρ| ≤ 0.11, all p &gt; 0.07). <strong>The null holds when
+stops are weighted by ridership</strong> — per-rider near-side exposure is 85% in the
+lowest-income quartile and does not rise monotonically with poverty (it is 83% in
+the highest-income quartile and peaks in the middle), so riders in low-income
+areas are not disproportionately exposed to near-side stops even after accounting
+for how heavily each stop is used. Near-side placement is a <strong>system-wide legacy
+inheritance</strong>, not a pattern concentrated in disadvantaged neighborhoods. The
+equity implication is encouraging in one sense — riders in low-income areas are
+not disproportionately burdened by the worse placement — and practical in another:
+converting near-side stops to far-side (where warranted) would benefit riders
+broadly rather than redress a specific inequity.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>6,299 stops</strong> matched to a census tract; <strong>6,223</strong> have a tract <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> income.</li>
@@ -135,6 +141,14 @@ Q4 27.9%</strong> — no monotonic income gradient.</li>
 <li>Black population share: ρ = +0.036 (p = 0.62)</li>
 </ul>
 </li>
+<li><strong>Ridership-weighted</strong> near-side share by income quartile: <strong>Q1 85.3%,
+Q2 90.2%, Q3 93.1%, Q4 83.2%</strong> — non-monotonic, lowest-income quartile near the
+bottom of the range (98% of signal stops, 6,174 / 6,299, have usage data).</li>
+<li>Ridership-weighted tract correlations are also null: near-side share vs income
+ρ = −0.051 (p = 0.48), vs zero-vehicle share ρ = +0.017 (p = 0.82), vs Black
+share ρ = +0.043 (p = 0.55). The only correlation to cross p &lt; 0.05 is
+<em>signalized</em> share vs zero-vehicle share (ρ = +0.121, p = 0.04) — the same
+urban-density signal seen unweighted, and not the near-side outcome.</li>
 </ul>
 <h2>Observations</h2>
 <ul>
@@ -154,6 +168,15 @@ system-wide, not a targeted or recent siting decision.</li>
 lower-income or more-transit-dependent tracts with <em>higher</em> near-side shares.
 No such pattern exists; if anything the near-side share trends marginally lower
 in lower-income tracts, the opposite of a disparity.</li>
+<li><strong>Ridership weighting does not change the conclusion.</strong> Weighting each stop by
+its pre-pandemic weekday usage — so the figures reflect rider <em>experience</em>
+rather than stop counts — leaves the picture flat. Per-rider near-side exposure
+is 85.3% in the lowest-income quartile, peaks at 93.1% in Q3, and falls to
+83.2% in the highest-income quartile: no income gradient, and the most
+disadvantaged riders are not the most exposed. This was the one view most
+likely to reveal a hidden disparity (busy stops in poor, dense neighborhoods
+could have dominated), and it did not. See
+<code>nearside_share_rider_weighted.png</code>.</li>
 </ul>
 <h2>Caveats</h2>
 <ul>
@@ -169,9 +192,16 @@ adjacent tracts whose demographics are not counted.</li>
 <li><strong>Demographic coverage.</strong> ACS demographics attach only to stops inside a
 5-county PA tract; a small number of out-of-region stops (and tracts with null
 ACS values) drop from the relevant correlation.</li>
-<li><strong>Stop placement ≠ exposure.</strong> This measures where signalized stops are, not
-how many riders board at them; a ridership-weighted equity view could differ
-and is left to future work (cf. Analysis 32 for ridership-weighted stop equity).</li>
+<li><strong>Ridership data is pre-pandemic.</strong> The usage weights come from pre-pandemic
+weekday boardings/alightings (the WPRDC bus-stop-usage dataset, also used by
+Analyses 32 and 34). Post-pandemic ridership patterns have shifted; if the
+shift correlated with both demographics and near-side placement it could in
+principle move the weighted result, though the per-stop (unweighted) null is
+unaffected by this.</li>
+<li><strong>Usage coverage is 98%, not 100%.</strong> 6,174 of 6,299 tract-matched signal stops
+carry a usage record; the 125 without one drop from the weighted figures only
+(they remain in the per-stop figures). Their omission cannot manufacture a
+gradient that the per-stop view does not show.</li>
 </ul>
 <h2>Validation</h2>
 <ol>
@@ -180,12 +210,16 @@ and is left to future work (cf. Analysis 32 for ridership-weighted stop equity).
 the shared <code>assign_stops_to_tracts</code> helper (point-in-polygon to <code>census_tracts</code>),
 the same path used by Analysis 04.</li>
 <li><strong>Scope match.</strong> Stops are joined on the PRT internal <code>stop_id</code> (the namespace
-shared by <code>stop_signals</code> and the <code>stops</code> table); 6,299 of 6,306 PRT stops carry
-a resolved <code>stop_id</code> and match.</li>
+shared by <code>stop_signals</code>, the <code>stops</code> table, and the WPRDC usage CSV); 6,299 of
+6,306 PRT stops carry a resolved <code>stop_id</code> and match, and 6,174 of those (98%)
+carry pre-pandemic weekday usage for the ridership-weighted view.</li>
 <li><strong>Null handling.</strong> Stops without a tract income are dropped from the
 income-quartile view; share denominators are guarded with <code>when(... &gt; 0)</code> so a
 tract with zero households or zero signalized stops yields null (dropped by
-<code>correlate</code>), never a divide-by-zero or a NaN counted as a real value.</li>
+<code>correlate</code>), never a divide-by-zero or a NaN counted as a real value. In the
+ridership-weighted aggregates, usage is summed with <code>filter</code>, so the 125
+usage-null stops contribute 0 to both numerator and denominator (they drop out)
+rather than injecting a null weight.</li>
 <li><strong>Aggregate sanity check.</strong> Overall signalized share (~24%) and near-side share
 (~85%) match the system totals in Analysis 53, confirming the join did not drop
 or duplicate stops.</li>
@@ -193,6 +227,10 @@ or duplicate stops.</li>
 direction here (a legacy system-wide default should not track income); the one
 borderline correlation (zero-vehicle share) was examined and explained as urban
 density, not a disparity.</li>
+<li><strong>Robustness to weighting.</strong> The null was re-tested with stops weighted by
+ridership — the view most likely to surface a hidden disparity — and the
+conclusion held (no income gradient, near-side correlations still null). A
+result that flipped under weighting would have been a red flag; it did not.</li>
 <li><strong>Small-sample routes/areas flagged.</strong> Tracts below 5 stops (signalized share)
 and 3 signalized stops (near-side share) are excluded; thresholds are reported
 in the output and chart titles.</li>
@@ -209,7 +247,7 @@ correlations, not a multi-predictor regression.</li>
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn active" data-target="charts">Charts (3)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
     <button class="tab-btn" data-target="data">Data (4)</button>
   </div>
@@ -235,6 +273,15 @@ correlations, not a multi-predictor regression.</li>
         </figcaption>
       </figure>
     
+      <figure class="shot-card">
+        <img src="../../assets/analyses/58_stop_signal_equity/nearside_share_rider_weighted.png" alt="nearside_share_rider_weighted" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/nearside_share_rider_weighted.png" target="_blank" rel="noopener noreferrer">nearside_share_rider_weighted.png</a>
+          <p class="artifact-desc">Near-side share by neighborhood income quartile, per stop vs. weighted by ridership (flat under both).</p>
+        </figcaption>
+      </figure>
+    
     
     </div>
   </div>
@@ -253,7 +300,7 @@ correlations, not a multi-predictor regression.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/stop_equity.csv" target="_blank" rel="noopener noreferrer">stop_equity.csv</a>
-          <p class="artifact-desc">Per-stop signal class, signalized flag, census tract, and tract median household income.</p>
+          <p class="artifact-desc">Per-stop signal class, signalized flag, ridership, census tract, and tract median household income.</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/58_stop_signal_equity/stop_equity.csv">
             <summary>Preview CSV</summary>
@@ -267,7 +314,7 @@ correlations, not a multi-predictor regression.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/tract_equity_summary.csv" target="_blank" rel="noopener noreferrer">tract_equity_summary.csv</a>
-          <p class="artifact-desc">Per-tract signalized-stop and near-side shares with income, vehicle-access, and race demographics.</p>
+          <p class="artifact-desc">Per-tract signalized-stop and near-side shares (per-stop and ridership-weighted) with income, vehicle-access, and race demographics.</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/58_stop_signal_equity/tract_equity_summary.csv">
             <summary>Preview CSV</summary>
@@ -281,7 +328,7 @@ correlations, not a multi-predictor regression.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/income_quartile_shares.csv" target="_blank" rel="noopener noreferrer">income_quartile_shares.csv</a>
-          <p class="artifact-desc">Signalized and near-side shares aggregated by income quartile.</p>
+          <p class="artifact-desc">Signalized and near-side shares aggregated by income quartile, per-stop and ridership-weighted.</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/58_stop_signal_equity/income_quartile_shares.csv">
             <summary>Preview CSV</summary>
@@ -295,7 +342,7 @@ correlations, not a multi-predictor regression.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/demographic_correlations.csv" target="_blank" rel="noopener noreferrer">demographic_correlations.csv</a>
-          <p class="artifact-desc">Spearman correlations of signalized/near-side share against income, zero-vehicle share, and Black population share.</p>
+          <p class="artifact-desc">Spearman correlations of signalized/near-side share against income, zero-vehicle share, and Black population share, for per-stop and per-rider weightings.</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/58_stop_signal_equity/demographic_correlations.csv">
             <summary>Preview CSV</summary>
@@ -341,6 +388,15 @@ distributions are skewed and the relationship need not be linear.</li>
 <li><strong>Minimum-sample thresholds.</strong> Tracts need ≥ 5 stops for the signalized-share
 correlation and ≥ 3 signalized stops for the near-side-share correlation;
 thresholds are reported. Quartile shares use all stops with a tract income.</li>
+<li><strong>Ridership-weighted view.</strong> A per-stop count treats a busy downtown stop and
+a rarely used suburban stop equally, but riders do not experience them
+equally. We therefore recompute both the quartile shares and the tract-level
+shares <strong>weighted by pre-pandemic weekday usage</strong> (boardings + alightings per
+stop, from the WPRDC bus-stop-usage CSV). The weighted near-side share answers
+&quot;what fraction of <em>signalized-stop boardings</em> happen at a near-side stop?&quot; If
+low-income riders disproportionately <em>use</em> near-side stops, the per-rider view
+would show a gradient the per-stop view misses. Spearman correlations are
+re-run on the ridership-weighted tract shares.</li>
 </ol>
 <h2>Data</h2>
 <ul>
@@ -350,19 +406,29 @@ built by <code>pipeline/15_stop_signals/</code>). Join key: PRT internal <code>s
 <code>assign_stops_to_tracts</code> helper).</li>
 <li><code>census_tracts</code> table in <code>prt.db</code> (ACS demographics: <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income,
 households_total, households_zero_vehicle, population, pop_black_nh).</li>
+<li><code>data/bus-stop-usage/wprdc_stop_data.csv</code> — pre-pandemic weekday boardings and
+alightings per stop, keyed by the same PRT internal <code>stop_id</code>; used for the
+ridership-weighted view. Covers 98% (6,174 / 6,299) of tract-matched signal
+stops; the rest have no usage record and drop out of the weighted figures only.</li>
 <li><strong>Scope caveat:</strong> ACS demographics are only joined for stops inside a 5-county
 PA tract; a handful of out-of-region stops get null demographics and drop out.</li>
 </ul>
 <h2>Output</h2>
 <ul>
-<li><code>output/stop_equity.csv</code> — per-stop: stop_id, signal_class, has_signal, geoid,
-<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income.</li>
-<li><code>output/tract_equity_summary.csv</code> — per-tract signalized/near-side shares with
-demographics.</li>
+<li><code>output/stop_equity.csv</code> — per-stop: stop_id, signal_class, has_signal, usage,
+geoid, <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income.</li>
+<li><code>output/tract_equity_summary.csv</code> — per-tract signalized/near-side shares
+(per-stop and ridership-weighted) with demographics.</li>
+<li><code>output/income_quartile_shares.csv</code> — quartile shares, per-stop and
+ridership-weighted.</li>
+<li><code>output/demographic_correlations.csv</code> — Spearman correlations of each share
+against the three demographics, for both per-stop and per-rider weightings.</li>
 <li><code>output/signal_share_by_income_quartile.png</code> — bar chart of signalized-stop
 share and near-side share by income quartile.</li>
 <li><code>output/tract_income_vs_signal_share.png</code> — scatter of tract <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> income vs.
 signalized-stop share with fitted trend.</li>
+<li><code>output/nearside_share_rider_weighted.png</code> — near-side share by income quartile,
+per stop vs. per rider (ridership-weighted).</li>
 </ul>
 </div>
   </details>
@@ -379,6 +445,7 @@ signalized-stop share with fitted trend.</li>
       <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 58: Test whether traffic-signal stop placement varies with neighborhood demographics.&quot;&quot;&quot;
 
 from prt_otp_analysis.common import (
+    DATA_DIR,
     analysis_dir,
     correlate,
     phase,
@@ -420,9 +487,36 @@ def load_stop_signals() -&gt; pl.DataFrame:
     return df
 
 
+def load_stop_ridership() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Per-stop pre-pandemic weekday usage (boardings + alightings).
+
+    Keyed by the PRT internal `stop_id` (E-code), the same namespace as
+    `stop_signals` and the `stops` table, so it joins directly. Usage is
+    averaged across measurement days within a route, then summed across the
+    routes serving each physical stop — the same construction Analysis 32/34
+    use for stop-level ridership.
+    &quot;&quot;&quot;
+    csv_path = DATA_DIR / &quot;bus-stop-usage&quot; / &quot;wprdc_stop_data.csv&quot;
+    df = pl.read_csv(csv_path, null_values=[&quot;NA&quot;, &quot;&quot;]).filter(
+        (pl.col(&quot;time_period&quot;) == &quot;Pre-pandemic&quot;)
+        &amp; (pl.col(&quot;serviceday&quot;) == &quot;Weekday&quot;)
+    )
+    per_stop_route = (
+        df.group_by([&quot;stop_id&quot;, &quot;route_name&quot;])
+        .agg(pl.col(&quot;avg_ons&quot;).mean(), pl.col(&quot;avg_offs&quot;).mean())
+    )
+    return (
+        per_stop_route.group_by(&quot;stop_id&quot;)
+        .agg(pl.col(&quot;avg_ons&quot;).sum(), pl.col(&quot;avg_offs&quot;).sum())
+        .with_columns(usage=pl.col(&quot;avg_ons&quot;) + pl.col(&quot;avg_offs&quot;))
+        .select(&quot;stop_id&quot;, &quot;usage&quot;)
+    )
+
+
 def build_stop_demographics() -&gt; pl.DataFrame:
     &quot;&quot;&quot;Join authoritative signal class to each stop&#x27;s census-tract demographics.&quot;&quot;&quot;
     signals_df = load_stop_signals()
+    ridership_df = load_stop_ridership()
     tract_df = assign_stops_to_tracts(
         [&quot;median_household_income&quot;, &quot;households_total&quot;,
          &quot;households_zero_vehicle&quot;, &quot;pop_black_nh&quot;],
@@ -434,7 +528,7 @@ def build_stop_demographics() -&gt; pl.DataFrame:
         ),
         on=&quot;stop_id&quot;,
         how=&quot;inner&quot;,
-    )
+    ).join(ridership_df, on=&quot;stop_id&quot;, how=&quot;left&quot;)
     return df.with_columns(
         is_nearside=(pl.col(&quot;signal_class&quot;) == &quot;nearside&quot;).cast(pl.Int64),
         is_signalized=pl.col(&quot;has_signal&quot;),
@@ -456,18 +550,32 @@ def income_quartile_table(df: pl.DataFrame) -&gt; pl.DataFrame:
         .map_elements(to_quartile, return_dtype=pl.Utf8)
         .alias(&quot;income_quartile&quot;),
     )
+    # Ridership weights (usage at signalized / near-side stops vs all stops).
+    classified = pl.col(&quot;signal_class&quot;).is_in([&quot;nearside&quot;, &quot;farside&quot;])
+    use = pl.col(&quot;usage&quot;)
     return (
         inc_df.group_by(&quot;income_quartile&quot;)
         .agg(
             n_stops=pl.len(),
             n_signalized=pl.col(&quot;is_signalized&quot;).sum(),
             n_nearside=pl.col(&quot;is_nearside&quot;).sum(),
-            n_signal_classified=pl.col(&quot;signal_class&quot;).is_in([&quot;nearside&quot;, &quot;farside&quot;]).sum(),
+            n_signal_classified=classified.sum(),
+            # Ridership-weighted numerators/denominators (usage-null stops drop out).
+            use_total=use.sum(),
+            use_signalized=use.filter(pl.col(&quot;is_signalized&quot;) == 1).sum(),
+            use_classified=use.filter(classified).sum(),
+            use_nearside=use.filter(pl.col(&quot;is_nearside&quot;) == 1).sum(),
         )
         .with_columns(
             signalized_share=pl.col(&quot;n_signalized&quot;) / pl.col(&quot;n_stops&quot;),
             nearside_share=pl.when(pl.col(&quot;n_signal_classified&quot;) &gt; 0)
             .then(pl.col(&quot;n_nearside&quot;) / pl.col(&quot;n_signal_classified&quot;))
+            .otherwise(None),
+            rw_signalized_share=pl.when(pl.col(&quot;use_total&quot;) &gt; 0)
+            .then(pl.col(&quot;use_signalized&quot;) / pl.col(&quot;use_total&quot;))
+            .otherwise(None),
+            rw_nearside_share=pl.when(pl.col(&quot;use_classified&quot;) &gt; 0)
+            .then(pl.col(&quot;use_nearside&quot;) / pl.col(&quot;use_classified&quot;))
             .otherwise(None),
         )
         .sort(&quot;income_quartile&quot;)
@@ -476,13 +584,19 @@ def income_quartile_table(df: pl.DataFrame) -&gt; pl.DataFrame:
 
 def tract_summary(df: pl.DataFrame) -&gt; pl.DataFrame:
     &quot;&quot;&quot;Per-tract signalized/near-side shares plus demographic ratios.&quot;&quot;&quot;
+    classified = pl.col(&quot;signal_class&quot;).is_in([&quot;nearside&quot;, &quot;farside&quot;])
+    use = pl.col(&quot;usage&quot;)
     return (
         df.group_by(&quot;geoid&quot;)
         .agg(
             n_stops=pl.len(),
             n_signalized=pl.col(&quot;is_signalized&quot;).sum(),
             n_nearside=pl.col(&quot;is_nearside&quot;).sum(),
-            n_signal_classified=pl.col(&quot;signal_class&quot;).is_in([&quot;nearside&quot;, &quot;farside&quot;]).sum(),
+            n_signal_classified=classified.sum(),
+            use_total=use.sum(),
+            use_signalized=use.filter(pl.col(&quot;is_signalized&quot;) == 1).sum(),
+            use_classified=use.filter(classified).sum(),
+            use_nearside=use.filter(pl.col(&quot;is_nearside&quot;) == 1).sum(),
             median_household_income=pl.col(&quot;median_household_income&quot;).first(),
             population=pl.col(&quot;population&quot;).first(),
             households_total=pl.col(&quot;households_total&quot;).first(),
@@ -493,6 +607,12 @@ def tract_summary(df: pl.DataFrame) -&gt; pl.DataFrame:
             signalized_share=pl.col(&quot;n_signalized&quot;) / pl.col(&quot;n_stops&quot;),
             nearside_share=pl.when(pl.col(&quot;n_signal_classified&quot;) &gt; 0)
             .then(pl.col(&quot;n_nearside&quot;) / pl.col(&quot;n_signal_classified&quot;))
+            .otherwise(None),
+            rw_signalized_share=pl.when(pl.col(&quot;use_total&quot;) &gt; 0)
+            .then(pl.col(&quot;use_signalized&quot;) / pl.col(&quot;use_total&quot;))
+            .otherwise(None),
+            rw_nearside_share=pl.when(pl.col(&quot;use_classified&quot;) &gt; 0)
+            .then(pl.col(&quot;use_nearside&quot;) / pl.col(&quot;use_classified&quot;))
             .otherwise(None),
             zero_vehicle_share=pl.when(pl.col(&quot;households_total&quot;) &gt; 0)
             .then(pl.col(&quot;households_zero_vehicle&quot;) / pl.col(&quot;households_total&quot;))
@@ -560,6 +680,35 @@ def make_scatter_chart(tract_df: pl.DataFrame) -&gt; None:
     save_chart(fig, OUT / &quot;tract_income_vs_signal_share.png&quot;)
 
 
+def make_weighted_comparison_chart(quartile_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Stop-counted vs ridership-weighted near-side share by income quartile.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(9, 6))
+
+    order = quartile_df.sort(&quot;income_quartile&quot;)
+    labels = order[&quot;income_quartile&quot;].to_list()
+    unweighted = (order[&quot;nearside_share&quot;] * 100).to_list()
+    weighted = (order[&quot;rw_nearside_share&quot;] * 100).to_list()
+
+    x = np.arange(len(labels))
+    width = 0.38
+    b1 = ax.bar(x - width / 2, unweighted, width, label=&quot;Per stop (unweighted)&quot;,
+                color=&quot;#64748b&quot;, alpha=0.85)
+    b2 = ax.bar(x + width / 2, weighted, width, label=&quot;Per rider (ridership-weighted)&quot;,
+                color=&quot;#e11d48&quot;, alpha=0.85)
+    ax.bar_label(b1, fmt=&quot;%.1f%%&quot;, padding=3, fontsize=9)
+    ax.bar_label(b2, fmt=&quot;%.1f%%&quot;, padding=3, fontsize=9)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=9)
+    ax.set_ylabel(&quot;Near-side share of signalized stops (%)&quot;)
+    ax.set_ylim(0, max(unweighted + weighted) * 1.18)
+    ax.set_title(&quot;Near-Side Exposure by Income Quartile: Per Stop vs Per Rider\n&quot;
+                 &quot;(flat across quartiles under both weightings)&quot;, fontweight=&quot;bold&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;nearside_share_rider_weighted.png&quot;)
+
+
 @run_analysis(58, &quot;Stop Signal Placement Equity&quot;)
 def main() -&gt; None:
     &quot;&quot;&quot;Entry point: join signals to tract demographics and test for disparity.&quot;&quot;&quot;
@@ -568,38 +717,41 @@ def main() -&gt; None:
         n_income = df.drop_nulls(&quot;median_household_income&quot;).height
         print(f&quot;  {df.height} stops joined to a tract; {n_income} have median income&quot;)
 
-    with phase(&quot;Income-quartile shares&quot;):
+    with phase(&quot;Income-quartile shares (per stop and per rider)&quot;):
         quartile_df = income_quartile_table(df)
         for row in quartile_df.iter_rows(named=True):
-            print(f&quot;  {row[&#x27;income_quartile&#x27;]:&lt;22s} &quot;
-                  f&quot;n={row[&#x27;n_stops&#x27;]:5d}  signalized={row[&#x27;signalized_share&#x27;]:.1%}  &quot;
-                  f&quot;near-side={row[&#x27;nearside_share&#x27;]:.1%}&quot;)
+            print(f&quot;  {row[&#x27;income_quartile&#x27;]:&lt;22s} n={row[&#x27;n_stops&#x27;]:5d}  &quot;
+                  f&quot;near-side per-stop={row[&#x27;nearside_share&#x27;]:.1%}  &quot;
+                  f&quot;per-rider={row[&#x27;rw_nearside_share&#x27;]:.1%}&quot;)
 
-    with phase(&quot;Tract-level demographic correlations&quot;):
+    with phase(&quot;Tract-level demographic correlations (per stop and per rider)&quot;):
         tract_df = tract_summary(df)
         sig_df = tract_df.filter(pl.col(&quot;n_stops&quot;) &gt;= MIN_STOPS_PER_TRACT)
         near_df = tract_df.filter(pl.col(&quot;n_signal_classified&quot;) &gt;= MIN_SIGNALIZED_PER_TRACT)
         corr_rows = []
-        print(f&quot;  Signalized-share correlations (tracts with &gt;= {MIN_STOPS_PER_TRACT} &quot;
-              f&quot;stops, n = {sig_df.height}):&quot;)
-        for col, label in DEMOGRAPHICS:
-            c = correlate(sig_df, col, &quot;signalized_share&quot;)
-            print(f&quot;    vs {label:&lt;28s}: rho = {c[&#x27;spearman_r&#x27;]:+.3f}, p = {c[&#x27;spearman_p&#x27;]:.4f}&quot;)
-            corr_rows.append({&quot;outcome&quot;: &quot;signalized_share&quot;, &quot;demographic&quot;: col,
-                              &quot;spearman_r&quot;: c[&quot;spearman_r&quot;], &quot;spearman_p&quot;: c[&quot;spearman_p&quot;],
-                              &quot;n&quot;: c[&quot;n&quot;]})
-        print(f&quot;  Near-side-share correlations (tracts with &gt;= {MIN_SIGNALIZED_PER_TRACT} &quot;
-              f&quot;signalized stops, n = {near_df.height}):&quot;)
-        for col, label in DEMOGRAPHICS:
-            c = correlate(near_df, col, &quot;nearside_share&quot;)
-            print(f&quot;    vs {label:&lt;28s}: rho = {c[&#x27;spearman_r&#x27;]:+.3f}, p = {c[&#x27;spearman_p&#x27;]:.4f}&quot;)
-            corr_rows.append({&quot;outcome&quot;: &quot;nearside_share&quot;, &quot;demographic&quot;: col,
-                              &quot;spearman_r&quot;: c[&quot;spearman_r&quot;], &quot;spearman_p&quot;: c[&quot;spearman_p&quot;],
-                              &quot;n&quot;: c[&quot;n&quot;]})
+        # (outcome label, tract subset, unweighted col, ridership-weighted col)
+        outcomes = [
+            (&quot;signalized_share&quot;, sig_df, &quot;signalized_share&quot;, &quot;rw_signalized_share&quot;),
+            (&quot;nearside_share&quot;, near_df, &quot;nearside_share&quot;, &quot;rw_nearside_share&quot;),
+        ]
+        for name, subset_df, uw_col, rw_col in outcomes:
+            print(f&quot;  {name} (n = {subset_df.height} tracts):&quot;)
+            for col, label in DEMOGRAPHICS:
+                cu = correlate(subset_df, col, uw_col)
+                cw = correlate(subset_df, col, rw_col)
+                print(f&quot;    vs {label:&lt;28s}: per-stop rho={cu[&#x27;spearman_r&#x27;]:+.3f} &quot;
+                      f&quot;(p={cu[&#x27;spearman_p&#x27;]:.3f})  per-rider rho={cw[&#x27;spearman_r&#x27;]:+.3f} &quot;
+                      f&quot;(p={cw[&#x27;spearman_p&#x27;]:.3f})&quot;)
+                corr_rows.append({&quot;outcome&quot;: name, &quot;demographic&quot;: col, &quot;weighting&quot;: &quot;per_stop&quot;,
+                                  &quot;spearman_r&quot;: cu[&quot;spearman_r&quot;], &quot;spearman_p&quot;: cu[&quot;spearman_p&quot;],
+                                  &quot;n&quot;: cu[&quot;n&quot;]})
+                corr_rows.append({&quot;outcome&quot;: name, &quot;demographic&quot;: col, &quot;weighting&quot;: &quot;per_rider&quot;,
+                                  &quot;spearman_r&quot;: cw[&quot;spearman_r&quot;], &quot;spearman_p&quot;: cw[&quot;spearman_p&quot;],
+                                  &quot;n&quot;: cw[&quot;n&quot;]})
 
     with phase(&quot;Saving outputs&quot;):
         save_csv(
-            df.select(&quot;stop_id&quot;, &quot;signal_class&quot;, &quot;has_signal&quot;, &quot;geoid&quot;,
+            df.select(&quot;stop_id&quot;, &quot;signal_class&quot;, &quot;has_signal&quot;, &quot;usage&quot;, &quot;geoid&quot;,
                       &quot;median_household_income&quot;),
             OUT / &quot;stop_equity.csv&quot;,
         )
@@ -610,6 +762,7 @@ def main() -&gt; None:
     with phase(&quot;Generating charts&quot;):
         make_quartile_chart(quartile_df)
         make_scatter_chart(tract_df)
+        make_weighted_comparison_chart(quartile_df)
 
 
 if __name__ == &quot;__main__&quot;:
@@ -630,6 +783,16 @@ if __name__ == &quot;__main__&quot;:
     <table class="source-table">
       <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
       <tbody>
+      
+        <tr>
+          <td>data/bus-stop-usage/wprdc_stop_data.csv</td>
+          <td><span class="tag">file</span></td>
+          <td>Pre-pandemic weekday boardings and alightings per stop (WPRDC), keyed by PRT internal stop_id; used to weight signal-stop placement by ridership.</td>
+          <td>Local project data owner not specified.</td>
+          <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+          <td>May lag upstream source updates.</td>
+        </tr>
+        
       
         <tr>
           <td>stop_signals</td>

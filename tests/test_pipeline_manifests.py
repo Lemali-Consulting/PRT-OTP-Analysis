@@ -8,6 +8,7 @@ import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PIPELINE_DIR = PROJECT_ROOT / "pipeline"
+ANALYSES_DIR = PROJECT_ROOT / "analyses"
 WEBSITE_MAIN = PROJECT_ROOT / "products" / "website" / "main.py"
 
 spec = importlib.util.spec_from_file_location("website_main_pipeline", WEBSITE_MAIN)
@@ -21,6 +22,32 @@ spec.loader.exec_module(website_main)
 def _pipeline_source_paths() -> list[Path]:
     """Return all pipeline SOURCES.yaml paths."""
     return sorted(PIPELINE_DIR.glob("*/SOURCES.yaml"))
+
+
+def _consumed_tables_source_paths() -> list[Path]:
+    """Return every SOURCES.yaml (pipeline + analysis) that may list consumed tables."""
+    return sorted(PIPELINE_DIR.glob("*/SOURCES.yaml")) + sorted(
+        ANALYSES_DIR.glob("*/SOURCES.yaml")
+    )
+
+
+def test_consumed_tables_are_bare_strings():
+    """Consumed `tables:` entries must be bare strings, never dict-format.
+
+    A dict in `tables:` crashes the website build (`page_sources` uses each entry
+    as a dict key: "cannot use 'dict' as a dict key"). Only `tables_produced:`
+    uses dict-format (name/description). This guards against that mismatch, which
+    the website build catches only at deploy time.
+    """
+    for path in _consumed_tables_source_paths():
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        tables = data.get("tables", [])
+        assert isinstance(tables, list), f"{path} tables must be a list"
+        for idx, item in enumerate(tables, start=1):
+            assert isinstance(item, str), (
+                f"{path} tables[{idx}] must be a bare string (e.g. '- stops'), "
+                f"not {type(item).__name__}; dict-format is only for tables_produced"
+            )
 
 
 def test_pipeline_tables_produced_have_name_and_description():

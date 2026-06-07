@@ -34,3 +34,14 @@ assumptions:
   impact: low
   check: Thresholds reported in output CSVs and chart titles; results are null and
     stable, not threshold-sensitive.
+
+- id: ridership-weight-namespace-and-coverage
+  description: The WPRDC bus-stop-usage CSV keys on the same PRT internal stop_id
+    (E-code) namespace as stop_signals, so usage joins directly without bridging via
+    stop_code. The ridership-weighted figures assume the 98% of signal stops with a
+    usage record are representative of the 2% without one.
+  impact: medium
+  check: 6,174 of 6,299 tract-matched signal stops carry usage; usage-null stops are
+    excluded from weighted aggregates via filter (contribute 0, not null). The
+    weighted result reproduces the per-stop null, so the missing 2% do not change the
+    conclusion. Usage is pre-pandemic weekday only (same vintage as Analyses 32, 34).
