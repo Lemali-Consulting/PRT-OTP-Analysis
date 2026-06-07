@@ -36,7 +36,7 @@
   <h1>53 - Near-Side vs. Far-Side Stop Placement</h1>
   
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-06-05 17:58 UTC · Commit 7493239</p>
+  <p class="lede">Built 2026-06-07 14:04 UTC · Commit ebc369b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -80,6 +80,11 @@
   u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
   u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
   u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_stop_signals[("stop_signals")] --> 53_stop_signal_placement
+  15_stop_signals[["PRT Stop-Signal Classification ETL"]] --> t_stop_signals
+  u1_15_stop_signals[/"data/prt-stop-signals/bus_stops_with_signals_2602.xlsx"/] --> 15_stop_signals
+  t_route_stops[("route_stops")] --> 53_stop_signal_placement
+  01_data_ingestion[["Data Ingestion"]] --> t_route_stops
   d1_53_stop_signal_placement(("analyses/51_traffic_signals_otp (lib)")) --> 53_stop_signal_placement
   classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
   classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
@@ -88,10 +93,10 @@
   classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
   classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
   class 53_stop_signal_placement page;
-  class t_otp_monthly table;
+  class t_otp_monthly,t_route_stops,t_stop_signals table;
   class d1_53_stop_signal_placement dep;
-  class f1_53_stop_signal_placement,f2_53_stop_signal_placement,f3_53_stop_signal_placement,f4_53_stop_signal_placement,f5_53_stop_signal_placement,u1_01_data_ingestion,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
-  class 01_data_ingestion pipeline;</pre>
+  class f1_53_stop_signal_placement,f2_53_stop_signal_placement,f3_53_stop_signal_placement,f4_53_stop_signal_placement,f5_53_stop_signal_placement,u1_01_data_ingestion,u1_15_stop_signals,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion,15_stop_signals pipeline;</pre>
   </details>
 </section>
 
@@ -103,26 +108,51 @@
     <div class="markdown"><h1>Findings: Near-Side vs. Far-Side Stop Placement</h1>
 <h2>Summary</h2>
 <p>PRT bus stops at signalized intersections are overwhelmingly placed on the
-<strong>near side</strong> — before the traffic light in the direction of travel. Among the
-1,549 stops located within 50 m of an OSM traffic signal, <strong>83% are near-side</strong>
-(1,250) and only <strong>17% are far-side</strong> (262). The remaining 76% of PRT stops
-(4,915) are mid-block — not adjacent to a signal at all. Near-side fraction has
-a weak, non-significant negative correlation with route <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (r = −0.15,
-p = 0.21), consistent with the hypothesis that near-side stops add delay but
-not distinguishable from noise at the route level given how little variation
-there is across routes.</p>
+<strong>near side</strong> — before the traffic light in the direction of travel. PRT's own
+authoritative stop records (the <code>stop_signals</code> table, supplied by PRT) classify
+<strong>1,539 stops as signalized</strong>, of which <strong>86% are near-side</strong> (1,320) and only
+<strong>14% are far-side</strong> (219); a further 66 are busway/BRT and the remaining 4,701
+bus stops are not at a signal. An independent OSM/GTFS heuristic built from
+scratch (Steps 1–5) <strong>agreed with these authoritative labels on 97.6% of stops</strong>
+for signal detection and 93.3% for near-vs-far — validating the method that
+earlier analyses relied on. Re-running the route-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> test on the
+authoritative labels leaves the result <strong>null</strong> (r = −0.01, p = 0.95, n = 90):
+whether a route's stops are more near-side or far-side has no measurable
+association with how on-time it runs, driven by severe range restriction (almost
+every route is 64–100% near-side).</p>
 <h2>Key Numbers</h2>
+<h3>Authoritative (PRT <code>stop_signals</code>)</h3>
 <ul>
-<li><strong>6,464 total stops</strong> analyzed (GTFS, bus only — 4 station nodes excluded).</li>
-<li><strong>1,549 stops (24%)</strong> within 50 m of an OSM traffic signal (&quot;at intersection&quot;).</li>
-<li>Among those: <strong>1,250 near-side (83%)</strong>, <strong>262 far-side (17%)</strong>, <strong>37 ambiguous (&lt;3%)</strong>.</li>
-<li><strong>4,915 stops (76%)</strong> are mid-block — no signal within 50 m.</li>
-<li><strong>76 routes</strong> had ≥ 3 classifiable signalized stops and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data.</li>
-<li>Near-side fraction by route ranges from <strong>33% to 100%</strong> (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> ~88%).</li>
-<li><a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation: r = −0.15 (p = 0.21), Spearman ρ = −0.09 (p = 0.45) — not significant.</li>
+<li><strong>6,306 PRT bus stops</strong>, of which <strong>1,539 are at a traffic signal</strong>
+(1,320 near-side + 219 far-side), <strong>66 busway/BRT</strong>, <strong>4,701 no signal</strong>.</li>
+<li>Among signalized stops: <strong>85.8% near-side, 14.2% far-side</strong>.</li>
+<li><strong>90 routes</strong> had ≥ 3 authoritative signalized stops and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data.</li>
+<li>Authoritative near-side fraction by route ranges <strong>64% to 100%</strong> (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> 86%).</li>
+<li>Authoritative <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation: <strong>r = −0.01 (p = 0.95)</strong>, ρ = −0.03 (p = 0.80) — null.</li>
+</ul>
+<h3>Heuristic validation (OSM/GTFS vs. PRT, 6,293 stops in both)</h3>
+<ul>
+<li><strong>Signal detection: accuracy 97.6%, precision 96.8%, recall 93.1%</strong>
+(TP 1,432 · FP 48 · FN 106 · TN 4,707). The heuristic misses ~7% of signalized
+stops, mostly where OSM has no signal node within 50 m.</li>
+<li><strong>Near vs. far: 93.3% agreement</strong> (1,336 / 1,432). The heuristic slightly
+over-calls far-side (68 truly-near labelled far vs. 27 truly-far labelled near).</li>
+</ul>
+<h3>Heuristic, for reference (OSM/GTFS only)</h3>
+<ul>
+<li><strong>1,549 stops</strong> within 50 m of an OSM signal: <strong>1,248 near-side (83%)</strong>,
+<strong>263 far-side (17%)</strong>, 38 ambiguous; 4,915 mid-block.</li>
+<li>Heuristic <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation: r = −0.13 (p = 0.26), ρ = −0.07 — not significant.</li>
 </ul>
 <h2>Observations</h2>
 <ul>
+<li><strong>The OSM/GTFS heuristic is validated.</strong> Against PRT's authoritative records,
+the from-scratch geometric method correctly identifies signalized stops 97.6%
+of the time and gets near-vs-far right 93.3% of the time. This retroactively
+supports the OSM-derived signal metrics used in Analysis 51 and the placement
+classification used here and in Analysis 54 — the proxy was sound. Where it
+errs, it is mostly conservative (106 signalized stops missed because OSM lacks
+a node within 50 m), so the heuristic slightly <em>under</em>-counts signal exposure.</li>
 <li><strong>Near-side is the overwhelming default.</strong> Across nearly every PRT route,
 buses stop before the signal, not after. The near-side fraction drops below
 70% only for a handful of routes. This is consistent with older US transit
@@ -216,6 +246,15 @@ intersection stops disproportionately reflect legacy near-side siting.</li>
 <li><strong>Direction of effects.</strong> The <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation is in the expected direction
 (negative: more near-side → slightly lower <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>), even if non-significant.
 A positive coefficient would have been a red flag.</li>
+<li><strong>Cross-validated against authoritative source.</strong> PRT's <code>stop_signals</code> table
+(pipeline 15) provides ground-truth labels. The heuristic's aggregate split
+(83% near-side) is within 3 pp of the authoritative split (86%), and per-stop
+agreement is high (97.6% detection, 93.3% near/far). The headline near/far
+split and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation reported above use the authoritative labels; the
+heuristic is retained only for the validation comparison. Join is on the
+shared <code>stop_code</code>; the GTFS and PRT internal <code>stop_id</code> namespaces differ
+(GTFS numeric vs. PRT alpha-prefixed), so joining on <code>stop_id</code> would silently
+match nothing — a verified gotcha.</li>
 </ol>
 </div>
   </details>
@@ -226,9 +265,9 @@ A positive coefficient would have been a red flag.</li>
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (3)</button>
+    <button class="tab-btn active" data-target="charts">Charts (5)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
-    <button class="tab-btn" data-target="data">Data (2)</button>
+    <button class="tab-btn" data-target="data">Data (4)</button>
   </div>
 
   <div class="output-pane active" data-pane="charts">
@@ -248,7 +287,7 @@ A positive coefficient would have been a red flag.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/53_stop_signal_placement/nearside_vs_otp.png" target="_blank" rel="noopener noreferrer">nearside_vs_otp.png</a>
-          <p class="artifact-desc">route near-side fraction vs. on-time performance.</p>
+          <p class="artifact-desc">route near-side fraction vs. on-time performance (heuristic).</p>
         </figcaption>
       </figure>
     
@@ -258,6 +297,24 @@ A positive coefficient would have been a red flag.</li>
           <span class="artifact-kind">image</span>
           <a class="artifact-link" href="../../assets/analyses/53_stop_signal_placement/top_nearside_routes.png" target="_blank" rel="noopener noreferrer">top_nearside_routes.png</a>
           <p class="artifact-desc">routes with the highest near-side stop share.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/53_stop_signal_placement/validation_confusion.png" alt="validation_confusion" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/53_stop_signal_placement/validation_confusion.png" target="_blank" rel="noopener noreferrer">validation_confusion.png</a>
+          <p class="artifact-desc">confusion matrices comparing the OSM/GTFS heuristic to PRT's authoritative labels (signal detection and near vs. far).</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/53_stop_signal_placement/authoritative_nearside_vs_otp.png" alt="authoritative_nearside_vs_otp" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/53_stop_signal_placement/authoritative_nearside_vs_otp.png" target="_blank" rel="noopener noreferrer">authoritative_nearside_vs_otp.png</a>
+          <p class="artifact-desc">route near-side fraction (PRT authoritative) vs. on-time performance.</p>
         </figcaption>
       </figure>
     
@@ -279,7 +336,7 @@ A positive coefficient would have been a red flag.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/53_stop_signal_placement/stop_classifications.csv" target="_blank" rel="noopener noreferrer">stop_classifications.csv</a>
-          <p class="artifact-desc">per-stop near-side / far-side / mid-block classification.</p>
+          <p class="artifact-desc">per-stop near-side / far-side / mid-block classification (OSM/GTFS heuristic).</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/53_stop_signal_placement/stop_classifications.csv">
             <summary>Preview CSV</summary>
@@ -293,9 +350,37 @@ A positive coefficient would have been a red flag.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/53_stop_signal_placement/route_summary.csv" target="_blank" rel="noopener noreferrer">route_summary.csv</a>
-          <p class="artifact-desc">per-route near-side share summary.</p>
+          <p class="artifact-desc">per-route near-side share summary (heuristic).</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/53_stop_signal_placement/route_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/53_stop_signal_placement/heuristic_vs_authoritative.csv" target="_blank" rel="noopener noreferrer">heuristic_vs_authoritative.csv</a>
+          <p class="artifact-desc">per-stop comparison of heuristic label vs. PRT authoritative class.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/53_stop_signal_placement/heuristic_vs_authoritative.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/53_stop_signal_placement/authoritative_route_summary.csv" target="_blank" rel="noopener noreferrer">authoritative_route_summary.csv</a>
+          <p class="artifact-desc">per-route near/far counts and mean OTP using PRT authoritative labels.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/53_stop_signal_placement/authoritative_route_summary.csv">
             <summary>Preview CSV</summary>
             <div class="csv-preview-body">Expand to load preview.</div>
           </details>
@@ -355,6 +440,19 @@ neighborhood GeoJSON is available).</li>
 its <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>.  Transit-operations theory predicts near-side stops are worse for
 <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (bus must stop twice — once for passengers, once for the light), so a
 negative correlation between near-side fraction and <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> is the expected sign.</p>
+<h3>Step 6 — Validate against PRT's authoritative classification</h3>
+<p>PRT supplied an authoritative per-stop signal classification (the <code>stop_signals</code>
+table, built by <code>pipeline/15_stop_signals/</code>). The GTFS heuristic above is
+compared against it stop-by-stop on the shared <code>stop_code</code> key:</p>
+<ul>
+<li><strong>Signal detection</strong> — a 2×2 confusion matrix of heuristic &quot;signalized&quot;
+(near/far) vs. PRT &quot;has signal&quot;, reporting precision, recall, and accuracy.</li>
+<li><strong>Near vs. far</strong> — among stops both sources call signalized, the agreement
+rate and a 2×2 near/far confusion matrix.</li>
+</ul>
+<p>The route-level <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> correlation (Step 5) is then <strong>re-run on the authoritative
+near/far labels</strong> (joining <code>stop_signals</code> → <code>route_stops</code> → <code>otp_monthly</code>), so
+the headline <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> result no longer depends on the OSM proxy.</p>
 <h2>Data</h2>
 <table>
 <thead>
@@ -366,7 +464,7 @@ negative correlation between near-side fraction and <a href="../../glossary.html
 <tbody>
 <tr>
   <td><code>data/GTFS/stops.txt</code></td>
-  <td>Stop lat/lon</td>
+  <td>Stop lat/lon and stop_code (join key to authoritative labels)</td>
 </tr>
 <tr>
   <td><code>data/GTFS/shapes.txt</code></td>
@@ -382,7 +480,15 @@ negative correlation between near-side fraction and <a href="../../glossary.html
 </tr>
 <tr>
   <td><code>data/osm-signals/traffic_signals_raw.json</code></td>
-  <td>Signal lat/lon (2,820 OSM nodes)</td>
+  <td>Signal lat/lon (2,820 OSM nodes) — heuristic only</td>
+</tr>
+<tr>
+  <td><code>stop_signals</code> table in <code>prt.db</code></td>
+  <td>PRT authoritative per-stop signal class (validation + authoritative re-run)</td>
+</tr>
+<tr>
+  <td><code>route_stops</code> table in <code>prt.db</code></td>
+  <td>Stop → route mapping for authoritative route-level aggregation</td>
 </tr>
 <tr>
   <td><code>otp_monthly</code> table in <code>prt.db</code></td>
@@ -405,6 +511,14 @@ breakdown</li>
 <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> (with regression line)</li>
 <li><code>output/top_nearside_routes.png</code> — ranked bar chart of routes by near-side
 fraction</li>
+<li><code>output/heuristic_vs_authoritative.csv</code> — per-stop comparison of the GTFS
+heuristic label vs. PRT's authoritative class (join on stop_code)</li>
+<li><code>output/validation_confusion.png</code> — confusion matrices: signal detection
+(left) and near vs. far (right), heuristic vs. PRT</li>
+<li><code>output/authoritative_route_summary.csv</code> — per-route near/far counts and <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a>
+<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> using PRT authoritative labels</li>
+<li><code>output/authoritative_nearside_vs_otp.png</code> — scatter: route near-side fraction
+(authoritative) vs. <a href="../../glossary.html#mean" class="glossary-link" data-definition="Arithmetic average of values, computed as sum divided by count.">mean</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 </ul>
 </div>
   </details>
@@ -459,10 +573,31 @@ def load_stops() -&gt; pl.DataFrame:
     return (
         pl.read_csv(
             GTFS_DIR / &quot;stops.txt&quot;,
-            schema_overrides={&quot;stop_id&quot;: pl.Utf8},
+            schema_overrides={&quot;stop_id&quot;: pl.Utf8, &quot;stop_code&quot;: pl.Int64},
         )
         .filter(pl.col(&quot;location_type&quot;).is_null())
-        .select([&quot;stop_id&quot;, &quot;stop_name&quot;, &quot;stop_lat&quot;, &quot;stop_lon&quot;])
+        .select([&quot;stop_id&quot;, &quot;stop_code&quot;, &quot;stop_name&quot;, &quot;stop_lat&quot;, &quot;stop_lon&quot;])
+    )
+
+
+def load_authoritative() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Load PRT&#x27;s authoritative per-stop signal classification, keyed by stop_code.
+
+    Returns columns: stop_code, auth_class (&#x27;none&#x27;|&#x27;nearside&#x27;|&#x27;farside&#x27;|&#x27;busway&#x27;),
+    auth_has_signal (1 if at a non-busway signal). The PRT spreadsheet and GTFS share
+    the stop_code key; their internal stop_id namespaces differ.
+    &quot;&quot;&quot;
+    db = get_db()
+    rows = db.execute(
+        &quot;SELECT stop_code, signal_class, has_signal FROM stop_signals&quot;
+    ).fetchall()
+    return pl.DataFrame(
+        {
+            &quot;stop_code&quot;: [int(r[0]) for r in rows],
+            &quot;auth_class&quot;: [r[1] for r in rows],
+            &quot;auth_has_signal&quot;: [int(r[2]) for r in rows],
+        },
+        schema={&quot;stop_code&quot;: pl.Int64, &quot;auth_class&quot;: pl.Utf8, &quot;auth_has_signal&quot;: pl.Int64},
     )
 
 
@@ -758,6 +893,140 @@ def main() -&gt; None:
         plt.close(fig)
         print(&quot;Wrote top_nearside_routes.png&quot;)
 
+    # ══════════════════════════════════════════════════════════════════════════
+    # VALIDATION against PRT&#x27;s authoritative classification
+    # ══════════════════════════════════════════════════════════════════════════
+    print(&quot;\nValidating heuristic against PRT authoritative labels…&quot;)
+    auth_df = load_authoritative()
+    val_df = (
+        stops_with_class_df
+        .join(auth_df, on=&quot;stop_code&quot;, how=&quot;inner&quot;)
+        .with_columns(
+            heur_has_signal=pl.col(&quot;classification&quot;).is_in([&quot;near_side&quot;, &quot;far_side&quot;]).cast(pl.Int64),
+        )
+    )
+    print(f&quot;  {val_df.height} stops present in both heuristic and authoritative sets&quot;)
+
+    # ── Signal detection confusion (signalized vs not) ────────────────────────
+    tp = val_df.filter((pl.col(&quot;heur_has_signal&quot;) == 1) &amp; (pl.col(&quot;auth_has_signal&quot;) == 1)).height
+    fp = val_df.filter((pl.col(&quot;heur_has_signal&quot;) == 1) &amp; (pl.col(&quot;auth_has_signal&quot;) == 0)).height
+    fn = val_df.filter((pl.col(&quot;heur_has_signal&quot;) == 0) &amp; (pl.col(&quot;auth_has_signal&quot;) == 1)).height
+    tn = val_df.filter((pl.col(&quot;heur_has_signal&quot;) == 0) &amp; (pl.col(&quot;auth_has_signal&quot;) == 0)).height
+    precision = tp / (tp + fp) if (tp + fp) else float(&quot;nan&quot;)
+    recall = tp / (tp + fn) if (tp + fn) else float(&quot;nan&quot;)
+    accuracy = (tp + tn) / (tp + fp + fn + tn)
+    print(f&quot;  Signal detection: precision={precision:.3f} recall={recall:.3f} accuracy={accuracy:.3f}&quot;)
+
+    # ── Near/far agreement among stops both call signalized ───────────────────
+    both_df = val_df.filter(
+        (pl.col(&quot;heur_has_signal&quot;) == 1) &amp; (pl.col(&quot;auth_has_signal&quot;) == 1)
+    ).with_columns(
+        heur_nf=pl.when(pl.col(&quot;classification&quot;) == &quot;near_side&quot;)
+        .then(pl.lit(&quot;nearside&quot;)).otherwise(pl.lit(&quot;farside&quot;)),
+    )
+    nf_agree = both_df.filter(pl.col(&quot;heur_nf&quot;) == pl.col(&quot;auth_class&quot;)).height
+    nf_total = both_df.height
+    nf_rate = nf_agree / nf_total if nf_total else float(&quot;nan&quot;)
+    print(f&quot;  Near/far agreement: {nf_agree}/{nf_total} = {nf_rate:.3f}&quot;)
+
+    # ── Output: per-stop comparison CSV ───────────────────────────────────────
+    val_df.select([
+        &quot;stop_id&quot;, &quot;stop_code&quot;, &quot;stop_name&quot;,
+        &quot;classification&quot;, &quot;auth_class&quot;, &quot;auth_has_signal&quot;, &quot;heur_has_signal&quot;,
+    ]).write_csv(OUTPUT_DIR / &quot;heuristic_vs_authoritative.csv&quot;)
+    print(f&quot;Wrote {val_df.height} rows → heuristic_vs_authoritative.csv&quot;)
+
+    # ── Output: confusion-matrix figure (detection + near/far) ────────────────
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5.5))
+    det = np.array([[tn, fp], [fn, tp]])  # rows: auth not/signal; cols: heur not/signal
+    ax1.imshow(det, cmap=&quot;Blues&quot;)
+    ax1.set_xticks([0, 1]); ax1.set_xticklabels([&quot;Heuristic:\nno signal&quot;, &quot;Heuristic:\nsignal&quot;])
+    ax1.set_yticks([0, 1]); ax1.set_yticklabels([&quot;PRT:\nno signal&quot;, &quot;PRT:\nsignal&quot;])
+    for i in range(2):
+        for j in range(2):
+            ax1.text(j, i, f&quot;{det[i, j]:,}&quot;, ha=&quot;center&quot;, va=&quot;center&quot;,
+                     fontsize=14, color=&quot;black&quot;)
+    ax1.set_title(f&quot;Signal detection\naccuracy {accuracy:.1%}  ·  precision {precision:.1%}  ·  recall {recall:.1%}&quot;,
+                  fontsize=11, fontweight=&quot;bold&quot;)
+
+    nf = np.array([
+        [both_df.filter((pl.col(&quot;auth_class&quot;) == &quot;nearside&quot;) &amp; (pl.col(&quot;heur_nf&quot;) == &quot;nearside&quot;)).height,
+         both_df.filter((pl.col(&quot;auth_class&quot;) == &quot;nearside&quot;) &amp; (pl.col(&quot;heur_nf&quot;) == &quot;farside&quot;)).height],
+        [both_df.filter((pl.col(&quot;auth_class&quot;) == &quot;farside&quot;) &amp; (pl.col(&quot;heur_nf&quot;) == &quot;nearside&quot;)).height,
+         both_df.filter((pl.col(&quot;auth_class&quot;) == &quot;farside&quot;) &amp; (pl.col(&quot;heur_nf&quot;) == &quot;farside&quot;)).height],
+    ])
+    ax2.imshow(nf, cmap=&quot;Greens&quot;)
+    ax2.set_xticks([0, 1]); ax2.set_xticklabels([&quot;Heuristic:\nnear-side&quot;, &quot;Heuristic:\nfar-side&quot;])
+    ax2.set_yticks([0, 1]); ax2.set_yticklabels([&quot;PRT:\nnear-side&quot;, &quot;PRT:\nfar-side&quot;])
+    for i in range(2):
+        for j in range(2):
+            ax2.text(j, i, f&quot;{nf[i, j]:,}&quot;, ha=&quot;center&quot;, va=&quot;center&quot;,
+                     fontsize=14, color=&quot;black&quot;)
+    ax2.set_title(f&quot;Near vs far (among {nf_total:,} both-signalized)\nagreement {nf_rate:.1%}&quot;,
+                  fontsize=11, fontweight=&quot;bold&quot;)
+    fig.suptitle(&quot;OSM/GTFS heuristic vs. PRT authoritative stop classification&quot;,
+                 fontsize=13, fontweight=&quot;bold&quot;)
+    plt.tight_layout()
+    fig.savefig(OUTPUT_DIR / &quot;validation_confusion.png&quot;, dpi=150)
+    plt.close(fig)
+    print(&quot;Wrote validation_confusion.png&quot;)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # AUTHORITATIVE re-run: near-side fraction vs OTP using PRT labels
+    # ══════════════════════════════════════════════════════════════════════════
+    db = get_db()
+    auth_route_rows = db.execute(
+        &quot;&quot;&quot;
+        SELECT rs.route_id, ss.signal_class
+        FROM stop_signals ss
+        JOIN route_stops rs ON ss.stop_id = rs.stop_id
+        WHERE ss.signal_class IN (&#x27;nearside&#x27;, &#x27;farside&#x27;)
+        &quot;&quot;&quot;
+    ).fetchall()
+    auth_route_df = (
+        pl.DataFrame(
+            {&quot;route_id&quot;: [r[0] for r in auth_route_rows],
+             &quot;signal_class&quot;: [r[1] for r in auth_route_rows]}
+        )
+        .group_by(&quot;route_id&quot;)
+        .agg(
+            near_side_count=(pl.col(&quot;signal_class&quot;) == &quot;nearside&quot;).sum(),
+            far_side_count=(pl.col(&quot;signal_class&quot;) == &quot;farside&quot;).sum(),
+        )
+        .with_columns(total_signalized=pl.col(&quot;near_side_count&quot;) + pl.col(&quot;far_side_count&quot;))
+        .with_columns(near_side_fraction=pl.col(&quot;near_side_count&quot;) / pl.col(&quot;total_signalized&quot;))
+        .filter(pl.col(&quot;total_signalized&quot;) &gt;= 3)
+        .join(otp_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
+    )
+    auth_route_df.write_csv(OUTPUT_DIR / &quot;authoritative_route_summary.csv&quot;)
+
+    auth_corr_df = auth_route_df.drop_nulls(subset=[&quot;near_side_fraction&quot;, &quot;mean_otp&quot;])
+    if len(auth_corr_df) &gt;= 10:
+        ax_var = auth_corr_df[&quot;near_side_fraction&quot;].to_numpy()
+        ay = auth_corr_df[&quot;mean_otp&quot;].to_numpy()
+        ar, ap = pearsonr(ax_var, ay)
+        arho, aps = spearmanr(ax_var, ay)
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.scatter(ax_var * 100, ay * 100, alpha=0.6, s=50, color=&quot;#27ae60&quot;,
+                   edgecolors=&quot;white&quot;, linewidths=0.5)
+        am, ab = np.polyfit(ax_var, ay, 1)
+        xline = np.linspace(ax_var.min(), ax_var.max(), 100)
+        ax.plot(xline * 100, (am * xline + ab) * 100, color=&quot;#e74c3c&quot;,
+                linewidth=1.5, linestyle=&quot;--&quot;)
+        ax.set_xlabel(&quot;Near-side fraction (%) — PRT authoritative&quot;, fontsize=12)
+        ax.set_ylabel(&quot;Mean OTP (%)&quot;, fontsize=12)
+        ax.set_title(
+            f&quot;Authoritative Near-Side Fraction vs. OTP  (r = {ar:.2f}, ρ = {arho:.2f}, n = {len(auth_corr_df)})&quot;,
+            fontsize=12, fontweight=&quot;bold&quot;,
+        )
+        plt.tight_layout()
+        fig.savefig(OUTPUT_DIR / &quot;authoritative_nearside_vs_otp.png&quot;, dpi=150)
+        plt.close(fig)
+        print(
+            f&quot;Wrote authoritative_nearside_vs_otp.png  &quot;
+            f&quot;(r={ar:.3f} p={ap:.4f}, ρ={arho:.3f} p={aps:.4f}, n={len(auth_corr_df)})&quot;
+        )
+
     print(&quot;\nDone.&quot;)
 
 
@@ -783,7 +1052,7 @@ if __name__ == &quot;__main__&quot;:
         <tr>
           <td>data/GTFS/stops.txt</td>
           <td><span class="tag">file</span></td>
-          <td>GTFS stop locations.</td>
+          <td>GTFS stop locations and stop_code join key.</td>
           <td>Local project data owner not specified.</td>
           <td>Snapshot file; refresh by rerunning its pipeline step.</td>
           <td>May lag upstream source updates.</td>
@@ -832,6 +1101,60 @@ if __name__ == &quot;__main__&quot;:
       
         <tr>
           <td>otp_monthly</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stop_signals</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by PRT Stop-Signal Classification ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/prt-stop-signals/bus_stops_with_signals_2602.xlsx</strong> — PRT-provided spreadsheet (Samuel Buckley, 2026) tagging each of 6,306 bus stops as no-signal, near-side, far-side, or busway/BRT.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>route_stops</td>
           <td><span class="tag">table</span></td>
           <td>Primary analytical table used in this page's computations.</td>
           <td>Produced by Data Ingestion.</td>

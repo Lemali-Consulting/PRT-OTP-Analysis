@@ -271,6 +271,22 @@ ROUTE_ROAD_PAVEMENT = Schema(
 )
 
 
+STOP_SIGNALS = Schema(
+    name="stop_signals",
+    columns={
+        "stop_code": pl.Int64,
+        "stop_id": pl.Utf8,
+        "prt_stop_id": pl.Utf8,
+        "stop_name": pl.Utf8,
+        "prt_mode": pl.Utf8,
+        "signal_class": pl.Utf8,
+        "has_signal": pl.Int64,
+        "prt_location": pl.Utf8,
+    },
+    nullable=frozenset({"stop_id", "stop_name", "prt_location"}),
+)
+
+
 def validate(
     df: pl.DataFrame,
     schema: Schema,

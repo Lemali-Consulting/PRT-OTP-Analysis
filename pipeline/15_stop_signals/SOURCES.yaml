@@ -1,0 +1,11 @@
+kind: pipeline
+title: PRT Stop-Signal Classification ETL
+description: Loads PRT's authoritative classification of every bus stop as no-signal, near-side, or far-side of a traffic signal into the stop_signals table, resolving each stop to its GTFS stop_id for downstream joins.
+files:
+  - path: data/prt-stop-signals/bus_stops_with_signals_2602.xlsx
+    description: PRT-provided spreadsheet (Samuel Buckley, 2026) tagging each of 6,306 bus stops as no-signal, near-side, far-side, or busway/BRT.
+tables:
+  - stops
+tables_produced:
+  - name: stop_signals
+    description: Per-stop authoritative signal classification (signal_class, has_signal) keyed by stop_code with resolved GTFS stop_id.

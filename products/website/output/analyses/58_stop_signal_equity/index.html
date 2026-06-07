@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>58 - Stop Signal Placement Equity - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>58 - Stop Signal Placement Equity</h1>
+  
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-06-07 14:04 UTC · Commit ebc369b</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../57_pavement_condition_otp/index.html">← 57 - Pavement Condition and OTP</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  58_stop_signal_equity(["58 - Stop Signal Placement Equity"])
+  t_stop_signals[("stop_signals")] --> 58_stop_signal_equity
+  15_stop_signals[["PRT Stop-Signal Classification ETL"]] --> t_stop_signals
+  u1_15_stop_signals[/"data/prt-stop-signals/bus_stops_with_signals_2602.xlsx"/] --> 15_stop_signals
+  t_stops[("stops")] --> 58_stop_signal_equity
+  01_data_ingestion[["Data Ingestion"]] --> t_stops
+  u1_01_data_ingestion[/"data/routes_by_month.csv"/] --> 01_data_ingestion
+  u2_01_data_ingestion[/"data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv"/] --> 01_data_ingestion
+  u3_01_data_ingestion[/"data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv"/] --> 01_data_ingestion
+  u4_01_data_ingestion[/"data/PRT_Stop_Reference_Lookup_Table.csv"/] --> 01_data_ingestion
+  u5_01_data_ingestion[/"data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv"/] --> 01_data_ingestion
+  t_census_tracts[("census_tracts")] --> 58_stop_signal_equity
+  d1_58_stop_signal_equity(("numpy (lib)")) --> 58_stop_signal_equity
+  d2_58_stop_signal_equity(("polars (lib)")) --> 58_stop_signal_equity
+  d3_58_stop_signal_equity(("scipy (lib)")) --> 58_stop_signal_equity
+  d4_58_stop_signal_equity(("geopandas (lib)")) --> 58_stop_signal_equity
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 58_stop_signal_equity page;
+  class t_census_tracts,t_stop_signals,t_stops table;
+  class d1_58_stop_signal_equity,d2_58_stop_signal_equity,d3_58_stop_signal_equity,d4_58_stop_signal_equity dep;
+  class u1_01_data_ingestion,u1_15_stop_signals,u2_01_data_ingestion,u3_01_data_ingestion,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class 01_data_ingestion,15_stop_signals pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: Stop Signal Placement Equity</h1>
+<h2>Summary</h2>
+<p>PRT's signalized stops — and the operationally worse <strong>near-side</strong> placement
+documented in Analysis 53 — show <strong>no meaningful demographic disparity</strong>. The
+near-side share of signalized stops holds at roughly <strong>85% across every income
+quartile</strong> (86.2% in the lowest-income quartile vs. 84.9% in the highest), and at
+the census-tract level neither the signalized-stop share nor the near-side share
+correlates with <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income, zero-vehicle household share, or Black
+population share (all |Spearman ρ| ≤ 0.11, all p &gt; 0.07). Near-side placement is
+a <strong>system-wide legacy inheritance</strong>, not a pattern concentrated in disadvantaged
+neighborhoods. The equity implication is encouraging in one sense — riders in
+low-income areas are not disproportionately burdened by the worse placement — and
+practical in another: converting near-side stops to far-side (where warranted)
+would benefit riders broadly rather than redress a specific inequity.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>6,299 stops</strong> matched to a census tract; <strong>6,223</strong> have a tract <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> income.</li>
+<li>Signalized-stop share by income quartile: <strong>Q1 25.7%, Q2 19.0%, Q3 24.3%,
+Q4 27.9%</strong> — no monotonic income gradient.</li>
+<li>Near-side share by income quartile: <strong>Q1 86.2%, Q2 88.2%, Q3 85.3%, Q4 84.9%</strong>
+— essentially flat.</li>
+<li>Tract-level <strong>signalized-stop share</strong> (n = 294 tracts with ≥ 5 stops) vs:<ul>
+<li><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income: ρ = +0.044 (p = 0.46)</li>
+<li>zero-vehicle household share: ρ = +0.105 (p = 0.07)</li>
+<li>Black population share: ρ = −0.040 (p = 0.50)</li>
+</ul>
+</li>
+<li>Tract-level <strong>near-side share</strong> (n = 201 tracts with ≥ 3 signalized stops) vs:<ul>
+<li><a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income: ρ = −0.044 (p = 0.55)</li>
+<li>zero-vehicle household share: ρ = +0.062 (p = 0.39)</li>
+<li>Black population share: ρ = +0.036 (p = 0.62)</li>
+</ul>
+</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>No income gradient in either outcome.</strong> Whether a stop sits at a signal, and
+whether that signal stop is near-side, is independent of neighborhood income.
+The quartile bars are visually flat (see <code>signal_share_by_income_quartile.png</code>).</li>
+<li><strong>The one borderline signal is intuitive and non-significant.</strong> Tracts with more
+zero-vehicle (transit-dependent) households have very slightly more signalized
+stops (ρ = +0.105, p = 0.07) — consistent with transit-dependent areas being
+denser, more urban places that simply have more signals overall. It does not
+reach significance and does not appear in the near-side outcome.</li>
+<li><strong>Near-side dominance is universal.</strong> The ~85% near-side share is remarkably
+stable across the income distribution, reinforcing Analysis 53's reading that
+near-side placement reflects historical engineering practice applied
+system-wide, not a targeted or recent siting decision.</li>
+<li><strong>Direction of the (null) effects.</strong> A genuine equity problem would have shown
+lower-income or more-transit-dependent tracts with <em>higher</em> near-side shares.
+No such pattern exists; if anything the near-side share trends marginally lower
+in lower-income tracts, the opposite of a disparity.</li>
+</ul>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Ecological framing.</strong> All results are tract-level associations between
+demographics and stop placement. They describe neighborhoods, not individual
+riders, and make no individual-level claim.</li>
+<li><strong>Null result, not proof of no effect.</strong> Failing to detect a disparity at the
+tract level does not prove perfect equity at finer geographies; it means no
+meaningful tract-level relationship is present in these data.</li>
+<li><strong>Tract assignment is point-in-polygon.</strong> Each stop is assigned to the tract
+containing its coordinate; a stop near a tract boundary serves residents of
+adjacent tracts whose demographics are not counted.</li>
+<li><strong>Demographic coverage.</strong> ACS demographics attach only to stops inside a
+5-county PA tract; a small number of out-of-region stops (and tracts with null
+ACS values) drop from the relevant correlation.</li>
+<li><strong>Stop placement ≠ exposure.</strong> This measures where signalized stops are, not
+how many riders board at them; a ridership-weighted equity view could differ
+and is left to future work (cf. Analysis 32 for ridership-weighted stop equity).</li>
+</ul>
+<h2>Validation</h2>
+<ol>
+<li><strong>Data source verified.</strong> <code>stop_signals</code> (pipeline 15) validated against the
+<code>STOP_SIGNALS</code> schema with <code>validate(..., subset=True)</code>; demographics come from
+the shared <code>assign_stops_to_tracts</code> helper (point-in-polygon to <code>census_tracts</code>),
+the same path used by Analysis 04.</li>
+<li><strong>Scope match.</strong> Stops are joined on the PRT internal <code>stop_id</code> (the namespace
+shared by <code>stop_signals</code> and the <code>stops</code> table); 6,299 of 6,306 PRT stops carry
+a resolved <code>stop_id</code> and match.</li>
+<li><strong>Null handling.</strong> Stops without a tract income are dropped from the
+income-quartile view; share denominators are guarded with <code>when(... &gt; 0)</code> so a
+tract with zero households or zero signalized stops yields null (dropped by
+<code>correlate</code>), never a divide-by-zero or a NaN counted as a real value.</li>
+<li><strong>Aggregate sanity check.</strong> Overall signalized share (~24%) and near-side share
+(~85%) match the system totals in Analysis 53, confirming the join did not drop
+or duplicate stops.</li>
+<li><strong>Surprising-result check.</strong> The result is a null, which is the <em>expected</em>
+direction here (a legacy system-wide default should not track income); the one
+borderline correlation (zero-vehicle share) was examined and explained as urban
+density, not a disparity.</li>
+<li><strong>Small-sample routes/areas flagged.</strong> Tracts below 5 stops (signalized share)
+and 3 signalized stops (near-side share) are excluded; thresholds are reported
+in the output and chart titles.</li>
+<li><strong>Multicollinearity.</strong> Not applicable — these are bivariate Spearman
+correlations, not a multi-predictor regression.</li>
+<li><strong>Ecological framing.</strong> Documented in Caveats; all language is tract-level.</li>
+</ol>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (2)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (4)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/58_stop_signal_equity/signal_share_by_income_quartile.png" alt="signal_share_by_income_quartile" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/signal_share_by_income_quartile.png" target="_blank" rel="noopener noreferrer">signal_share_by_income_quartile.png</a>
+          <p class="artifact-desc">Signalized-stop share and near-side share by neighborhood income quartile (flat across quartiles).</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/58_stop_signal_equity/tract_income_vs_signal_share.png" alt="tract_income_vs_signal_share" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/tract_income_vs_signal_share.png" target="_blank" rel="noopener noreferrer">tract_income_vs_signal_share.png</a>
+          <p class="artifact-desc">Scatter of tract median household income against signalized-stop share with fitted trend.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/stop_equity.csv" target="_blank" rel="noopener noreferrer">stop_equity.csv</a>
+          <p class="artifact-desc">Per-stop signal class, signalized flag, census tract, and tract median household income.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/58_stop_signal_equity/stop_equity.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/tract_equity_summary.csv" target="_blank" rel="noopener noreferrer">tract_equity_summary.csv</a>
+          <p class="artifact-desc">Per-tract signalized-stop and near-side shares with income, vehicle-access, and race demographics.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/58_stop_signal_equity/tract_equity_summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/income_quartile_shares.csv" target="_blank" rel="noopener noreferrer">income_quartile_shares.csv</a>
+          <p class="artifact-desc">Signalized and near-side shares aggregated by income quartile.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/58_stop_signal_equity/income_quartile_shares.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/58_stop_signal_equity/demographic_correlations.csv" target="_blank" rel="noopener noreferrer">demographic_correlations.csv</a>
+          <p class="artifact-desc">Spearman correlations of signalized/near-side share against income, zero-vehicle share, and Black population share.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/58_stop_signal_equity/demographic_correlations.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: Stop Signal Placement Equity</h1>
+<h2>Question</h2>
+<p>Do stops at traffic signals — and specifically the operationally worse
+<strong>near-side</strong> placement — cluster in lower-income, more transit-dependent, or
+higher-minority neighborhoods? In other words, is the legacy near-side default
+(Analysis 53) distributed unequally across the population it serves?</p>
+<h2>Approach</h2>
+<ol>
+<li>Load PRT's authoritative per-stop signal classification from the
+<code>stop_signals</code> table (<code>signal_class</code>, <code>has_signal</code>).</li>
+<li>Assign every stop to its containing ACS census tract via point-in-polygon
+(<code>assign_stops_to_tracts</code>), attaching the tract's <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income,
+total/zero-vehicle households, population, and Black (non-Hispanic) population.</li>
+<li><strong>Income-quartile view.</strong> Bin stops by their tract's <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income
+into quartiles. For each quartile compute (a) the signalized-stop share
+(fraction of stops at a signal) and (b) the near-side share (fraction of
+signalized stops that are near-side). A disparity would show as a monotonic
+gradient across quartiles.</li>
+<li><strong>Tract-level correlations.</strong> For each tract with enough stops, compute the
+signalized-stop share and near-side share, then correlate (Spearman) against
+three demographic measures: <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income, zero-vehicle household
+share, and Black population share. Spearman is used because the demographic
+distributions are skewed and the relationship need not be linear.</li>
+<li><strong>Minimum-sample thresholds.</strong> Tracts need ≥ 5 stops for the signalized-share
+correlation and ≥ 3 signalized stops for the near-side-share correlation;
+thresholds are reported. Quartile shares use all stops with a tract income.</li>
+</ol>
+<h2>Data</h2>
+<ul>
+<li><code>stop_signals</code> table in <code>prt.db</code> (PRT authoritative per-stop signal class;
+built by <code>pipeline/15_stop_signals/</code>). Join key: PRT internal <code>stop_id</code>.</li>
+<li><code>stops</code> table in <code>prt.db</code> (lat/lon for tract assignment, via the shared
+<code>assign_stops_to_tracts</code> helper).</li>
+<li><code>census_tracts</code> table in <code>prt.db</code> (ACS demographics: <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income,
+households_total, households_zero_vehicle, population, pop_black_nh).</li>
+<li><strong>Scope caveat:</strong> ACS demographics are only joined for stops inside a 5-county
+PA tract; a handful of out-of-region stops get null demographics and drop out.</li>
+</ul>
+<h2>Output</h2>
+<ul>
+<li><code>output/stop_equity.csv</code> — per-stop: stop_id, signal_class, has_signal, geoid,
+<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> household income.</li>
+<li><code>output/tract_equity_summary.csv</code> — per-tract signalized/near-side shares with
+demographics.</li>
+<li><code>output/signal_share_by_income_quartile.png</code> — bar chart of signalized-stop
+share and near-side share by income quartile.</li>
+<li><code>output/tract_income_vs_signal_share.png</code> — scatter of tract <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> income vs.
+signalized-stop share with fitted trend.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 58: Test whether traffic-signal stop placement varies with neighborhood demographics.&quot;&quot;&quot;
+
+from prt_otp_analysis.common import (
+    analysis_dir,
+    correlate,
+    phase,
+    query_to_polars,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+)
+from prt_otp_analysis.common.schemas import STOP_SIGNALS, validate
+from prt_otp_analysis.stop_tracts import assign_stops_to_tracts
+
+import numpy as np
+import polars as pl
+from scipy import stats
+
+OUT = analysis_dir(__file__)
+
+MIN_STOPS_PER_TRACT = 5        # for signalized-share correlation
+MIN_SIGNALIZED_PER_TRACT = 3   # for near-side-share correlation
+
+QUARTILE_LABELS = [&quot;Q1 (lowest income)&quot;, &quot;Q2&quot;, &quot;Q3&quot;, &quot;Q4 (highest income)&quot;]
+
+# Demographic measures tested against signal placement.
+DEMOGRAPHICS = [
+    (&quot;median_household_income&quot;, &quot;median household income&quot;),
+    (&quot;zero_vehicle_share&quot;, &quot;zero-vehicle household share&quot;),
+    (&quot;black_share&quot;, &quot;Black population share&quot;),
+]
+
+
+def load_stop_signals() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Per-stop authoritative signal class, keyed by PRT internal stop_id.&quot;&quot;&quot;
+    df = query_to_polars(
+        &quot;&quot;&quot;SELECT stop_id, signal_class, has_signal
+           FROM stop_signals WHERE stop_id IS NOT NULL&quot;&quot;&quot;
+    )
+    validate(df, STOP_SIGNALS, subset=True)
+    return df
+
+
+def build_stop_demographics() -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Join authoritative signal class to each stop&#x27;s census-tract demographics.&quot;&quot;&quot;
+    signals_df = load_stop_signals()
+    tract_df = assign_stops_to_tracts(
+        [&quot;median_household_income&quot;, &quot;households_total&quot;,
+         &quot;households_zero_vehicle&quot;, &quot;pop_black_nh&quot;],
+    )
+    df = signals_df.join(
+        tract_df.select(
+            &quot;stop_id&quot;, &quot;geoid&quot;, &quot;population&quot;, &quot;median_household_income&quot;,
+            &quot;households_total&quot;, &quot;households_zero_vehicle&quot;, &quot;pop_black_nh&quot;,
+        ),
+        on=&quot;stop_id&quot;,
+        how=&quot;inner&quot;,
+    )
+    return df.with_columns(
+        is_nearside=(pl.col(&quot;signal_class&quot;) == &quot;nearside&quot;).cast(pl.Int64),
+        is_signalized=pl.col(&quot;has_signal&quot;),
+    )
+
+
+def income_quartile_table(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Signalized-stop and near-side shares by tract-income quartile of each stop.&quot;&quot;&quot;
+    inc_df = df.drop_nulls(&quot;median_household_income&quot;)
+    inc = inc_df[&quot;median_household_income&quot;].to_numpy()
+    cuts = np.quantile(inc, [0.25, 0.5, 0.75])
+
+    def to_quartile(value: float) -&gt; str:
+        idx = int(np.searchsorted(cuts, value, side=&quot;right&quot;))
+        return QUARTILE_LABELS[min(idx, 3)]
+
+    inc_df = inc_df.with_columns(
+        pl.col(&quot;median_household_income&quot;)
+        .map_elements(to_quartile, return_dtype=pl.Utf8)
+        .alias(&quot;income_quartile&quot;),
+    )
+    return (
+        inc_df.group_by(&quot;income_quartile&quot;)
+        .agg(
+            n_stops=pl.len(),
+            n_signalized=pl.col(&quot;is_signalized&quot;).sum(),
+            n_nearside=pl.col(&quot;is_nearside&quot;).sum(),
+            n_signal_classified=pl.col(&quot;signal_class&quot;).is_in([&quot;nearside&quot;, &quot;farside&quot;]).sum(),
+        )
+        .with_columns(
+            signalized_share=pl.col(&quot;n_signalized&quot;) / pl.col(&quot;n_stops&quot;),
+            nearside_share=pl.when(pl.col(&quot;n_signal_classified&quot;) &gt; 0)
+            .then(pl.col(&quot;n_nearside&quot;) / pl.col(&quot;n_signal_classified&quot;))
+            .otherwise(None),
+        )
+        .sort(&quot;income_quartile&quot;)
+    )
+
+
+def tract_summary(df: pl.DataFrame) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Per-tract signalized/near-side shares plus demographic ratios.&quot;&quot;&quot;
+    return (
+        df.group_by(&quot;geoid&quot;)
+        .agg(
+            n_stops=pl.len(),
+            n_signalized=pl.col(&quot;is_signalized&quot;).sum(),
+            n_nearside=pl.col(&quot;is_nearside&quot;).sum(),
+            n_signal_classified=pl.col(&quot;signal_class&quot;).is_in([&quot;nearside&quot;, &quot;farside&quot;]).sum(),
+            median_household_income=pl.col(&quot;median_household_income&quot;).first(),
+            population=pl.col(&quot;population&quot;).first(),
+            households_total=pl.col(&quot;households_total&quot;).first(),
+            households_zero_vehicle=pl.col(&quot;households_zero_vehicle&quot;).first(),
+            pop_black_nh=pl.col(&quot;pop_black_nh&quot;).first(),
+        )
+        .with_columns(
+            signalized_share=pl.col(&quot;n_signalized&quot;) / pl.col(&quot;n_stops&quot;),
+            nearside_share=pl.when(pl.col(&quot;n_signal_classified&quot;) &gt; 0)
+            .then(pl.col(&quot;n_nearside&quot;) / pl.col(&quot;n_signal_classified&quot;))
+            .otherwise(None),
+            zero_vehicle_share=pl.when(pl.col(&quot;households_total&quot;) &gt; 0)
+            .then(pl.col(&quot;households_zero_vehicle&quot;) / pl.col(&quot;households_total&quot;))
+            .otherwise(None),
+            black_share=pl.when(pl.col(&quot;population&quot;) &gt; 0)
+            .then(pl.col(&quot;pop_black_nh&quot;) / pl.col(&quot;population&quot;))
+            .otherwise(None),
+        )
+    )
+
+
+def make_quartile_chart(quartile_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Grouped bar chart: signalized-stop share and near-side share by income quartile.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(9, 6))
+
+    order = quartile_df.sort(&quot;income_quartile&quot;)
+    labels = order[&quot;income_quartile&quot;].to_list()
+    sig = (order[&quot;signalized_share&quot;] * 100).to_list()
+    near = (order[&quot;nearside_share&quot;] * 100).to_list()
+
+    x = np.arange(len(labels))
+    width = 0.38
+    b1 = ax.bar(x - width / 2, sig, width, label=&quot;Signalized-stop share&quot;,
+                color=&quot;#2563eb&quot;, alpha=0.85)
+    b2 = ax.bar(x + width / 2, near, width, label=&quot;Near-side share (of signalized)&quot;,
+                color=&quot;#e11d48&quot;, alpha=0.85)
+    ax.bar_label(b1, fmt=&quot;%.1f%%&quot;, padding=3, fontsize=9)
+    ax.bar_label(b2, fmt=&quot;%.1f%%&quot;, padding=3, fontsize=9)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=9)
+    ax.set_ylabel(&quot;Percent&quot;)
+    ax.set_ylim(0, max(near + sig) * 1.18)
+    ax.set_title(&quot;Signal Stop Placement by Neighborhood Income Quartile\n&quot;
+                 &quot;(flat bars = no income disparity)&quot;, fontweight=&quot;bold&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;signal_share_by_income_quartile.png&quot;)
+
+
+def make_scatter_chart(tract_df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter: tract median income vs signalized-stop share.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    d = tract_df.filter(
+        (pl.col(&quot;n_stops&quot;) &gt;= MIN_STOPS_PER_TRACT)
+        &amp; pl.col(&quot;median_household_income&quot;).is_not_null()
+    )
+    income = d[&quot;median_household_income&quot;].to_numpy() / 1000.0
+    share = d[&quot;signalized_share&quot;].to_numpy() * 100
+
+    ax.scatter(income, share, alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5)
+    slope, intercept, r, p, _ = stats.linregress(income, share)
+    x_line = np.array([income.min(), income.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, alpha=0.7, label=f&quot;r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.set_xlabel(&quot;Tract median household income ($1,000s)&quot;)
+    ax.set_ylabel(&quot;Signalized-stop share (%)&quot;)
+    ax.set_title(f&quot;Tract Income vs Signalized-Stop Share &quot;
+                 f&quot;(&gt;= {MIN_STOPS_PER_TRACT} stops, n = {d.height})&quot;, fontweight=&quot;bold&quot;)
+    ax.legend(fontsize=9)
+    save_chart(fig, OUT / &quot;tract_income_vs_signal_share.png&quot;)
+
+
+@run_analysis(58, &quot;Stop Signal Placement Equity&quot;)
+def main() -&gt; None:
+    &quot;&quot;&quot;Entry point: join signals to tract demographics and test for disparity.&quot;&quot;&quot;
+    with phase(&quot;Joining signal class to census-tract demographics&quot;):
+        df = build_stop_demographics()
+        n_income = df.drop_nulls(&quot;median_household_income&quot;).height
+        print(f&quot;  {df.height} stops joined to a tract; {n_income} have median income&quot;)
+
+    with phase(&quot;Income-quartile shares&quot;):
+        quartile_df = income_quartile_table(df)
+        for row in quartile_df.iter_rows(named=True):
+            print(f&quot;  {row[&#x27;income_quartile&#x27;]:&lt;22s} &quot;
+                  f&quot;n={row[&#x27;n_stops&#x27;]:5d}  signalized={row[&#x27;signalized_share&#x27;]:.1%}  &quot;
+                  f&quot;near-side={row[&#x27;nearside_share&#x27;]:.1%}&quot;)
+
+    with phase(&quot;Tract-level demographic correlations&quot;):
+        tract_df = tract_summary(df)
+        sig_df = tract_df.filter(pl.col(&quot;n_stops&quot;) &gt;= MIN_STOPS_PER_TRACT)
+        near_df = tract_df.filter(pl.col(&quot;n_signal_classified&quot;) &gt;= MIN_SIGNALIZED_PER_TRACT)
+        corr_rows = []
+        print(f&quot;  Signalized-share correlations (tracts with &gt;= {MIN_STOPS_PER_TRACT} &quot;
+              f&quot;stops, n = {sig_df.height}):&quot;)
+        for col, label in DEMOGRAPHICS:
+            c = correlate(sig_df, col, &quot;signalized_share&quot;)
+            print(f&quot;    vs {label:&lt;28s}: rho = {c[&#x27;spearman_r&#x27;]:+.3f}, p = {c[&#x27;spearman_p&#x27;]:.4f}&quot;)
+            corr_rows.append({&quot;outcome&quot;: &quot;signalized_share&quot;, &quot;demographic&quot;: col,
+                              &quot;spearman_r&quot;: c[&quot;spearman_r&quot;], &quot;spearman_p&quot;: c[&quot;spearman_p&quot;],
+                              &quot;n&quot;: c[&quot;n&quot;]})
+        print(f&quot;  Near-side-share correlations (tracts with &gt;= {MIN_SIGNALIZED_PER_TRACT} &quot;
+              f&quot;signalized stops, n = {near_df.height}):&quot;)
+        for col, label in DEMOGRAPHICS:
+            c = correlate(near_df, col, &quot;nearside_share&quot;)
+            print(f&quot;    vs {label:&lt;28s}: rho = {c[&#x27;spearman_r&#x27;]:+.3f}, p = {c[&#x27;spearman_p&#x27;]:.4f}&quot;)
+            corr_rows.append({&quot;outcome&quot;: &quot;nearside_share&quot;, &quot;demographic&quot;: col,
+                              &quot;spearman_r&quot;: c[&quot;spearman_r&quot;], &quot;spearman_p&quot;: c[&quot;spearman_p&quot;],
+                              &quot;n&quot;: c[&quot;n&quot;]})
+
+    with phase(&quot;Saving outputs&quot;):
+        save_csv(
+            df.select(&quot;stop_id&quot;, &quot;signal_class&quot;, &quot;has_signal&quot;, &quot;geoid&quot;,
+                      &quot;median_household_income&quot;),
+            OUT / &quot;stop_equity.csv&quot;,
+        )
+        save_csv(tract_df.sort(&quot;median_household_income&quot;), OUT / &quot;tract_equity_summary.csv&quot;)
+        save_csv(quartile_df, OUT / &quot;income_quartile_shares.csv&quot;)
+        save_csv(pl.DataFrame(corr_rows), OUT / &quot;demographic_correlations.csv&quot;)
+
+    with phase(&quot;Generating charts&quot;):
+        make_quartile_chart(quartile_df)
+        make_scatter_chart(tract_df)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>stop_signals</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by PRT Stop-Signal Classification ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/prt-stop-signals/bus_stops_with_signals_2602.xlsx</strong> — PRT-provided spreadsheet (Samuel Buckley, 2026) tagging each of 6,306 bus stops as no-signal, near-side, far-side, or busway/BRT.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stops</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by Data Ingestion.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (5)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/routes_by_month.csv</strong> — Monthly route OTP source table in wide format.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Current_Routes_Full_System_de0e48fcbed24ebc8b0d933e47b56682.csv</strong> — Current route metadata and mode classifications.</li>
+              
+                <li><span class="tag">file</span> <strong>data/Transit_stops_(current)_by_route_e040ee029227468ebf9d217402a82fa9.csv</strong> — Current stop-to-route coverage and trip counts.</li>
+              
+                <li><span class="tag">file</span> <strong>data/PRT_Stop_Reference_Lookup_Table.csv</strong> — Historical stop reference file with geography attributes.</li>
+              
+                <li><span class="tag">file</span> <strong>data/average-ridership/12bb84ed-397e-435c-8d1b-8ce543108698.csv</strong> — Average ridership by route and month.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>census_tracts</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Project pipeline owner not linked.</td>
+          <td>Refresh cadence unknown.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>geopandas</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

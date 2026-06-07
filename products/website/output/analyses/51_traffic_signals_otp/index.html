@@ -36,7 +36,7 @@
   <h1>51 - Traffic Signals and OTP</h1>
   <p class="lede">Ridership and External Factors</p>
   <p class="lede">Coverage: 2019-01 to 2025-11 (from otp_monthly).</p>
-  <p class="lede">Built 2026-06-05 17:58 UTC · Commit 7493239</p>
+  <p class="lede">Built 2026-06-07 14:04 UTC · Commit ebc369b</p>
 </section>
 
 <section class="panel toc-panel">
@@ -81,6 +81,9 @@
   u2_11_signal_overlay[/"data/GTFS/shapes.txt"/] --> 11_signal_overlay
   u3_11_signal_overlay[/"data/GTFS/trips.txt"/] --> 11_signal_overlay
   u4_11_signal_overlay{"OpenStreetMap Overpass API"} --> 11_signal_overlay
+  t_stop_signals[("stop_signals")] --> 51_traffic_signals_otp
+  15_stop_signals[["PRT Stop-Signal Classification ETL"]] --> t_stop_signals
+  u1_15_stop_signals[/"data/prt-stop-signals/bus_stops_with_signals_2602.xlsx"/] --> 15_stop_signals
   t_route_stops[("route_stops")] --> 51_traffic_signals_otp
   01_data_ingestion[["Data Ingestion"]] --> t_route_stops
   t_routes[("routes")] --> 51_traffic_signals_otp
@@ -97,11 +100,11 @@
   classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
   classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
   class 51_traffic_signals_otp page;
-  class t_otp_monthly,t_route_signals,t_route_stops,t_routes,t_stops table;
+  class t_otp_monthly,t_route_signals,t_route_stops,t_routes,t_stop_signals,t_stops table;
   class d1_51_traffic_signals_otp,d2_51_traffic_signals_otp,d3_51_traffic_signals_otp dep;
-  class u1_01_data_ingestion,u1_11_signal_overlay,u2_01_data_ingestion,u2_11_signal_overlay,u3_01_data_ingestion,u3_11_signal_overlay,u4_01_data_ingestion,u5_01_data_ingestion file;
+  class u1_01_data_ingestion,u1_11_signal_overlay,u1_15_stop_signals,u2_01_data_ingestion,u2_11_signal_overlay,u3_01_data_ingestion,u3_11_signal_overlay,u4_01_data_ingestion,u5_01_data_ingestion file;
   class u4_11_signal_overlay api;
-  class 01_data_ingestion,11_signal_overlay pipeline;</pre>
+  class 01_data_ingestion,11_signal_overlay,15_stop_signals pipeline;</pre>
   </details>
 </section>
 
@@ -122,6 +125,14 @@ per route-km is associated with roughly <strong>1.75 percentage points lower <a 
 This contrasts sharply with Analysis 27, which found that traffic <em>volume</em>
 (AADT) had no effect — it is the fixed, repeated stop-and-wait of signals, not
 how busy the road is, that tracks with delay.</p>
+<p><strong>Independently confirmed by PRT's authoritative records.</strong> PRT supplied a
+per-stop signal classification (the <code>stop_signals</code> table). The share of a route's
+stops that sit at a signal — a completely independent measure of signal exposure
+— predicts <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> just as strongly (r = −0.50; +13.9 <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a> points beyond the
+structural model, F = 29.9, p &lt; 0.0001) and agrees with the OpenStreetMap
+density measure (r = +0.61). When both are entered together they remain
+significant and non-collinear (<a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> ≈ 2.4 each), so the conclusion does not hinge
+on the crowd-sourced OSM data.</p>
 <h2>Key Numbers</h2>
 <ul>
 <li><strong>92 routes</strong> analyzed (89 bus, 3 rail) with 12+ months of <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> data and matched
@@ -136,6 +147,21 @@ shapes within a 30 m buffer.</li>
 p &lt; 0.0001) — about <strong>-1.75 pp <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> per +1 signal/km</strong>.</li>
 <li><strong><a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> for signal density = 1.35</strong> (all predictors &lt; 5) — no multicollinearity.</li>
 <li>Bus-only: base <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a> 0.379 → 0.532 (F = 26.9, p &lt; 0.0001, <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> -0.45).</li>
+</ul>
+<h3>Authoritative cross-validation (PRT <code>stop_signals</code>)</h3>
+<ul>
+<li><strong>PRT signalized-stop share vs OSM signal density: r = +0.61</strong> (p &lt; 0.0001);
+PRT signalized-stop count vs OSM signal count: <strong>r = +0.76</strong>. The two
+independent signal-exposure measures agree.</li>
+<li>PRT signalized-stop share vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>: <strong>r = −0.50</strong> (p &lt; 0.0001) — the
+stop-normalized, honest predictor. (Raw count r = −0.70, but it tracks
+stop_count and is confounded, exactly as raw OSM <code>n_signals</code> is.)</li>
+<li>Authoritative model (base + sig_stop_share): <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a> <strong>0.472 → 0.611</strong>
+(+0.139, F = 29.9, p &lt; 0.0001), <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> −0.44 — slightly stronger than the OSM
+density model (+0.130).</li>
+<li>Combined model (base + density + share): <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a> <strong>0.635</strong>; both signal
+measures stay significant (density p = 0.022, share p = 0.008) with <strong><a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> ≈ 2.4
+each</strong> — distinct, non-redundant facets of signal exposure.</li>
 </ul>
 <h2>Observations</h2>
 <ul>
@@ -161,6 +187,14 @@ suburban routes such as 79 East Hills (0.89/km, 71% <a href="../../glossary.html
 structural controls; signal density clearly does. Signals impose a fixed,
 stochastic delay every cycle regardless of how heavy traffic is, which is a
 more plausible mechanism for the kind of <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> measures.</li>
+<li><strong>PRT's authoritative records independently confirm the result.</strong> The OSM
+signal exposure was never ground-truthed before. PRT's per-stop classification
+gives a second, independent measure (what fraction of a route's stops are at a
+signal); it correlates with the OSM measure (r = +0.61) and predicts <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> just
+as strongly (r = −0.50, +13.9 <a href="../../glossary.html#r-squared" class="glossary-link" data-definition="Fraction of outcome variance explained by a regression model.">R-squared</a> points). The two measures are not
+redundant (<a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> ≈ 2.4 when combined): OSM density counts every signal the route
+<em>passes</em> (including at non-stop intersections), while the PRT share counts
+signals where the bus actually <em>stops</em> — two facets of the same delay story.</li>
 </ul>
 <h2>Discussion</h2>
 <p>The result reinforces the cumulative picture from Analyses 18, 26 and 27 that
@@ -226,6 +260,13 @@ impose fixed per-cycle delay, a sound mechanism, and the raw-count vs density
 diagnostic confirmed the relationship is not a route-length artifact.</li>
 <li><strong>Ecological framing (checklist #9).</strong> Documented in Caveats and Discussion;
 results are described as route-level associations throughout.</li>
+<li><strong>Cross-validated against an authoritative source (checklist #5).</strong> The OSM
+signal-density measure was checked against PRT's <code>stop_signals</code> records
+(pipeline 15). The two agree (r = +0.61 share vs density; r = +0.76 counts),
+and the authoritative measure reproduces the <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> relationship independently.
+Aggregation joins <code>stop_signals</code> → <code>route_stops</code> on the PRT internal <code>stop_id</code>
+(E-code namespace, shared between those two tables); the OSM/GTFS join in
+Analysis 53 instead keys on <code>stop_code</code> — the two stop-id namespaces differ.</li>
 </ul>
 </div>
   </details>
@@ -236,7 +277,7 @@ results are described as route-level associations throughout.</li>
 <section class="panel" id="outputs">
   <h2>Output</h2>
   <div class="tab-bar output-tabs">
-    <button class="tab-btn active" data-target="charts">Charts (3)</button>
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
     <button class="tab-btn" data-target="interactive">Interactive (0)</button>
     <button class="tab-btn" data-target="data">Data (3)</button>
   </div>
@@ -271,6 +312,15 @@ results are described as route-level associations throughout.</li>
         </figcaption>
       </figure>
     
+      <figure class="shot-card">
+        <img src="../../assets/analyses/51_traffic_signals_otp/cross_validation_signal_exposure.png" alt="cross_validation_signal_exposure" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/cross_validation_signal_exposure.png" target="_blank" rel="noopener noreferrer">cross_validation_signal_exposure.png</a>
+          <p class="artifact-desc">PRT authoritative signalized-stop share vs OSM signal density, validating that the two independent signal-exposure measures agree.</p>
+        </figcaption>
+      </figure>
+    
     
     </div>
   </div>
@@ -289,7 +339,7 @@ results are described as route-level associations throughout.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/model_comparison.csv" target="_blank" rel="noopener noreferrer">model_comparison.csv</a>
-          <p class="artifact-desc">Regression coefficients, standard errors, p-values, and R-squared for the base and signal-density-expanded models, all routes and bus-only.</p>
+          <p class="artifact-desc">Regression coefficients, standard errors, p-values, and R-squared for the base, signal-density, authoritative signalized-stop-share, combined, and bus-only models.</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/51_traffic_signals_otp/model_comparison.csv">
             <summary>Preview CSV</summary>
@@ -317,7 +367,7 @@ results are described as route-level associations throughout.</li>
         <figcaption class="artifact-body">
           <span class="artifact-kind">data</span>
           <a class="artifact-link" href="../../assets/analyses/51_traffic_signals_otp/route_signals_summary.csv" target="_blank" rel="noopener noreferrer">route_signals_summary.csv</a>
-          <p class="artifact-desc">Per-route traffic signal count, route length, signal density, match rate, stop count, span, and average OTP.</p>
+          <p class="artifact-desc">Per-route traffic signal count, route length, signal density, match rate, stop count, span, authoritative signalized-stop count and share, and average OTP.</p>
           
           <details class="csv-preview" data-csv-url="../../assets/analyses/51_traffic_signals_otp/route_signals_summary.csv">
             <summary>Preview CSV</summary>
@@ -366,8 +416,22 @@ all partly encode &quot;urban arterial vs. suburban&quot; route character, so a 
 is <strong>not</strong> used as an inclusion filter: unlike the PennDOT road-network match
 rate in Analysis 27, it is essentially proportional to signal density and is
 not a coverage-quality signal. It is retained only as a diagnostic column.</li>
+<li><strong>Cross-validate the OSM signal exposure against PRT's authoritative records.</strong>
+From the <code>stop_signals</code> table (PRT-supplied, pipeline <code>15_stop_signals</code>),
+compute each route's <code>sig_stop_share</code> — the fraction of its stops that sit at a
+traffic signal — and <code>n_sig_stops</code>. Correlate these against the OSM
+<code>signal_density</code> / <code>n_signals</code>; strong agreement confirms the OSM proxy is
+sound. As with raw count, <code>sig_stop_share</code> (stop-normalized) is the honest
+predictor and <code>n_sig_stops</code> is reported only descriptively (it tracks stop
+count, which itself depresses <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>).</li>
+<li><strong>Re-test with the authoritative predictor.</strong> Fit <code>base + sig_stop_share</code>
+(Model 3) and <code>base + signal_density + sig_stop_share</code> (Model 4), each with a
+nested F-test and <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a>, to check whether PRT's independent measure confirms the
+signal→<a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a> relationship and whether the two signal measures are redundant.</li>
+<li>Repeat the expanded comparison on the bus-only subset.</li>
 <li>Generate a bivariate scatter (signal density vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>), a coefficient comparison
-chart, and a partial residual plot.</li>
+chart, a partial residual plot, and a cross-validation scatter (PRT
+signalized-stop share vs OSM signal density).</li>
 </ul>
 <h2>Data</h2>
 <table>
@@ -390,8 +454,13 @@ chart, and a partial residual plot.</li>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
+  <td><code>stop_signals</code></td>
+  <td>per-stop authoritative signal class; aggregated to per-route <code>sig_stop_share</code> / <code>n_sig_stops</code> (built by <code>15_stop_signals</code>)</td>
+  <td><code>prt.db</code> table</td>
+</tr>
+<tr>
   <td><code>route_stops</code></td>
-  <td>stop counts, trip frequencies</td>
+  <td>stop counts, trip frequencies, stop→route mapping for authoritative aggregation</td>
   <td><code>prt.db</code> table</td>
 </tr>
 <tr>
@@ -408,12 +477,16 @@ chart, and a partial residual plot.</li>
 </table>
 <h2>Output</h2>
 <ul>
-<li><code>output/model_comparison.csv</code> -- regression results for all models</li>
+<li><code>output/model_comparison.csv</code> -- regression results for all models (base,
++signal_density, +sig_stop_share, combined, bus-only)</li>
 <li><code>output/vif_table.csv</code> -- <a href="../../glossary.html#variance-inflation-factor" class="glossary-link" data-definition="Diagnostic for multicollinearity among predictors.">VIF</a> values for the expanded model</li>
-<li><code>output/route_signals_summary.csv</code> -- per-route signal data with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
+<li><code>output/route_signals_summary.csv</code> -- per-route signal data with <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a>, including
+authoritative <code>n_sig_stops</code> and <code>sig_stop_share</code></li>
 <li><code>output/signal_density_vs_otp_scatter.png</code> -- bivariate scatter of signal density vs <a href="../../glossary.html#on-time-performance" class="glossary-link" data-definition="Share of trips that meet the agency&#x27;s on-time threshold, usually expressed from 0 to 1.">OTP</a></li>
 <li><code>output/coefficient_comparison.png</code> -- <a href="../../glossary.html#standardized-coefficient" class="glossary-link" data-definition="Regression coefficient scaled in standard deviation units for cross-predictor comparison.">beta</a> weight comparison between base and expanded models</li>
 <li><code>output/partial_residual.png</code> -- partial residual plot for signal density</li>
+<li><code>output/cross_validation_signal_exposure.png</code> -- PRT authoritative signalized-stop
+share vs OSM signal density (proxy validation)</li>
 </ul>
 </div>
   </details>
@@ -618,6 +691,25 @@ def load_features() -&gt; pl.DataFrame:
     &quot;&quot;&quot;)
     validate(signals_df, ROUTE_SIGNALS, subset=True)
 
+    # Authoritative per-route signal exposure (PRT stop_signals): how many of a
+    # route&#x27;s stops sit at a traffic signal, and what share. Independent of the
+    # OSM density measure above — used to cross-validate it and as an alternative
+    # predictor.
+    auth_signal_df = query_to_polars(&quot;&quot;&quot;
+        SELECT rs.route_id,
+               COUNT(DISTINCT rs.stop_id) AS n_route_stops,
+               COUNT(DISTINCT CASE WHEN ss.has_signal = 1 THEN rs.stop_id END)
+                   AS n_sig_stops
+        FROM route_stops rs
+        LEFT JOIN stop_signals ss ON rs.stop_id = ss.stop_id
+        GROUP BY rs.route_id
+    &quot;&quot;&quot;).with_columns(
+        pl.when(pl.col(&quot;n_route_stops&quot;) &gt; 0)
+        .then(pl.col(&quot;n_sig_stops&quot;) / pl.col(&quot;n_route_stops&quot;))
+        .otherwise(None)
+        .alias(&quot;sig_stop_share&quot;),
+    )
+
     # Assemble
     df = avg_otp
     df = df.join(stop_counts, on=&quot;route_id&quot;, how=&quot;left&quot;)
@@ -625,6 +717,7 @@ def load_features() -&gt; pl.DataFrame:
     df = df.join(munis, on=&quot;route_id&quot;, how=&quot;left&quot;)
     df = df.join(span_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
     df = df.join(signals_df, on=&quot;route_id&quot;, how=&quot;inner&quot;)
+    df = df.join(auth_signal_df, on=&quot;route_id&quot;, how=&quot;left&quot;)
 
     # Derived features
     df = df.with_columns(
@@ -650,7 +743,8 @@ def load_features() -&gt; pl.DataFrame:
     )
 
     df = df.drop_nulls(
-        subset=[&quot;stop_count&quot;, &quot;span_km&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;, &quot;signal_density&quot;],
+        subset=[&quot;stop_count&quot;, &quot;span_km&quot;, &quot;weekend_ratio&quot;, &quot;n_munis&quot;,
+                &quot;signal_density&quot;, &quot;sig_stop_share&quot;],
     )
 
     return df
@@ -760,6 +854,29 @@ def make_partial_residual_chart(df: pl.DataFrame, base: dict) -&gt; None:
     save_chart(fig, OUT / &quot;partial_residual.png&quot;)
 
 
+def make_cross_validation_chart(df: pl.DataFrame) -&gt; None:
+    &quot;&quot;&quot;Scatter: PRT authoritative signalized-stop share vs OSM signal density.&quot;&quot;&quot;
+    plt = setup_plotting()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    share = df[&quot;sig_stop_share&quot;].to_numpy() * 100
+    density = df[&quot;signal_density&quot;].to_numpy()
+
+    ax.scatter(share, density, alpha=0.5, s=30, color=&quot;#2563eb&quot;,
+               edgecolors=&quot;white&quot;, linewidth=0.5)
+    slope, intercept, r, p, _ = stats.linregress(share, density)
+    x_line = np.array([share.min(), share.max()])
+    ax.plot(x_line, slope * x_line + intercept, color=&quot;#e11d48&quot;, linewidth=1.5,
+            linestyle=&quot;--&quot;, alpha=0.7, label=f&quot;r={r:.3f}, p={p:.4f}&quot;)
+
+    ax.set_xlabel(&quot;PRT signalized-stop share (%) — authoritative&quot;)
+    ax.set_ylabel(&quot;OSM signal density (signals per route-km)&quot;)
+    ax.set_title(&quot;Cross-Validation: PRT Authoritative vs OSM Signal Exposure&quot;)
+    ax.legend(fontsize=9)
+
+    save_chart(fig, OUT / &quot;cross_validation_signal_exposure.png&quot;)
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -794,6 +911,23 @@ def main() -&gt; None:
               f&quot;p = {corr_count_len[&#x27;pearson_p&#x27;]:.4f}&quot;)
         print(&quot;  =&gt; raw n_signals tracks route length; signal_density is the &quot;
               &quot;length-adjusted predictor.&quot;)
+
+    # --- Cross-validation: OSM signal exposure vs PRT authoritative ---
+    with phase(&quot;Cross-validating OSM signals against PRT authoritative stops&quot;):
+        cv_density = correlate(df, &quot;sig_stop_share&quot;, &quot;signal_density&quot;)
+        cv_count = correlate(df, &quot;n_sig_stops&quot;, &quot;n_signals&quot;)
+        share_otp = correlate(df, &quot;sig_stop_share&quot;, &quot;avg_otp&quot;)
+        nsig_otp = correlate(df, &quot;n_sig_stops&quot;, &quot;avg_otp&quot;)
+        print(f&quot;  PRT sig_stop_share vs OSM signal_density : r = {cv_density[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {cv_density[&#x27;pearson_p&#x27;]:.4f}&quot;)
+        print(f&quot;  PRT n_sig_stops    vs OSM n_signals      : r = {cv_count[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {cv_count[&#x27;pearson_p&#x27;]:.4f}&quot;)
+        print(&quot;  =&gt; the two independent signal-exposure measures agree, validating &quot;
+              &quot;the OSM proxy used in the headline model.&quot;)
+        print(f&quot;  PRT sig_stop_share vs avg_otp : r = {share_otp[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {share_otp[&#x27;pearson_p&#x27;]:.4f}  (length-adjusted, honest predictor)&quot;)
+        print(f&quot;  PRT n_sig_stops    vs avg_otp : r = {nsig_otp[&#x27;pearson_r&#x27;]:+.3f}, &quot;
+              f&quot;p = {nsig_otp[&#x27;pearson_p&#x27;]:.4f}  (tracks stop_count — confounded)&quot;)
 
     # --- Model 1: Base (Analysis 27 replication, 6 features) ---
     base_features = [&quot;stop_count&quot;, &quot;span_km&quot;, &quot;is_rail&quot;, &quot;is_premium_bus&quot;,
@@ -838,6 +972,38 @@ def main() -&gt; None:
             print(f&quot;  signal_density vs {feat:&lt;16s}: r = {corr[&#x27;pearson_r&#x27;]:+.3f}, &quot;
                   f&quot;p = {corr[&#x27;pearson_p&#x27;]:.4f} {sig}&quot;)
 
+    # --- Model 3: Authoritative (base + PRT signalized-stop share) ---
+    auth_features = base_features + [&quot;sig_stop_share&quot;]
+    X_auth = np.column_stack([df[f].to_numpy().astype(float) for f in auth_features])
+    with phase(&quot;Fitting authoritative model (+ PRT sig_stop_share)&quot;):
+        auth_model = fit_ols(y, X_auth, auth_features)
+        print_model(auth_model, &quot;Authoritative model (+ sig_stop_share)&quot;)
+        f_auth, fp_auth = f_test_nested(base, auth_model)
+        print(f&quot;\n  F-test for sig_stop_share: F = {f_auth:.3f}, p = {fp_auth:.4f}&quot;)
+        print(f&quot;  R2 change: {base[&#x27;r_squared&#x27;]:.4f} -&gt; {auth_model[&#x27;r_squared&#x27;]:.4f} &quot;
+              f&quot;(+{auth_model[&#x27;r_squared&#x27;] - base[&#x27;r_squared&#x27;]:.4f})&quot;)
+        if fp_auth &lt; 0.05:
+            print(&quot;  =&gt; PRT authoritative signal exposure IS significant beyond &quot;
+                  &quot;structural features — independently confirms the OSM result.&quot;)
+
+    # --- Model 4: Combined (base + OSM density + PRT share) ---
+    combined_features = base_features + [&quot;signal_density&quot;, &quot;sig_stop_share&quot;]
+    X_comb = np.column_stack([df[f].to_numpy().astype(float) for f in combined_features])
+    with phase(&quot;Fitting combined model (+ signal_density + sig_stop_share)&quot;):
+        combined = fit_ols(y, X_comb, combined_features)
+        print_model(combined, &quot;Combined model (density + share)&quot;)
+        f_comb, fp_comb = f_test_nested(base, combined)
+        print(f&quot;\n  F-test (both signal measures): F = {f_comb:.3f}, p = {fp_comb:.4f}&quot;)
+        print(f&quot;  R2: base {base[&#x27;r_squared&#x27;]:.4f} -&gt; combined {combined[&#x27;r_squared&#x27;]:.4f}&quot;)
+        comb_vifs = compute_vif(X_comb, combined_features)
+        print(&quot;  VIF (density, share): &quot;
+              f&quot;{comb_vifs[&#x27;signal_density&#x27;]:.2f}, {comb_vifs[&#x27;sig_stop_share&#x27;]:.2f}&quot;)
+        dens_p = combined[&quot;p_values&quot;][combined_features.index(&quot;signal_density&quot;) + 1]
+        share_p = combined[&quot;p_values&quot;][combined_features.index(&quot;sig_stop_share&quot;) + 1]
+        if dens_p &lt; 0.05 and share_p &lt; 0.05:
+            print(&quot;  =&gt; both remain significant and non-collinear: signal density &quot;
+                  &quot;and signalized-stop share capture distinct delay facets.&quot;)
+
     # --- Bus-only subgroup ---
     bus_df = df.filter(pl.col(&quot;mode&quot;) == &quot;BUS&quot;)
     y_bus = bus_df[&quot;avg_otp&quot;].to_numpy()
@@ -864,6 +1030,8 @@ def main() -&gt; None:
         models = [
             (base, &quot;base_6feat&quot;),
             (expanded, &quot;expanded_7feat_signal_density&quot;),
+            (auth_model, &quot;authoritative_sig_stop_share&quot;),
+            (combined, &quot;combined_density_and_share&quot;),
             (bus_base, &quot;bus_base&quot;),
             (bus_expanded, &quot;bus_expanded_signal_density&quot;),
         ]
@@ -889,6 +1057,7 @@ def main() -&gt; None:
         summary_df = df.select([
             &quot;route_id&quot;, &quot;route_name&quot;, &quot;mode&quot;, &quot;avg_otp&quot;, &quot;n_signals&quot;,
             &quot;length_km&quot;, &quot;signal_density&quot;, &quot;match_rate&quot;, &quot;stop_count&quot;, &quot;span_km&quot;,
+            &quot;n_route_stops&quot;, &quot;n_sig_stops&quot;, &quot;sig_stop_share&quot;,
         ]).sort(&quot;signal_density&quot;, descending=True)
         save_csv(summary_df, OUT / &quot;route_signals_summary.csv&quot;)
 
@@ -896,6 +1065,7 @@ def main() -&gt; None:
         make_scatter_chart(df)
         make_coefficient_chart(base, expanded)
         make_partial_residual_chart(df, base)
+        make_cross_validation_chart(df)
 
 
 if __name__ == &quot;__main__&quot;:
@@ -970,6 +1140,29 @@ if __name__ == &quot;__main__&quot;:
                 <li><span class="tag">file</span> <strong>data/GTFS/trips.txt</strong> — GTFS shape-to-route mapping.</li>
               
                 <li><span class="tag">api</span> <strong>OpenStreetMap Overpass API</strong> — Public query endpoint for OSM nodes tagged highway=traffic_signals.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>stop_signals</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by PRT Stop-Signal Classification ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/prt-stop-signals/bus_stops_with_signals_2602.xlsx</strong> — PRT-provided spreadsheet (Samuel Buckley, 2026) tagging each of 6,306 bus stops as no-signal, near-side, far-side, or busway/BRT.</li>
               
               </ul>
             </details>

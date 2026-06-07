@@ -35,7 +35,7 @@
   <p class="kicker">Reference</p>
   <h1>Sources Inventory</h1>
   <p class="lede">Unified catalog of files, APIs, tables, and library dependencies used in this project.</p>
-  <p class="lede">Built 2026-06-05 17:58 UTC · Commit 7493239</p>
+  <p class="lede">Built 2026-06-07 14:04 UTC · Commit ebc369b</p>
 </section>
 
 <section class="panel">
@@ -264,7 +264,7 @@
       <tr>
         <td><a href="sources/source-024.html">data/GTFS/stops.txt</a></td>
         <td><span class="tag">file</span></td>
-        <td>GTFS stop locations.</td>
+        <td>GTFS stop locations and stop_code join key.</td>
         <td>Local project data owner not specified.</td>
         <td>Snapshot file; refresh by rerunning its pipeline step.</td>
         <td>May lag upstream source updates.</td>
@@ -424,7 +424,16 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-042.html">data/routes_by_month.csv</a></td>
+        <td><a href="sources/source-042.html">data/prt-stop-signals/bus_stops_with_signals_2602.xlsx</a></td>
+        <td><span class="tag">file</span></td>
+        <td>PRT-provided spreadsheet (Samuel Buckley, 2026) tagging each of 6,306 bus stops as no-signal, near-side, far-side, or busway/BRT.</td>
+        <td>Local project data owner not specified.</td>
+        <td>Snapshot file; refresh by rerunning its pipeline step.</td>
+        <td>May lag upstream source updates.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-043.html">data/routes_by_month.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Monthly route OTP source table in wide format.</td>
         <td>Local project data owner not specified.</td>
@@ -433,7 +442,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-043.html">data/spc-pavement/pavement_raw.geojson</a></td>
+        <td><a href="sources/source-044.html">data/spc-pavement/pavement_raw.geojson</a></td>
         <td><span class="tag">file</span></td>
         <td>Cached SPC NHS pavement-condition GeoJSON (ROUGH_INDX/IRI, OVERALL_PV, IRI_RATING, geometry) in WGS84.</td>
         <td>Local project data owner not specified.</td>
@@ -442,7 +451,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-044.html">data/wprdc-schedule/paac_pick_lookup.csv</a></td>
+        <td><a href="sources/source-045.html">data/wprdc-schedule/paac_pick_lookup.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Pick period lookup metadata (cached copy when available).</td>
         <td>Local project data owner not specified.</td>
@@ -451,7 +460,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-045.html">data/wprdc-schedule/schedule_monthly_agg.csv</a></td>
+        <td><a href="sources/source-046.html">data/wprdc-schedule/schedule_monthly_agg.csv</a></td>
         <td><span class="tag">file</span></td>
         <td>Monthly route/day-type schedule aggregates (cached copy when available).</td>
         <td>Local project data owner not specified.</td>
@@ -460,7 +469,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-046.html">allegheny_go_weekly</a></td>
+        <td><a href="sources/source-047.html">allegheny_go_weekly</a></td>
         <td><span class="tag">table</span></td>
         <td>Database table consumed by one or more analyses.</td>
         <td>Project pipeline owner not linked.</td>
@@ -469,7 +478,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-047.html">census_tracts</a></td>
+        <td><a href="sources/source-048.html">census_tracts</a></td>
         <td><span class="tag">table</span></td>
         <td>Database table consumed by one or more analyses.</td>
         <td>Project pipeline owner not linked.</td>
@@ -478,7 +487,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-048.html">ntd_agency</a></td>
+        <td><a href="sources/source-049.html">ntd_agency</a></td>
         <td><span class="tag">table</span></td>
         <td>Agency dimension table keyed by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</td>
         <td>Produced by NTD Ridership ETL.</td>
@@ -487,7 +496,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-049.html">ntd_annual_service</a></td>
+        <td><a href="sources/source-050.html">ntd_annual_service</a></td>
         <td><span class="tag">table</span></td>
         <td>Annual VRH, VRM, UPT, VOMS by NTD system (1991-2023). Produced by NTD Annual Service ETL.</td>
         <td>Produced by NTD Annual Service ETL.</td>
@@ -496,7 +505,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-050.html">ntd_fleet_age</a></td>
+        <td><a href="sources/source-051.html">ntd_fleet_age</a></td>
         <td><span class="tag">table</span></td>
         <td>Database table consumed by one or more analyses.</td>
         <td>Project pipeline owner not linked.</td>
@@ -505,7 +514,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-051.html">ntd_ridership</a></td>
+        <td><a href="sources/source-052.html">ntd_ridership</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly UPT facts by NTD ID, mode, and TOS. Produced by NTD Ridership ETL.</td>
         <td>Produced by NTD Ridership ETL.</td>
@@ -514,7 +523,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-052.html">otp_monthly</a></td>
+        <td><a href="sources/source-053.html">otp_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly OTP values by route. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -523,7 +532,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-053.html">ridership_monthly</a></td>
+        <td><a href="sources/source-054.html">ridership_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly ridership by route and day type. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -532,7 +541,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-054.html">route_road_city</a></td>
+        <td><a href="sources/source-055.html">route_road_city</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-level city-network road-width metrics including length-weighted lane count, one-way share, and limited-access (freeway) share. Produced by City Centerline Overlay ETL.</td>
         <td>Produced by City Centerline Overlay ETL.</td>
@@ -541,7 +550,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-055.html">route_road_class</a></td>
+        <td><a href="sources/source-056.html">route_road_class</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-level road-type metrics including length-weighted lane count, functional class, posted speed, arterial share, and divided-road share. Produced by Road Classification Overlay ETL.</td>
         <td>Produced by Road Classification Overlay ETL.</td>
@@ -550,7 +559,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-056.html">route_road_pavement</a></td>
+        <td><a href="sources/source-057.html">route_road_pavement</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-level pavement-quality metrics including length-weighted IRI roughness, overall pavement index, and share of length rated poor. Produced by NHS Pavement-Condition Overlay ETL.</td>
         <td>Produced by NHS Pavement-Condition Overlay ETL.</td>
@@ -559,7 +568,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-057.html">route_signals</a></td>
+        <td><a href="sources/source-058.html">route_signals</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-level traffic signal count, representative route length, and signal density. Produced by Signal Overlay ETL.</td>
         <td>Produced by Signal Overlay ETL.</td>
@@ -568,7 +577,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-058.html">route_stops</a></td>
+        <td><a href="sources/source-059.html">route_stops</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-stop bridge with service frequency metrics. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -577,7 +586,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-059.html">route_traffic</a></td>
+        <td><a href="sources/source-060.html">route_traffic</a></td>
         <td><span class="tag">table</span></td>
         <td>Route-level traffic exposure metrics including weighted AADT and match quality. Produced by Traffic Overlay ETL.</td>
         <td>Produced by Traffic Overlay ETL.</td>
@@ -586,7 +595,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-060.html">routes</a></td>
+        <td><a href="sources/source-061.html">routes</a></td>
         <td><span class="tag">table</span></td>
         <td>Route dimension table. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -595,7 +604,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-061.html">scheduled_trips_monthly</a></td>
+        <td><a href="sources/source-062.html">scheduled_trips_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly route/day-type scheduled trip counts and distance metrics. Produced by Scheduled Trips ETL.</td>
         <td>Produced by Scheduled Trips ETL.</td>
@@ -604,7 +613,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-062.html">stop_reference</a></td>
+        <td><a href="sources/source-063.html">stop_reference</a></td>
         <td><span class="tag">table</span></td>
         <td>Historical stop metadata and geography. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -613,7 +622,16 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-063.html">stops</a></td>
+        <td><a href="sources/source-064.html">stop_signals</a></td>
+        <td><span class="tag">table</span></td>
+        <td>Per-stop authoritative signal classification (signal_class, has_signal) keyed by stop_code with resolved GTFS stop_id. Produced by PRT Stop-Signal Classification ETL.</td>
+        <td>Produced by PRT Stop-Signal Classification ETL.</td>
+        <td>Updated when the producing pipeline step is rerun.</td>
+        <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+      </tr>
+    
+      <tr>
+        <td><a href="sources/source-065.html">stops</a></td>
         <td><span class="tag">table</span></td>
         <td>Physical stop dimension table. Produced by Data Ingestion.</td>
         <td>Produced by Data Ingestion.</td>
@@ -622,7 +640,7 @@
       </tr>
     
       <tr>
-        <td><a href="sources/source-064.html">weather_monthly</a></td>
+        <td><a href="sources/source-066.html">weather_monthly</a></td>
         <td><span class="tag">table</span></td>
         <td>Monthly precipitation, temperature, snowfall, and wind summary features. Produced by Weather ETL.</td>
         <td>Produced by Weather ETL.</td>

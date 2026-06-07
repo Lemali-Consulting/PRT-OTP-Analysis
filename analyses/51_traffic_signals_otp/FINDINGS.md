@@ -12,6 +12,15 @@ This contrasts sharply with Analysis 27, which found that traffic *volume*
 (AADT) had no effect — it is the fixed, repeated stop-and-wait of signals, not
 how busy the road is, that tracks with delay.
 
+**Independently confirmed by PRT's authoritative records.** PRT supplied a
+per-stop signal classification (the `stop_signals` table). The share of a route's
+stops that sit at a signal — a completely independent measure of signal exposure
+— predicts OTP just as strongly (r = −0.50; +13.9 R-squared points beyond the
+structural model, F = 29.9, p < 0.0001) and agrees with the OpenStreetMap
+density measure (r = +0.61). When both are entered together they remain
+significant and non-collinear (VIF ≈ 2.4 each), so the conclusion does not hinge
+on the crowd-sourced OSM data.
+
 ## Key Numbers
 - **92 routes** analyzed (89 bus, 3 rail) with 12+ months of OTP data and matched
   signal data.
@@ -25,6 +34,20 @@ how busy the road is, that tracks with delay.
   p < 0.0001) — about **-1.75 pp OTP per +1 signal/km**.
 - **VIF for signal density = 1.35** (all predictors < 5) — no multicollinearity.
 - Bus-only: base R-squared 0.379 → 0.532 (F = 26.9, p < 0.0001, beta -0.45).
+
+### Authoritative cross-validation (PRT `stop_signals`)
+- **PRT signalized-stop share vs OSM signal density: r = +0.61** (p < 0.0001);
+  PRT signalized-stop count vs OSM signal count: **r = +0.76**. The two
+  independent signal-exposure measures agree.
+- PRT signalized-stop share vs OTP: **r = −0.50** (p < 0.0001) — the
+  stop-normalized, honest predictor. (Raw count r = −0.70, but it tracks
+  stop_count and is confounded, exactly as raw OSM `n_signals` is.)
+- Authoritative model (base + sig_stop_share): R-squared **0.472 → 0.611**
+  (+0.139, F = 29.9, p < 0.0001), beta −0.44 — slightly stronger than the OSM
+  density model (+0.130).
+- Combined model (base + density + share): R-squared **0.635**; both signal
+  measures stay significant (density p = 0.022, share p = 0.008) with **VIF ≈ 2.4
+  each** — distinct, non-redundant facets of signal exposure.
 
 ## Observations
 - **Raw signal count overstates the effect.** Raw `n_signals` correlates with
@@ -49,6 +72,14 @@ how busy the road is, that tracks with delay.
   structural controls; signal density clearly does. Signals impose a fixed,
   stochastic delay every cycle regardless of how heavy traffic is, which is a
   more plausible mechanism for the kind of variance OTP measures.
+- **PRT's authoritative records independently confirm the result.** The OSM
+  signal exposure was never ground-truthed before. PRT's per-stop classification
+  gives a second, independent measure (what fraction of a route's stops are at a
+  signal); it correlates with the OSM measure (r = +0.61) and predicts OTP just
+  as strongly (r = −0.50, +13.9 R-squared points). The two measures are not
+  redundant (VIF ≈ 2.4 when combined): OSM density counts every signal the route
+  *passes* (including at non-stop intersections), while the PRT share counts
+  signals where the bus actually *stops* — two facets of the same delay story.
 
 ## Discussion
 The result reinforces the cumulative picture from Analyses 18, 26 and 27 that
@@ -113,3 +144,10 @@ would deliver.
   diagnostic confirmed the relationship is not a route-length artifact.
 - **Ecological framing (checklist #9).** Documented in Caveats and Discussion;
   results are described as route-level associations throughout.
+- **Cross-validated against an authoritative source (checklist #5).** The OSM
+  signal-density measure was checked against PRT's `stop_signals` records
+  (pipeline 15). The two agree (r = +0.61 share vs density; r = +0.76 counts),
+  and the authoritative measure reproduces the OTP relationship independently.
+  Aggregation joins `stop_signals` → `route_stops` on the PRT internal `stop_id`
+  (E-code namespace, shared between those two tables); the OSM/GTFS join in
+  Analysis 53 instead keys on `stop_code` — the two stop-id namespaces differ.

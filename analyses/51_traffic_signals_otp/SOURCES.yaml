@@ -4,6 +4,7 @@ group: Ridership and External Factors
 tables:
 - otp_monthly
 - route_signals
+- stop_signals
 - route_stops
 - routes
 - stops
@@ -24,17 +25,20 @@ description: >-
   how many stops a route has and how long it is, lifting the share of explained
   performance differences from 47% to 60%. Notably, an earlier analysis found
   that overall traffic volume had no such effect: it is the fixed stop-and-wait
-  at each signal, not how busy the road is, that tracks with delay.
+  at each signal, not how busy the road is, that tracks with delay. PRT's own
+  authoritative stop records independently confirm this: the share of a route's
+  stops that sit at a signal predicts lateness just as strongly (and agrees with
+  the map-based count), so the finding does not hinge on the open-data estimate.
 outputs:
 - path: model_comparison.csv
   kind: data
-  description: Regression coefficients, standard errors, p-values, and R-squared for the base and signal-density-expanded models, all routes and bus-only.
+  description: Regression coefficients, standard errors, p-values, and R-squared for the base, signal-density, authoritative signalized-stop-share, combined, and bus-only models.
 - path: vif_table.csv
   kind: data
   description: Variance inflation factors for every predictor in the expanded model.
 - path: route_signals_summary.csv
   kind: data
-  description: Per-route traffic signal count, route length, signal density, match rate, stop count, span, and average OTP.
+  description: Per-route traffic signal count, route length, signal density, match rate, stop count, span, authoritative signalized-stop count and share, and average OTP.
 - path: signal_density_vs_otp_scatter.png
   kind: image
   description: Scatter of traffic signal density against average OTP with a fitted trend line.
@@ -44,3 +48,6 @@ outputs:
 - path: partial_residual.png
   kind: image
   description: Partial residual plot of base-model OTP residuals against signal density.
+- path: cross_validation_signal_exposure.png
+  kind: image
+  description: PRT authoritative signalized-stop share vs OSM signal density, validating that the two independent signal-exposure measures agree.

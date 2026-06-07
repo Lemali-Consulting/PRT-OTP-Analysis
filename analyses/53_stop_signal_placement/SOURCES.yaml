@@ -2,9 +2,11 @@ kind: analysis
 title: "53 - Near-Side vs. Far-Side Stop Placement"
 tables:
   - otp_monthly
+  - stop_signals
+  - route_stops
 files:
   - path: data/GTFS/stops.txt
-    description: GTFS stop locations.
+    description: GTFS stop locations and stop_code join key.
   - path: data/GTFS/trips.txt
     description: GTFS shape-to-route mapping.
   - path: data/GTFS/stop_times.txt
@@ -14,22 +16,34 @@ files:
   - path: data/osm-signals/traffic_signals_raw.json
     description: Cached OpenStreetMap traffic-signal node locations for Allegheny County.
 analyses: []
-description: "83% of PRT bus stops at signalized intersections are near-side — placed before the traffic light — while only 17% are far-side. Most PRT stops (76%) are mid-block, away from intersections entirely. Near-side placement is the overwhelming legacy default; modern transit guidance favors far-side stops because they eliminate the double-stop and give buses a rolling start on the green."
+description: "Using PRT's own authoritative stop records, 86% of bus stops at traffic signals are placed before the light (near-side) and only 14% after it (far-side) — the legacy default that modern transit guidance advises against. A from-scratch map-based estimate built from OpenStreetMap matched PRT's records on 98% of stops, validating the method. Whether a route has more near-side or far-side stops has no measurable link to how on-time it runs."
 dependencies:
   - analyses/51_traffic_signals_otp
 outputs:
   - path: stop_classifications.csv
     kind: data
-    description: per-stop near-side / far-side / mid-block classification.
+    description: per-stop near-side / far-side / mid-block classification (OSM/GTFS heuristic).
   - path: route_summary.csv
     kind: data
-    description: per-route near-side share summary.
+    description: per-route near-side share summary (heuristic).
   - path: system_summary.png
     kind: image
     description: system-wide near-side vs. far-side vs. mid-block breakdown.
   - path: nearside_vs_otp.png
     kind: image
-    description: route near-side fraction vs. on-time performance.
+    description: route near-side fraction vs. on-time performance (heuristic).
   - path: top_nearside_routes.png
     kind: image
     description: routes with the highest near-side stop share.
+  - path: validation_confusion.png
+    kind: image
+    description: confusion matrices comparing the OSM/GTFS heuristic to PRT's authoritative labels (signal detection and near vs. far).
+  - path: heuristic_vs_authoritative.csv
+    kind: data
+    description: per-stop comparison of heuristic label vs. PRT authoritative class.
+  - path: authoritative_route_summary.csv
+    kind: data
+    description: per-route near/far counts and mean OTP using PRT authoritative labels.
+  - path: authoritative_nearside_vs_otp.png
+    kind: image
+    description: route near-side fraction (PRT authoritative) vs. on-time performance.

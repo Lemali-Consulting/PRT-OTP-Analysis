@@ -1,0 +1,43 @@
+kind: analysis
+title: "58 - Stop Signal Placement Equity"
+tables:
+  - stop_signals
+  - stops
+  - census_tracts
+files: []
+analyses:
+  - id: 53
+    relationship: uses the same PRT authoritative stop-signal classification and tests its near-side default for demographic disparity.
+dependencies:
+  - numpy
+  - polars
+  - scipy
+  - geopandas
+description: >-
+  Stops placed at traffic signals — and the operationally worse "near-side"
+  stops that sit before the light — are spread evenly across Pittsburgh's
+  neighborhoods regardless of income, car ownership, or racial makeup. The
+  near-side share holds at about 85% whether a stop is in the poorest or richest
+  quartile of neighborhoods, and no demographic measure shows a meaningful
+  relationship with where signalized stops are placed. The legacy near-side
+  pattern is a system-wide design inheritance, not an equity gap — so fixing it
+  would help riders broadly rather than redress a disparity.
+outputs:
+  - path: signal_share_by_income_quartile.png
+    kind: image
+    description: Signalized-stop share and near-side share by neighborhood income quartile (flat across quartiles).
+  - path: tract_income_vs_signal_share.png
+    kind: image
+    description: Scatter of tract median household income against signalized-stop share with fitted trend.
+  - path: stop_equity.csv
+    kind: data
+    description: Per-stop signal class, signalized flag, census tract, and tract median household income.
+  - path: tract_equity_summary.csv
+    kind: data
+    description: Per-tract signalized-stop and near-side shares with income, vehicle-access, and race demographics.
+  - path: income_quartile_shares.csv
+    kind: data
+    description: Signalized and near-side shares aggregated by income quartile.
+  - path: demographic_correlations.csv
+    kind: data
+    description: Spearman correlations of signalized/near-side share against income, zero-vehicle share, and Black population share.

@@ -28,8 +28,22 @@ other structural features from the Analysis 18 / 27 model?
   is **not** used as an inclusion filter: unlike the PennDOT road-network match
   rate in Analysis 27, it is essentially proportional to signal density and is
   not a coverage-quality signal. It is retained only as a diagnostic column.
+- **Cross-validate the OSM signal exposure against PRT's authoritative records.**
+  From the `stop_signals` table (PRT-supplied, pipeline `15_stop_signals`),
+  compute each route's `sig_stop_share` — the fraction of its stops that sit at a
+  traffic signal — and `n_sig_stops`. Correlate these against the OSM
+  `signal_density` / `n_signals`; strong agreement confirms the OSM proxy is
+  sound. As with raw count, `sig_stop_share` (stop-normalized) is the honest
+  predictor and `n_sig_stops` is reported only descriptively (it tracks stop
+  count, which itself depresses OTP).
+- **Re-test with the authoritative predictor.** Fit `base + sig_stop_share`
+  (Model 3) and `base + signal_density + sig_stop_share` (Model 4), each with a
+  nested F-test and VIF, to check whether PRT's independent measure confirms the
+  signal→OTP relationship and whether the two signal measures are redundant.
+- Repeat the expanded comparison on the bus-only subset.
 - Generate a bivariate scatter (signal density vs OTP), a coefficient comparison
-  chart, and a partial residual plot.
+  chart, a partial residual plot, and a cross-validation scatter (PRT
+  signalized-stop share vs OSM signal density).
 
 ## Data
 
@@ -37,14 +51,19 @@ other structural features from the Analysis 18 / 27 model?
 |------|-------------|--------|
 | `otp_monthly` | route_id, month, otp (averaged to route-level, 12+ months required) | `prt.db` table |
 | `route_signals` | route_id, n_signals, length_km, signal_density, match_rate (built by `signal_overlay.py`) | `prt.db` table |
-| `route_stops` | stop counts, trip frequencies | `prt.db` table |
+| `stop_signals` | per-stop authoritative signal class; aggregated to per-route `sig_stop_share` / `n_sig_stops` (built by `15_stop_signals`) | `prt.db` table |
+| `route_stops` | stop counts, trip frequencies, stop→route mapping for authoritative aggregation | `prt.db` table |
 | `stops` | lat, lon for geographic span computation; muni for municipal reach | `prt.db` table |
 | `routes` | route_id, mode for subtype classification | `prt.db` table |
 
 ## Output
-- `output/model_comparison.csv` -- regression results for all models
+- `output/model_comparison.csv` -- regression results for all models (base,
+  +signal_density, +sig_stop_share, combined, bus-only)
 - `output/vif_table.csv` -- VIF values for the expanded model
-- `output/route_signals_summary.csv` -- per-route signal data with OTP
+- `output/route_signals_summary.csv` -- per-route signal data with OTP, including
+  authoritative `n_sig_stops` and `sig_stop_share`
 - `output/signal_density_vs_otp_scatter.png` -- bivariate scatter of signal density vs OTP
 - `output/coefficient_comparison.png` -- beta weight comparison between base and expanded models
 - `output/partial_residual.png` -- partial residual plot for signal density
+- `output/cross_validation_signal_exposure.png` -- PRT authoritative signalized-stop
+  share vs OSM signal density (proxy validation)

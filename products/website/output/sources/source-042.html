@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>data/routes_by_month.csv - Source Detail</title>
+  <title>data/prt-stop-signals/bus_stops_with_signals_2602.xlsx - Source Detail</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,18 +33,18 @@
     
 <section class="hero hero-compact">
   <p class="kicker">File</p>
-  <h1>data/routes_by_month.csv</h1>
-  <p class="lede">Monthly route OTP source table in wide format.</p>
+  <h1>data/prt-stop-signals/bus_stops_with_signals_2602.xlsx</h1>
+  <p class="lede">PRT-provided spreadsheet (Samuel Buckley, 2026) tagging each of 6,306 bus stops as no-signal, near-side, far-side, or busway/BRT.</p>
   <p class="lede">Owner: Local project data owner not specified. · Freshness: Snapshot file; refresh by rerunning its pipeline step.</p>
-  <p class="lede">Built 2026-06-05 17:58 UTC · Commit 7493239</p>
+  <p class="lede">Built 2026-06-07 14:04 UTC · Commit ebc369b</p>
 </section>
 
 
 <section class="panel">
   <h2>Lineage</h2>
   <pre class="mermaid">flowchart LR
-  src["data/routes_by_month.csv"]
-  src --> c1["Data Ingestion"]
+  src["data/prt-stop-signals/bus_stops_with_signals_2602.xlsx"]
+  src --> c1["PRT Stop-Signal Classification ETL"]
 </pre>
 </section>
 
@@ -55,7 +55,7 @@
     <thead><tr><th>Why It Matters</th><th>Caveat</th></tr></thead>
     <tbody>
       <tr>
-        <td>Monthly route OTP source table in wide format.</td>
+        <td>PRT-provided spreadsheet (Samuel Buckley, 2026) tagging each of 6,306 bus stops as no-signal, near-side, far-side, or busway/BRT.</td>
         <td>May lag upstream source updates.</td>
       </tr>
     </tbody>
@@ -67,7 +67,7 @@
   <div class="card-grid">
   
     <article class="card">
-      <h3><a href="pipeline/01_data_ingestion/index.html">Data Ingestion</a></h3>
+      <h3><a href="pipeline/15_stop_signals/index.html">PRT Stop-Signal Classification ETL</a></h3>
       <p>Consumes this source in its data lineage graph.</p>
     </article>
   

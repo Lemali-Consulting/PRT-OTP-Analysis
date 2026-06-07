@@ -39,10 +39,31 @@ def load_stops() -> pl.DataFrame:
     return (
         pl.read_csv(
             GTFS_DIR / "stops.txt",
-            schema_overrides={"stop_id": pl.Utf8},
+            schema_overrides={"stop_id": pl.Utf8, "stop_code": pl.Int64},
         )
         .filter(pl.col("location_type").is_null())
-        .select(["stop_id", "stop_name", "stop_lat", "stop_lon"])
+        .select(["stop_id", "stop_code", "stop_name", "stop_lat", "stop_lon"])
+    )
+
+
+def load_authoritative() -> pl.DataFrame:
+    """Load PRT's authoritative per-stop signal classification, keyed by stop_code.
+
+    Returns columns: stop_code, auth_class ('none'|'nearside'|'farside'|'busway'),
+    auth_has_signal (1 if at a non-busway signal). The PRT spreadsheet and GTFS share
+    the stop_code key; their internal stop_id namespaces differ.
+    """
+    db = get_db()
+    rows = db.execute(
+        "SELECT stop_code, signal_class, has_signal FROM stop_signals"
+    ).fetchall()
+    return pl.DataFrame(
+        {
+            "stop_code": [int(r[0]) for r in rows],
+            "auth_class": [r[1] for r in rows],
+            "auth_has_signal": [int(r[2]) for r in rows],
+        },
+        schema={"stop_code": pl.Int64, "auth_class": pl.Utf8, "auth_has_signal": pl.Int64},
     )
 
 
@@ -337,6 +358,140 @@ def main() -> None:
         fig.savefig(OUTPUT_DIR / "top_nearside_routes.png", dpi=150)
         plt.close(fig)
         print("Wrote top_nearside_routes.png")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # VALIDATION against PRT's authoritative classification
+    # ══════════════════════════════════════════════════════════════════════════
+    print("\nValidating heuristic against PRT authoritative labels…")
+    auth_df = load_authoritative()
+    val_df = (
+        stops_with_class_df
+        .join(auth_df, on="stop_code", how="inner")
+        .with_columns(
+            heur_has_signal=pl.col("classification").is_in(["near_side", "far_side"]).cast(pl.Int64),
+        )
+    )
+    print(f"  {val_df.height} stops present in both heuristic and authoritative sets")
+
+    # ── Signal detection confusion (signalized vs not) ────────────────────────
+    tp = val_df.filter((pl.col("heur_has_signal") == 1) & (pl.col("auth_has_signal") == 1)).height
+    fp = val_df.filter((pl.col("heur_has_signal") == 1) & (pl.col("auth_has_signal") == 0)).height
+    fn = val_df.filter((pl.col("heur_has_signal") == 0) & (pl.col("auth_has_signal") == 1)).height
+    tn = val_df.filter((pl.col("heur_has_signal") == 0) & (pl.col("auth_has_signal") == 0)).height
+    precision = tp / (tp + fp) if (tp + fp) else float("nan")
+    recall = tp / (tp + fn) if (tp + fn) else float("nan")
+    accuracy = (tp + tn) / (tp + fp + fn + tn)
+    print(f"  Signal detection: precision={precision:.3f} recall={recall:.3f} accuracy={accuracy:.3f}")
+
+    # ── Near/far agreement among stops both call signalized ───────────────────
+    both_df = val_df.filter(
+        (pl.col("heur_has_signal") == 1) & (pl.col("auth_has_signal") == 1)
+    ).with_columns(
+        heur_nf=pl.when(pl.col("classification") == "near_side")
+        .then(pl.lit("nearside")).otherwise(pl.lit("farside")),
+    )
+    nf_agree = both_df.filter(pl.col("heur_nf") == pl.col("auth_class")).height
+    nf_total = both_df.height
+    nf_rate = nf_agree / nf_total if nf_total else float("nan")
+    print(f"  Near/far agreement: {nf_agree}/{nf_total} = {nf_rate:.3f}")
+
+    # ── Output: per-stop comparison CSV ───────────────────────────────────────
+    val_df.select([
+        "stop_id", "stop_code", "stop_name",
+        "classification", "auth_class", "auth_has_signal", "heur_has_signal",
+    ]).write_csv(OUTPUT_DIR / "heuristic_vs_authoritative.csv")
+    print(f"Wrote {val_df.height} rows → heuristic_vs_authoritative.csv")
+
+    # ── Output: confusion-matrix figure (detection + near/far) ────────────────
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5.5))
+    det = np.array([[tn, fp], [fn, tp]])  # rows: auth not/signal; cols: heur not/signal
+    ax1.imshow(det, cmap="Blues")
+    ax1.set_xticks([0, 1]); ax1.set_xticklabels(["Heuristic:\nno signal", "Heuristic:\nsignal"])
+    ax1.set_yticks([0, 1]); ax1.set_yticklabels(["PRT:\nno signal", "PRT:\nsignal"])
+    for i in range(2):
+        for j in range(2):
+            ax1.text(j, i, f"{det[i, j]:,}", ha="center", va="center",
+                     fontsize=14, color="black")
+    ax1.set_title(f"Signal detection\naccuracy {accuracy:.1%}  ·  precision {precision:.1%}  ·  recall {recall:.1%}",
+                  fontsize=11, fontweight="bold")
+
+    nf = np.array([
+        [both_df.filter((pl.col("auth_class") == "nearside") & (pl.col("heur_nf") == "nearside")).height,
+         both_df.filter((pl.col("auth_class") == "nearside") & (pl.col("heur_nf") == "farside")).height],
+        [both_df.filter((pl.col("auth_class") == "farside") & (pl.col("heur_nf") == "nearside")).height,
+         both_df.filter((pl.col("auth_class") == "farside") & (pl.col("heur_nf") == "farside")).height],
+    ])
+    ax2.imshow(nf, cmap="Greens")
+    ax2.set_xticks([0, 1]); ax2.set_xticklabels(["Heuristic:\nnear-side", "Heuristic:\nfar-side"])
+    ax2.set_yticks([0, 1]); ax2.set_yticklabels(["PRT:\nnear-side", "PRT:\nfar-side"])
+    for i in range(2):
+        for j in range(2):
+            ax2.text(j, i, f"{nf[i, j]:,}", ha="center", va="center",
+                     fontsize=14, color="black")
+    ax2.set_title(f"Near vs far (among {nf_total:,} both-signalized)\nagreement {nf_rate:.1%}",
+                  fontsize=11, fontweight="bold")
+    fig.suptitle("OSM/GTFS heuristic vs. PRT authoritative stop classification",
+                 fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    fig.savefig(OUTPUT_DIR / "validation_confusion.png", dpi=150)
+    plt.close(fig)
+    print("Wrote validation_confusion.png")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # AUTHORITATIVE re-run: near-side fraction vs OTP using PRT labels
+    # ══════════════════════════════════════════════════════════════════════════
+    db = get_db()
+    auth_route_rows = db.execute(
+        """
+        SELECT rs.route_id, ss.signal_class
+        FROM stop_signals ss
+        JOIN route_stops rs ON ss.stop_id = rs.stop_id
+        WHERE ss.signal_class IN ('nearside', 'farside')
+        """
+    ).fetchall()
+    auth_route_df = (
+        pl.DataFrame(
+            {"route_id": [r[0] for r in auth_route_rows],
+             "signal_class": [r[1] for r in auth_route_rows]}
+        )
+        .group_by("route_id")
+        .agg(
+            near_side_count=(pl.col("signal_class") == "nearside").sum(),
+            far_side_count=(pl.col("signal_class") == "farside").sum(),
+        )
+        .with_columns(total_signalized=pl.col("near_side_count") + pl.col("far_side_count"))
+        .with_columns(near_side_fraction=pl.col("near_side_count") / pl.col("total_signalized"))
+        .filter(pl.col("total_signalized") >= 3)
+        .join(otp_df, on="route_id", how="left")
+    )
+    auth_route_df.write_csv(OUTPUT_DIR / "authoritative_route_summary.csv")
+
+    auth_corr_df = auth_route_df.drop_nulls(subset=["near_side_fraction", "mean_otp"])
+    if len(auth_corr_df) >= 10:
+        ax_var = auth_corr_df["near_side_fraction"].to_numpy()
+        ay = auth_corr_df["mean_otp"].to_numpy()
+        ar, ap = pearsonr(ax_var, ay)
+        arho, aps = spearmanr(ax_var, ay)
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.scatter(ax_var * 100, ay * 100, alpha=0.6, s=50, color="#27ae60",
+                   edgecolors="white", linewidths=0.5)
+        am, ab = np.polyfit(ax_var, ay, 1)
+        xline = np.linspace(ax_var.min(), ax_var.max(), 100)
+        ax.plot(xline * 100, (am * xline + ab) * 100, color="#e74c3c",
+                linewidth=1.5, linestyle="--")
+        ax.set_xlabel("Near-side fraction (%) — PRT authoritative", fontsize=12)
+        ax.set_ylabel("Mean OTP (%)", fontsize=12)
+        ax.set_title(
+            f"Authoritative Near-Side Fraction vs. OTP  (r = {ar:.2f}, ρ = {arho:.2f}, n = {len(auth_corr_df)})",
+            fontsize=12, fontweight="bold",
+        )
+        plt.tight_layout()
+        fig.savefig(OUTPUT_DIR / "authoritative_nearside_vs_otp.png", dpi=150)
+        plt.close(fig)
+        print(
+            f"Wrote authoritative_nearside_vs_otp.png  "
+            f"(r={ar:.3f} p={ap:.4f}, ρ={arho:.3f} p={aps:.4f}, n={len(auth_corr_df)})"
+        )
 
     print("\nDone.")
 

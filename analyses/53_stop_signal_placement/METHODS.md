@@ -45,15 +45,31 @@ its mean OTP.  Transit-operations theory predicts near-side stops are worse for
 OTP (bus must stop twice — once for passengers, once for the light), so a
 negative correlation between near-side fraction and OTP is the expected sign.
 
+### Step 6 — Validate against PRT's authoritative classification
+PRT supplied an authoritative per-stop signal classification (the `stop_signals`
+table, built by `pipeline/15_stop_signals/`). The GTFS heuristic above is
+compared against it stop-by-stop on the shared `stop_code` key:
+
+- **Signal detection** — a 2×2 confusion matrix of heuristic "signalized"
+  (near/far) vs. PRT "has signal", reporting precision, recall, and accuracy.
+- **Near vs. far** — among stops both sources call signalized, the agreement
+  rate and a 2×2 near/far confusion matrix.
+
+The route-level OTP correlation (Step 5) is then **re-run on the authoritative
+near/far labels** (joining `stop_signals` → `route_stops` → `otp_monthly`), so
+the headline OTP result no longer depends on the OSM proxy.
+
 ## Data
 
 | Source | How used |
 |--------|----------|
-| `data/GTFS/stops.txt` | Stop lat/lon |
+| `data/GTFS/stops.txt` | Stop lat/lon and stop_code (join key to authoritative labels) |
 | `data/GTFS/shapes.txt` | Route shape polylines for direction-of-travel projection |
 | `data/GTFS/stop_times.txt` | Links stops → trips for canonical shape assignment |
 | `data/GTFS/trips.txt` | Links trips → shape_id |
-| `data/osm-signals/traffic_signals_raw.json` | Signal lat/lon (2,820 OSM nodes) |
+| `data/osm-signals/traffic_signals_raw.json` | Signal lat/lon (2,820 OSM nodes) — heuristic only |
+| `stop_signals` table in `prt.db` | PRT authoritative per-stop signal class (validation + authoritative re-run) |
+| `route_stops` table in `prt.db` | Stop → route mapping for authoritative route-level aggregation |
 | `otp_monthly` table in `prt.db` | Route mean OTP for correlation step |
 
 Stops are filtered to bus stops only (exclude light-rail stations whose
@@ -71,3 +87,11 @@ right-of-way geometry differs fundamentally from street stops).
   mean OTP (with regression line)
 - `output/top_nearside_routes.png` — ranked bar chart of routes by near-side
   fraction
+- `output/heuristic_vs_authoritative.csv` — per-stop comparison of the GTFS
+  heuristic label vs. PRT's authoritative class (join on stop_code)
+- `output/validation_confusion.png` — confusion matrices: signal detection
+  (left) and near vs. far (right), heuristic vs. PRT
+- `output/authoritative_route_summary.csv` — per-route near/far counts and mean
+  OTP using PRT authoritative labels
+- `output/authoritative_nearside_vs_otp.png` — scatter: route near-side fraction
+  (authoritative) vs. mean OTP

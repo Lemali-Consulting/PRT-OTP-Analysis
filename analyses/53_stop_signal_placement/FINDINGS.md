@@ -2,25 +2,49 @@
 
 ## Summary
 PRT bus stops at signalized intersections are overwhelmingly placed on the
-**near side** — before the traffic light in the direction of travel. Among the
-1,549 stops located within 50 m of an OSM traffic signal, **83% are near-side**
-(1,250) and only **17% are far-side** (262). The remaining 76% of PRT stops
-(4,915) are mid-block — not adjacent to a signal at all. Near-side fraction has
-a weak, non-significant negative correlation with route OTP (r = −0.15,
-p = 0.21), consistent with the hypothesis that near-side stops add delay but
-not distinguishable from noise at the route level given how little variation
-there is across routes.
+**near side** — before the traffic light in the direction of travel. PRT's own
+authoritative stop records (the `stop_signals` table, supplied by PRT) classify
+**1,539 stops as signalized**, of which **86% are near-side** (1,320) and only
+**14% are far-side** (219); a further 66 are busway/BRT and the remaining 4,701
+bus stops are not at a signal. An independent OSM/GTFS heuristic built from
+scratch (Steps 1–5) **agreed with these authoritative labels on 97.6% of stops**
+for signal detection and 93.3% for near-vs-far — validating the method that
+earlier analyses relied on. Re-running the route-level OTP test on the
+authoritative labels leaves the result **null** (r = −0.01, p = 0.95, n = 90):
+whether a route's stops are more near-side or far-side has no measurable
+association with how on-time it runs, driven by severe range restriction (almost
+every route is 64–100% near-side).
 
 ## Key Numbers
-- **6,464 total stops** analyzed (GTFS, bus only — 4 station nodes excluded).
-- **1,549 stops (24%)** within 50 m of an OSM traffic signal ("at intersection").
-- Among those: **1,250 near-side (83%)**, **262 far-side (17%)**, **37 ambiguous (<3%)**.
-- **4,915 stops (76%)** are mid-block — no signal within 50 m.
-- **76 routes** had ≥ 3 classifiable signalized stops and OTP data.
-- Near-side fraction by route ranges from **33% to 100%** (median ~88%).
-- OTP correlation: r = −0.15 (p = 0.21), Spearman ρ = −0.09 (p = 0.45) — not significant.
+
+### Authoritative (PRT `stop_signals`)
+- **6,306 PRT bus stops**, of which **1,539 are at a traffic signal**
+  (1,320 near-side + 219 far-side), **66 busway/BRT**, **4,701 no signal**.
+- Among signalized stops: **85.8% near-side, 14.2% far-side**.
+- **90 routes** had ≥ 3 authoritative signalized stops and OTP data.
+- Authoritative near-side fraction by route ranges **64% to 100%** (median 86%).
+- Authoritative OTP correlation: **r = −0.01 (p = 0.95)**, ρ = −0.03 (p = 0.80) — null.
+
+### Heuristic validation (OSM/GTFS vs. PRT, 6,293 stops in both)
+- **Signal detection: accuracy 97.6%, precision 96.8%, recall 93.1%**
+  (TP 1,432 · FP 48 · FN 106 · TN 4,707). The heuristic misses ~7% of signalized
+  stops, mostly where OSM has no signal node within 50 m.
+- **Near vs. far: 93.3% agreement** (1,336 / 1,432). The heuristic slightly
+  over-calls far-side (68 truly-near labelled far vs. 27 truly-far labelled near).
+
+### Heuristic, for reference (OSM/GTFS only)
+- **1,549 stops** within 50 m of an OSM signal: **1,248 near-side (83%)**,
+  **263 far-side (17%)**, 38 ambiguous; 4,915 mid-block.
+- Heuristic OTP correlation: r = −0.13 (p = 0.26), ρ = −0.07 — not significant.
 
 ## Observations
+- **The OSM/GTFS heuristic is validated.** Against PRT's authoritative records,
+  the from-scratch geometric method correctly identifies signalized stops 97.6%
+  of the time and gets near-vs-far right 93.3% of the time. This retroactively
+  supports the OSM-derived signal metrics used in Analysis 51 and the placement
+  classification used here and in Analysis 54 — the proxy was sound. Where it
+  errs, it is mostly conservative (106 signalized stops missed because OSM lacks
+  a node within 50 m), so the heuristic slightly *under*-counts signal exposure.
 - **Near-side is the overwhelming default.** Across nearly every PRT route,
   buses stop before the signal, not after. The near-side fraction drops below
   70% only for a handful of routes. This is consistent with older US transit
@@ -115,3 +139,12 @@ not possible with the current data.
 6. **Direction of effects.** The OTP correlation is in the expected direction
    (negative: more near-side → slightly lower OTP), even if non-significant.
    A positive coefficient would have been a red flag.
+7. **Cross-validated against authoritative source.** PRT's `stop_signals` table
+   (pipeline 15) provides ground-truth labels. The heuristic's aggregate split
+   (83% near-side) is within 3 pp of the authoritative split (86%), and per-stop
+   agreement is high (97.6% detection, 93.3% near/far). The headline near/far
+   split and OTP correlation reported above use the authoritative labels; the
+   heuristic is retained only for the validation comparison. Join is on the
+   shared `stop_code`; the GTFS and PRT internal `stop_id` namespaces differ
+   (GTFS numeric vs. PRT alpha-prefixed), so joining on `stop_id` would silently
+   match nothing — a verified gotcha.

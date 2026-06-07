@@ -1,0 +1,36 @@
+# Assumptions for Stop Signal Placement Equity
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+- id: stop-id-namespace
+  description: stop_signals.stop_id and the stops table share the PRT internal stop_id
+    namespace (alpha-prefixed E-codes), so assign_stops_to_tracts (which queries the
+    stops table) joins directly to stop_signals on stop_id.
+  impact: high
+  check: 6,299 of 6,306 PRT stops carry a resolved stop_id and join to a tract; a
+    namespace mismatch would silently produce zero matches (the GTFS numeric stop_id
+    differs and must be bridged via stop_code, per Analysis 53).
+
+- id: tract-income-proxies-neighborhood
+  description: A stop's containing census tract's median household income (and vehicle
+    access, race) is treated as the demographic context of the area the stop serves.
+    Stops near tract boundaries serve adjacent populations not counted here.
+  impact: medium
+  check: Point-in-polygon assignment is the same method used by Analysis 04; tract
+    granularity is the finest demographic geography available.
+
+- id: signalized-share-denominator
+  description: Signalized-stop share uses all of a tract's stops as the denominator;
+    near-side share uses only the tract's signalized (near/far) stops. Tracts with
+    zero stops or zero signalized stops yield null shares, not zero.
+  impact: low
+  check: Denominators guarded with when(... > 0); overall shares reconcile with the
+    system totals reported in Analysis 53.
+
+- id: min-sample-thresholds
+  description: Tracts need >= 5 stops for the signalized-share correlation and >= 3
+    signalized stops for the near-side-share correlation. Looser thresholds would add
+    noisier tracts; tighter ones would shrink the sample.
+  impact: low
+  check: Thresholds reported in output CSVs and chart titles; results are null and
+    stable, not threshold-sensitive.
