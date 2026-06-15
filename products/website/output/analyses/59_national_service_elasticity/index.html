@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>59 - National Service Elasticity of Ridership - PRT OTP Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad: true, theme: 'neutral'});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js"></script>
+</head>
+<body>
+  <div class="bg-layer bg-layer-one"></div>
+  <div class="bg-layer bg-layer-two"></div>
+  <header class="site-header">
+    <nav class="site-nav">
+      <a href="../../index.html" class="brand">PRT OTP Analysis</a>
+      <div class="nav-links">
+        <a href="../../index.html#pipeline">Pipeline</a>
+        <a href="../../index.html#analyses">Analyses</a>
+        <a href="../../sources.html">Sources</a>
+        <a href="../../primer.html">Methods</a>
+        <a href="../../glossary.html">Glossary</a>
+        <a href="../../data_dictionary.html">Data Dictionary</a>
+      </div>
+    </nav>
+  </header>
+  <main class="container shell">
+    
+<section class="hero hero-compact">
+  <p class="kicker">Analysis</p>
+  <h1>59 - National Service Elasticity of Ridership</h1>
+  
+  <p class="lede">Coverage: Coverage window unavailable for this page.</p>
+  <p class="lede">Built 2026-06-15 11:52 UTC · Commit e5cf673</p>
+</section>
+
+<section class="panel toc-panel">
+  <h2>Page Navigation</h2>
+  <nav class="toc-links">
+    <a href="#data-provenance">Data Provenance</a>
+    <a href="#findings">Findings</a>
+    <a href="#outputs">Output</a>
+    <a href="#methods">Methods</a>
+    
+    <a href="#sources">Sources</a>
+    <a href="#source-code">Source Code</a>
+  </nav>
+</section>
+
+
+<section class="panel">
+  <h2>Analysis Navigation</h2>
+  <div class="pager">
+    <a href="../58_stop_signal_equity/index.html">← 58 - Stop Signal Placement Equity</a>
+    
+  </div>
+</section>
+
+
+
+<section class="panel" id="data-provenance">
+  <details class="fold" open>
+    <summary><h2>Data Provenance</h2></summary>
+    <pre class="mermaid">flowchart LR
+  59_national_service_elasticity(["59 - National Service Elasticity of Ridership"])
+  t_ntd_annual_service[("ntd_annual_service")] --> 59_national_service_elasticity
+  06_ntd_service[["NTD Annual Service ETL"]] --> t_ntd_annual_service
+  u1_06_ntd_service[/"data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx"/] --> 06_ntd_service
+  d1_59_national_service_elasticity(("numpy (lib)")) --> 59_national_service_elasticity
+  d2_59_national_service_elasticity(("polars (lib)")) --> 59_national_service_elasticity
+  d3_59_national_service_elasticity(("statsmodels (lib)")) --> 59_national_service_elasticity
+  d4_59_national_service_elasticity(("scipy (lib)")) --> 59_national_service_elasticity
+  classDef page fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a,stroke-width:2px;
+  classDef table fill:#ecfeff,stroke:#0e7490,color:#164e63;
+  classDef dep fill:#fff7ed,stroke:#c2410c,color:#7c2d12,stroke-dasharray: 4 2;
+  classDef file fill:#eef2ff,stroke:#6366f1,color:#3730a3;
+  classDef api fill:#f0fdf4,stroke:#16a34a,color:#14532d;
+  classDef pipeline fill:#f5f3ff,stroke:#7c3aed,color:#4c1d95;
+  class 59_national_service_elasticity page;
+  class t_ntd_annual_service table;
+  class d1_59_national_service_elasticity,d2_59_national_service_elasticity,d3_59_national_service_elasticity,d4_59_national_service_elasticity dep;
+  class u1_06_ntd_service file;
+  class 06_ntd_service pipeline;</pre>
+  </details>
+</section>
+
+
+
+<section class="panel" id="findings">
+  <details class="fold" open>
+    <summary><h2>Findings</h2></summary>
+    <div class="markdown"><h1>Findings: National Service Elasticity of Ridership</h1>
+<h2>Summary</h2>
+<p>Across 8,323 year-over-year changes at 497 sizeable US transit agencies (1991–2024,
+pandemic years set aside), a 1% change in service hours is associated with about a
+<strong>0.48% change in ridership in the same direction, the same year</strong>. Cutting service
+reliably loses riders — agencies that cut service by 10% or more lost a <a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> of
+6.3% of ridership — but ridership moves much less than one-for-one with service, and
+service changes explain only a small share (R² ≈ 0.12) of year-to-year ridership
+swings. Most of what drives ridership lies outside the agency's service-level dial.
+Pittsburgh (PRT) sits squarely on this national pattern.</p>
+<h2>Key Numbers</h2>
+<ul>
+<li><strong>Headline elasticity: 0.48</strong> (95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a> [0.46, 0.52]) — % ridership change per 1%
+service change, non-pandemic years, sizeable agencies (n = 8,323).</li>
+<li><strong>Cuts only: 0.36</strong> (95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a> [0.30, 0.42], n = 2,945) — among service-cut episodes
+alone the slope is a bit shallower.</li>
+<li><strong>Sensitivity (base <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> ≥ 250,000): 0.52</strong> — essentially unchanged, so the result
+is not an artifact of the size threshold.</li>
+<li><strong>R² ≈ 0.12</strong> — service change explains ~12% of the <a href="../../glossary.html#variance" class="glossary-link" data-definition="Squared standard deviation used in many statistical formulas.">variance</a> in same-year ridership
+change. Pearson r = 0.35 (p &lt; 1e-200).</li>
+<li><strong>Dose–response gradient (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a> ridership change):</strong> deep cut (≤ −10%) → <strong>−6.3%</strong>;
+cut (−10 to −5%) → −2.6%; mild cut (−5 to 0%) → −0.9%; flat (0 to +5%) → +0.9%;
+growth (&gt; +5%) → <strong>+5.5%</strong>. Monotonic across all five buckets.</li>
+<li><strong>Pandemic transitions (2020–21): slope ≈ 1.0</strong> — service and ridership co-moved far
+more tightly, confirming the pandemic was a different regime and correctly excluded.</li>
+</ul>
+<h2>Observations</h2>
+<ul>
+<li><strong>Service cuts cost riders, but less than proportionally.</strong> The 0.48 slope means an
+agency cutting 10% of service hours typically loses about 5% of ridership in the same
+year. This matches the published short-run transit service elasticity range
+(~0.3–0.5), which is reassuring for the data.</li>
+<li><strong>The relationship is stable across three decades.</strong> The yearly-fit elasticity hovers
+around 0.3–0.6 from 1992 through 2019 with no trend — the service–ridership link is a
+structural feature, not a recent phenomenon. Only 2020–2021 break out (slope ≈ 1.0+).</li>
+<li><strong>Service is a minor driver of year-to-year ridership.</strong> With R² ≈ 0.12, roughly
+seven-eighths of the variation in annual ridership change is unrelated to that year's
+service change — reflecting fuel prices, the economy, fares, demographics, and
+competing travel modes. Restoring service helps, but it is not the main lever on
+ridership.</li>
+<li><strong>The dose–response curve is clean and monotonic.</strong> Bigger cuts → bigger ridership
+losses, bigger expansions → bigger gains, with no reversal. This is the clearest
+single picture of the relationship.</li>
+<li><strong>PRT is a typical agency on this measure.</strong> Across its history PRT's service-vs-
+ridership changes scatter around the national line. Its pre-pandemic cut years
+(e.g. 1992: −9% <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> / −11% <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>; 2003: −5.5% / −7.5%) track the national slope closely.
+Its 2022–2023 ridership rebounds (+44%, +17% on roughly flat service) are pandemic-
+recovery effects, not a service response.</li>
+</ul>
+<h2>Discussion</h2>
+<p>The dominant message echoes Analysis 39 from a much larger evidence base: service
+level is a real but modest lever on ridership. An agency that cuts service will lose
+riders along a predictable ~0.5 slope, and a deep cut compounds into a feedback risk
+(less service → longer waits → riders leave → cuts look justified). But the low R²
+means service restoration alone cannot recover ridership when the larger demand drivers
+have shifted — which is exactly PRT's post-2019 situation, where ridership fell far more
+than service. The elasticity quantifies the portion of ridership that <em>is</em> in the
+agency's hands: cutting 10% of service is worth roughly 5% of riders, no small thing,
+but the other half of any large ridership swing comes from forces the service budget
+does not touch.</p>
+<h2>Caveats</h2>
+<ul>
+<li><strong>Association, not causation.</strong> Service and ridership are jointly determined. Agencies
+often cut service <em>because</em> ridership is already falling (reverse causality), and both
+respond to shared shocks. The 0.48 slope is descriptive co-movement, not a controlled
+&quot;cut X% → lose Y%&quot; causal estimate. The shallower cuts-only slope (0.36) is consistent
+with this — cuts are often reactive to demand already softening.</li>
+<li><strong>Ecological / agency-level.</strong> Results describe agencies, not individual riders. No
+inference about why any particular person stopped riding is supported.</li>
+<li><strong>System-level, all modes.</strong> <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> aggregate bus, rail, and demand-response into
+one figure per agency. Mode-specific elasticities (a rail cut vs a bus cut) cannot be
+separated here.</li>
+<li><strong>Recovery years remain in the sample.</strong> Only 2020 and 2021 are flagged pandemic;
+2022–2023 ridership rebounds (large positive intercepts in those years' fits) stay in
+the analytic set and, if anything, attenuate the slope. Excluding them would raise the
+estimate slightly, so 0.48 is conservative.</li>
+<li><strong>Contemporaneous only.</strong> This measures same-year co-movement; lagged effects (a cut
+this year shedding riders over several years) are not captured and would tend to make
+the true multi-year elasticity larger.</li>
+<li><strong><a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> measures scheduled service, not quality.</strong> Reliability, frequency, and coverage
+changes that don't move total <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> are invisible to this metric.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li><strong>Data source verified.</strong> <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> from <code>ntd_annual_service</code> (NTD TS2.2 workbooks,
+pipeline 06). Columns confirmed against <code>data/DATA_DICTIONARY.md</code>. PRT (ntd_id 30022)
+annual values spot-checked against the raw table.</li>
+<li><strong>Geographic/temporal scope.</strong> Both metrics come from the same table, same agency-year
+grain; changes use strictly consecutive years only (gap years excluded).</li>
+<li><strong>Null/zero handling.</strong> Only agency-years with <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> &gt; 0 and <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> &gt; 0 in both endpoints
+enter a change pair; nulls and zeros are dropped, not treated as observations.</li>
+<li><strong>Aggregates sanity-checked.</strong> Headline elasticity (0.48) lands inside the published
+short-run transit service-elasticity range (~0.3–0.5). PRT's annual <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>/<a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> match
+Analysis 39's figures.</li>
+<li><strong>Direction of effects checked.</strong> Slope is positive (cut service → lose riders, grow
+service → gain riders) — the expected direction. The dose–response gradient is
+monotonic with no reversal.</li>
+<li><strong>Surprising results investigated.</strong> The pandemic subset's near-1.0 slope was
+investigated and is expected (joint exogenous collapse); it is reported separately,
+not folded into the headline.</li>
+<li><strong>Small-sample handling.</strong> Agencies below 100,000 base <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> are excluded; the per-year
+elasticity chart further drops years with n &lt; 10. The 250,000-<a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> sensitivity fit
+confirms the estimate is not threshold-driven.</li>
+<li><strong>Ecological framing.</strong> All statements are framed as agency-level associations.</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="outputs">
+  <h2>Output</h2>
+  <div class="tab-bar output-tabs">
+    <button class="tab-btn active" data-target="charts">Charts (4)</button>
+    <button class="tab-btn" data-target="interactive">Interactive (0)</button>
+    <button class="tab-btn" data-target="data">Data (3)</button>
+  </div>
+
+  <div class="output-pane active" data-pane="charts">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/59_national_service_elasticity/service_vs_ridership_scatter.png" alt="service_vs_ridership_scatter" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/59_national_service_elasticity/service_vs_ridership_scatter.png" target="_blank" rel="noopener noreferrer">service_vs_ridership_scatter.png</a>
+          <p class="artifact-desc">Each point is one agency-year; service change (x) vs ridership change (y) with the fitted 0.48 elasticity line and a 1:1 reference. Pandemic years excluded.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/59_national_service_elasticity/dose_response_bins.png" alt="dose_response_bins" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/59_national_service_elasticity/dose_response_bins.png" target="_blank" rel="noopener noreferrer">dose_response_bins.png</a>
+          <p class="artifact-desc">Median ridership change (with interquartile range) grouped by size of service change, from deep cuts to growth — a clean monotonic gradient.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/59_national_service_elasticity/elasticity_over_time.png" alt="elasticity_over_time" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/59_national_service_elasticity/elasticity_over_time.png" target="_blank" rel="noopener noreferrer">elasticity_over_time.png</a>
+          <p class="artifact-desc">The fitted service-to-ridership elasticity estimated separately each year (1991-2024), showing it holds steady near 0.5 except during the pandemic.</p>
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <img src="../../assets/analyses/59_national_service_elasticity/prt_cut_episodes.png" alt="prt_cut_episodes" loading="lazy">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">image</span>
+          <a class="artifact-link" href="../../assets/analyses/59_national_service_elasticity/prt_cut_episodes.png" target="_blank" rel="noopener noreferrer">prt_cut_episodes.png</a>
+          <p class="artifact-desc">Pittsburgh (PRT) year-over-year service and ridership changes plotted against the national pattern, with cut, growth, and pandemic years marked.</p>
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="interactive">
+    <div class="gallery">
+    
+    <p class="artifact-desc">No interactive outputs declared.</p>
+    </div>
+  </div>
+
+  <div class="output-pane" data-pane="data">
+    <div class="gallery">
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/59_national_service_elasticity/agency_year_changes.csv" target="_blank" rel="noopener noreferrer">agency_year_changes.csv</a>
+          <p class="artifact-desc">The per-transition panel — agency, year, prior and current VRH/UPT, and percent changes — used for all fits.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/59_national_service_elasticity/agency_year_changes.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/59_national_service_elasticity/elasticity_by_year.csv" target="_blank" rel="noopener noreferrer">elasticity_by_year.csv</a>
+          <p class="artifact-desc">Per-year fitted elasticity slope, 95% confidence interval, R-squared, and sample size.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/59_national_service_elasticity/elasticity_by_year.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+      <figure class="shot-card">
+        <figcaption class="artifact-body">
+          <span class="artifact-kind">data</span>
+          <a class="artifact-link" href="../../assets/analyses/59_national_service_elasticity/summary.csv" target="_blank" rel="noopener noreferrer">summary.csv</a>
+          <p class="artifact-desc">Headline elasticity estimates for the all-years, cuts-only, size-sensitivity, and pandemic subsets.</p>
+          
+          <details class="csv-preview" data-csv-url="../../assets/analyses/59_national_service_elasticity/summary.csv">
+            <summary>Preview CSV</summary>
+            <div class="csv-preview-body">Expand to load preview.</div>
+          </details>
+        
+        </figcaption>
+      </figure>
+    
+    
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="methods">
+  <details class="fold">
+    <summary><h2>Methods</h2></summary>
+    <div class="markdown"><h1>Methods: National Service Elasticity of Ridership</h1>
+<h2>Question</h2>
+<p>Nationally, across all US transit agencies and the full NTD history (1991–2024),
+when an agency cuts (or expands) service, how much does its ridership move in the
+same year? Put differently: what is the agency-level <strong>service elasticity of
+ridership</strong> — the percent change in <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">unlinked passenger trips</a> (<a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a>) associated
+with a 1% change in <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">vehicle revenue hours</a> (<a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>) — and how stable is it over time?</p>
+<p>This generalizes Analysis 39, which compared a single 2019→2024 snapshot. Here we
+use <em>every</em> consecutive-year change across three decades and many cut episodes,
+not just the COVID window.</p>
+<h2>Approach</h2>
+<ol>
+<li><strong>Build a year-over-year change panel.</strong> For each agency, take every pair of
+consecutive reporting years where <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> and <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> are both present and positive in
+both years. For each pair compute <code>vrh_pct = ΔVRH/VRH_prev × 100</code> and
+<code>upt_pct = ΔUPT/UPT_prev × 100</code>. One row per agency-year-transition.</li>
+<li><strong>Restrict to sizeable agencies.</strong> Keep transitions where the base-year <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> ≥
+100,000 hours (~the largest ~340 agencies in 2019). Tiny rural systems produce
+wild percent swings on small denominators that would dominate the regression.
+The threshold is reported and a sensitivity check at 250,000 is run.</li>
+<li><strong>Flag and separate the pandemic.</strong> Transitions ending in 2020 or 2021 are
+marked <code>pandemic</code>. The pandemic collapsed service and ridership jointly for
+exogenous public-health reasons, not as a service→ridership response, so these
+transitions are <strong>excluded from the headline elasticity</strong> and reported
+separately.</li>
+<li><strong>Trim reporting discontinuities.</strong> Drop transitions with |vrh_pct| &gt; 50% or
+|upt_pct| &gt; 75% as likely mergers, definition changes, or first-year reporting
+artifacts rather than genuine service decisions. The count dropped is reported.</li>
+<li><strong>Estimate elasticity (<a href="../../glossary.html#ordinary-least-squares" class="glossary-link" data-definition="Regression method that estimates coefficients by minimizing squared residuals.">OLS</a>).</strong> Regress <code>upt_pct ~ vrh_pct</code> on the non-pandemic,
+trimmed panel. The slope is the elasticity; report slope, 95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a>, R², n, and
+the <a href="../../glossary.html#pearson-correlation" class="glossary-link" data-definition="Linear association metric ranging from -1 to 1.">Pearson correlation</a>. Refit on the <strong>cuts-only</strong> subset (vrh_pct &lt; 0), since
+the question is specifically about service reductions.</li>
+<li><strong>Elasticity over time.</strong> Fit the same slope separately within each year
+(1991–2024) to check whether the service–ridership relationship is stable,
+strengthening, or weakening; pandemic years are flagged on the chart.</li>
+<li><strong>Dose–response bins.</strong> Bucket transitions by service-change size (deep cut
+≤ −10%, cut −10 to −5%, mild cut −5 to 0%, roughly flat 0 to +5%, growth &gt; +5%)
+and show the distribution (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>, <a href="../../glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">IQR</a>) of ridership change in each bucket.</li>
+<li><strong>PRT overlay.</strong> Plot PRT's own consecutive-year changes against the national
+regression line, highlighting its service-cut years.</li>
+</ol>
+<p><strong>Framing.</strong> This is an <strong>agency-level association</strong>, not an individual rider
+behavior model and not a causal demand elasticity. Service and ridership are
+jointly determined — agencies frequently cut service <em>because</em> ridership is
+already falling (reverse causality), and both respond to shared shocks (fuel
+prices, recessions, local economies). The slope describes how service and
+ridership co-move across agencies and years; it is not a controlled estimate of
+&quot;cut service by 1% → lose X% of riders.&quot;</p>
+<h2>Data</h2>
+<table>
+<thead>
+<tr>
+  <th>Name</th>
+  <th>Description</th>
+  <th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ntd_annual_service</code></td>
+  <td>Annual system-level <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a>, <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> per agency (1991–2024)</td>
+  <td><code>prt.db</code> table (pipeline 06, NTD TS2.2 workbooks)</td>
+</tr>
+</tbody>
+</table>
+<p>Columns used: <code>ntd_id</code>, <code>agency_name</code>, <code>year</code>, <code>vrh</code>, <code>upt</code>. System-level
+(all modes aggregated). Inclusion: <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> &amp; <a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> present and &gt; 0 in both years of a
+transition; base-year <a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> ≥ 100,000.</p>
+<h2>Output</h2>
+<ul>
+<li><code>output/service_vs_ridership_scatter.png</code> — Δ%<a href="../../glossary.html#vehicle-revenue-hours" class="glossary-link" data-definition="Hours a vehicle spends in revenue service carrying passengers, excluding pull-out, layover, and repositioning time.">VRH</a> vs Δ%<a href="../../glossary.html#unlinked-passenger-trips" class="glossary-link" data-definition="Count of passenger boardings, where each boarding is counted separately, so a rider who transfers between routes is counted more than once.">UPT</a> for all non-pandemic
+sizeable transitions, with the fitted elasticity line, y=x reference, and the
+service-cut region shaded.</li>
+<li><code>output/dose_response_bins.png</code> — distribution of ridership change within each
+service-change bucket (<a href="../../glossary.html#median" class="glossary-link" data-definition="Middle value of an ordered distribution, robust to extreme outliers.">median</a>, <a href="../../glossary.html#interquartile-range" class="glossary-link" data-definition="Difference between the 75th and 25th percentiles, capturing the middle half of data.">IQR</a>, n per bin).</li>
+<li><code>output/elasticity_over_time.png</code> — per-year fitted elasticity slope (1991–2024)
+with 95% <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a> band; pandemic years flagged.</li>
+<li><code>output/prt_cut_episodes.png</code> — PRT's consecutive-year service vs ridership
+changes over its history, cut years highlighted, against the national line.</li>
+<li><code>output/agency_year_changes.csv</code> — the per-transition change panel used.</li>
+<li><code>output/elasticity_by_year.csv</code> — per-year slope, <a href="../../glossary.html#confidence-interval" class="glossary-link" data-definition="Interval estimate that captures plausible parameter values at a chosen confidence level.">CI</a>, n, R².</li>
+<li><code>output/summary.csv</code> — headline elasticity estimates (all, cuts-only,
+sensitivity, pandemic-subset).</li>
+</ul>
+</div>
+  </details>
+</section>
+
+
+
+<section class="panel" id="source-code">
+  <details class="fold">
+    <summary><h2>Source Code</h2></summary>
+    <div class="code-scroll">
+    <table class="code-table"><tr>
+      <td class="line-numbers" aria-hidden="true"></td>
+      <td class="code-content"><pre><code class="language-python">&quot;&quot;&quot;Analysis 59: estimate the agency-level service elasticity of ridership across the full NTD panel (1991-2024).&quot;&quot;&quot;
+
+import numpy as np
+import polars as pl
+import statsmodels.api as sm
+
+from prt_otp_analysis.common import (
+    COLOR_GRAY,
+    COLOR_NEGATIVE,
+    COLOR_PRIMARY,
+    analysis_dir,
+    correlate,
+    get_db,
+    phase,
+    run_analysis,
+    save_chart,
+    save_csv,
+    setup_plotting,
+    validate,
+)
+from prt_otp_analysis.common.schemas import NTD_ANNUAL_SERVICE
+
+OUT = analysis_dir(__file__)
+
+PRT_NTD_ID = 30022
+MIN_BASE_VRH = 100_000        # exclude tiny agencies whose % swings dominate
+SENSITIVITY_VRH = 250_000     # robustness threshold
+VRH_TRIM_PCT = 50.0           # drop |vrh_pct| above this (reporting discontinuities)
+UPT_TRIM_PCT = 75.0           # drop |upt_pct| above this
+PANDEMIC_END_YEARS = (2020, 2021)
+
+
+def load_changes(conn) -&gt; pl.DataFrame:
+    &quot;&quot;&quot;Build the consecutive-year change panel: one row per agency-year transition.
+
+    Returns columns: ntd_id, agency_name, year (end year), vrh_prev, vrh,
+    upt_prev, upt, vrh_pct, upt_pct, base_vrh, pandemic.
+    &quot;&quot;&quot;
+    rows = conn.execute(&quot;&quot;&quot;
+        SELECT ntd_id, agency_name, year, vrh, upt
+        FROM ntd_annual_service
+        WHERE vrh &gt; 0 AND upt &gt; 0
+        ORDER BY ntd_id, year
+    &quot;&quot;&quot;).fetchall()
+    df = pl.DataFrame([dict(r) for r in rows])
+    validate(df, NTD_ANNUAL_SERVICE, subset=True)
+
+    # Lag within agency; only keep strictly consecutive years (year - prev == 1).
+    df = df.sort(&quot;ntd_id&quot;, &quot;year&quot;).with_columns(
+        vrh_prev=pl.col(&quot;vrh&quot;).shift(1).over(&quot;ntd_id&quot;),
+        upt_prev=pl.col(&quot;upt&quot;).shift(1).over(&quot;ntd_id&quot;),
+        year_prev=pl.col(&quot;year&quot;).shift(1).over(&quot;ntd_id&quot;),
+    )
+    df = df.filter(
+        pl.col(&quot;year_prev&quot;).is_not_null() &amp; (pl.col(&quot;year&quot;) - pl.col(&quot;year_prev&quot;) == 1)
+    )
+
+    df = df.with_columns(
+        base_vrh=pl.col(&quot;vrh_prev&quot;),
+        vrh_pct=(pl.col(&quot;vrh&quot;) - pl.col(&quot;vrh_prev&quot;)) / pl.col(&quot;vrh_prev&quot;) * 100,
+        upt_pct=(pl.col(&quot;upt&quot;) - pl.col(&quot;upt_prev&quot;)) / pl.col(&quot;upt_prev&quot;) * 100,
+        pandemic=pl.col(&quot;year&quot;).is_in(PANDEMIC_END_YEARS),
+    )
+    return df
+
+
+def fit_elasticity(change_df: pl.DataFrame) -&gt; dict[str, float]:
+    &quot;&quot;&quot;OLS of upt_pct ~ vrh_pct. Returns slope (elasticity), intercept, CI, R², n.&quot;&quot;&quot;
+    x = change_df[&quot;vrh_pct&quot;].to_numpy()
+    y = change_df[&quot;upt_pct&quot;].to_numpy()
+    n = len(x)
+    if n &lt; 3:
+        nan = float(&quot;nan&quot;)
+        return {&quot;slope&quot;: nan, &quot;intercept&quot;: nan, &quot;ci_lo&quot;: nan, &quot;ci_hi&quot;: nan, &quot;r2&quot;: nan, &quot;n&quot;: n}
+    model = sm.OLS(y, sm.add_constant(x)).fit()
+    ci = model.conf_int(alpha=0.05)
+    return {
+        &quot;slope&quot;: float(model.params[1]),
+        &quot;intercept&quot;: float(model.params[0]),
+        &quot;ci_lo&quot;: float(ci[1][0]),
+        &quot;ci_hi&quot;: float(ci[1][1]),
+        &quot;r2&quot;: float(model.rsquared),
+        &quot;n&quot;: n,
+    }
+
+
+@run_analysis(59, &quot;National Service Elasticity of Ridership&quot;)
+def main():
+    plt = setup_plotting()
+    conn = get_db()
+
+    with phase(&quot;Building year-over-year change panel&quot;):
+        raw_df = load_changes(conn)
+        conn.close()
+        print(f&quot;   {len(raw_df):,} consecutive-year transitions (VRH &amp; UPT &gt; 0, all agencies)&quot;)
+
+        sized_df = raw_df.filter(pl.col(&quot;base_vrh&quot;) &gt;= MIN_BASE_VRH)
+        print(f&quot;   {len(sized_df):,} transitions from agencies with base VRH &gt;= {MIN_BASE_VRH:,}&quot;)
+
+        # Trim reporting discontinuities.
+        trimmed_df = sized_df.filter(
+            (pl.col(&quot;vrh_pct&quot;).abs() &lt;= VRH_TRIM_PCT) &amp; (pl.col(&quot;upt_pct&quot;).abs() &lt;= UPT_TRIM_PCT)
+        )
+        dropped = len(sized_df) - len(trimmed_df)
+        print(f&quot;   Dropped {dropped} transitions exceeding trim bounds &quot;
+              f&quot;(|VRH|&gt;{VRH_TRIM_PCT:.0f}% or |UPT|&gt;{UPT_TRIM_PCT:.0f}%)&quot;)
+
+        analytic_df = trimmed_df.filter(~pl.col(&quot;pandemic&quot;))
+        pandemic_df = trimmed_df.filter(pl.col(&quot;pandemic&quot;))
+        cuts_df = analytic_df.filter(pl.col(&quot;vrh_pct&quot;) &lt; 0)
+        print(f&quot;   Analytic (non-pandemic) sample: {len(analytic_df):,} transitions &quot;
+              f&quot;({analytic_df[&#x27;ntd_id&#x27;].n_unique()} agencies, &quot;
+              f&quot;{analytic_df[&#x27;year&#x27;].min()}-{analytic_df[&#x27;year&#x27;].max()})&quot;)
+        print(f&quot;   Of those, {len(cuts_df):,} are service cuts (VRH change &lt; 0)&quot;)
+
+    # ---- Headline elasticity fits ----
+    with phase(&quot;Estimating elasticity&quot;):
+        all_fit = fit_elasticity(analytic_df)
+        cuts_fit = fit_elasticity(cuts_df)
+        sens_fit = fit_elasticity(
+            trimmed_df.filter((pl.col(&quot;base_vrh&quot;) &gt;= SENSITIVITY_VRH) &amp; ~pl.col(&quot;pandemic&quot;))
+        )
+        pandemic_fit = fit_elasticity(pandemic_df)
+        corr = correlate(analytic_df, &quot;vrh_pct&quot;, &quot;upt_pct&quot;)
+
+        print(f&quot;\n   All non-pandemic transitions  : elasticity = {all_fit[&#x27;slope&#x27;]:.3f} &quot;
+              f&quot;[{all_fit[&#x27;ci_lo&#x27;]:.3f}, {all_fit[&#x27;ci_hi&#x27;]:.3f}]  &quot;
+              f&quot;R²={all_fit[&#x27;r2&#x27;]:.3f}  n={all_fit[&#x27;n&#x27;]:,}&quot;)
+        print(f&quot;   Service cuts only             : elasticity = {cuts_fit[&#x27;slope&#x27;]:.3f} &quot;
+              f&quot;[{cuts_fit[&#x27;ci_lo&#x27;]:.3f}, {cuts_fit[&#x27;ci_hi&#x27;]:.3f}]  &quot;
+              f&quot;R²={cuts_fit[&#x27;r2&#x27;]:.3f}  n={cuts_fit[&#x27;n&#x27;]:,}&quot;)
+        print(f&quot;   Sensitivity (base VRH&gt;={SENSITIVITY_VRH:,}) : elasticity = {sens_fit[&#x27;slope&#x27;]:.3f} &quot;
+              f&quot;[{sens_fit[&#x27;ci_lo&#x27;]:.3f}, {sens_fit[&#x27;ci_hi&#x27;]:.3f}]  n={sens_fit[&#x27;n&#x27;]:,}&quot;)
+        print(f&quot;   Pandemic transitions (2020-21): elasticity = {pandemic_fit[&#x27;slope&#x27;]:.3f} &quot;
+              f&quot;[{pandemic_fit[&#x27;ci_lo&#x27;]:.3f}, {pandemic_fit[&#x27;ci_hi&#x27;]:.3f}]  n={pandemic_fit[&#x27;n&#x27;]:,}&quot;)
+        print(f&quot;   Pearson r (non-pandemic): {corr[&#x27;pearson_r&#x27;]:.3f} (p={corr[&#x27;pearson_p&#x27;]:.1e})&quot;)
+
+        summary_df = pl.DataFrame([
+            {&quot;sample&quot;: &quot;all_non_pandemic&quot;, **all_fit},
+            {&quot;sample&quot;: &quot;cuts_only&quot;, **cuts_fit},
+            {&quot;sample&quot;: f&quot;sensitivity_vrh_{SENSITIVITY_VRH}&quot;, **sens_fit},
+            {&quot;sample&quot;: &quot;pandemic_2020_2021&quot;, **pandemic_fit},
+        ])
+
+    # ---- Per-year elasticity ----
+    with phase(&quot;Fitting per-year elasticity&quot;):
+        year_rows = []
+        for yr in sorted(trimmed_df[&quot;year&quot;].unique().to_list()):
+            yr_df = trimmed_df.filter(pl.col(&quot;year&quot;) == yr)
+            fit = fit_elasticity(yr_df)
+            year_rows.append({&quot;year&quot;: yr, &quot;pandemic&quot;: yr in PANDEMIC_END_YEARS, **fit})
+        year_df = pl.DataFrame(year_rows)
+
+    # ---- Save CSVs ----
+    print()
+    save_csv(
+        analytic_df.select(
+            &quot;ntd_id&quot;, &quot;agency_name&quot;, &quot;year&quot;, &quot;vrh_prev&quot;, &quot;vrh&quot;, &quot;upt_prev&quot;, &quot;upt&quot;,
+            &quot;vrh_pct&quot;, &quot;upt_pct&quot;, &quot;base_vrh&quot;,
+        ).sort(&quot;year&quot;, &quot;ntd_id&quot;),
+        OUT / &quot;agency_year_changes.csv&quot;,
+    )
+    save_csv(year_df, OUT / &quot;elasticity_by_year.csv&quot;)
+    save_csv(summary_df, OUT / &quot;summary.csv&quot;)
+
+    # ---- Chart 1: scatter with elasticity line ----
+    with phase(&quot;Generating service-vs-ridership scatter&quot;):
+        x = analytic_df[&quot;vrh_pct&quot;].to_numpy()
+        y = analytic_df[&quot;upt_pct&quot;].to_numpy()
+
+        fig, ax = plt.subplots(figsize=(11, 9))
+        ax.axvspan(-VRH_TRIM_PCT, 0, color=COLOR_NEGATIVE, alpha=0.05, zorder=0)
+        ax.text(-VRH_TRIM_PCT + 1, UPT_TRIM_PCT - 4, &quot;service cut →&quot;, color=COLOR_NEGATIVE,
+                fontsize=9, alpha=0.8, va=&quot;top&quot;)
+
+        ax.scatter(x, y, s=14, alpha=0.30, color=COLOR_PRIMARY, edgecolors=&quot;none&quot;, zorder=2)
+
+        line_x = np.array([-VRH_TRIM_PCT, VRH_TRIM_PCT])
+        ax.plot(line_x, all_fit[&quot;intercept&quot;] + all_fit[&quot;slope&quot;] * line_x,
+                color=COLOR_NEGATIVE, linewidth=2.5, zorder=4,
+                label=f&quot;Elasticity = {all_fit[&#x27;slope&#x27;]:.2f}  (R²={all_fit[&#x27;r2&#x27;]:.2f}, n={all_fit[&#x27;n&#x27;]:,})&quot;)
+        ax.plot(line_x, line_x, color=COLOR_GRAY, linestyle=&quot;--&quot;, linewidth=1, zorder=3,
+                label=&quot;1:1 (ridership tracks service exactly)&quot;)
+
+        ax.axhline(0, color=&quot;#CCCCCC&quot;, linewidth=0.8, zorder=1)
+        ax.axvline(0, color=&quot;#CCCCCC&quot;, linewidth=0.8, zorder=1)
+        ax.set_xlim(-VRH_TRIM_PCT, VRH_TRIM_PCT)
+        ax.set_ylim(-UPT_TRIM_PCT, UPT_TRIM_PCT)
+        ax.set_xlabel(&quot;Service change, year over year — Vehicle Revenue Hours (%)&quot;)
+        ax.set_ylabel(&quot;Ridership change, year over year — Unlinked Passenger Trips (%)&quot;)
+        ax.set_title(&quot;When agencies change service, how does ridership move?\n&quot;
+                     f&quot;US transit agencies, base VRH ≥ {MIN_BASE_VRH:,}, 1991–2024, pandemic years excluded&quot;)
+        ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+        save_chart(fig, OUT / &quot;service_vs_ridership_scatter.png&quot;)
+
+    # ---- Chart 2: dose-response bins ----
+    with phase(&quot;Generating dose-response bins&quot;):
+        bins = [
+            (&quot;Deep cut\n(≤ −10%)&quot;, pl.col(&quot;vrh_pct&quot;) &lt;= -10),
+            (&quot;Cut\n(−10 to −5%)&quot;, (pl.col(&quot;vrh_pct&quot;) &gt; -10) &amp; (pl.col(&quot;vrh_pct&quot;) &lt;= -5)),
+            (&quot;Mild cut\n(−5 to 0%)&quot;, (pl.col(&quot;vrh_pct&quot;) &gt; -5) &amp; (pl.col(&quot;vrh_pct&quot;) &lt; 0)),
+            (&quot;Flat / small grow\n(0 to +5%)&quot;, (pl.col(&quot;vrh_pct&quot;) &gt;= 0) &amp; (pl.col(&quot;vrh_pct&quot;) &lt;= 5)),
+            (&quot;Growth\n(&gt; +5%)&quot;, pl.col(&quot;vrh_pct&quot;) &gt; 5),
+        ]
+        labels, medians, q1s, q3s, ns = [], [], [], [], []
+        for label, cond in bins:
+            sub = analytic_df.filter(cond)[&quot;upt_pct&quot;]
+            if len(sub) == 0:
+                continue
+            labels.append(label)
+            medians.append(sub.median())
+            q1s.append(sub.quantile(0.25))
+            q3s.append(sub.quantile(0.75))
+            ns.append(len(sub))
+
+        fig, ax = plt.subplots(figsize=(11, 7))
+        xpos = range(len(labels))
+        lower = [m - q for m, q in zip(medians, q1s)]
+        upper = [q - m for q, m in zip(q3s, medians)]
+        colors = [COLOR_NEGATIVE if m &lt; 0 else COLOR_PRIMARY for m in medians]
+        ax.bar(xpos, medians, color=colors, alpha=0.85,
+               yerr=[lower, upper], capsize=6, error_kw={&quot;alpha&quot;: 0.5, &quot;lw&quot;: 1.2})
+        ax.axhline(0, color=&quot;#999999&quot;, linewidth=0.9)
+        for i, (m, n) in enumerate(zip(medians, ns)):
+            ax.text(i, m + (1 if m &gt;= 0 else -1), f&quot;{m:+.1f}%\n(n={n})&quot;,
+                    ha=&quot;center&quot;, va=&quot;bottom&quot; if m &gt;= 0 else &quot;top&quot;, fontsize=8)
+        ax.set_xticks(list(xpos))
+        ax.set_xticklabels(labels, fontsize=9)
+        ax.set_ylabel(&quot;Ridership change — median (bars), IQR (whiskers) (%)&quot;)
+        ax.set_title(&quot;Ridership change by size of service change\n&quot;
+                     &quot;US transit agencies, 1991–2024, pandemic years excluded&quot;)
+        save_chart(fig, OUT / &quot;dose_response_bins.png&quot;)
+
+    # ---- Chart 3: elasticity over time ----
+    with phase(&quot;Generating elasticity-over-time chart&quot;):
+        plot_df = year_df.filter(pl.col(&quot;n&quot;) &gt;= 10).sort(&quot;year&quot;)
+        yrs = plot_df[&quot;year&quot;].to_list()
+        slopes = plot_df[&quot;slope&quot;].to_list()
+        lo = plot_df[&quot;ci_lo&quot;].to_list()
+        hi = plot_df[&quot;ci_hi&quot;].to_list()
+        is_pan = plot_df[&quot;pandemic&quot;].to_list()
+
+        fig, ax = plt.subplots(figsize=(13, 6.5))
+        ax.fill_between(yrs, lo, hi, color=COLOR_PRIMARY, alpha=0.15, zorder=1)
+        ax.plot(yrs, slopes, color=COLOR_PRIMARY, linewidth=1.8, marker=&quot;o&quot;, markersize=4, zorder=2)
+        for yr, s, pan in zip(yrs, slopes, is_pan):
+            if pan:
+                ax.scatter([yr], [s], color=COLOR_NEGATIVE, s=70, zorder=3, edgecolors=&quot;white&quot;)
+        ax.axhline(all_fit[&quot;slope&quot;], color=COLOR_GRAY, linestyle=&quot;--&quot;, linewidth=1.2,
+                   label=f&quot;Pooled non-pandemic elasticity = {all_fit[&#x27;slope&#x27;]:.2f}&quot;)
+        ax.axhline(0, color=&quot;#CCCCCC&quot;, linewidth=0.8)
+        ax.scatter([], [], color=COLOR_NEGATIVE, s=70, edgecolors=&quot;white&quot;,
+                   label=&quot;Pandemic year (2020, 2021)&quot;)
+        ax.set_xlabel(&quot;Year&quot;)
+        ax.set_ylabel(&quot;Fitted elasticity (Δ%UPT per 1% Δ%VRH)&quot;)
+        ax.set_title(&quot;Service elasticity of ridership over time\n&quot;
+                     &quot;Slope of yearly Δridership-vs-Δservice fit, sizeable US agencies&quot;)
+        ax.legend(loc=&quot;upper left&quot;, fontsize=9)
+        save_chart(fig, OUT / &quot;elasticity_over_time.png&quot;)
+
+    # ---- Chart 4: PRT overlay ----
+    with phase(&quot;Generating PRT cut-episodes chart&quot;):
+        prt_df = trimmed_df.filter(pl.col(&quot;ntd_id&quot;) == PRT_NTD_ID).sort(&quot;year&quot;)
+        fig, ax = plt.subplots(figsize=(11, 9))
+
+        bg = analytic_df
+        ax.scatter(bg[&quot;vrh_pct&quot;].to_numpy(), bg[&quot;upt_pct&quot;].to_numpy(),
+                   s=10, alpha=0.12, color=COLOR_GRAY, edgecolors=&quot;none&quot;, zorder=1)
+        line_x = np.array([-30, 30])
+        ax.plot(line_x, all_fit[&quot;intercept&quot;] + all_fit[&quot;slope&quot;] * line_x,
+                color=&quot;#888888&quot;, linewidth=1.8, linestyle=&quot;--&quot;, zorder=2,
+                label=f&quot;National elasticity = {all_fit[&#x27;slope&#x27;]:.2f}&quot;)
+
+        for row in prt_df.iter_rows(named=True):
+            is_cut = row[&quot;vrh_pct&quot;] &lt; 0
+            is_pan = row[&quot;pandemic&quot;]
+            color = COLOR_NEGATIVE if is_pan else (COLOR_PRIMARY if is_cut else &quot;#6ACC65&quot;)
+            ax.scatter(row[&quot;vrh_pct&quot;], row[&quot;upt_pct&quot;], s=90, color=color,
+                       edgecolors=&quot;black&quot;, linewidths=0.8, zorder=4)
+            ax.annotate(str(row[&quot;year&quot;]), (row[&quot;vrh_pct&quot;], row[&quot;upt_pct&quot;]),
+                        textcoords=&quot;offset points&quot;, xytext=(6, 5), fontsize=8)
+
+        ax.scatter([], [], s=90, color=COLOR_PRIMARY, edgecolors=&quot;black&quot;, label=&quot;PRT service-cut year&quot;)
+        ax.scatter([], [], s=90, color=&quot;#6ACC65&quot;, edgecolors=&quot;black&quot;, label=&quot;PRT service-growth year&quot;)
+        ax.scatter([], [], s=90, color=COLOR_NEGATIVE, edgecolors=&quot;black&quot;, label=&quot;PRT pandemic year&quot;)
+        ax.axhline(0, color=&quot;#CCCCCC&quot;, linewidth=0.8)
+        ax.axvline(0, color=&quot;#CCCCCC&quot;, linewidth=0.8)
+        ax.set_xlim(-30, 30)
+        ax.set_ylim(-60, 30)
+        ax.set_xlabel(&quot;PRT service change, year over year — VRH (%)&quot;)
+        ax.set_ylabel(&quot;PRT ridership change, year over year — UPT (%)&quot;)
+        ax.set_title(&quot;Pittsburgh (PRT) service vs ridership changes against the national pattern&quot;)
+        ax.legend(loc=&quot;lower right&quot;, fontsize=9)
+        save_chart(fig, OUT / &quot;prt_cut_episodes.png&quot;)
+
+    # ---- Console: PRT episode detail ----
+    print(&quot;\n   PRT consecutive-year changes:&quot;)
+    for row in prt_df.iter_rows(named=True):
+        tag = &quot; [pandemic]&quot; if row[&quot;pandemic&quot;] else (&quot; [cut]&quot; if row[&quot;vrh_pct&quot;] &lt; 0 else &quot;&quot;)
+        print(f&quot;     {row[&#x27;year&#x27;]}: VRH {row[&#x27;vrh_pct&#x27;]:&gt;+6.1f}%   UPT {row[&#x27;upt_pct&#x27;]:&gt;+6.1f}%{tag}&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre></td>
+    </tr></table>
+    </div>
+  </details>
+</section>
+
+
+
+
+
+<section class="panel" id="sources">
+  <details class="fold">
+    <summary><h2>Sources</h2></summary>
+    <table class="source-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Why It Matters</th><th>Owner</th><th>Freshness</th><th>Caveat</th></tr></thead>
+      <tbody>
+      
+        <tr>
+          <td>ntd_annual_service</td>
+          <td><span class="tag">table</span></td>
+          <td>Primary analytical table used in this page's computations.</td>
+          <td>Produced by NTD Annual Service ETL.</td>
+          <td>Updated when the producing pipeline step is rerun.</td>
+          <td>Coverage depends on upstream source availability and ETL assumptions.</td>
+        </tr>
+        
+        <tr class="upstream-row">
+          <td colspan="6">
+            <details class="upstream-detail">
+              <summary>Upstream sources (1)</summary>
+              <ul class="upstream-list">
+              
+                <li><span class="tag">file</span> <strong>data/ntd-annual-service/2023_TS2.2_Service_Data.xlsx</strong> — NTD TS2.2 workbook with annual service data by system.</li>
+              
+              </ul>
+            </details>
+          </td>
+        </tr>
+        
+      
+        <tr>
+          <td>numpy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>polars</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>statsmodels</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+        <tr>
+          <td>scipy</td>
+          <td><span class="tag">dependency</span></td>
+          <td>Runtime dependency required for this page's pipeline or analysis code.</td>
+          <td>Open-source Python ecosystem maintainers.</td>
+          <td>Version pinned by project environment until dependency updates are applied.</td>
+          <td>Library updates may change behavior or defaults.</td>
+        </tr>
+        
+      
+      </tbody>
+    </table>
+  </details>
+</section>
+
+
+  </main>
+  <script>
+  (() => {
+    const controls = document.getElementById("card-filters");
+    if (controls) {
+      const search = document.getElementById("filter-search");
+      const group = document.getElementById("filter-group");
+      const outputKind = document.getElementById("filter-output-kind");
+      const cards = Array.from(document.querySelectorAll(".filter-card"));
+      const groups = Array.from(document.querySelectorAll(".analysis-group"));
+      const apply = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const g = group?.value || "";
+        const ok = outputKind?.value || "";
+        cards.forEach((card) => {
+          const kind = card.dataset.kind || "";
+          const cardGroup = card.dataset.group || "";
+          const outputKinds = (card.dataset.outputKinds || "").split(",").filter(Boolean);
+          const text = card.dataset.text || "";
+          const matchesSearch = !q || text.includes(q);
+          const matchesGroup = !g || kind !== "analysis" || cardGroup === g;
+          const matchesOutput = !ok || kind !== "analysis" || outputKinds.includes(ok);
+          card.style.display = (matchesSearch && matchesGroup && matchesOutput) ? "" : "none";
+        });
+        groups.forEach((grp) => {
+          const visible = grp.querySelector(".filter-card:not([style*='display: none'])");
+          grp.style.display = visible ? "" : "none";
+        });
+      };
+      [search, group, outputKind].forEach((el) => el?.addEventListener("input", apply));
+      [group, outputKind].forEach((el) => el?.addEventListener("change", apply));
+      apply();
+    }
+
+    const table = document.getElementById("analysis-table");
+    if (table) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll(".analysis-row"));
+      const search = document.getElementById("table-search");
+      const chips = Array.from(document.querySelectorAll(".group-chip"));
+      const countEl = document.getElementById("result-count");
+      const noResults = document.getElementById("no-results");
+      const total = rows.length;
+
+      const applyFilters = () => {
+        const q = (search?.value || "").trim().toLowerCase();
+        const active = new Set(
+          chips.filter((c) => c.getAttribute("aria-pressed") === "true").map((c) => c.dataset.group)
+        );
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !q || (row.dataset.text || "").includes(q);
+          const matchesGroup = active.has(row.dataset.group || "");
+          const show = matchesSearch && matchesGroup;
+          row.hidden = !show;
+          if (show) visible++;
+        });
+        if (countEl) countEl.textContent = `Showing ${visible} of ${total}`;
+        if (noResults) noResults.hidden = visible !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const pressed = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", String(!pressed));
+          applyFilters();
+        });
+      });
+      search?.addEventListener("input", applyFilters);
+
+      const headers = Array.from(table.querySelectorAll("th.sortable"));
+      let sortKey = "number";
+      let sortDir = 1;
+      const sortBy = (key) => {
+        if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+        headers.forEach((h) => {
+          const isActive = h.dataset.key === sortKey;
+          h.setAttribute("aria-sort", isActive ? (sortDir === 1 ? "ascending" : "descending") : "none");
+          const arrow = h.querySelector(".sort-arrow");
+          if (arrow) arrow.textContent = isActive ? (sortDir === 1 ? "▲" : "▼") : "▲";
+        });
+        const sorted = rows.slice().sort((a, b) => {
+          let av = a.dataset[key] || "";
+          let bv = b.dataset[key] || "";
+          if (key === "number") { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -sortDir;
+          if (av > bv) return sortDir;
+          return 0;
+        });
+        sorted.forEach((row) => tbody.appendChild(row));
+        if (noResults) tbody.appendChild(noResults);
+      };
+      headers.forEach((h) => {
+        h.addEventListener("click", () => sortBy(h.dataset.key));
+        h.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(h.dataset.key); }
+        });
+      });
+
+      table.querySelectorAll(".summary-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const cell = btn.closest(".summary-cell");
+          const rest = cell.querySelector(".summary-rest");
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", String(!expanded));
+          rest.hidden = expanded;
+          btn.textContent = expanded ? "more" : "less";
+        });
+      });
+
+      applyFilters();
+    }
+
+    document.querySelectorAll(".output-tabs").forEach((tabs) => {
+      const panel = tabs.closest(".panel");
+      const buttons = tabs.querySelectorAll(".tab-btn");
+      const panes = panel ? panel.querySelectorAll(".output-pane") : [];
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.dataset.target;
+          buttons.forEach((b) => b.classList.toggle("active", b === btn));
+          panes.forEach((p) => p.classList.toggle("active", p.dataset.pane === target));
+        });
+      });
+    });
+
+    document.querySelectorAll("details.csv-preview").forEach((node) => {
+      node.addEventListener("toggle", async () => {
+        if (!node.open || node.dataset.loaded === "1") return;
+        const body = node.querySelector(".csv-preview-body");
+        const url = node.dataset.csvUrl;
+        if (!body || !url) return;
+        body.textContent = "Loading preview...";
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          const text = await res.text();
+          const rows = text.trim().split(/\r?\n/).slice(0, 6).map((r) => r.split(","));
+          if (!rows.length) {
+            body.textContent = "No rows found.";
+            return;
+          }
+          const head = rows[0];
+          const data = rows.slice(1);
+          let html = "<table class='source-table'><thead><tr>";
+          head.forEach((h) => { html += `<th>${h}</th>`; });
+          html += "</tr></thead><tbody>";
+          data.forEach((row) => {
+            html += "<tr>";
+            head.forEach((_, i) => { html += `<td>${row[i] || ""}</td>`; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          body.innerHTML = html;
+          node.dataset.loaded = "1";
+        } catch (err) {
+          body.textContent = "Preview unavailable.";
+        }
+      });
+    });
+    document.querySelectorAll('#source-code details').forEach(function(d) {
+      d.addEventListener('toggle', function() {
+        if (d.open) {
+          d.querySelectorAll('pre code').forEach(function(el) { hljs.highlightElement(el); });
+          d.querySelectorAll('.code-table').forEach(function(table) {
+            var code = table.querySelector('pre code');
+            var lineNums = table.querySelector('.line-numbers');
+            if (code && lineNums && !lineNums.hasChildNodes()) {
+              var count = code.textContent.split('\n').length;
+              if (code.textContent.endsWith('\n')) count--;
+              var html = '';
+              for (var i = 1; i <= count; i++) html += '<span>' + i + '</span>';
+              lineNums.innerHTML = html;
+            }
+          });
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

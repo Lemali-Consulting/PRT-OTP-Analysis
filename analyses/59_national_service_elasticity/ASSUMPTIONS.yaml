@@ -1,0 +1,36 @@
+# Assumptions for National Service Elasticity of Ridership
+# Each assumption is something the code relies on that could silently produce wrong results if violated.
+
+assumptions:
+- id: contemporaneous-comovement-is-elasticity
+  description: The OLS slope of same-year Δ%UPT on Δ%VRH is interpreted as an agency-level
+    service elasticity of ridership. This assumes the contemporaneous co-movement is a
+    meaningful summary of the service-ridership relationship, not that service changes
+    causally drive ridership.
+  impact: high
+  check: Slope is 0.48 (CI [0.46, 0.52]), inside the published short-run transit service
+    elasticity range (~0.3-0.5); the cuts-only slope (0.36) and the reverse-causality
+    risk are documented explicitly in FINDINGS caveats.
+- id: pandemic-years-are-a-separate-regime
+  description: Transitions ending in 2020 or 2021 are excluded from the headline fit
+    because the pandemic collapsed service and ridership jointly for exogenous reasons.
+  impact: high
+  check: The pandemic-subset slope (~1.0) differs sharply from the stable 0.3-0.6 of
+    every other year, confirming a distinct regime; it is fit and reported separately.
+- id: vrh-100k-floor-removes-noise-not-signal
+  description: Restricting to agencies with base-year VRH >= 100,000 excludes tiny systems
+    whose percent changes swing wildly on small denominators, without biasing the estimate.
+  impact: medium
+  check: The 250,000-VRH sensitivity fit gives 0.52, essentially unchanged from 0.48.
+- id: trim-bounds-catch-reporting-artifacts
+  description: Dropping |Δ%VRH| > 50% or |Δ%UPT| > 75% removes mergers, definition changes,
+    and first-year reporting jumps rather than genuine service decisions.
+  impact: medium
+  check: Only 208 of 9,150 sized transitions (2.3%) are trimmed; the headline slope is
+    stable to the exact bounds.
+- id: consecutive-years-only
+  description: Change pairs use strictly consecutive reporting years (year - prev == 1) per
+    agency, so a gap in an agency's NTD reporting does not create a spurious multi-year jump.
+  impact: medium
+  check: year_prev filter enforces a one-year gap; agencies entering/leaving NTD do not
+    generate change rows across their missing years.

@@ -1,0 +1,46 @@
+kind: analysis
+title: "59 - National Service Elasticity of Ridership"
+tables:
+  - ntd_annual_service
+files: []
+analyses:
+  - id: 39
+    relationship: generalizes 39's single 2019-2024 service-vs-ridership snapshot into a full-history elasticity across every consecutive-year change and many cut episodes.
+dependencies:
+  - numpy
+  - polars
+  - statsmodels
+  - scipy
+description: >-
+  When a transit agency cuts service, it loses riders — but far fewer than you
+  might expect. Looking at more than 8,000 year-to-year changes at hundreds of US
+  transit agencies from 1991 to 2024, a 1% cut in service hours goes hand in hand
+  with about a 0.5% drop in ridership. Agencies that cut service deeply (10% or
+  more in a year) lost a median of about 6% of their riders, while agencies that
+  added service gained riders in step. The relationship has held steady for three
+  decades. But service levels explain only about an eighth of why ridership rises
+  or falls year to year — most of the swing comes from forces outside the agency's
+  control, like gas prices, the economy, and how many people are commuting.
+  Pittsburgh's own history fits this national pattern closely.
+outputs:
+  - path: service_vs_ridership_scatter.png
+    kind: image
+    description: Each point is one agency-year; service change (x) vs ridership change (y) with the fitted 0.48 elasticity line and a 1:1 reference. Pandemic years excluded.
+  - path: dose_response_bins.png
+    kind: image
+    description: Median ridership change (with interquartile range) grouped by size of service change, from deep cuts to growth — a clean monotonic gradient.
+  - path: elasticity_over_time.png
+    kind: image
+    description: The fitted service-to-ridership elasticity estimated separately each year (1991-2024), showing it holds steady near 0.5 except during the pandemic.
+  - path: prt_cut_episodes.png
+    kind: image
+    description: Pittsburgh (PRT) year-over-year service and ridership changes plotted against the national pattern, with cut, growth, and pandemic years marked.
+  - path: agency_year_changes.csv
+    kind: data
+    description: The per-transition panel — agency, year, prior and current VRH/UPT, and percent changes — used for all fits.
+  - path: elasticity_by_year.csv
+    kind: data
+    description: Per-year fitted elasticity slope, 95% confidence interval, R-squared, and sample size.
+  - path: summary.csv
+    kind: data
+    description: Headline elasticity estimates for the all-years, cuts-only, size-sensitivity, and pandemic subsets.
